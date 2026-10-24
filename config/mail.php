@@ -37,6 +37,10 @@ return [
 
     'mailers' => [
 
+        'preview' => [
+            'transport' => 'preview',
+        ],
+
         'smtp' => [
             'transport' => 'smtp',
             'scheme' => env('MAIL_SCHEME'),

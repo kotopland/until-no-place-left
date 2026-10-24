@@ -54,6 +54,15 @@
                 <span>🎉</span>
                 <span>Event Platforms</span>
             </button>
+            <button 
+                type="button" 
+                wire:click="toggleLayer('prayer_walks')" 
+                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1 text-[11px] {{ $showPrayerWalks ? 'bg-amber-600 text-white shadow' : 'bg-slate-800 text-slate-400 hover:text-white' }}"
+                title="Toggle Prayer Walking Street Routes"
+            >
+                <span>🚶</span>
+                <span>Prayer Walks ({{ count($prayerWalksData) }})</span>
+            </button>
         </div>
     </div>
 
@@ -68,11 +77,13 @@
             churches: @js($churchesData),
             lines: @js($linesData),
             specialSpots: @js($specialSpots),
+            prayerWalks: @js($prayerWalksData),
             showHeatmap: @entangle('showHeatmap'),
             showChurches: @entangle('showChurches'),
             showOikosLines: @entangle('showOikosLines'),
             showMercySpots: @entangle('showMercySpots'),
-            showEventPins: @entangle('showEventPins')
+            showEventPins: @entangle('showEventPins'),
+            showPrayerWalks: @entangle('showPrayerWalks')
         })"
         x-init="initMap()"
     ></div>
@@ -84,6 +95,7 @@
         <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span><span>G2 (Planted by G1)</span></div>
         <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span><span>G3 (Granddaughter)</span></div>
         <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span><span>G4+ (Movement Stream!)</span></div>
+        <div class="flex items-center gap-1.5"><span class="w-3.5 h-1 rounded-full bg-amber-400 shadow-sm shadow-amber-400"></span><span>Prayer Walk Streets</span></div>
     </div>
 
     <!-- Slide-over Drawer for Selected Church (Acts 2 Circle Diagram & Lineage) -->

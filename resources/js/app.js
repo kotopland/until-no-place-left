@@ -6,6 +6,7 @@ window.nagoyaMap = function(config) {
         churchesLayer: null,
         oikosLayer: null,
         spotsLayer: null,
+        prayerWalksLayer: null,
 
         initMap() {
             if (typeof L === 'undefined') {
@@ -58,6 +59,7 @@ window.nagoyaMap = function(config) {
             this.$watch('showOikosLines', () => this.renderLayers());
             this.$watch('showMercySpots', () => this.renderLayers());
             this.$watch('showEventPins', () => this.renderLayers());
+            this.$watch('showPrayerWalks', () => this.renderLayers());
         },
 
         renderLayers() {
@@ -201,6 +203,76 @@ window.nagoyaMap = function(config) {
                     marker.addTo(this.spotsLayer);
                 });
                 this.spotsLayer.addTo(this.map);
+            }
+
+            // 5. Prayer Walks Street Polylines Layer
+            if (this.prayerWalksLayer) this.map.removeLayer(this.prayerWalksLayer);
+
+            if (config.showPrayerWalks && config.prayerWalks && config.prayerWalks.length > 0) {
+                this.prayerWalksLayer = L.layerGroup();
+                config.prayerWalks.forEach(walk => {
+                    if (!walk.coords || walk.coords.length === 0) return;
+
+                    const strokeColor = walk.pop_discovered ? '#10b981' : '#f59e0b';
+
+                    // Luminous street glow line
+                    const glowLine = L.polyline(walk.coords, {
+                        color: strokeColor,
+                        weight: 6,
+                        opacity: 0.35,
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                    });
+
+                    // Core street path line
+                    const coreLine = L.polyline(walk.coords, {
+                        color: walk.pop_discovered ? '#34d399' : '#fbbf24',
+                        weight: 3,
+                        opacity: 0.95,
+                        dashArray: walk.pop_discovered ? null : '5 5',
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                    });
+
+                    const popBadge = walk.pop_discovered
+                        ? `<div class="mt-1 px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700 text-[10px] font-bold">🕊️ Person of Peace Discovered: ${walk.discovered_npc || 'Receptive Seeker'}</div>`
+                        : `<div class="mt-1 text-[10px] text-amber-300">Spiritual Ground Softened & Mapped</div>`;
+
+                    const tooltipHtml = `
+                        <div class="text-xs p-1 min-w-[210px]">
+                            <div class="flex items-center gap-1 font-bold text-white">
+                                <span>🚶</span>
+                                <span>${walk.route_name}</span>
+                            </div>
+                            <div class="text-[11px] text-slate-400">${walk.ward_name} (${walk.ward_name_ja}) • Day ${walk.day}, M${walk.month}</div>
+                            <div class="text-[10px] text-slate-300 mt-0.5">Walker: <span class="font-semibold text-white">${walk.walker_name}</span></div>
+                            ${popBadge}
+                        </div>
+                    `;
+
+                    glowLine.bindTooltip(tooltipHtml, { sticky: true });
+                    coreLine.bindTooltip(tooltipHtml, { sticky: true });
+
+                    glowLine.addTo(this.prayerWalksLayer);
+                    coreLine.addTo(this.prayerWalksLayer);
+
+                    // Start waypoint marker
+                    const startPt = walk.coords[0];
+                    const startIcon = L.divIcon({
+                        className: 'prayer-walk-marker',
+                        html: `
+                            <div style="background-color: ${strokeColor}; width: 22px; height: 22px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 11px; box-shadow: 0 0 10px ${strokeColor}; border: 2px solid #ffffff;">
+                                ${walk.pop_discovered ? '🕊️' : '🚶'}
+                            </div>
+                        `,
+                        iconSize: [22, 22],
+                        iconAnchor: [11, 11]
+                    });
+                    const startMarker = L.marker(startPt, { icon: startIcon });
+                    startMarker.bindTooltip(tooltipHtml, { sticky: true });
+                    startMarker.addTo(this.prayerWalksLayer);
+                });
+                this.prayerWalksLayer.addTo(this.map);
             }
         }
     };

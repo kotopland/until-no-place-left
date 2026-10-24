@@ -9,6 +9,7 @@ enum MinistryActionType: string
     case PrayerForHealing = 'prayer_for_healing';
     case MercyCareFoodBible = 'mercy_care_food_bible';
     case InternationalEvent = 'international_event';
+    case PrayerWalk = 'prayer_walk';
     case Share15SecTestimony = 'share_15sec_testimony';
     case Share3Circles = 'share_3circles';
     case PraySalvation = 'pray_salvation';
@@ -27,6 +28,7 @@ enum MinistryActionType: string
             self::PrayerForHealing => 'Prayer for Healing & Peace',
             self::MercyCareFoodBible => 'Mercy Care (Food, Practical Aid & Bible)',
             self::InternationalEvent => 'Host International / Cultural Event',
+            self::PrayerWalk => 'Prayer Walking & Spiritual Mapping',
             self::Share15SecTestimony => 'Share 15-Second Testimony',
             self::Share3Circles => 'Share 3 Circles Gospel Presentation',
             self::PraySalvation => "Prayer of Salvation / Sinner's Prayer",
@@ -47,6 +49,7 @@ enum MinistryActionType: string
             self::PrayerForHealing => '癒やしと平安の祈り',
             self::MercyCareFoodBible => '愛の奉仕（炊き出し・支援・聖書贈呈）',
             self::InternationalEvent => '国際交流イベント・英会話カフェ開催',
+            self::PrayerWalk => '祈りの行進（プレイヤーウォーク・霊的マッピング）',
             self::Share15SecTestimony => '15秒証しを分かち合う',
             self::Share3Circles => '3サークル福音提示',
             self::PraySalvation => '救いの祈り・罪人の祈り（信仰告白）',
@@ -62,7 +65,7 @@ enum MinistryActionType: string
     public function field(): int
     {
         return match ($this) {
-            self::CasualTalk, self::InternationalEvent => 1, // Field 1: Entry Strategy
+            self::CasualTalk, self::InternationalEvent, self::PrayerWalk => 1, // Field 1: Entry Strategy
             self::DeepTalk, self::PrayerForHealing => 1,    // Field 1: Heart Preparation / Sowing Pre-Gospel
             self::MercyCareFoodBible => 1,                  // Field 1 & 4: Compassion / Kingdom Platform
             self::Share15SecTestimony, self::Share3Circles, self::PraySalvation => 2, // Field 2: Gospel Sowing & Decision
@@ -76,13 +79,16 @@ enum MinistryActionType: string
      */
     public function fieldName(): string
     {
-        return match ($this->field()) {
-            1 => 'Field 1: Entry / Friendship',
-            2 => 'Field 2: Gospel Presentation',
-            3 => 'Field 3: Discipleship Growth',
-            4 => 'Field 4: Healthy Church Formation',
-            5 => 'Field 5: Leadership Multiplication',
-            default => 'Four Fields',
+        return match ($this) {
+            self::PrayerWalk => 'Field 1: Entry / Prayer Walk',
+            default => match ($this->field()) {
+                1 => 'Field 1: Entry / Friendship',
+                2 => 'Field 2: Gospel Presentation',
+                3 => 'Field 3: Discipleship Growth',
+                4 => 'Field 4: Healthy Church Formation',
+                5 => 'Field 5: Leadership Multiplication',
+                default => 'Four Fields',
+            },
         };
     }
 
@@ -92,7 +98,7 @@ enum MinistryActionType: string
     public function apCost(): int
     {
         return match ($this) {
-            self::CasualTalk => 1,
+            self::CasualTalk, self::PrayerWalk => 1,
             self::DeepTalk => 2,
             self::PrayerForHealing => 1,
             self::MercyCareFoodBible => 2,
@@ -117,6 +123,7 @@ enum MinistryActionType: string
             self::PrayerForHealing => 'Offer sincere, compassionate prayer for physical sickness, anxiety, or hardship. Answered prayer often opens entire households (Luke 10:9).',
             self::MercyCareFoodBible => 'Provide nutritious hot meals, basic dignity, warm fellowship, and Scripture portions to unhoused and vulnerable neighbors around Nagoya hubs.',
             self::InternationalEvent => 'Organize a cultural exchange, cooking class, or English cafe in a ward. Attracts groups of seekers and rapidly surfaces Persons of Peace.',
+            self::PrayerWalk => 'Intercede on site through neighborhood streets, stations, and shrines. Traces street prayer lines on the Nagoya map and unlocks increased probability of discovering a Person of Peace (Luke 10).',
             self::Share15SecTestimony => 'Share how you transitioned from brokenness to rest and restoration in Jesus in just two simple sentences.',
             self::Share3Circles => 'A clear visual presentation: God’s Design -> Brokenness -> Gospel Rescue -> Repent & Believe -> Recover & Pursue.',
             self::PraySalvation => 'Lead an open seeker in a heartfelt prayer of repentance and receiving Jesus Christ as Lord and Savior (Romans 10:9-10).',
@@ -137,6 +144,7 @@ enum MinistryActionType: string
             self::PrayerForHealing => '🙏',
             self::MercyCareFoodBible => '🍲',
             self::InternationalEvent => '🎉',
+            self::PrayerWalk => '🚶',
             self::Share15SecTestimony => '⏱️',
             self::Share3Circles => '⭕',
             self::PraySalvation => '✝️',
@@ -152,7 +160,7 @@ enum MinistryActionType: string
     public function requiresTargetNpc(): bool
     {
         return match ($this) {
-            self::InternationalEvent => false,
+            self::InternationalEvent, self::PrayerWalk => false,
             default => true,
         };
     }

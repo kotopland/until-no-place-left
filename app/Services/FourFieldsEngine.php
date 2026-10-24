@@ -11,6 +11,7 @@ use App\Enums\ContributionRole;
 use App\Enums\LeadershipTier;
 use App\Enums\MinistryActionType;
 use App\Enums\NpcNeedState;
+use App\Enums\NpcRoleArchetype;
 use App\Enums\QueuedActionStatus;
 use App\Enums\ReceptivityStatus;
 use App\Models\Church;
@@ -18,6 +19,7 @@ use App\Models\GameSession;
 use App\Models\Npc;
 use App\Models\NpcContribution;
 use App\Models\OikosRelationship;
+use App\Models\PrayerWalk;
 use App\Models\QueuedMonthlyAction;
 use App\Models\User;
 use App\Models\Ward;
@@ -257,9 +259,13 @@ class FourFieldsEngine
         $ward = $action->ward;
         $npc = $action->targetNpc;
 
-        // Handle ward-wide platform actions (e.g., International Event)
+        // Handle ward-wide platform actions (e.g., International Event, Prayer Walk)
         if ($action->action_type === MinistryActionType::InternationalEvent) {
             return $this->resolveInternationalEvent($action, $gameMonth);
+        }
+
+        if ($action->action_type === MinistryActionType::PrayerWalk) {
+            return $this->resolvePrayerWalk($action, $gameMonth);
         }
 
         if (! $npc) {
@@ -717,6 +723,261 @@ class FourFieldsEngine
             narrativeOutcome: $narrative,
             pedagogicalTip: 'Platform ministries like International Exchange Cafes cast a wide net across Japanese wards, rapidly surfacing Persons of Peace (Luke 10).',
         );
+    }
+
+    /**
+     * Resolves ward-wide Prayer Walking & Spiritual Mapping (Field 1: Entry Strategy).
+     * Traces street paths across the ward and increases the chance to discover a Luke 10 Person of Peace.
+     */
+    protected function resolvePrayerWalk(QueuedMonthlyAction $action, int $gameMonth): ActionResolutionOutcome
+    {
+        $user = $action->user;
+        $ward = $action->ward ?? Ward::find($action->ward_id) ?? Ward::first();
+
+        // Count previous prayer walks in this ward for this game session
+        $previousWardWalks = PrayerWalk::where('game_session_id', $action->game_session_id)
+            ->where('ward_id', $ward->id)
+            ->count();
+
+        // Progressive Luke 10 Person of Peace probability formula:
+        // Base 35% + 15% per previous walk in that ward (up to 90% cap)
+        $popChance = min(90, 35 + ($previousWardWalks * 15));
+        $popDiscovered = rand(1, 100) <= $popChance;
+
+        // Generate street route path coordinates and route name
+        $routeData = $this->generateStreetRoute($ward, $previousWardWalks + 1, (int) $action->game_day);
+        $routeName = $routeData['name'];
+        $pathCoords = $routeData['coords'];
+
+        $discoveredNpc = null;
+        $points = 15;
+
+        if ($popDiscovered) {
+            // Find existing non-PoP resident in this ward, or spawn a new archetypal Japanese seeker
+            $discoveredNpc = Npc::where('game_session_id', $action->game_session_id)
+                ->where('ward_id', $ward->id)
+                ->where('is_person_of_peace', false)
+                ->inRandomOrder()
+                ->first();
+
+            if ($discoveredNpc) {
+                $discoveredNpc->update([
+                    'is_person_of_peace' => true,
+                    'status' => $discoveredNpc->status === ReceptivityStatus::Unreached
+                        ? ReceptivityStatus::Yellow
+                        : $discoveredNpc->status,
+                ]);
+                $discoveredNpc->increment('trust_level', rand(18, 26));
+            } else {
+                $midCoord = $pathCoords[intdiv(count($pathCoords), 2)] ?? [(float) $ward->center_lat, (float) $ward->center_lng];
+                $discoveredNpc = $this->spawnPersonOfPeaceResident((int) $action->game_session_id, $ward, $midCoord);
+            }
+
+            // Record pioneer sowing contribution
+            NpcContribution::create([
+                'game_session_id' => $action->game_session_id,
+                'npc_id' => $discoveredNpc->id,
+                'user_id' => $user->id,
+                'action_type' => MinistryActionType::PrayerWalk,
+                'contribution_role' => ContributionRole::PioneerSower,
+                'game_month' => $gameMonth,
+                'trust_gained' => 20,
+                'points_awarded' => 35,
+                'triggered_breakthrough' => true,
+                'notes' => "Discovered Person of Peace ({$discoveredNpc->displayName}) during prayer walk on {$routeName} in {$ward->name}.",
+            ]);
+
+            $points = 35;
+            $narrative = "Divine appointment during prayer walk along {$routeName} in {$ward->name}! Discovered {$discoveredNpc->displayName}, a Luke 10 Person of Peace receptive to spiritual conversation. Spiritual openness increased to ".min(100, $ward->spiritual_openness + 4).'%.';
+        } else {
+            $nextChance = min(90, 35 + (($previousWardWalks + 1) * 15));
+            $narrative = "Interceded on foot along {$routeName} in {$ward->name}. Spiritual ground softened (Openness +2%). Prayer walk count in {$ward->name} is now ".($previousWardWalks + 1).", raising Person of Peace discovery chance to {$nextChance}%!";
+        }
+
+        // Soften ward atmosphere and increment openness
+        $ward->increment('spiritual_openness', $popDiscovered ? 4 : 2);
+        Npc::where('game_session_id', $action->game_session_id)
+            ->where('ward_id', $ward->id)
+            ->increment('trust_level', rand(2, 5));
+
+        // Save prayer walk route record
+        PrayerWalk::create([
+            'game_session_id' => $action->game_session_id,
+            'user_id' => $user->id,
+            'ward_id' => $ward->id,
+            'game_month' => $gameMonth,
+            'game_day' => (int) $action->game_day,
+            'route_name' => $routeName,
+            'path_coords' => $pathCoords,
+            'pop_discovered' => $popDiscovered,
+            'discovered_npc_id' => $discoveredNpc?->id,
+        ]);
+
+        return new ActionResolutionOutcome(
+            actionId: $action->id,
+            actionType: $action->action_type,
+            userId: $user->id,
+            targetNpcId: $discoveredNpc?->id,
+            wardId: $ward->id,
+            trustChange: $popDiscovered ? 20 : 5,
+            newTrustLevel: $discoveredNpc?->trust_level ?? 40,
+            previousStatus: ReceptivityStatus::Unreached,
+            newStatus: $discoveredNpc ? $discoveredNpc->status : ReceptivityStatus::Yellow,
+            statusChanged: $popDiscovered,
+            pointsAwarded: $points,
+            coopPointsAwarded: 0,
+            roleAssigned: ContributionRole::PioneerSower,
+            collaboratorsImpacted: [],
+            narrativeOutcome: $narrative,
+            pedagogicalTip: 'Luke 10:2-6 teaches that prayer walking precedes finding the Person of Peace. Intercession softens spiritual soil before sowing the Gospel.',
+            newOikosUnlocked: $popDiscovered,
+        );
+    }
+
+    /**
+     * Generate realistic street waypoints and name for a prayer walk in a ward.
+     *
+     * @return array{name: string, coords: array<array<float>>}
+     */
+    protected function generateStreetRoute(Ward $ward, int $walkNumber, int $gameDay): array
+    {
+        $lat = (float) $ward->center_lat;
+        $lng = (float) $ward->center_lng;
+
+        $routesByWard = [
+            'naka-ku' => [
+                [
+                    'name' => 'Sakae & Hisaya Odori Central Avenue',
+                    'offsets' => [[0.003, -0.002], [0.003, 0.002], [-0.002, 0.002], [-0.004, 0.0], [-0.004, -0.003]],
+                ],
+                [
+                    'name' => 'Osu Kannon Shopping Arcade & Shrine Approach',
+                    'offsets' => [[-0.005, -0.006], [-0.005, -0.002], [-0.001, -0.002], [-0.001, -0.005], [-0.003, -0.007]],
+                ],
+                [
+                    'name' => 'Shirakawa Park & Fushimi Station Loop',
+                    'offsets' => [[-0.002, -0.007], [0.002, -0.007], [0.002, -0.003], [-0.002, -0.003], [-0.004, -0.005]],
+                ],
+                [
+                    'name' => 'Marunouchi Financial Ave & Castle South Moat',
+                    'offsets' => [[0.006, -0.004], [0.006, 0.001], [0.009, 0.001], [0.009, -0.003], [0.007, -0.005]],
+                ],
+            ],
+            'nakamura-ku' => [
+                [
+                    'name' => 'Meieki Station Plaza & Taiko-dori Avenue',
+                    'offsets' => [[0.001, 0.002], [-0.003, 0.002], [-0.003, -0.004], [-0.001, -0.006], [0.002, -0.004]],
+                ],
+                [
+                    'name' => 'Noritake Garden & Commercial District Circuit',
+                    'offsets' => [[0.004, 0.001], [0.007, 0.001], [0.007, -0.003], [0.003, -0.003], [0.002, -0.001]],
+                ],
+                [
+                    'name' => 'Sasashima Live & Canal Promenade',
+                    'offsets' => [[-0.004, 0.003], [-0.007, 0.003], [-0.007, -0.001], [-0.004, -0.001], [-0.003, 0.001]],
+                ],
+            ],
+            'meito-ku' => [
+                [
+                    'name' => 'Fujigaoka Station Plaza & Shopping Arcade',
+                    'offsets' => [[-0.001, -0.002], [0.003, -0.002], [0.003, 0.004], [-0.001, 0.004], [-0.003, 0.001]],
+                ],
+                [
+                    'name' => 'Kamiyashiro Station & Hillside Residential Loop',
+                    'offsets' => [[-0.005, -0.006], [-0.001, -0.006], [-0.001, -0.002], [-0.004, -0.002], [-0.006, -0.004]],
+                ],
+                [
+                    'name' => 'Issha Station & Inokoshi Park Circuit',
+                    'offsets' => [[-0.006, -0.012], [-0.002, -0.012], [-0.002, -0.008], [-0.005, -0.008], [-0.007, -0.010]],
+                ],
+            ],
+            'chikusa-ku' => [
+                [
+                    'name' => 'Motoyama Station & Nagoya Univ Campus Loop',
+                    'offsets' => [[-0.002, -0.003], [0.002, -0.003], [0.002, 0.003], [-0.003, 0.003], [-0.004, 0.0]],
+                ],
+                [
+                    'name' => 'Kakuozan Nittai-ji Approach & Cafe Alley',
+                    'offsets' => [[0.001, -0.008], [0.005, -0.008], [0.005, -0.004], [0.001, -0.004], [-0.001, -0.006]],
+                ],
+                [
+                    'name' => 'Imaike Station & Commercial Corridor',
+                    'offsets' => [[0.002, -0.015], [-0.002, -0.015], [-0.002, -0.010], [0.003, -0.010], [0.004, -0.013]],
+                ],
+            ],
+        ];
+
+        $slug = $ward->slug ?? '';
+        $availableRoutes = $routesByWard[$slug] ?? null;
+
+        if ($availableRoutes) {
+            $routeIndex = ($walkNumber - 1) % count($availableRoutes);
+            $selected = $availableRoutes[$routeIndex];
+            $routeName = $selected['name'];
+            $coords = array_map(function ($offset) use ($lat, $lng) {
+                return [round($lat + $offset[0], 6), round($lng + $offset[1], 6)];
+            }, $selected['offsets']);
+        } else {
+            // Procedural rectangular street grid route tailored to ward center
+            $gridVariation = ($walkNumber + $gameDay) % 4;
+            $names = [
+                "{$ward->name} Station Plaza & Shopping Arcade",
+                "{$ward->name} Central Park & School District Circuit",
+                "{$ward->name} Residential Grid & Shrine Approach",
+                "{$ward->name} Riverfront Boulevard & Community Route",
+            ];
+            $routeName = $names[$gridVariation];
+
+            $step = 0.0035;
+            $patterns = [
+                [[0, 0], [$step, 0], [$step, $step], [0, $step], [-$step, $step * 0.5], [-$step, -$step * 0.5]],
+                [[0, 0], [-$step, 0], [-$step, -$step], [0, -$step], [$step, -$step * 0.5], [$step, $step * 0.5]],
+                [[0, 0], [0, $step], [$step, $step], [$step, 0], [$step * 1.5, -$step * 0.5], [0, -$step]],
+                [[0, 0], [0, -$step], [-$step, -$step], [-$step, 0], [-$step * 1.5, $step * 0.5], [0, $step]],
+            ];
+            $selectedPattern = $patterns[$gridVariation];
+            $coords = array_map(function ($pt) use ($lat, $lng) {
+                return [round($lat + $pt[0], 6), round($lng + $pt[1], 6)];
+            }, $selectedPattern);
+        }
+
+        return [
+            'name' => $routeName,
+            'coords' => $coords,
+        ];
+    }
+
+    /**
+     * Spawn an archetypal Japanese resident in a ward who is a Luke 10 Person of Peace.
+     */
+    protected function spawnPersonOfPeaceResident(int $gameSessionId, Ward $ward, array $coord): Npc
+    {
+        $namesPool = [
+            ['name' => 'Satoshi Yamada', 'name_ja' => '山田 聡', 'role' => NpcRoleArchetype::Shopkeeper, 'need' => NpcNeedState::WorkBurnout],
+            ['name' => 'Yuka Shibata', 'name_ja' => '柴田 優香', 'role' => NpcRoleArchetype::Creative, 'need' => NpcNeedState::Lonely],
+            ['name' => 'Kazuo Kondo', 'name_ja' => '近藤 一男', 'role' => NpcRoleArchetype::Pensioner, 'need' => NpcNeedState::SpiritualCuriosity],
+            ['name' => 'Mari Ishikawa', 'name_ja' => '石川 まり', 'role' => NpcRoleArchetype::Homemaker, 'need' => NpcNeedState::FamilyPressure],
+            ['name' => 'Takumi Ogawa', 'name_ja' => '小川 拓海', 'role' => NpcRoleArchetype::Student, 'need' => NpcNeedState::SpiritualCuriosity],
+            ['name' => 'Emi Suzuki', 'name_ja' => '鈴木 恵美', 'role' => NpcRoleArchetype::SalariedWorker, 'need' => NpcNeedState::WorkBurnout],
+        ];
+
+        $existingCount = Npc::where('game_session_id', $gameSessionId)->count();
+        $profile = $namesPool[$existingCount % count($namesPool)];
+
+        return Npc::create([
+            'game_session_id' => $gameSessionId,
+            'ward_id' => $ward->id,
+            'name' => $profile['name'],
+            'name_ja' => $profile['name_ja'],
+            'role_archetype' => $profile['role'],
+            'need_state' => $profile['need'],
+            'status' => ReceptivityStatus::Yellow,
+            'trust_level' => rand(35, 50),
+            'is_person_of_peace' => true,
+            'lat' => $coord[0],
+            'lng' => $coord[1],
+            'backstory' => "Surfaced as a Person of Peace through prayer walking in {$ward->name}. Receptive and welcoming to community believers.",
+        ]);
     }
 
     /**

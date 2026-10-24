@@ -6,6 +6,7 @@ use App\Models\Church;
 use App\Models\GameSession;
 use App\Models\Npc;
 use App\Models\OikosRelationship;
+use App\Models\PrayerWalk;
 use App\Models\Ward;
 use Livewire\Component;
 
@@ -24,6 +25,8 @@ class NagoyaMapCanvas extends Component
     public bool $showMercySpots = true;
 
     public bool $showEventPins = true;
+
+    public bool $showPrayerWalks = true;
 
     protected $listeners = [
         'map-church-selected' => 'selectChurch',
@@ -53,6 +56,7 @@ class NagoyaMapCanvas extends Component
             'oikos' => $this->showOikosLines = ! $this->showOikosLines,
             'mercy' => $this->showMercySpots = ! $this->showMercySpots,
             'events' => $this->showEventPins = ! $this->showEventPins,
+            'prayer_walks' => $this->showPrayerWalks = ! $this->showPrayerWalks,
             default => null,
         };
     }
@@ -194,11 +198,33 @@ class NagoyaMapCanvas extends Component
             ],
         ];
 
+        $prayerWalks = PrayerWalk::where('game_session_id', $session?->id)
+            ->with(['ward', 'user', 'discoveredNpc'])
+            ->latest()
+            ->take(50)
+            ->get();
+
+        $prayerWalksData = $prayerWalks->map(function (PrayerWalk $walk) {
+            return [
+                'id' => $walk->id,
+                'ward_name' => $walk->ward->name,
+                'ward_name_ja' => $walk->ward->name_ja,
+                'route_name' => $walk->route_name,
+                'walker_name' => $walk->user->name,
+                'day' => $walk->game_day,
+                'month' => $walk->game_month,
+                'pop_discovered' => $walk->pop_discovered,
+                'discovered_npc' => $walk->discoveredNpc?->displayName,
+                'coords' => $walk->path_coords,
+            ];
+        })->values()->all();
+
         return view('livewire.nagoya-map-canvas', [
             'wardsGeoJson' => $wardsGeoJson,
             'churchesData' => $churchesData,
             'linesData' => $linesData,
             'specialSpots' => $specialSpots,
+            'prayerWalksData' => $prayerWalksData,
             'selectedChurch' => $selectedChurch,
             'session' => $session,
         ]);

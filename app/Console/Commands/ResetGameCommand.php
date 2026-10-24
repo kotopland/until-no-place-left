@@ -10,6 +10,7 @@ use App\Models\MonthlyReport;
 use App\Models\Npc;
 use App\Models\NpcContribution;
 use App\Models\OikosRelationship;
+use App\Models\PrayerWalk;
 use App\Models\QueuedMonthlyAction;
 use App\Models\User;
 use Database\Seeders\NagoyaOikosSeeder;
@@ -73,6 +74,7 @@ class ResetGameCommand extends BaseCommand
                 // 1. Delete transient gameplay records
                 QueuedMonthlyAction::where('game_session_id', $session->id)->delete();
                 MonthlyReport::where('game_session_id', $session->id)->delete();
+                PrayerWalk::where('game_session_id', $session->id)->delete();
 
                 // 2. Delete NPC contributions
                 NpcContribution::whereHas('npc', function ($q) use ($session): void {

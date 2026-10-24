@@ -24,3 +24,8 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/', NagoyaMovementDashboard::class)->name('home');
     Route::post('/logout', [PasswordlessAuthController::class, 'logout'])->name('logout');
 });
+
+// Mail Preview for Local Development
+if (class_exists(\Spatie\MailPreview\MailPreviewServiceProvider::class)) {
+    Route::mailPreview();
+}

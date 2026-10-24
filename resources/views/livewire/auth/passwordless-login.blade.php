@@ -80,18 +80,28 @@
                         <div class="p-4 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-left space-y-2.5">
                             <div class="flex items-center justify-between text-amber-300 text-[11px] font-bold">
                                 <span>🛠️ Local Testing / Herd Mode</span>
-                                <span class="text-[9px] uppercase tracking-wider bg-amber-900/60 text-amber-200 px-1.5 py-0.5 rounded border border-amber-700/50">Instant Access</span>
+                                <span class="text-[9px] uppercase tracking-wider bg-amber-900/60 text-amber-200 px-1.5 py-0.5 rounded border border-amber-700/50">Preview Active</span>
                             </div>
                             <p class="text-[11px] text-amber-200/90 leading-tight">
-                                Because <code class="font-mono text-amber-100">MAIL_MAILER=log</code> is active, you can click directly below to sign in immediately:
+                                Mail preview captured the email. Click to inspect the rendered email or log in instantly:
                             </p>
-                            <a 
-                                href="{{ $localMagicLink }}" 
-                                class="w-full py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20 transition cursor-pointer"
-                            >
-                                <span>⚡</span>
-                                <span>Instant One-Click Login</span>
-                            </a>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <a 
+                                    href="/spatie-mail-preview" 
+                                    target="_blank"
+                                    class="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-500/40 font-bold text-xs flex items-center justify-center gap-1.5 transition"
+                                >
+                                    <span>📬</span>
+                                    <span>View Sent Email</span>
+                                </a>
+                                <a 
+                                    href="{{ $localMagicLink }}" 
+                                    class="py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20 transition cursor-pointer"
+                                >
+                                    <span>⚡</span>
+                                    <span>Instant Login</span>
+                                </a>
+                            </div>
                         </div>
                     @endif
 
