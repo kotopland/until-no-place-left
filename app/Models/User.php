@@ -30,6 +30,10 @@ use Illuminate\Support\Str;
  * @property array<string>|null $badges
  * @property bool $notify_email
  * @property bool $notify_in_app
+ * @property Carbon|null $last_active_at
+ * @property int $days_played_today
+ * @property Carbon|null $last_played_real_date
+ * @property int $daily_action_points
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -46,6 +50,10 @@ use Illuminate\Support\Str;
     'badges',
     'notify_email',
     'notify_in_app',
+    'last_active_at',
+    'days_played_today',
+    'last_played_real_date',
+    'daily_action_points',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
@@ -77,6 +85,50 @@ class User extends Authenticatable
     }
 
     /**
+     * PHP 8.4 Property Hook: whether user was active in the last 15 minutes
+     */
+    public bool $isOnline {
+        get => $this->last_active_at !== null && $this->last_active_at->greaterThanOrEqualTo(now()->subMinutes(15));
+    }
+
+    /**
+     * PHP 8.4 Property Hook: whether user has hit the 30-game-day play limit for this real-life day
+     */
+    public bool $hasReachedDailyPlayLimit {
+        get => $this->isPlayedToday() && $this->days_played_today >= 30;
+    }
+
+    /**
+     * PHP 8.4 Property Hook: remaining playable game days available for this real-life day
+     */
+    public int $remainingPlayableDaysToday {
+        get => $this->isPlayedToday() ? max(0, 30 - $this->days_played_today) : 30;
+    }
+
+    /**
+     * Check if the user's recorded play date matches today's real-life date.
+     */
+    public function isPlayedToday(): bool
+    {
+        return $this->last_played_real_date !== null && $this->last_played_real_date->isToday();
+    }
+
+    /**
+     * Heartbeat touch: updates active timestamp and resets day counter if a new real-life day started.
+     */
+    public function touchActive(): void
+    {
+        $today = now()->startOfDay();
+        $isNewRealDay = ! $this->isPlayedToday();
+
+        $this->update([
+            'last_active_at' => now(),
+            'last_played_real_date' => $today,
+            'days_played_today' => $isNewRealDay ? 0 : $this->days_played_today,
+        ]);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -93,6 +145,10 @@ class User extends Authenticatable
             'badges' => 'array',
             'notify_email' => 'boolean',
             'notify_in_app' => 'boolean',
+            'last_active_at' => 'datetime',
+            'days_played_today' => 'integer',
+            'last_played_real_date' => 'date',
+            'daily_action_points' => 'integer',
         ];
     }
 

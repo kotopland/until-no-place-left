@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property int $ward_id
  * @property QueuedActionStatus $status
  * @property int $game_month
+ * @property int $game_day
  * @property int $ap_cost
  * @property string|null $notes
  * @property string|null $outcome_notes
@@ -35,6 +36,7 @@ use Illuminate\Support\Carbon;
     'ward_id',
     'status',
     'game_month',
+    'game_day',
     'ap_cost',
     'notes',
     'outcome_notes',
@@ -68,6 +70,7 @@ class QueuedMonthlyAction extends Model
             'action_type' => MinistryActionType::class,
             'status' => QueuedActionStatus::class,
             'game_month' => 'integer',
+            'game_day' => 'integer',
             'ap_cost' => 'integer',
         ];
     }

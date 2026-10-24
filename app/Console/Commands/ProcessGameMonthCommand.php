@@ -41,6 +41,7 @@ class ProcessGameMonthCommand extends BaseCommand
 
         if ($sessions->isEmpty()) {
             $this->warn('No active game sessions found matching criteria.');
+
             return self::SUCCESS;
         }
 
@@ -49,6 +50,7 @@ class ProcessGameMonthCommand extends BaseCommand
         foreach ($sessions as $session) {
             if (! $force && ! $session->isTickOverdue) {
                 $this->info("Session [{$session->code}] Month {$session->current_game_month} is not due yet ({$session->secondsUntilNextTick}s remaining). Use --force to override.");
+
                 continue;
             }
 
@@ -56,11 +58,11 @@ class ProcessGameMonthCommand extends BaseCommand
 
             if ($useQueue) {
                 ProcessGameMonthJob::dispatch($session);
-                $this->components->twoColumnDetail("Dispatched to queue", "game-engine");
+                $this->components->twoColumnDetail('Dispatched to queue', 'game-engine');
             } else {
                 $job = new ProcessGameMonthJob($session);
                 $job->handle($engine);
-                $this->components->twoColumnDetail("Status", "<fg=green;options=bold>RESOLVED</>");
+                $this->components->twoColumnDetail('Status', '<fg=green;options=bold>RESOLVED</>');
             }
 
             $processedCount++;

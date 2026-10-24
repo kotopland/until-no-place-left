@@ -11,6 +11,8 @@ enum MinistryActionType: string
     case InternationalEvent = 'international_event';
     case Share15SecTestimony = 'share_15sec_testimony';
     case Share3Circles = 'share_3circles';
+    case PraySalvation = 'pray_salvation';
+    case CommitToBaptism = 'commit_to_baptism';
     case Train411 = 'train_411';
     case MentorTimothy = 'mentor_timothy';
 
@@ -27,6 +29,8 @@ enum MinistryActionType: string
             self::InternationalEvent => 'Host International / Cultural Event',
             self::Share15SecTestimony => 'Share 15-Second Testimony',
             self::Share3Circles => 'Share 3 Circles Gospel Presentation',
+            self::PraySalvation => "Prayer of Salvation / Sinner's Prayer",
+            self::CommitToBaptism => 'Commitment to Baptism & Cost of Discipleship',
             self::Train411 => 'Equip with 411 Discipleship Training',
             self::MentorTimothy => 'Mentor Timothy Leader (Field 5 Multiplication)',
         };
@@ -45,6 +49,8 @@ enum MinistryActionType: string
             self::InternationalEvent => '国際交流イベント・英会話カフェ開催',
             self::Share15SecTestimony => '15秒証しを分かち合う',
             self::Share3Circles => '3サークル福音提示',
+            self::PraySalvation => '救いの祈り・罪人の祈り（信仰告白）',
+            self::CommitToBaptism => '洗礼への決意と信仰告白（家族・文化的葛藤のケア）',
             self::Train411 => '411弟子訓練の実施',
             self::MentorTimothy => 'テモテ育成（次世代リーダー訓練）',
         };
@@ -59,8 +65,8 @@ enum MinistryActionType: string
             self::CasualTalk, self::InternationalEvent => 1, // Field 1: Entry Strategy
             self::DeepTalk, self::PrayerForHealing => 1,    // Field 1: Heart Preparation / Sowing Pre-Gospel
             self::MercyCareFoodBible => 1,                  // Field 1 & 4: Compassion / Kingdom Platform
-            self::Share15SecTestimony, self::Share3Circles => 2, // Field 2: Gospel Sowing
-            self::Train411 => 3,                            // Field 3: Discipleship & 3/3rds Formation
+            self::Share15SecTestimony, self::Share3Circles, self::PraySalvation => 2, // Field 2: Gospel Sowing & Decision
+            self::CommitToBaptism, self::Train411 => 3,     // Field 3: Discipleship & 3/3rds Formation
             self::MentorTimothy => 5,                       // Field 5: Leadership Multiplication
         };
     }
@@ -93,6 +99,8 @@ enum MinistryActionType: string
             self::InternationalEvent => 3,
             self::Share15SecTestimony => 1,
             self::Share3Circles => 2,
+            self::PraySalvation => 2,
+            self::CommitToBaptism => 2,
             self::Train411 => 3,
             self::MentorTimothy => 3,
         };
@@ -111,6 +119,8 @@ enum MinistryActionType: string
             self::InternationalEvent => 'Organize a cultural exchange, cooking class, or English cafe in a ward. Attracts groups of seekers and rapidly surfaces Persons of Peace.',
             self::Share15SecTestimony => 'Share how you transitioned from brokenness to rest and restoration in Jesus in just two simple sentences.',
             self::Share3Circles => 'A clear visual presentation: God’s Design -> Brokenness -> Gospel Rescue -> Repent & Believe -> Recover & Pursue.',
+            self::PraySalvation => 'Lead an open seeker in a heartfelt prayer of repentance and receiving Jesus Christ as Lord and Savior (Romans 10:9-10).',
+            self::CommitToBaptism => 'Walk alongside a new believer through Japanese family dynamics and ancestral heritage fears to joyfully step forward into water baptism (Acts 2:38).',
             self::Train411 => 'Train a Green believer in the 4 questions: Why make disciples? Who to reach (Oikos)? What to say (15s & 3 Circles)? When to start (Set goals)?',
             self::MentorTimothy => 'Invest in a faithful local disciple through intentional coaching so they multiply autonomous groups and break missionary bottlenecks.',
         };
@@ -129,6 +139,8 @@ enum MinistryActionType: string
             self::InternationalEvent => '🎉',
             self::Share15SecTestimony => '⏱️',
             self::Share3Circles => '⭕',
+            self::PraySalvation => '✝️',
+            self::CommitToBaptism => '🌊',
             self::Train411 => '📖',
             self::MentorTimothy => '👑',
         };

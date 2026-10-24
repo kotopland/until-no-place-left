@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\BaptismStatus;
 use App\Enums\ChurchElement;
 use App\Enums\LeadershipTier;
 use App\Enums\NpcNeedState;
@@ -258,9 +259,11 @@ class NagoyaOikosSeeder extends Seeder
                 'role_archetype' => NpcRoleArchetype::ExistingBeliever,
                 'need_state' => NpcNeedState::None,
                 'status' => ReceptivityStatus::Green,
+                'prayed_salvation' => true,
                 'trust_level' => 65,
                 'is_person_of_peace' => false,
                 'is_baptized' => true,
+                'baptism_status' => BaptismStatus::Baptized,
                 'trained_411' => false, // Needs Field 3 411 Training to activate!
                 'leadership_tier' => LeadershipTier::Apprentice,
                 'generation' => 1,
@@ -507,6 +510,27 @@ class NagoyaOikosSeeder extends Seeder
                 'backstory' => 'Second-generation Brazilian-Japanese forklift operator at the Port of Nagoya container terminal. Connected with hundreds of overseas workers.',
                 'spiritual_journal' => [],
             ],
+
+            // --- DAISUKE'S BROTHER (Meito-ku Oikos Family Node) ---
+            'kenichi_kato' => [
+                'game_session_id' => $session->id,
+                'ward_id' => $wards['meito-ku']->id,
+                'name' => 'Kenichi Kato',
+                'name_ja' => '加藤 健一',
+                'role_archetype' => NpcRoleArchetype::Salaryman,
+                'need_state' => NpcNeedState::SeekingCommunity,
+                'status' => ReceptivityStatus::Yellow,
+                'trust_level' => 52,
+                'is_person_of_peace' => false,
+                'is_baptized' => false,
+                'trained_411' => false,
+                'leadership_tier' => LeadershipTier::None,
+                'generation' => 0,
+                'lat' => 35.1685,
+                'lng' => 136.9995,
+                'backstory' => 'Daisuke\'s younger brother living in Meito-ku. Works in automotive logistics. Respects Daisuke deeply and is open to spiritual conversations with family.',
+                'spiritual_journal' => [],
+            ],
         ];
 
         $npcs = [];
@@ -561,7 +585,14 @@ class NagoyaOikosSeeder extends Seeder
                 'trust_level' => 65,
                 'notes' => 'Met at language exchange club; study together at library.',
             ],
-            // Daisuke Kato's Network (School & Community)
+            // Daisuke Kato's Network (Family, School & Community)
+            [
+                'npc_id' => $npcs['daisuke_kato']->id,
+                'related_npc_id' => $npcs['kenichi_kato']->id,
+                'relationship_type' => RelationshipType::Family,
+                'trust_level' => 80,
+                'notes' => 'Brothers living close in Meito-ku who share weekly dinners.',
+            ],
             [
                 'npc_id' => $npcs['daisuke_kato']->id,
                 'related_npc_id' => $npcs['sayaka_ito']->id,
@@ -601,6 +632,7 @@ class NagoyaOikosSeeder extends Seeder
         }
 
         // 6. Seed Initial G1 3/3rds Group (Field 4 Church Circle)
+        // Led by the player missionary coach; Daisuke Kato is an apprentice disciple who will plant G2!
         Church::updateOrCreate(
             [
                 'game_session_id' => $session->id,
@@ -609,7 +641,7 @@ class NagoyaOikosSeeder extends Seeder
             [
                 'ward_id' => $wards['meito-ku']->id,
                 'parent_church_id' => null,
-                'leader_npc_id' => $npcs['daisuke_kato']->id,
+                'leader_npc_id' => null,
                 'leader_user_id' => $player->id,
                 'generation' => 1,
                 'elements_json' => [

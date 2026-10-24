@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BaptismStatus;
 use App\Enums\LeadershipTier;
 use App\Enums\NpcNeedState;
 use App\Enums\NpcRoleArchetype;
@@ -23,9 +24,14 @@ use Illuminate\Support\Carbon;
  * @property NpcRoleArchetype $role_archetype
  * @property NpcNeedState $need_state
  * @property ReceptivityStatus $status
+ * @property bool $prayed_salvation
  * @property int $trust_level
  * @property bool $is_person_of_peace
  * @property bool $is_baptized
+ * @property BaptismStatus $baptism_status
+ * @property int $baptism_cost_months
+ * @property Carbon|null $prayed_salvation_at
+ * @property Carbon|null $baptized_at
  * @property bool $trained_411
  * @property LeadershipTier $leadership_tier
  * @property int $generation
@@ -47,9 +53,14 @@ use Illuminate\Support\Carbon;
     'role_archetype',
     'need_state',
     'status',
+    'prayed_salvation',
     'trust_level',
     'is_person_of_peace',
     'is_baptized',
+    'baptism_status',
+    'baptism_cost_months',
+    'prayed_salvation_at',
+    'baptized_at',
     'trained_411',
     'leadership_tier',
     'generation',
@@ -82,7 +93,7 @@ class Npc extends Model
      * PHP 8.4 Property Hook: Generational badge label
      */
     public string $generationLabel {
-        get => $this->generation > 0 ? "G{$this->generation}" : "Seeker";
+        get => $this->generation > 0 ? "G{$this->generation}" : 'Seeker';
     }
 
     /**
@@ -90,6 +101,27 @@ class Npc extends Model
      */
     public bool $hasActiveCrisis {
         get => $this->need_state !== NpcNeedState::None;
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Whether NPC has prayed the prayer of salvation
+     */
+    public bool $hasPrayedSalvation {
+        get => $this->prayed_salvation || $this->status === ReceptivityStatus::Green;
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Whether NPC has formally committed to or received water baptism
+     */
+    public bool $isCommittedToBaptism {
+        get => in_array($this->baptism_status, [BaptismStatus::Committed, BaptismStatus::Baptized], true);
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Human-friendly baptism journey description
+     */
+    public string $baptismJourneyLabel {
+        get => $this->baptism_status->label();
     }
 
     /**
@@ -103,10 +135,15 @@ class Npc extends Model
             'role_archetype' => NpcRoleArchetype::class,
             'need_state' => NpcNeedState::class,
             'status' => ReceptivityStatus::class,
+            'baptism_status' => BaptismStatus::class,
+            'prayed_salvation' => 'boolean',
             'leadership_tier' => LeadershipTier::class,
             'trust_level' => 'integer',
             'is_person_of_peace' => 'boolean',
             'is_baptized' => 'boolean',
+            'baptism_cost_months' => 'integer',
+            'prayed_salvation_at' => 'datetime',
+            'baptized_at' => 'datetime',
             'trained_411' => 'boolean',
             'generation' => 'integer',
             'lat' => 'float',

@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\ChurchElement;
 use App\Enums\ContributionRole;
 use App\Enums\LeadershipTier;
 use App\Enums\MinistryActionType;
@@ -22,7 +21,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 test('four fields engine resolves casual talk and deep talk based on emotional need', function () {
-    $engine = new FourFieldsEngine();
+    $engine = new FourFieldsEngine;
 
     $session = GameSession::create([
         'name' => 'Test Session',
@@ -82,7 +81,7 @@ test('four fields engine resolves casual talk and deep talk based on emotional n
 });
 
 test('co-op synergy distributes shared harvest points when multiple players water and reap', function () {
-    $engine = new FourFieldsEngine();
+    $engine = new FourFieldsEngine;
 
     $session = GameSession::create([
         'name' => 'Co-op Session',
@@ -172,7 +171,7 @@ test('co-op synergy distributes shared harvest points when multiple players wate
 });
 
 test('autonomous multiplication allows 411 believers to witness to oikos and plant daughter churches', function () {
-    $engine = new FourFieldsEngine();
+    $engine = new FourFieldsEngine;
 
     $session = GameSession::create([
         'name' => 'Multiplication Session',

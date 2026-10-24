@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ $title ?? 'Nagoya Oikos: The Four Fields' }}</title>
+
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    @fonts
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased selection:bg-indigo-500 selection:text-white min-h-screen">
+    {{ $slot }}
+
+    @livewireScripts
+</body>
+</html>

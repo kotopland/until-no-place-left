@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\DTOs\ActionResolutionOutcome;
+use App\DTOs\DailyTickResolutionResult;
 use App\DTOs\MonthResolutionResult;
+use App\Enums\BaptismStatus;
 use App\Enums\ChurchElement;
 use App\Enums\ContributionRole;
 use App\Enums\LeadershipTier;
@@ -19,21 +21,117 @@ use App\Models\OikosRelationship;
 use App\Models\QueuedMonthlyAction;
 use App\Models\User;
 use App\Models\Ward;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class FourFieldsEngine
 {
     /**
+     * Resolves a single 10-minute game day tick when participating players are online.
+     * Cap: Each player can play at most 30 game days per real-life day.
+     */
+    public function resolveDailyTick(GameSession $session, bool $force = false): ?DailyTickResolutionResult
+    {
+        // 1. Session must be active and not have completed all 30 days of this month
+        if (! $session->is_active || (! $force && $session->days_processed_this_month >= 30)) {
+            return null;
+        }
+
+        // 2. Identify online players (active within last 15 minutes) who have not reached the 30-day cap today
+        $onlineUsers = User::where('current_game_session_id', $session->id)
+            ->whereNotNull('last_active_at')
+            ->where('last_active_at', '>=', now()->subMinutes(15))
+            ->get();
+
+        if ($force && $onlineUsers->isEmpty()) {
+            $onlineUsers = User::where('current_game_session_id', $session->id)->get();
+        }
+
+        $eligibleUsers = $onlineUsers->filter(fn (User $user) => $force || ! $user->hasReachedDailyPlayLimit);
+
+        if ($eligibleUsers->isEmpty()) {
+            return null;
+        }
+
+        return DB::transaction(function () use ($session, $eligibleUsers) {
+            $gameMonth = $session->current_game_month;
+            $currentDay = $session->current_game_day;
+
+            // Fetch pending actions queued for this day or earlier days in this month
+            $pendingActions = QueuedMonthlyAction::where('game_session_id', $session->id)
+                ->where('game_month', $gameMonth)
+                ->where('game_day', '<=', $currentDay)
+                ->where('status', QueuedActionStatus::Pending)
+                ->with(['user', 'targetNpc', 'ward'])
+                ->get();
+
+            $actionsProcessed = 0;
+            $outcomes = [];
+            $playerScoreGains = [];
+
+            foreach ($pendingActions as $action) {
+                $outcome = $this->resolveSingleAction($action, $gameMonth);
+                $outcomes[] = $outcome;
+                $actionsProcessed++;
+
+                $userId = $action->user_id;
+                $playerScoreGains[$userId] = ($playerScoreGains[$userId] ?? 0) + $outcome->pointsAwarded;
+
+                $action->update([
+                    'status' => QueuedActionStatus::Processed,
+                    'outcome_notes' => $outcome->narrativeOutcome,
+                ]);
+            }
+
+            // Award points and replenish daily AP for eligible active players
+            foreach ($eligibleUsers as $user) {
+                $scoreGain = $playerScoreGains[$user->id] ?? 0;
+                if ($scoreGain > 0) {
+                    $user->increment('total_generational_score', $scoreGain);
+                }
+
+                // Increment days played today and refresh real-life day tracking
+                $user->touchActive();
+                $user->increment('days_played_today');
+
+                // Replenish daily Action Points up to maximum bandwidth
+                $newAp = min($user->max_action_points, $user->action_points + $user->daily_action_points);
+                $user->update(['action_points' => $newAp]);
+            }
+
+            // Advance session day counters
+            $nextDay = min(30, $session->current_game_day + 1);
+            $session->increment('days_processed_this_month');
+            $session->update([
+                'current_game_day' => $nextDay,
+                'last_daily_tick_at' => now(),
+                'next_daily_tick_at' => now()->addMinutes(10),
+            ]);
+
+            return new DailyTickResolutionResult(
+                gameSessionId: $session->id,
+                gameMonth: $gameMonth,
+                gameDay: $currentDay,
+                actionsProcessed: $actionsProcessed,
+                onlinePlayersCount: $eligibleUsers->count(),
+                actionOutcomes: $outcomes,
+                playerScoreGains: $playerScoreGains,
+                onlineUserIds: $eligibleUsers->pluck('id')->all(),
+            );
+        });
+    }
+
+    /**
      * Resolves the entire monthly cycle for a Game Session.
+     * Any remaining days in the 30-day month (30 - days_processed_this_month)
+     * are batch-processed here along with autonomous multiplication.
      */
     public function resolveGameMonth(GameSession $session): MonthResolutionResult
     {
         return DB::transaction(function () use ($session) {
             $gameMonth = $session->current_game_month;
 
-            // 1. Fetch pending queued player actions
+            // 1. Fetch remaining pending queued player actions (batch-processed for remainder of month)
             $pendingActions = QueuedMonthlyAction::where('game_session_id', $session->id)
                 ->where('game_month', $gameMonth)
                 ->where('status', QueuedActionStatus::Pending)
@@ -115,12 +213,17 @@ class FourFieldsEngine
                 $user->increment('total_generational_score', $scoreGain);
                 $user->update([
                     'action_points' => $user->max_action_points, // Refresh monthly AP bandwidth
+                    'days_played_today' => 0, // Reset daily play limit for new month/day
                 ]);
             }
 
-            // 5. Advance Game Session Calendar
+            // 5. Advance Game Session Calendar and reset daily tick counters
             $session->increment('current_game_month');
             $session->update([
+                'current_game_day' => 1,
+                'days_processed_this_month' => 0,
+                'last_monthly_tick_at' => now(),
+                'next_daily_tick_at' => now()->addMinutes(10),
                 'calendar_date' => Carbon::parse($session->calendar_date)->addMonth(),
                 'next_tick_at' => now()->addMinutes($session->month_duration_minutes),
             ]);
@@ -220,7 +323,7 @@ class FourFieldsEngine
 
                 $points = 10;
                 $narrative = "Shared casual conversation over tea with {$npc->name}. Trust grew steadily.";
-                $coachTip = "In Japan, trust (Shinrai) precedes truth. Consistent casual presence lays the foundation for deeper questions.";
+                $coachTip = 'In Japan, trust (Shinrai) precedes truth. Consistent casual presence lays the foundation for deeper questions.';
                 break;
 
             case MinistryActionType::DeepTalk:
@@ -228,7 +331,7 @@ class FourFieldsEngine
                 if ($npc->need_state === NpcNeedState::EmotionalCrisis || $npc->need_state === NpcNeedState::Lonely) {
                     $trustChange = rand(22, 32);
                     $narrative = "Listened attentively to {$npc->name}'s emotional struggles and workplace burnout. They felt truly heard and respected.";
-                    $coachTip = "Active listening without rushing to preach disarms Japanese societal defense mechanisms and softens hardened hearts.";
+                    $coachTip = 'Active listening without rushing to preach disarms Japanese societal defense mechanisms and softens hardened hearts.';
 
                     // Breakthrough: Red -> Yellow transition
                     if ($prevStatus === ReceptivityStatus::Red || $prevStatus === ReceptivityStatus::Unreached) {
@@ -237,7 +340,7 @@ class FourFieldsEngine
                 } else {
                     $trustChange = rand(14, 20);
                     $narrative = "Engaged {$npc->name} in a meaningful conversation regarding life values and family.";
-                    $coachTip = "Deep conversations unlock hidden worldviews and prepare hearts for the Gospel story.";
+                    $coachTip = 'Deep conversations unlock hidden worldviews and prepare hearts for the Gospel story.';
                 }
 
                 $points = 20;
@@ -276,7 +379,7 @@ class FourFieldsEngine
                 } else {
                     $trustChange = rand(10, 16);
                     $narrative = "Prayed a blessing over {$npc->name}'s life and family peace.";
-                    $coachTip = "Offering prayer for peace is universally welcomed in Japanese culture when asked politely.";
+                    $coachTip = 'Offering prayer for peace is universally welcomed in Japanese culture when asked politely.';
                     $points = 10;
                 }
                 $roleAssigned = ContributionRole::Waterer;
@@ -288,7 +391,7 @@ class FourFieldsEngine
                     $trustChange = rand(28, 38);
                     $points = 40;
                     $narrative = "Served {$npc->name} a warm, nutritious meal with dignity, clean socks, and a Gospel portion. Years of cynicism melted.";
-                    $coachTip = "Mercy ministry demonstrates the Gospel before speaking it. Acts 2 fellowship and giving unlock the most marginalized hearts.";
+                    $coachTip = 'Mercy ministry demonstrates the Gospel before speaking it. Acts 2 fellowship and giving unlock the most marginalized hearts.';
 
                     if ($prevStatus === ReceptivityStatus::Red || $prevStatus === ReceptivityStatus::Unreached) {
                         $newStatus = ReceptivityStatus::Yellow;
@@ -297,7 +400,7 @@ class FourFieldsEngine
                     $trustChange = rand(12, 18);
                     $points = 15;
                     $narrative = "Provided practical support and shared Scripture with {$npc->name}.";
-                    $coachTip = "Practical service and the Word go hand-in-hand in the Acts 2 Church Circle.";
+                    $coachTip = 'Practical service and the Word go hand-in-hand in the Acts 2 Church Circle.';
                 }
                 $roleAssigned = ContributionRole::Waterer;
                 break;
@@ -317,7 +420,7 @@ class FourFieldsEngine
                     $trustChange = rand(4, 8);
                     $points = 10;
                     $narrative = "Shared personal testimony, but {$npc->name} seemed polite yet reserved.";
-                    $coachTip = "When trust is below 30%, start with Casual Talk or Deep Listening before sharing your personal story.";
+                    $coachTip = 'When trust is below 30%, start with Casual Talk or Deep Listening before sharing your personal story.';
                 }
                 $roleAssigned = ContributionRole::Waterer;
                 break;
@@ -327,30 +430,99 @@ class FourFieldsEngine
                 if ($prevStatus === ReceptivityStatus::Yellow && ($prevTrust >= 50 || $npc->is_person_of_peace)) {
                     $trustChange = rand(25, 35);
                     $newStatus = ReceptivityStatus::Green; // ACCEPTED CHRIST!
-                    $npc->update(['is_baptized' => true]);
-                    $points = 75;
+                    $npc->update([
+                        'prayed_salvation' => true,
+                        'prayed_salvation_at' => now(),
+                        'baptism_status' => BaptismStatus::CountingCost,
+                    ]);
+                    $points = 70;
                     $roleAssigned = ContributionRole::Harvester;
 
-                    $narrative = "Glory to God! {$npc->name} clearly understood God's Design, Brokenness, and Gospel Rescue through the 3 Circles and joyfully received Christ!";
-                    $coachTip = "Field 2 to Field 3: Immediately celebrate baptism and schedule 411 training (Why, Who, What, When) within 48 hours to start multiplication!";
+                    $narrative = "Glory to God! {$npc->name} clearly understood God's Design, Brokenness, and Gospel Rescue through the 3 Circles and joyfully prayed to receive Christ! They are now counting the cost of baptism.";
+                    $coachTip = 'Field 2 to Field 3: A new believer is born! In Japanese context, family relationships must be honored. Walk with them through baptism commitment before, during, or after 411 Discipleship Training!';
                 } elseif ($prevStatus === ReceptivityStatus::Red && $prevTrust < 30) {
                     // Premature pushback
                     $trustChange = -10;
                     $points = 0;
                     $narrative = "Attempted full 3 Circles presentation, but {$npc->name} felt overwhelmed and pulled back.";
-                    $coachTip = "Warning: Gauging receptivity is vital. Pushing a decision before trust is established triggers Japanese social withdrawal. Return to Field 1 caring!";
+                    $coachTip = 'Warning: Gauging receptivity is vital. Pushing a decision before trust is established triggers Japanese social withdrawal. Return to Field 1 caring!';
                 } else {
                     $trustChange = rand(10, 16);
                     $points = 20;
                     $newStatus = ReceptivityStatus::Yellow;
                     $narrative = "Shared the 3 Circles. {$npc->name} listened thoughtfully and had good questions about Brokenness and Jesus.";
-                    $coachTip = "Yellow status: Continue meeting to answer questions or invite them into an open Discovery Bible Study.";
+                    $coachTip = 'Yellow status: Continue meeting to answer questions, or lead them in the Prayer of Salvation!';
                     $roleAssigned = ContributionRole::Waterer;
                 }
                 break;
 
+            case MinistryActionType::PraySalvation:
+                // Field 2: Leading Seeker in Prayer of Salvation / Sinner's Prayer
+                if ($prevStatus === ReceptivityStatus::Yellow || $prevTrust >= 40 || $npc->is_person_of_peace) {
+                    $trustChange = rand(25, 35);
+                    $newStatus = ReceptivityStatus::Green;
+                    $npc->update([
+                        'prayed_salvation' => true,
+                        'prayed_salvation_at' => now(),
+                        'baptism_status' => BaptismStatus::CountingCost,
+                    ]);
+                    $points = 75;
+                    $roleAssigned = ContributionRole::Harvester;
+
+                    $narrative = "Hallelujah! {$npc->name} prayed the Sinner's Prayer with genuine sincerity, confessing their sins and receiving Jesus Christ as Lord and Savior! They have entered the Kingdom of God and are now prayerfully counting the cost of baptism.";
+                    $coachTip = 'Salvation celebrated! In Japan, ancestral and family heritage makes baptism a deep step. You can help them commit to baptism before, during, or after 411 Discipleship Training!';
+                } else {
+                    $trustChange = -5;
+                    $points = 5;
+                    $narrative = "Invited {$npc->name} to pray the prayer of salvation, but they felt hesitant: 'I respect your faith, but I am not ready yet.'";
+                    $coachTip = 'Avoid rushing the Sinner\'s Prayer before relational trust reaches Yellow (40+). Continue loving them through Field 1 care and active listening.';
+                }
+                break;
+
+            case MinistryActionType::CommitToBaptism:
+                // Field 3: Walking through Japanese family concerns and committing to / receiving water baptism
+                if ($npc->status === ReceptivityStatus::Green || $npc->hasPrayedSalvation) {
+                    if ($npc->baptism_status === BaptismStatus::Baptized || $npc->is_baptized) {
+                        $trustChange = 10;
+                        $points = 20;
+                        $narrative = "Met with {$npc->name} to celebrate their baptism testimony and encourage them in bold Christian discipleship.";
+                        $coachTip = 'Already baptized! Focus on equipping them through 411 Discipleship Training or raising them toward Timothy leadership.';
+                    } elseif ($npc->baptism_status === BaptismStatus::Committed || ($prevTrust >= 70 && $npc->baptism_cost_months >= 1)) {
+                        // Water Baptism Celebrated!
+                        $trustChange = rand(25, 35);
+                        $npc->update([
+                            'is_baptized' => true,
+                            'baptism_status' => BaptismStatus::Baptized,
+                            'baptized_at' => now(),
+                        ]);
+                        $points = 80;
+                        $roleAssigned = ContributionRole::Discipler;
+
+                        $narrative = "Glory to God! {$npc->name} publicly confessed Christ and was baptized in water! Local believers gathered to celebrate this courageous milestone in Nagoya!";
+                        $coachTip = 'Matthew 28:19 fulfilled! Baptized disciples are ready to be equipped in 411 Discipleship (if not already trained) to ignite 2 Timothy 2:2 multiplication!';
+                    } else {
+                        // Taking the step of commitment / counting the cost
+                        $trustChange = rand(15, 25);
+                        $npc->update([
+                            'baptism_status' => BaptismStatus::Committed,
+                            'baptism_cost_months' => $npc->baptism_cost_months + 1,
+                        ]);
+                        $points = 45;
+                        $roleAssigned = ContributionRole::Discipler;
+
+                        $narrative = "Deep pastoral conversation with {$npc->name} addressing Japanese family traditions, ancestral rites, and counting the cost. By God's peace, they formally committed to be baptized!";
+                        $coachTip = 'Major breakthrough! In Japan, family pushback is the primary obstacle to baptism. Their commitment is secured! Baptism can now be administered next, or integrated into 411 training.';
+                    }
+                } else {
+                    $trustChange = 0;
+                    $points = 0;
+                    $narrative = "Discussed water baptism with {$npc->name}, but they have not yet prayed the prayer of salvation.";
+                    $coachTip = 'Baptism is for believers who have repented and put their trust in Jesus. Focus on Gospel sowing and the Prayer of Salvation first.';
+                }
+                break;
+
             case MinistryActionType::Train411:
-                // Field 3: Discipleship Equipping
+                // Field 3: Discipleship Equipping (Why, Who, What, When)
                 if ($npc->status === ReceptivityStatus::Green) {
                     $trustChange = rand(20, 30);
                     $npc->update([
@@ -359,12 +531,32 @@ class FourFieldsEngine
                     ]);
                     $points = 50;
                     $roleAssigned = ContributionRole::Discipler;
-                    $narrative = "Trained {$npc->name} in 411: Why make disciples? Who (Oikos Map)? What (15s & 3 Circles)? When (Goals)? They are now an active sower!";
-                    $coachTip = "Field 3 activated: Equipped believers multiply automatically during the monthly server tick by reaching their own family and friends.";
+
+                    // During 411 Training: The Commands of Jesus (Command 2: Be Baptized) catalyze baptism decisions!
+                    if (! $npc->is_baptized) {
+                        if ($npc->baptism_status === BaptismStatus::CountingCost) {
+                            $npc->update(['baptism_status' => BaptismStatus::Committed]);
+                            $narrative = "Trained {$npc->name} in 411 Discipleship (Why, Who, What, When)! During the session on Jesus' commands, they were convicted by Scripture and joyfully committed to water baptism!";
+                        } elseif ($npc->baptism_status === BaptismStatus::Committed) {
+                            $npc->update([
+                                'is_baptized' => true,
+                                'baptism_status' => BaptismStatus::Baptized,
+                                'baptized_at' => now(),
+                            ]);
+                            $points += 40;
+                            $narrative = "Trained {$npc->name} in 411 Discipleship! Obeying the Great Commission, {$npc->name} was joyfully baptized in water during the 411 training gathering!";
+                        } else {
+                            $narrative = "Trained {$npc->name} in 411: Why make disciples? Who (Oikos Map)? What (15s & 3 Circles)? When (Goals)? They are now an active sower!";
+                        }
+                    } else {
+                        $narrative = "Trained {$npc->name} in 411: Why make disciples? Who (Oikos Map)? What (15s & 3 Circles)? When (Goals)? They are now an equipped sower!";
+                    }
+
+                    $coachTip = 'Field 3 activated: Equipped believers multiply automatically during monthly ticks by reaching their own family and friends. (They can also complete baptism afterward if still counting the cost!)';
                 } else {
                     $trustChange = 5;
                     $narrative = "Attempted 411 training, but {$npc->name} is not yet a committed believer.";
-                    $coachTip = "411 Discipleship Training is designed for Green believers. Focus on Gospel sowing (Field 2) first.";
+                    $coachTip = '411 Discipleship Training is designed for Green believers. Focus on Gospel sowing (Field 2) and Prayer of Salvation first.';
                 }
                 break;
 
@@ -378,11 +570,11 @@ class FourFieldsEngine
                     $points = 100;
                     $roleAssigned = ContributionRole::Discipler;
                     $narrative = "Invested deep pastoral coaching into {$npc->name}. Elevated to a Timothy leader capable of planting autonomous daughter churches!";
-                    $coachTip = "2 Timothy 2:2: Entrust to faithful people who will be able to teach others also. Timothys break the missionary bandwidth bottleneck!";
+                    $coachTip = '2 Timothy 2:2: Entrust to faithful people who will be able to teach others also. Timothys break the missionary bandwidth bottleneck!';
                 } else {
                     $trustChange = 8;
                     $narrative = "Provided leadership mentorship to {$npc->name}.";
-                    $coachTip = "To raise a Timothy, ensure the disciple is first faithful in 411 and actively leading others.";
+                    $coachTip = 'To raise a Timothy, ensure the disciple is first faithful in 411 and actively leading others.';
                 }
                 break;
         }
@@ -523,7 +715,7 @@ class FourFieldsEngine
             roleAssigned: ContributionRole::PioneerSower,
             collaboratorsImpacted: [],
             narrativeOutcome: $narrative,
-            pedagogicalTip: "Platform ministries like International Exchange Cafes cast a wide net across Japanese wards, rapidly surfacing Persons of Peace (Luke 10).",
+            pedagogicalTip: 'Platform ministries like International Exchange Cafes cast a wide net across Japanese wards, rapidly surfacing Persons of Peace (Luke 10).',
         );
     }
 
@@ -564,7 +756,11 @@ class FourFieldsEngine
                     $newGen = $believer->generation + 1;
                     $targetNpc->update([
                         'status' => ReceptivityStatus::Green,
+                        'prayed_salvation' => true,
+                        'prayed_salvation_at' => now(),
+                        'baptism_status' => BaptismStatus::Baptized,
                         'is_baptized' => true,
+                        'baptized_at' => now(),
                         'generation' => $newGen,
                         'discipler_npc_id' => $believer->id,
                     ]);
@@ -588,51 +784,53 @@ class FourFieldsEngine
                 }
             }
 
-            // Check Field 5 Church Planting by Timothys
-            if ($believer->leadership_tier === LeadershipTier::Timothy) {
-                $disciplesCount = Npc::where('discipler_npc_id', $believer->id)->count();
+            // Check Field 4 & 5 Autonomous Daughter Church Planting
+            $disciplesCount = Npc::where('discipler_npc_id', $believer->id)->count();
+            $alreadyPlantedDaughter = Church::where('leader_npc_id', $believer->id)
+                ->where('generation', '>', 1)
+                ->exists();
 
-                // If Timothy has >= 2 disciples and does not yet lead a church, plant daughter church!
-                if ($disciplesCount >= 2 && $believer->ledChurches()->count() === 0) {
-                    $parentChurch = Church::where('game_session_id', $session->id)->first();
-                    $churchGen = $parentChurch ? $parentChurch->generation + 1 : 2;
+            // When an equipped believer has at least 1 disciple or is elevated to Timothy, they birth an autonomous church!
+            if (! $alreadyPlantedDaughter && ($believer->leadership_tier === LeadershipTier::Timothy || $disciplesCount >= 1)) {
+                $churchGen = max(2, $believer->generation + 1);
+                $parentChurch = Church::where('leader_npc_id', $believer->discipler_npc_id)->first()
+                    ?? Church::where('game_session_id', $session->id)->orderBy('generation')->first();
 
-                    $newChurch = Church::create([
-                        'game_session_id' => $session->id,
-                        'ward_id' => $believer->ward_id,
-                        'name' => "{$believer->name}'s {$believer->ward->name} Discovery Church (G{$churchGen})",
-                        'parent_church_id' => $parentChurch?->id,
-                        'leader_npc_id' => $believer->id,
-                        'leader_user_id' => null, // Autonomous!
-                        'generation' => $churchGen,
-                        'elements_json' => [
-                            ChurchElement::RepentanceBelief->value,
-                            ChurchElement::Baptism->value,
-                            ChurchElement::Word->value,
-                            ChurchElement::Prayer->value,
-                            ChurchElement::Fellowship->value,
-                            ChurchElement::MakingDisciples->value,
-                        ],
-                        'is_healthy_church' => false,
-                        'health_score' => 60,
-                        'lat' => $believer->lat,
-                        'lng' => $believer->lng,
-                        'founded_game_month' => $gameMonth,
-                    ]);
+                $newChurch = Church::create([
+                    'game_session_id' => $session->id,
+                    'ward_id' => $believer->ward_id,
+                    'name' => "{$believer->name}'s {$believer->ward->name} Discovery Church (G{$churchGen})",
+                    'parent_church_id' => $parentChurch?->id,
+                    'leader_npc_id' => $believer->id,
+                    'leader_user_id' => null, // Autonomous!
+                    'generation' => $churchGen,
+                    'elements_json' => [
+                        ChurchElement::RepentanceBelief->value,
+                        ChurchElement::Baptism->value,
+                        ChurchElement::Word->value,
+                        ChurchElement::Prayer->value,
+                        ChurchElement::Fellowship->value,
+                        ChurchElement::MakingDisciples->value,
+                    ],
+                    'is_healthy_church' => false,
+                    'health_score' => 60,
+                    'lat' => $believer->lat,
+                    'lng' => $believer->lng,
+                    'founded_game_month' => $gameMonth,
+                ]);
 
-                    $newChurchesCount++;
+                $newChurchesCount++;
 
-                    $originalPlayer = $believer->disciplerUser ?? User::where('current_game_session_id', $session->id)->first();
-                    if ($originalPlayer) {
-                        $churchPts = match ($churchGen) {
-                            2 => 250,
-                            3 => 1000,
-                            default => 5000, // G4+ Movement stream!
-                        };
-                        $playerScores[$originalPlayer->id] = ($playerScores[$originalPlayer->id] ?? 0) + $churchPts;
+                $originalPlayer = $believer->disciplerUser ?? User::where('current_game_session_id', $session->id)->first();
+                if ($originalPlayer) {
+                    $churchPts = match ($churchGen) {
+                        2 => 250,
+                        3 => 1000,
+                        default => 5000, // G4+ Movement stream!
+                    };
+                    $playerScores[$originalPlayer->id] = ($playerScores[$originalPlayer->id] ?? 0) + $churchPts;
 
-                        $highlights[] = "👑 [FIELD 5 CHURCH MULTIPLICATION] Timothy leader {$believer->name} planted an autonomous G{$churchGen} church in {$believer->ward->name} (+{$churchPts} pts)!";
-                    }
+                    $highlights[] = "👑 [FIELD 5 CHURCH MULTIPLICATION] Timothy leader {$believer->name} planted an autonomous G{$churchGen} church in {$believer->ward->name} (+{$churchPts} pts)!";
                 }
             }
         }

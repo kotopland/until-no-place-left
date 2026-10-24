@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,6 +17,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon $calendar_date
  * @property int $month_duration_minutes
  * @property Carbon $next_tick_at
+ * @property int $current_game_day
+ * @property int $days_processed_this_month
+ * @property Carbon|null $last_daily_tick_at
+ * @property Carbon|null $next_daily_tick_at
+ * @property Carbon|null $last_monthly_tick_at
  * @property bool $is_active
  * @property array<string, mixed>|null $settings
  * @property Carbon|null $created_at
@@ -28,9 +32,14 @@ use Illuminate\Support\Carbon;
     'name',
     'code',
     'current_game_month',
+    'current_game_day',
+    'days_processed_this_month',
     'calendar_date',
     'month_duration_minutes',
     'next_tick_at',
+    'last_daily_tick_at',
+    'next_daily_tick_at',
+    'last_monthly_tick_at',
     'is_active',
     'settings',
 ])]
@@ -52,6 +61,37 @@ class GameSession extends Model
     }
 
     /**
+     * PHP 8.4 Property Hook: Human-friendly Day in Month label (e.g., Day 12 / 30)
+     */
+    public string $dayInMonthLabel {
+        get => "Day {$this->current_game_day}/30 (Month {$this->current_game_month})";
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Remaining unplayed days in the current 30-day game month
+     */
+    public int $remainingDaysInMonth {
+        get => max(0, 30 - $this->days_processed_this_month);
+    }
+
+    /**
+     * PHP 8.4 Property Hook: whether the 10-minute daily tick is due and within the 30-day month limit
+     */
+    public bool $isDailyTickDue {
+        get => ($this->next_daily_tick_at === null || now()->greaterThanOrEqualTo($this->next_daily_tick_at))
+            && $this->days_processed_this_month < 30;
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Remaining seconds until next 10-minute online daily tick
+     */
+    public int $secondsUntilNextDailyTick {
+        get => $this->next_daily_tick_at
+            ? max(0, (int) now()->diffInSeconds($this->next_daily_tick_at, false))
+            : 0;
+    }
+
+    /**
      * PHP 8.4 Property Hook: whether the scheduled cron resolution tick is due
      */
     public bool $isTickOverdue {
@@ -66,6 +106,18 @@ class GameSession extends Model
     }
 
     /**
+     * Check if this session has online users who haven't reached their 30-day daily limit.
+     */
+    public function hasOnlineActiveUsers(int $thresholdMinutes = 15): bool
+    {
+        return $this->users()
+            ->whereNotNull('last_active_at')
+            ->where('last_active_at', '>=', now()->subMinutes($thresholdMinutes))
+            ->get()
+            ->contains(fn (User $user) => ! $user->hasReachedDailyPlayLimit);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -74,9 +126,14 @@ class GameSession extends Model
     {
         return [
             'current_game_month' => 'integer',
+            'current_game_day' => 'integer',
+            'days_processed_this_month' => 'integer',
             'calendar_date' => 'date',
             'month_duration_minutes' => 'integer',
             'next_tick_at' => 'datetime',
+            'last_daily_tick_at' => 'datetime',
+            'next_daily_tick_at' => 'datetime',
+            'last_monthly_tick_at' => 'datetime',
             'is_active' => 'boolean',
             'settings' => 'array',
         ];
