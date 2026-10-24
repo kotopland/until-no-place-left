@@ -7,11 +7,13 @@ use App\Models\GameSession;
 use App\Models\MonthlyReport;
 use App\Models\User;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 #[Layout('layouts.app')]
 class NagoyaMovementDashboard extends Component
 {
+    #[Url(as: 'tab')]
     public string $currentTab = 'planner'; // 'planner', 'churches', 'leaderboard', 'map'
 
     public ?int $activeChurchId = null;

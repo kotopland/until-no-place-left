@@ -39,7 +39,13 @@ test('nagoya movement dashboard renders successfully', function () {
 
     Livewire::test(NagoyaMovementDashboard::class)
         ->assertStatus(200)
-        ->assertSee('Nagoya Oikos');
+        ->assertSee('Nagoya Oikos')
+        ->call('setTab', 'map')
+        ->assertSet('currentTab', 'map')
+        ->assertSeeLivewire(NagoyaMapCanvas::class)
+        ->call('setTab', 'churches')
+        ->assertSet('currentTab', 'churches')
+        ->assertSee('Acts 2 Church Circles');
 });
 
 test('home route renders full page dashboard without layout error', function () {

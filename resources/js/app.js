@@ -33,15 +33,15 @@ window.nagoyaMap = function(config) {
                 center: [35.1750, 136.9150],
                 zoom: 12,
                 zoomControl: false,
-                attributionControl: false
+                attributionControl: true
             });
 
             L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 
-            // Sleek Dark Matter Tile Layer
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                maxZoom: 18,
-                subdomains: ['a', 'b', 'c', 'd'],
+            // 100% Free OpenStreetMap Tiles (Zero API Keys, Open Source)
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" class="text-slate-500 hover:underline">OpenStreetMap</a>'
             }).addTo(this.map);
 
             this.renderLayers();

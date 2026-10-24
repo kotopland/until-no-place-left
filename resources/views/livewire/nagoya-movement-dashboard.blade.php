@@ -113,10 +113,8 @@
         </div>
 
         @if($currentTab === 'planner')
-            <!-- Livewire Island: Action Queue Planner -->
-            @island
-                <livewire:action-queue-planner />
-            @endisland
+            <!-- Action Queue Planner -->
+            <livewire:action-queue-planner />
 
         @elseif($currentTab === 'churches')
             <!-- Tab 2: Acts 2 Church Circles Viewer & Generational Lineage -->
@@ -200,16 +198,12 @@
             </div>
 
         @elseif($currentTab === 'leaderboard')
-            <!-- Livewire Island: Multiplayer Leaderboard -->
-            @island
-                <livewire:multiplayer-leaderboard />
-            @endisland
+            <!-- Multiplayer Leaderboard -->
+            <livewire:multiplayer-leaderboard />
 
         @elseif($currentTab === 'map')
-            <!-- Livewire Island: Interactive Nagoya Map Canvas -->
-            @island
-                <livewire:nagoya-map-canvas />
-            @endisland
+            <!-- Interactive Nagoya Map Canvas -->
+            <livewire:nagoya-map-canvas />
         @endif
     </main>
 
