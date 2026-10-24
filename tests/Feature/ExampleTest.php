@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -11,7 +14,16 @@ class ExampleTest extends TestCase
 
     public function test_returns_a_successful_response(): void
     {
-        $response = $this->get('/');
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get('/');
+
+        $response->assertOk();
+    }
+
+    public function test_welcome_page_returns_a_successful_response(): void
+    {
+        $response = $this->get('/welcome');
 
         $response->assertOk();
     }
