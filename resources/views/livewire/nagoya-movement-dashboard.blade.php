@@ -2,19 +2,21 @@
     <!-- Top Navigation Bar -->
     <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-            <!-- Brand & Game Title -->
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-emerald-500 flex items-center justify-center text-xl shadow-lg shadow-indigo-500/20">
-                    🌾
-                </div>
+            <!-- Brand & Game Title with Official Logo -->
+            <a href="{{ route('welcome') }}" class="flex items-center gap-3 group cursor-pointer" title="View Story, Lore & Game Rules">
+                <img 
+                    src="{{ asset('images/until-no-place-left-logo-small.png') }}" 
+                    alt="Nagoya Oikos: The Four Fields Logo" 
+                    class="w-11 h-11 object-contain rounded-2xl shadow-lg shadow-indigo-500/20 border border-indigo-500/40 group-hover:scale-105 group-hover:border-indigo-400 transition duration-200"
+                >
                 <div>
                     <h1 class="text-sm font-black text-white tracking-tight leading-none flex items-center gap-1.5">
                         <span>Nagoya Oikos</span>
                         <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-400 border border-indigo-800 uppercase">Four Fields</span>
                     </h1>
-                    <span class="text-[11px] text-slate-400 font-medium">Multiplayer Movement Simulation • No Place Left</span>
+                    <span class="text-[11px] text-slate-400 font-medium group-hover:text-indigo-300 transition">Multiplayer Movement Simulation • No Place Left</span>
                 </div>
-            </div>
+            </a>
 
             <!-- Main Tab Navigation -->
             <nav class="hidden md:flex items-center gap-1 p-1 bg-slate-950/80 rounded-2xl border border-slate-800 text-xs font-semibold">
@@ -50,10 +52,38 @@
                     <span>🗺️</span>
                     <span>Nagoya Map</span>
                 </button>
+                <a 
+                    href="{{ route('welcome') }}"
+                    class="px-3.5 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-amber-300 hover:bg-slate-900 border border-transparent hover:border-slate-800"
+                    title="View Full Story, Biblical Framework & Game Rules"
+                >
+                    <span>📖</span>
+                    <span>Story & Rules</span>
+                </a>
             </nav>
 
-            <!-- User Status & Notification Bell -->
-            <div class="flex items-center gap-3">
+            <!-- User Status, Music Switch & Notification Bell -->
+            <div class="flex items-center gap-2.5">
+                <!-- Ambient Music Toggle Button -->
+                <button 
+                    type="button" 
+                    @click="$store.audio?.toggle()" 
+                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none"
+                    :class="$store.audio?.isPlaying ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 shadow-md shadow-indigo-500/20 ring-1 ring-indigo-500/40' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'"
+                    :title="$store.audio?.isPlaying ? 'Turn Background Music OFF' : 'Turn Background Music ON (Japanese Ambient)'"
+                >
+                    <span x-show="!$store.audio?.isPlaying">🔇</span>
+                    <span x-show="$store.audio?.isPlaying" class="flex items-center gap-1">
+                        <span class="text-xs">🎵</span>
+                        <span class="inline-flex gap-0.5 items-end h-3">
+                            <span class="w-0.5 h-2 bg-indigo-400 rounded-full animate-bounce"></span>
+                            <span class="w-0.5 h-3 bg-emerald-400 rounded-full animate-bounce delay-75"></span>
+                            <span class="w-0.5 h-1.5 bg-indigo-400 rounded-full animate-bounce delay-150"></span>
+                        </span>
+                    </span>
+                    <span class="hidden lg:inline text-[11px]" x-text="$store.audio?.isPlaying ? 'Music ON' : 'Music OFF'"></span>
+                </button>
+
                 <!-- Notification Bell -->
                 <button 
                     type="button"
@@ -71,13 +101,35 @@
 
                 <!-- Player Profile Pill -->
                 <div class="flex items-center gap-2 pl-2 border-l border-slate-800">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white shadow-sm">
-                        {{ $user?->initials() ?? 'MC' }}
-                    </div>
-                    <div class="hidden sm:block text-left text-xs">
-                        <div class="font-bold text-white leading-tight">{{ $user?->name ?? 'Player' }}</div>
-                        <div class="text-[10px] text-emerald-400 font-semibold">{{ number_format($user?->compositeScore ?? 0) }} pts</div>
-                    </div>
+                    <button 
+                        type="button" 
+                        wire:click="openEditNameModal"
+                        class="flex items-center gap-2 group cursor-pointer hover:opacity-90 text-left"
+                        title="Click to customize your missionary handle / player name"
+                    >
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white shadow-sm group-hover:ring-2 group-hover:ring-indigo-400 transition">
+                            {{ $user?->initials() ?? 'MC' }}
+                        </div>
+                        <div class="hidden sm:block text-left text-xs">
+                            <div class="font-bold text-white leading-tight flex items-center gap-1">
+                                <span>{{ $user?->name ?? 'Player' }}</span>
+                                <span class="text-[10px] text-slate-500 group-hover:text-indigo-400">✏️</span>
+                            </div>
+                            <div class="text-[10px] text-emerald-400 font-semibold">{{ number_format($user?->compositeScore ?? 0) }} pts</div>
+                        </div>
+                    </button>
+
+                    <!-- Logout Button -->
+                    <form action="{{ route('logout') }}" method="POST" class="inline">
+                        @csrf
+                        <button 
+                            type="submit" 
+                            class="p-1.5 rounded-xl bg-slate-800/80 hover:bg-rose-950/80 hover:text-rose-300 hover:border-rose-800/80 border border-slate-700/60 text-slate-400 text-xs transition cursor-pointer" 
+                            title="Sign Out of Mission"
+                        >
+                            <span class="text-xs">🚪</span>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -88,6 +140,9 @@
             <button wire:click="setTab('churches')" class="px-2 py-1 rounded-lg {{ $currentTab === 'churches' ? 'bg-indigo-600 text-white' : 'text-slate-400' }}">⛪ Circles</button>
             <button wire:click="setTab('leaderboard')" class="px-2 py-1 rounded-lg {{ $currentTab === 'leaderboard' ? 'bg-indigo-600 text-white' : 'text-slate-400' }}">🏆 Ladder</button>
             <button wire:click="setTab('map')" class="px-2 py-1 rounded-lg {{ $currentTab === 'map' ? 'bg-indigo-600 text-white' : 'text-slate-400' }}">🗺️ Map</button>
+            <button type="button" @click="$store.audio?.toggle()" class="px-2 py-1 rounded-lg" :class="$store.audio?.isPlaying ? 'text-indigo-300 font-bold' : 'text-slate-400'"><span x-text="$store.audio?.isPlaying ? '🎵 On' : '🔇 Off'"></span></button>
+            <button wire:click="openEditNameModal" class="px-2 py-1 rounded-lg text-indigo-400">👤 Name</button>
+            <a href="{{ route('welcome') }}" class="px-2 py-1 rounded-lg text-amber-400 font-bold">📖 Story</a>
         </div>
     </header>
 
@@ -209,4 +264,53 @@
 
     <!-- Modal: Month In Review Summary -->
     <livewire:month-in-review-modal />
+
+    <!-- Modal: Edit Player Name -->
+    @if($showEditNameModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
+                <h3 class="text-base font-black text-white tracking-tight flex items-center gap-2">
+                    <span>✏️</span>
+                    <span>Customize Player Name</span>
+                </h3>
+                <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                    Update how your missionary name appears across the movement, leaderboard, and church planting records.
+                </p>
+
+                <form wire:submit="savePlayerName" class="mt-4 space-y-4">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
+                            Player / Missionary Handle
+                        </label>
+                        <input 
+                            type="text" 
+                            wire:model="editingName" 
+                            class="w-full bg-slate-950 border {{ $errors->has('editingName') ? 'border-rose-500' : 'border-slate-800 focus:border-indigo-500' }} rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                            placeholder="e.g. Kenji Tanaka, Coach Paul"
+                            autofocus
+                        >
+                        @error('editingName')
+                            <p class="text-[11px] text-rose-400 mt-1 font-medium">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-2">
+                        <button 
+                            type="button" 
+                            wire:click="closeEditNameModal"
+                            class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white bg-slate-800/60 hover:bg-slate-800 transition cursor-pointer"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            type="submit" 
+                            class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition cursor-pointer"
+                        >
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
 </div>

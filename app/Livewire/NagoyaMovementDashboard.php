@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire;
 
 use App\Models\Church;
@@ -18,6 +20,10 @@ class NagoyaMovementDashboard extends Component
 
     public ?int $activeChurchId = null;
 
+    public bool $showEditNameModal = false;
+
+    public string $editingName = '';
+
     public function setTab(string $tab): void
     {
         $this->currentTab = $tab;
@@ -31,6 +37,34 @@ class NagoyaMovementDashboard extends Component
     public function openReportModal(): void
     {
         $this->dispatch('open-month-review');
+    }
+
+    public function openEditNameModal(): void
+    {
+        $this->editingName = auth()->user()?->name ?? '';
+        $this->showEditNameModal = true;
+    }
+
+    public function closeEditNameModal(): void
+    {
+        $this->showEditNameModal = false;
+    }
+
+    public function savePlayerName(): void
+    {
+        $this->validate([
+            'editingName' => ['required', 'string', 'min:2', 'max:50'],
+        ], [
+            'editingName.required' => 'Please enter a missionary player name.',
+            'editingName.min' => 'Player name must be at least 2 characters long.',
+        ]);
+
+        $user = auth()->user();
+        if ($user) {
+            $user->update(['name' => trim($this->editingName)]);
+            $this->showEditNameModal = false;
+            $this->dispatch('notify', message: "Player name updated to '{$user->name}'!", type: 'success');
+        }
     }
 
     public function render()

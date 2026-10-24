@@ -69,6 +69,16 @@ test('home route renders full page dashboard without layout error', function () 
     $response->assertSee('Nagoya Oikos');
 });
 
+test('welcome route renders full story and game rules page', function () {
+    $response = $this->get('/welcome');
+    $response->assertStatus(200);
+    $response->assertSee('The Cry of Nagoya');
+    $response->assertSee('The 5 Fields of Kingdom Multiplication');
+    $response->assertSee('Daily Action Points (12 AP)');
+    $response->assertSee('until-no-place-left-logo.jpeg');
+    $response->assertSee('until-no-place-left-logo-small.jpeg');
+});
+
 test('action queue planner queues relational action and deducts AP', function () {
     $session = GameSession::create([
         'name' => 'Nagoya Test Session',
@@ -115,6 +125,35 @@ test('action queue planner queues relational action and deducts AP', function ()
 
     $user->refresh();
     expect($user->action_points)->toBe(11); // 1 AP consumed for Casual Talk!
+});
+
+test('action queue planner opens and closes action info modal with full descriptive text', function () {
+    $session = GameSession::create([
+        'name' => 'Nagoya Test Session',
+        'code' => 'nagoya-test-info',
+        'current_game_month' => 1,
+        'calendar_date' => '2026-04-01',
+        'next_tick_at' => now()->addHours(12),
+        'is_active' => true,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'action_points' => 12,
+        'max_action_points' => 12,
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test(ActionQueuePlanner::class)
+        ->call('openActionInfoModal', MinistryActionType::Train411->value)
+        ->assertSet('showActionInfoModal', true)
+        ->assertSet('infoActionType', MinistryActionType::Train411->value)
+        ->assertSee('Equip with 411 Discipleship Training')
+        ->assertSee('4 Questions, 1 sheet of paper, 1 hour')
+        ->call('selectActionFromModal', MinistryActionType::Train411->value)
+        ->assertSet('showActionInfoModal', false)
+        ->assertSet('selectedActionType', MinistryActionType::Train411->value);
 });
 
 test('church circle svg visualizes acts 2 elements', function () {

@@ -19,6 +19,10 @@ class ActionQueuePlanner extends Component
 
     public string $selectedActionType = 'casual_talk';
 
+    public ?string $infoActionType = null;
+
+    public bool $showActionInfoModal = false;
+
     public string $notes = '';
 
     public ?User $player = null;
@@ -36,6 +40,25 @@ class ActionQueuePlanner extends Component
         // Default to Naka-ku or first ward
         $defaultWard = Ward::where('slug', 'naka-ku')->first() ?? Ward::first();
         $this->selectedWardId = $defaultWard?->id;
+    }
+
+    public function openActionInfoModal(?string $type = null): void
+    {
+        $this->infoActionType = $type ?? $this->selectedActionType;
+        $this->showActionInfoModal = true;
+    }
+
+    public function closeActionInfoModal(): void
+    {
+        $this->showActionInfoModal = false;
+        $this->infoActionType = null;
+    }
+
+    public function selectActionFromModal(string $type): void
+    {
+        $this->selectedActionType = $type;
+        $this->showActionInfoModal = false;
+        $this->infoActionType = null;
     }
 
     public function touchHeartbeat(): void
@@ -161,6 +184,7 @@ class ActionQueuePlanner extends Component
             ->get();
 
         $actionTypes = MinistryActionType::cases();
+        $infoActionEnum = $this->infoActionType ? MinistryActionType::tryFrom($this->infoActionType) : null;
 
         return view('livewire.action-queue-planner', [
             'wards' => $wards,
@@ -169,6 +193,7 @@ class ActionQueuePlanner extends Component
             'selectedNpc' => $selectedNpc,
             'queuedActions' => $queuedActions,
             'actionTypes' => $actionTypes,
+            'infoActionEnum' => $infoActionEnum,
         ]);
     }
 }

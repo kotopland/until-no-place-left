@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title ?? 'Nagoya Oikos: The Four Fields' }}</title>
 
-    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="{{ asset('images/until-no-place-left-logo-small.jpeg') }}" type="image/jpeg">
+    <link rel="apple-touch-icon" href="{{ asset('images/until-no-place-left-logo-small.jpeg') }}">
     @fonts
 
     <!-- Leaflet Map CSS & JS -->

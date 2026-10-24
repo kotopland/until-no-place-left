@@ -1,4 +1,32 @@
 <div class="space-y-6" wire:poll.60s="touchHeartbeat">
+    <!-- Welcome Guide Banner with Official Logo -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800/80 p-4 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+            <img 
+                src="{{ asset('images/until-no-place-left-logo-small.png') }}" 
+                alt="Nagoya Oikos Logo" 
+                class="w-12 h-12 object-contain rounded-xl border border-indigo-500/30 shadow-md shrink-0"
+            >
+            <div>
+                <h3 class="text-xs font-bold text-white flex items-center gap-1.5">
+                    <span>New to Nagoya Oikos?</span>
+                    <span class="px-1.5 py-0.2 rounded bg-indigo-900/60 text-indigo-300 text-[10px] font-semibold border border-indigo-700">Story & Field Guide</span>
+                </h3>
+                <p class="text-[11px] text-slate-400 mt-0.5">
+                    Explore the biblical narrative, the 5 Fields of CPM multiplication, and the rules of relational church planting in Japan.
+                </p>
+            </div>
+        </div>
+
+        <a 
+            href="{{ route('welcome') }}" 
+            class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600/80 hover:bg-indigo-600 text-white border border-indigo-500/40 transition shrink-0 flex items-center gap-1.5 cursor-pointer self-start sm:self-center shadow"
+        >
+            <span>📖</span>
+            <span>Read Story & Rules</span>
+        </a>
+    </div>
+
     <!-- Header: Time & Energy Bandwidth Status Bar -->
     <div class="bg-gradient-to-r from-slate-900 via-indigo-950/60 to-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -201,10 +229,21 @@
             <!-- Action Selector Card -->
             <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-lg">
                 <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-800">
-                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                        <span>⚡</span>
-                        <span>Schedule Relational Action</span>
-                    </h3>
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <span>⚡</span>
+                            <span>Schedule Relational Action</span>
+                        </h3>
+                        <button 
+                            type="button" 
+                            wire:click="openActionInfoModal()"
+                            class="px-2 py-0.5 rounded-lg bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/60 text-indigo-300 text-[10px] font-bold flex items-center gap-1 transition cursor-pointer"
+                            title="Open detailed guide with descriptive text for all actions"
+                        >
+                            <span>ℹ️</span>
+                            <span>More Info</span>
+                        </button>
+                    </div>
                     @if($selectedNpc)
                         <span class="text-xs text-indigo-400 font-medium">Target: {{ $selectedNpc->name }}</span>
                     @else
@@ -213,10 +252,10 @@
                 </div>
 
                 <!-- Action Type Selector -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3">
                     @foreach($actionTypes as $action)
                         <label 
-                            class="flex items-start gap-2 p-2.5 rounded-xl border cursor-pointer transition-all {{ $selectedActionType === $action->value ? 'bg-indigo-950/50 border-indigo-500 text-white' : 'bg-slate-800/40 border-slate-800 text-slate-300 hover:border-slate-700' }}"
+                            class="flex items-start gap-2.5 p-2.5 rounded-xl border cursor-pointer transition-all {{ $selectedActionType === $action->value ? 'bg-indigo-950/60 border-indigo-500 text-white shadow-md ring-1 ring-indigo-500/50' : 'bg-slate-800/40 border-slate-800 text-slate-300 hover:border-slate-700' }}"
                         >
                             <input 
                                 type="radio" 
@@ -225,14 +264,27 @@
                                 wire:model.live="selectedActionType"
                                 class="mt-1 text-indigo-500 focus:ring-indigo-500"
                             >
-                            <div class="min-w-0">
-                                <div class="text-xs font-semibold flex items-center justify-between gap-1">
-                                    <span class="truncate">{{ $action->icon() }} {{ $action->label() }}</span>
-                                    <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-800 text-amber-400 shrink-0">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-start justify-between gap-1.5">
+                                    <span class="text-xs font-semibold leading-snug break-words">
+                                        {{ $action->icon() }} {{ $action->label() }}
+                                    </span>
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-900/90 text-amber-400 border border-slate-700/50 shrink-0">
                                         {{ $action->apCost() }} AP
                                     </span>
                                 </div>
-                                <div class="text-[10px] text-slate-400 mt-0.5 truncate">{{ $action->fieldName() }}</div>
+                                <div class="flex items-center justify-between gap-1 mt-1.5">
+                                    <span class="text-[10px] text-slate-400 font-medium">{{ $action->fieldName() }}</span>
+                                    <button 
+                                        type="button" 
+                                        wire:click.stop="openActionInfoModal('{{ $action->value }}')" 
+                                        class="px-1.5 py-0.5 rounded bg-slate-900/90 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 text-[9px] font-bold transition cursor-pointer flex items-center gap-1 shrink-0"
+                                        title="View descriptive text & strategy for {{ $action->label() }}"
+                                    >
+                                        <span>ℹ️</span>
+                                        <span>More Info</span>
+                                    </button>
+                                </div>
                             </div>
                         </label>
                     @endforeach
@@ -302,4 +354,115 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal: Action Information & Descriptive Text -->
+    @if($showActionInfoModal && $infoActionEnum)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+                <!-- Modal Header -->
+                <div class="flex items-start justify-between pb-3 border-b border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-950/80 border border-indigo-500/40 flex items-center justify-center text-2xl shadow-lg">
+                            {{ $infoActionEnum->icon() }}
+                        </div>
+                        <div>
+                            <h3 class="text-base font-black text-white tracking-tight leading-snug">
+                                {{ $infoActionEnum->label() }}
+                            </h3>
+                            <div class="text-xs text-indigo-400 font-medium">
+                                {{ $infoActionEnum->labelJa() }}
+                            </div>
+                        </div>
+                    </div>
+                    <button 
+                        type="button" 
+                        wire:click="closeActionInfoModal" 
+                        class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition cursor-pointer text-base"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <!-- Badges & AP Cost -->
+                <div class="flex flex-wrap items-center gap-2 mt-4">
+                    <span class="px-2.5 py-1 rounded-xl bg-amber-950/60 border border-amber-600/50 text-amber-300 text-xs font-bold flex items-center gap-1">
+                        <span>⚡</span>
+                        <span>{{ $infoActionEnum->apCost() }} Action Points</span>
+                    </span>
+                    <span class="px-2.5 py-1 rounded-xl bg-emerald-950/60 border border-emerald-600/50 text-emerald-300 text-xs font-bold">
+                        {{ $infoActionEnum->fieldName() }}
+                    </span>
+                    @if($infoActionEnum->requiresTargetNpc())
+                        <span class="px-2.5 py-1 rounded-xl bg-blue-950/60 border border-blue-600/50 text-blue-300 text-[11px] font-semibold">
+                            🎯 Requires Target Resident
+                        </span>
+                    @else
+                        <span class="px-2.5 py-1 rounded-xl bg-purple-950/60 border border-purple-600/50 text-purple-300 text-[11px] font-semibold">
+                            🏙️ Ward-Wide Strategic Event
+                        </span>
+                    @endif
+                </div>
+
+                <!-- Descriptive Content -->
+                <div class="mt-5 space-y-4 text-xs text-slate-300 leading-relaxed">
+                    <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800">
+                        <strong class="text-white block font-bold mb-1 text-[11px] uppercase tracking-wider text-slate-400">
+                            Description & Kingdom Practice:
+                        </strong>
+                        <p class="text-slate-200 leading-relaxed">
+                            {{ $infoActionEnum->description() }}
+                        </p>
+                    </div>
+
+                    <div class="p-3.5 rounded-2xl bg-indigo-950/30 border border-indigo-900/50 space-y-2">
+                        <strong class="text-indigo-300 block font-bold text-[11px] uppercase tracking-wider">
+                            💡 Movement Lore & Four Fields Strategy:
+                        </strong>
+                        @if($infoActionEnum === \App\Enums\MinistryActionType::CasualTalk)
+                            <p>In Japanese culture, building trust (*shinrai*) begins with natural, low-pressure conversation. Casual talk is the foundation of Field 1 (Entry Strategy), uncovering relational networks (Oikos).</p>
+                        @elseif($infoActionEnum === \App\Enums\MinistryActionType::DeepTalk)
+                            <p>Listening to deep burdens and burnout in corporate Nagoya (the salaryman grind) softens dry ground. Validating feelings moves people from Red/Yellow to receptive Green.</p>
+                        @elseif($infoActionEnum === \App\Enums\MinistryActionType::PrayerForHealing)
+                            <p>Luke 10:9 instructs us to "Heal the sick who are there and tell them, 'The kingdom of God has come near to you.'" Sincere, compassionate prayer often opens whole households.</p>
+                        @elseif($infoActionEnum === \App\Enums\MinistryActionType::MercyCareFoodBible)
+                            <p>Serving vulnerable neighbors with hot meals, warm fellowship, and Japanese Bibles around Nagoya, Kanayama, or Sakae hubs provides an Acts 2 platform of compassion.</p>
+                        @elseif($infoActionEnum === \App\Enums\MinistryActionType::InternationalEvent)
+                            <p>Organizing a cultural exchange, cooking night, or language cafe in a ward casts a wide net, quickly surfacing seekers and Persons of Peace without needing an initial target resident.</p>
+                        @elseif($infoActionEnum === \App\Enums\MinistryActionType::Share15SecTestimony)
+                            <p>A simple 15-second testimony (My life before Christ -> How Christ met me -> My life now with Christ) empowers any believer to reproduce without fear.</p>
+                        @elseif($infoActionEnum === \App\Enums\MinistryActionType::Share3Circles)
+                            <p>A clear visual gospel tool: God’s Design -> Brokenness -> Gospel Rescue -> Repent & Believe -> Recover & Pursue. Highly accessible in visual Japanese culture.</p>
+                        @elseif($infoActionEnum === \App\Enums\MinistryActionType::PraySalvation)
+                            <p>Guiding an open seeker to pray and confess Jesus Christ as Lord and Savior (Romans 10:9-10). When a Person of Peace is saved, their entire family network often follows!</p>
+                        @elseif($infoActionEnum === \App\Enums\MinistryActionType::CommitToBaptism)
+                            <p>Baptism in Japan carries deep spiritual significance, often requiring courage to transcend ancestral Buddhist/Shinto traditions. Essential for Acts 2 Church Circles.</p>
+                        @elseif($infoActionEnum === \App\Enums\MinistryActionType::Train411)
+                            <p>The catalytic discipleship engine! 4 Questions, 1 sheet of paper, 1 hour. Trains new believers to immediately share with their own Oikos, sparking G2 Church reproduction.</p>
+                        @elseif($infoActionEnum === \App\Enums\MinistryActionType::MentorTimothy)
+                            <p>Investing in emerging Japanese leaders (2 Timothy 2:2) to transition churches from missionary dependence to autonomous local reproduction (Field 5).</p>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Modal Actions -->
+                <div class="mt-6 flex items-center justify-between gap-3 pt-3 border-t border-slate-800">
+                    <button 
+                        type="button" 
+                        wire:click="closeActionInfoModal" 
+                        class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-800 transition cursor-pointer"
+                    >
+                        Close
+                    </button>
+                    <button 
+                        type="button" 
+                        wire:click="selectActionFromModal('{{ $infoActionEnum->value }}')" 
+                        class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-500 hover:to-emerald-500 shadow-lg shadow-indigo-600/30 transition cursor-pointer flex items-center gap-1.5"
+                    >
+                        <span>✓</span>
+                        <span>Select {{ $infoActionEnum->label() }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

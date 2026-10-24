@@ -206,11 +206,200 @@ window.nagoyaMap = function(config) {
     };
 };
 
+// Procedural Japanese Koto & Meditative Pad Soundscape (Web Audio API)
+class NagoyaSoundscape {
+    constructor() {
+        this.ctx = null;
+        this.masterGain = null;
+        this.droneOscs = [];
+        this.timer = null;
+        this.isPlaying = false;
+        // Insen & Hirajoshi pentatonic scale frequencies in D
+        this.notes = [146.83, 220.00, 293.66, 311.13, 392.00, 440.00, 523.25, 587.33, 622.25, 783.99, 880.00];
+    }
+
+    init() {
+        if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioCtx();
+
+            this.masterGain = this.ctx.createGain();
+            this.masterGain.gain.setValueAtTime(0.0001, this.ctx.currentTime);
+            this.masterGain.connect(this.ctx.destination);
+
+            // Spacious temple reverb delay
+            this.delay = this.ctx.createDelay();
+            this.delay.delayTime.value = 0.38;
+            this.feedback = this.ctx.createGain();
+            this.feedback.gain.value = 0.42;
+            this.delay.connect(this.feedback);
+            this.feedback.connect(this.delay);
+            this.delay.connect(this.masterGain);
+        }
+    }
+
+    startDrone() {
+        const droneFreqs = [73.42, 110.0, 146.83];
+        this.droneOscs = [];
+
+        droneFreqs.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const filter = this.ctx.createBiquadFilter();
+            const gain = this.ctx.createGain();
+
+            osc.type = idx === 0 ? 'sine' : 'triangle';
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(320 + idx * 80, this.ctx.currentTime);
+
+            gain.gain.setValueAtTime(0.06 / (idx + 1), this.ctx.currentTime);
+
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.masterGain);
+            gain.connect(this.delay);
+
+            osc.start();
+            this.droneOscs.push(osc);
+        });
+    }
+
+    pluckKotoNote(freq) {
+        if (!this.ctx || !this.isPlaying) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const filter = this.ctx.createBiquadFilter();
+        const noteGain = this.ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now);
+
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(freq * 1.5, now);
+        filter.Q.setValueAtTime(4.2, now);
+
+        noteGain.gain.setValueAtTime(0.0001, now);
+        noteGain.gain.linearRampToValueAtTime(0.18, now + 0.015);
+        noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 3.2);
+
+        osc.connect(filter);
+        filter.connect(noteGain);
+        noteGain.connect(this.masterGain);
+        noteGain.connect(this.delay);
+
+        osc.start(now);
+        osc.stop(now + 3.5);
+    }
+
+    scheduleNextNote() {
+        if (!this.isPlaying) return;
+
+        const note = this.notes[Math.floor(Math.random() * this.notes.length)];
+        this.pluckKotoNote(note);
+
+        if (Math.random() < 0.35) {
+            setTimeout(() => {
+                if (this.isPlaying) {
+                    const harmonic = this.notes[Math.floor(Math.random() * this.notes.length)];
+                    this.pluckKotoNote(harmonic);
+                }
+            }, 300 + Math.random() * 400);
+        }
+
+        const delayMs = 1800 + Math.random() * 2400;
+        this.timer = setTimeout(() => this.scheduleNextNote(), delayMs);
+    }
+
+    start() {
+        this.init();
+        if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+
+        this.isPlaying = true;
+        this.masterGain.gain.cancelScheduledValues(this.ctx.currentTime);
+        this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, this.ctx.currentTime);
+        this.masterGain.gain.linearRampToValueAtTime(0.35, this.ctx.currentTime + 1.2);
+
+        this.startDrone();
+        this.scheduleNextNote();
+    }
+
+    stop() {
+        if (!this.ctx || !this.isPlaying) return;
+
+        this.isPlaying = false;
+        clearTimeout(this.timer);
+
+        const now = this.ctx.currentTime;
+        this.masterGain.gain.cancelScheduledValues(now);
+        this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
+        this.masterGain.gain.linearRampToValueAtTime(0.0001, now + 1.0);
+
+        setTimeout(() => {
+            this.droneOscs.forEach(osc => {
+                try { osc.stop(); } catch(e) {}
+            });
+            this.droneOscs = [];
+        }, 1100);
+    }
+}
+
+const nagoyaSoundscape = new NagoyaSoundscape();
+
+function setupAlpineAudioStore() {
+    if (window.Alpine && !window.Alpine.store('audio')) {
+        window.Alpine.store('audio', {
+            isPlaying: false,
+
+            init() {
+                const saved = localStorage.getItem('nagoya_music_enabled');
+                if (saved === 'true') {
+                    const autoStart = () => {
+                        if (!this.isPlaying && localStorage.getItem('nagoya_music_enabled') === 'true') {
+                            this.play();
+                        }
+                        window.removeEventListener('click', autoStart);
+                        window.removeEventListener('keydown', autoStart);
+                    };
+                    window.addEventListener('click', autoStart, { once: true });
+                    window.addEventListener('keydown', autoStart, { once: true });
+                }
+            },
+
+            toggle() {
+                if (this.isPlaying) {
+                    this.pause();
+                } else {
+                    this.play();
+                }
+            },
+
+            play() {
+                nagoyaSoundscape.start();
+                this.isPlaying = true;
+                localStorage.setItem('nagoya_music_enabled', 'true');
+            },
+
+            pause() {
+                nagoyaSoundscape.stop();
+                this.isPlaying = false;
+                localStorage.setItem('nagoya_music_enabled', 'false');
+            }
+        });
+    }
+}
+
 if (window.Alpine) {
     window.Alpine.data('nagoyaMap', window.nagoyaMap);
+    setupAlpineAudioStore();
 }
+
 document.addEventListener('alpine:init', () => {
     if (window.Alpine) {
         window.Alpine.data('nagoyaMap', window.nagoyaMap);
+        setupAlpineAudioStore();
     }
 });
