@@ -15,3 +15,42 @@
 #nagoya-leaflet-map .leaflet-container {
     background: #020617;
 }
+
+/* High-Contrast Sleek Dark Theme for Leaflet Tooltips & Popovers */
+.leaflet-tooltip {
+    background: rgba(15, 23, 42, 0.96) !important; /* slate-900 */
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(51, 65, 85, 0.85) !important; /* slate-700 */
+    border-radius: 14px !important;
+    color: #f8fafc !important; /* slate-50 */
+    padding: 8px 12px !important;
+    box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.75), 0 4px 6px -2px rgba(0, 0, 0, 0.5) !important;
+    font-family: inherit !important;
+}
+
+.leaflet-tooltip-top:before {
+    border-top-color: rgba(15, 23, 42, 0.96) !important;
+}
+.leaflet-tooltip-bottom:before {
+    border-bottom-color: rgba(15, 23, 42, 0.96) !important;
+}
+.leaflet-tooltip-left:before {
+    border-left-color: rgba(15, 23, 42, 0.96) !important;
+}
+.leaflet-tooltip-right:before {
+    border-right-color: rgba(15, 23, 42, 0.96) !important;
+}
+
+.leaflet-popup-content-wrapper {
+    background: rgba(15, 23, 42, 0.96) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(51, 65, 85, 0.85) !important;
+    border-radius: 16px !important;
+    color: #f8fafc !important;
+    box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.8) !important;
+}
+
+.leaflet-popup-tip {
+    background: rgba(15, 23, 42, 0.96) !important;
+}

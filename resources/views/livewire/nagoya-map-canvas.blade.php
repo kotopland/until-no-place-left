@@ -1,4 +1,21 @@
 <div class="relative w-full h-[720px] rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950 flex flex-col">
+    <style>
+        .leaflet-tooltip {
+            background: rgba(15, 23, 42, 0.96) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(51, 65, 85, 0.85) !important;
+            border-radius: 14px !important;
+            color: #f8fafc !important;
+            padding: 4px !important;
+            box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.8), 0 4px 6px -2px rgba(0, 0, 0, 0.5) !important;
+        }
+        .leaflet-tooltip-top:before { border-top-color: rgba(15, 23, 42, 0.96) !important; }
+        .leaflet-tooltip-bottom:before { border-bottom-color: rgba(15, 23, 42, 0.96) !important; }
+        .leaflet-tooltip-left:before { border-left-color: rgba(15, 23, 42, 0.96) !important; }
+        .leaflet-tooltip-right:before { border-right-color: rgba(15, 23, 42, 0.96) !important; }
+    </style>
+
     <!-- Top Floating Map Control Bar -->
     <div class="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-800 shadow-xl pointer-events-auto">
         <div class="flex items-center gap-2.5">
@@ -12,56 +29,72 @@
             </div>
         </div>
 
-        <!-- Layer Toggle Pills -->
+        <!-- Layer Toggle Pills with Unified Color Coding -->
         <div class="flex items-center gap-1.5 overflow-x-auto text-xs font-semibold">
+            <!-- Heatmap: Emerald -->
             <button 
                 type="button" 
                 wire:click="toggleLayer('heatmap')" 
-                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1 text-[11px] {{ $showHeatmap ? 'bg-indigo-600 text-white shadow' : 'bg-slate-800 text-slate-400 hover:text-white' }}"
+                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border {{ $showHeatmap ? 'bg-emerald-600 text-white border-emerald-400 shadow-md shadow-emerald-950/60 ring-1 ring-emerald-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800' }}"
+                title="Toggle Ward Spiritual Openness Heatmap (Emerald)"
             >
-                <span>🔥</span>
-                <span>Heatmap</span>
+                <span class="w-2 h-2 rounded-full {{ $showHeatmap ? 'bg-emerald-200 animate-pulse' : 'bg-emerald-500/50' }}"></span>
+                <span>🔥 Heatmap</span>
             </button>
+
+            <!-- G1-G4 Churches: Royal Blue -->
             <button 
                 type="button" 
                 wire:click="toggleLayer('churches')" 
-                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1 text-[11px] {{ $showChurches ? 'bg-indigo-600 text-white shadow' : 'bg-slate-800 text-slate-400 hover:text-white' }}"
+                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border {{ $showChurches ? 'bg-blue-600 text-white border-blue-400 shadow-md shadow-blue-950/60 ring-1 ring-blue-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800' }}"
+                title="Toggle G1–G4 Church Plant Circles (Blue/Purple/Pink/Gold)"
             >
-                <span>⛪</span>
-                <span>G1–G4 Churches</span>
+                <span class="w-2 h-2 rounded-full {{ $showChurches ? 'bg-blue-200 animate-pulse' : 'bg-blue-500/50' }}"></span>
+                <span>⛪ G1–G4 Churches</span>
             </button>
+
+            <!-- Oikos Arcs: Cyan -->
             <button 
                 type="button" 
                 wire:click="toggleLayer('oikos')" 
-                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1 text-[11px] {{ $showOikosLines ? 'bg-indigo-600 text-white shadow' : 'bg-slate-800 text-slate-400 hover:text-white' }}"
+                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border {{ $showOikosLines ? 'bg-cyan-600 text-white border-cyan-400 shadow-md shadow-cyan-950/60 ring-1 ring-cyan-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800' }}"
+                title="Toggle Relational Oikos Bridges (Cyan Arcs)"
             >
-                <span>🌐</span>
-                <span>Oikos Arcs</span>
+                <span class="w-2 h-2 rounded-full {{ $showOikosLines ? 'bg-cyan-200 animate-pulse' : 'bg-cyan-500/50' }}"></span>
+                <span>🌐 Oikos Arcs</span>
             </button>
+
+            <!-- Mercy Hubs: Rose -->
             <button 
                 type="button" 
                 wire:click="toggleLayer('mercy')" 
-                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1 text-[11px] {{ $showMercySpots ? 'bg-indigo-600 text-white shadow' : 'bg-slate-800 text-slate-400 hover:text-white' }}"
+                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border {{ $showMercySpots ? 'bg-rose-600 text-white border-rose-400 shadow-md shadow-rose-950/60 ring-1 ring-rose-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800' }}"
+                title="Toggle Mercy Outreach Centers (Rose 🍜)"
             >
-                <span>🍲</span>
-                <span>Mercy Hubs</span>
+                <span class="w-2 h-2 rounded-full {{ $showMercySpots ? 'bg-rose-200 animate-pulse' : 'bg-rose-500/50' }}"></span>
+                <span>🍲 Mercy Hubs</span>
             </button>
+
+            <!-- Event Platforms: Purple -->
             <button 
                 type="button" 
                 wire:click="toggleLayer('events')" 
-                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1 text-[11px] {{ $showEventPins ? 'bg-indigo-600 text-white shadow' : 'bg-slate-800 text-slate-400 hover:text-white' }}"
+                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border {{ $showEventPins ? 'bg-purple-600 text-white border-purple-400 shadow-md shadow-purple-950/60 ring-1 ring-purple-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800' }}"
+                title="Toggle Platform Outreach Events (Purple 🎉)"
             >
-                <span>🎉</span>
-                <span>Event Platforms</span>
+                <span class="w-2 h-2 rounded-full {{ $showEventPins ? 'bg-purple-200 animate-pulse' : 'bg-purple-500/50' }}"></span>
+                <span>🎉 Event Platforms</span>
             </button>
+
+            <!-- Prayer Walks: Amber -->
             <button 
                 type="button" 
                 wire:click="toggleLayer('prayer_walks')" 
-                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1 text-[11px] {{ $showPrayerWalks ? 'bg-amber-600 text-white shadow' : 'bg-slate-800 text-slate-400 hover:text-white' }}"
-                title="Toggle Prayer Walking Street Routes"
+                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border {{ $showPrayerWalks ? 'bg-amber-600 text-white border-amber-400 shadow-md shadow-amber-950/60 ring-1 ring-amber-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800' }}"
+                title="Toggle Prayer Walking Street Routes (Amber 🚶)"
             >
-                <span>🚶</span>
-                <span>Prayer Walks ({{ count($prayerWalksData) }})</span>
+                <span class="w-2 h-2 rounded-full {{ $showPrayerWalks ? 'bg-amber-200 animate-pulse' : 'bg-amber-500/50' }}"></span>
+                <span>🚶 Prayer Walks ({{ count($prayerWalksData) }})</span>
             </button>
         </div>
     </div>
@@ -88,14 +121,43 @@
         x-init="initMap()"
     ></div>
 
-    <!-- Map Legend Footer Overlay -->
-    <div class="absolute bottom-4 left-4 z-20 hidden sm:flex items-center gap-4 px-3.5 py-2 bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-800 text-[11px] font-medium text-slate-300 shadow-xl pointer-events-auto">
-        <span class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Streams:</span>
-        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span><span>G1 (Player-Led)</span></div>
-        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span><span>G2 (Planted by G1)</span></div>
-        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span><span>G3 (Granddaughter)</span></div>
-        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span><span>G4+ (Movement Stream!)</span></div>
-        <div class="flex items-center gap-1.5"><span class="w-3.5 h-1 rounded-full bg-amber-400 shadow-sm shadow-amber-400"></span><span>Prayer Walk Streets</span></div>
+    <!-- Map Legend Footer Overlay with Cohesive Uniform Color System -->
+    <div class="absolute bottom-4 left-4 z-20 hidden md:flex flex-wrap items-center gap-x-4 gap-y-1.5 px-4 py-2.5 bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-800 text-[11px] font-medium text-slate-300 shadow-2xl pointer-events-auto">
+        <!-- Churches Group -->
+        <div class="flex items-center gap-2">
+            <span class="text-slate-500 font-bold uppercase tracking-wider text-[10px]">Churches:</span>
+            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm shadow-blue-500/50"></span><span>G1</span></div>
+            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-500 shadow-sm shadow-purple-500/50"></span><span>G2</span></div>
+            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-pink-500 shadow-sm shadow-pink-500/50"></span><span>G3</span></div>
+            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-sm shadow-amber-400/50"></span><span>G4+</span></div>
+        </div>
+
+        <span class="w-px h-3.5 bg-slate-800"></span>
+
+        <!-- Ministries & Layers Group -->
+        <div class="flex items-center gap-3">
+            <span class="text-slate-500 font-bold uppercase tracking-wider text-[10px]">Layers:</span>
+            <div class="flex items-center gap-1.5">
+                <span class="w-3.5 h-1.5 rounded-full bg-amber-400 shadow-sm shadow-amber-400/50"></span>
+                <span class="text-amber-300 font-semibold">🚶 Prayer Walks</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50"></span>
+                <span>🍜 Mercy Hubs</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-purple-500 shadow-sm shadow-purple-500/50"></span>
+                <span>🎉 Events</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="w-3 h-0.5 border-t-2 border-dashed border-cyan-400"></span>
+                <span>🌐 Oikos Arcs</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded bg-emerald-500/60 border border-emerald-400/60"></span>
+                <span>🔥 Open Wards</span>
+            </div>
+        </div>
     </div>
 
     <!-- Slide-over Drawer for Selected Church (Acts 2 Circle Diagram & Lineage) -->

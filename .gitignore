@@ -6,6 +6,7 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/email-previews
 /vendor
 .env
 .env.backup

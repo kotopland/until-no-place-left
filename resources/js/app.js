@@ -86,10 +86,10 @@ window.nagoyaMap = function(config) {
                     },
                     onEachFeature: (feature, layer) => {
                         layer.bindTooltip(`
-                            <div class="text-xs p-1">
-                                <strong>${feature.properties.name} (${feature.properties.name_ja})</strong><br>
-                                <span class="text-emerald-400">${feature.properties.openness}% Spiritual Openness</span><br>
-                                <span class="text-slate-400">${feature.properties.npcs_count} Discovered Residents</span>
+                            <div class="min-w-[190px] p-2.5 rounded-xl bg-slate-900 text-slate-100 border border-slate-700 shadow-2xl">
+                                <div class="font-bold text-white text-xs">${feature.properties.name} (${feature.properties.name_ja})</div>
+                                <div class="text-[11px] text-emerald-400 font-semibold mt-0.5">${feature.properties.openness}% Spiritual Openness</div>
+                                <div class="text-[10px] text-slate-400 mt-1">${feature.properties.npcs_count} Discovered Residents</div>
                             </div>
                         `, { sticky: true });
 
@@ -111,22 +111,22 @@ window.nagoyaMap = function(config) {
                     let strokeColor = '#38bdf8'; // friend cyan
                     if (line.type === 'family') strokeColor = '#f43f5e'; // rose
                     else if (line.type === 'coworker') strokeColor = '#a855f7'; // purple
-                    else if (line.type === 'neighbor') strokeColor = '#10b981'; // emerald
+                    else if (line.type === 'neighbor') strokeColor = '#06b6d4'; // bright cyan
 
                     const poly = L.polyline(line.coords, {
                         color: strokeColor,
-                        weight: 2,
-                        opacity: 0.65,
+                        weight: 2.5,
+                        opacity: 0.75,
                         dashArray: '4 4'
                     });
 
                     poly.bindTooltip(`
-                        <div class="text-xs p-1">
-                            <strong>${line.type_label}</strong><br>
-                            ${line.from_name} ➔ ${line.to_name}<br>
-                            <span class="text-amber-400 font-bold">Trust: ${line.trust}%</span>
+                        <div class="min-w-[200px] p-2.5 rounded-xl bg-slate-900 text-slate-100 border border-slate-700 shadow-2xl">
+                            <div class="font-bold text-cyan-400 text-xs">${line.type_label}</div>
+                            <div class="text-[11px] text-white mt-0.5 font-semibold">${line.from_name} ➔ ${line.to_name}</div>
+                            <div class="text-[10px] text-amber-400 font-bold mt-1">Relational Trust: ${line.trust}%</div>
                         </div>
-                    `);
+                    `, { sticky: true });
 
                     poly.addTo(this.oikosLayer);
                 });
@@ -152,10 +152,10 @@ window.nagoyaMap = function(config) {
 
                     const marker = L.marker([church.lat, church.lng], { icon });
                     marker.bindTooltip(`
-                        <div class="text-xs p-1">
-                            <strong>${church.name}</strong> (${church.badge})<br>
-                            Leader: ${church.leader}<br>
-                            <span class="text-emerald-400">Health: ${church.health_score}%</span>
+                        <div class="min-w-[200px] p-2.5 rounded-xl bg-slate-900 text-slate-100 border border-slate-700 shadow-2xl">
+                            <div class="font-bold text-white text-xs">${church.name} (${church.badge})</div>
+                            <div class="text-[11px] text-slate-300 mt-0.5">Leader: <span class="font-semibold text-white">${church.leader}</span></div>
+                            <div class="text-[10px] text-emerald-400 font-semibold mt-1">Acts 2 Health: ${church.health_score}%</div>
                         </div>
                     `);
 
@@ -193,10 +193,10 @@ window.nagoyaMap = function(config) {
 
                     const marker = L.marker([spot.lat, spot.lng], { icon });
                     marker.bindTooltip(`
-                        <div class="text-xs p-1 max-w-[200px]">
-                            <strong>${spot.name}</strong><br>
-                            <span class="text-slate-400">${spot.ward}</span><br>
-                            <span class="text-slate-300">${spot.desc}</span>
+                        <div class="max-w-[220px] p-2.5 rounded-xl bg-slate-900 text-slate-100 border border-slate-700 shadow-2xl">
+                            <div class="font-bold text-white text-xs">${spot.name}</div>
+                            <div class="text-[11px] text-slate-400 mt-0.5">${spot.ward}</div>
+                            <div class="text-[10px] text-slate-300 mt-1 leading-snug">${spot.desc}</div>
                         </div>
                     `);
 
@@ -205,7 +205,7 @@ window.nagoyaMap = function(config) {
                 this.spotsLayer.addTo(this.map);
             }
 
-            // 5. Prayer Walks Street Polylines Layer
+            // 5. Prayer Walks Street Polylines Layer (Uniform Amber / Gold System)
             if (this.prayerWalksLayer) this.map.removeLayer(this.prayerWalksLayer);
 
             if (config.showPrayerWalks && config.prayerWalks && config.prayerWalks.length > 0) {
@@ -213,39 +213,52 @@ window.nagoyaMap = function(config) {
                 config.prayerWalks.forEach(walk => {
                     if (!walk.coords || walk.coords.length === 0) return;
 
-                    const strokeColor = walk.pop_discovered ? '#10b981' : '#f59e0b';
+                    // Uniform Amber / Gold Palette matching the Amber filter button and legend
+                    const glowColor = '#f59e0b'; // Amber 500
+                    const coreColor = '#fbbf24'; // Amber 400
 
                     // Luminous street glow line
                     const glowLine = L.polyline(walk.coords, {
-                        color: strokeColor,
-                        weight: 6,
-                        opacity: 0.35,
+                        color: glowColor,
+                        weight: walk.pop_discovered ? 8 : 6,
+                        opacity: walk.pop_discovered ? 0.55 : 0.40,
                         lineCap: 'round',
                         lineJoin: 'round'
                     });
 
-                    // Core street path line
+                    // Core street path line (solid when Person of Peace is found, dashed when interceding)
                     const coreLine = L.polyline(walk.coords, {
-                        color: walk.pop_discovered ? '#34d399' : '#fbbf24',
-                        weight: 3,
-                        opacity: 0.95,
-                        dashArray: walk.pop_discovered ? null : '5 5',
+                        color: coreColor,
+                        weight: walk.pop_discovered ? 4 : 3,
+                        opacity: 1.0,
+                        dashArray: walk.pop_discovered ? null : '6 6',
                         lineCap: 'round',
                         lineJoin: 'round'
                     });
 
+                    const routeTitle = walk.route_name || 'Neighborhood Prayer Route';
+                    const walkerLabel = walk.walker_name || 'Missionary';
                     const popBadge = walk.pop_discovered
-                        ? `<div class="mt-1 px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700 text-[10px] font-bold">🕊️ Person of Peace Discovered: ${walk.discovered_npc || 'Receptive Seeker'}</div>`
-                        : `<div class="mt-1 text-[10px] text-amber-300">Spiritual Ground Softened & Mapped</div>`;
+                        ? `<div class="mt-1.5 px-2 py-0.5 rounded-lg bg-amber-950 text-amber-300 border border-amber-600/80 text-[10px] font-bold flex items-center gap-1 shadow-sm">
+                            <span>🕊️</span>
+                            <span>Person of Peace: ${walk.discovered_npc || 'Receptive Seeker'}</span>
+                           </div>`
+                        : `<div class="mt-1.5 text-[10px] text-amber-300 font-medium flex items-center gap-1">
+                            <span>✨</span>
+                            <span>Spiritual Ground Softened & Mapped</span>
+                           </div>`;
 
                     const tooltipHtml = `
-                        <div class="text-xs p-1 min-w-[210px]">
-                            <div class="flex items-center gap-1 font-bold text-white">
-                                <span>🚶</span>
-                                <span>${walk.route_name}</span>
+                        <div class="min-w-[220px] p-2.5 rounded-xl bg-slate-900 text-slate-100 border border-slate-700 shadow-2xl">
+                            <div class="flex items-center gap-1.5 font-bold text-white text-xs leading-snug">
+                                <span class="text-amber-400">🚶</span>
+                                <span>${routeTitle}</span>
                             </div>
-                            <div class="text-[11px] text-slate-400">${walk.ward_name} (${walk.ward_name_ja}) • Day ${walk.day}, M${walk.month}</div>
-                            <div class="text-[10px] text-slate-300 mt-0.5">Walker: <span class="font-semibold text-white">${walk.walker_name}</span></div>
+                            <div class="text-[11px] text-amber-400 font-semibold mt-0.5">${walk.ward_name} (${walk.ward_name_ja}) • Day ${walk.day}, M${walk.month}</div>
+                            <div class="text-[10px] text-slate-300 mt-1 flex items-center gap-1">
+                                <span class="text-slate-400">Walker:</span>
+                                <span class="font-bold text-white">${walkerLabel}</span>
+                            </div>
                             ${popBadge}
                         </div>
                     `;
@@ -256,17 +269,17 @@ window.nagoyaMap = function(config) {
                     glowLine.addTo(this.prayerWalksLayer);
                     coreLine.addTo(this.prayerWalksLayer);
 
-                    // Start waypoint marker
+                    // Start waypoint marker in matching amber gold
                     const startPt = walk.coords[0];
                     const startIcon = L.divIcon({
                         className: 'prayer-walk-marker',
                         html: `
-                            <div style="background-color: ${strokeColor}; width: 22px; height: 22px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 11px; box-shadow: 0 0 10px ${strokeColor}; border: 2px solid #ffffff;">
+                            <div style="background-color: #f59e0b; width: 24px; height: 24px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 12px; box-shadow: 0 0 12px #f59e0b, 0 0 2px #fff; border: 2px solid #ffffff;">
                                 ${walk.pop_discovered ? '🕊️' : '🚶'}
                             </div>
                         `,
-                        iconSize: [22, 22],
-                        iconAnchor: [11, 11]
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
                     });
                     const startMarker = L.marker(startPt, { icon: startIcon });
                     startMarker.bindTooltip(tooltipHtml, { sticky: true });

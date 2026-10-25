@@ -474,6 +474,8 @@
                             <p>Serving vulnerable neighbors with hot meals, warm fellowship, and Japanese Bibles around Nagoya, Kanayama, or Sakae hubs provides an Acts 2 platform of compassion.</p>
                         @elseif($infoActionEnum === \App\Enums\MinistryActionType::InternationalEvent)
                             <p>Organizing a cultural exchange, cooking night, or language cafe in a ward casts a wide net, quickly surfacing seekers and Persons of Peace without needing an initial target resident.</p>
+                        @elseif($infoActionEnum === \App\Enums\MinistryActionType::PrayerWalk)
+                            <p>Luke 10:2-6 intercession on foot along neighborhood streets! Softens spiritual soil, increases ward openness, and surfaces receptive Luke 10 Persons of Peace. Prayer walks trace luminous amber street paths on the Nagoya map.</p>
                         @elseif($infoActionEnum === \App\Enums\MinistryActionType::Share15SecTestimony)
                             <p>A simple 15-second testimony (My life before Christ -> How Christ met me -> My life now with Christ) empowers any believer to reproduce without fear.</p>
                         @elseif($infoActionEnum === \App\Enums\MinistryActionType::Share3Circles)
