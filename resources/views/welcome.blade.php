@@ -51,7 +51,7 @@
                     @click="$store.audio?.toggle()" 
                     class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none"
                     :class="$store.audio?.isPlaying ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 shadow-md shadow-indigo-500/20 ring-1 ring-indigo-500/40' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'"
-                    :title="$store.audio?.isPlaying ? 'Turn Background Music OFF' : 'Turn Background Music ON (Japanese Ambient)'"
+                    :title="$store.audio?.isPlaying ? 'Turn Background Music OFF' : 'Turn Background Music ON (Uplifting Japanese Ambient)'"
                 >
                     <span x-show="!$store.audio?.isPlaying">🔇</span>
                     <span x-show="$store.audio?.isPlaying" class="flex items-center gap-1">

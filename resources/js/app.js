@@ -382,7 +382,7 @@ window.digitalClock = function(initialSeconds, nextTickIso, canAutoTick) {
     };
 };
 
-// Procedural Japanese Koto & Meditative Pad Soundscape (Web Audio API)
+// Procedural Uplifting Japanese Koto & Luminous Ambient Pad Soundscape (Web Audio API)
 class NagoyaSoundscape {
     constructor() {
         this.ctx = null;
@@ -390,8 +390,33 @@ class NagoyaSoundscape {
         this.droneOscs = [];
         this.timer = null;
         this.isPlaying = false;
-        // Insen & Hirajoshi pentatonic scale frequencies in D
-        this.notes = [146.83, 220.00, 293.66, 311.13, 392.00, 440.00, 523.25, 587.33, 622.25, 783.99, 880.00];
+        // Bright & uplifting D Major / Yo Pentatonic scale (D, E, F#, A, B)
+        this.notes = [
+            146.83, // D3
+            185.00, // F#3
+            220.00, // A3
+            246.94, // B3
+            293.66, // D4
+            329.63, // E4
+            369.99, // F#4
+            440.00, // A4
+            493.88, // B4
+            587.33, // D5
+            659.25, // E5
+            739.99, // F#5
+            880.00, // A5
+            987.77, // B5
+            1174.66 // D6 (Sparkling chime)
+        ];
+
+        // Uplifting ascending phrases (arpeggios)
+        this.phrases = [
+            [293.66, 369.99, 440.00, 587.33], // D - F# - A - D (Sunrise triumph)
+            [220.00, 293.66, 369.99, 440.00], // A - D - F# - A (Warm harvest)
+            [369.99, 440.00, 493.88, 587.33], // F# - A - B - D (Joyful momentum)
+            [440.00, 587.33, 739.99, 880.00], // A - D - F# - A (High bell cascade)
+            [293.66, 440.00, 587.33, 739.99], // D - A - D - F# (Faithful horizon)
+        ];
     }
 
     init() {
@@ -403,11 +428,11 @@ class NagoyaSoundscape {
             this.masterGain.gain.setValueAtTime(0.0001, this.ctx.currentTime);
             this.masterGain.connect(this.ctx.destination);
 
-            // Spacious temple reverb delay
+            // Shimmering celestial echo delay
             this.delay = this.ctx.createDelay();
-            this.delay.delayTime.value = 0.38;
+            this.delay.delayTime.value = 0.42;
             this.feedback = this.ctx.createGain();
-            this.feedback.gain.value = 0.42;
+            this.feedback.gain.value = 0.36;
             this.delay.connect(this.feedback);
             this.feedback.connect(this.delay);
             this.delay.connect(this.masterGain);
@@ -415,21 +440,24 @@ class NagoyaSoundscape {
     }
 
     startDrone() {
-        const droneFreqs = [73.42, 110.0, 146.83];
+        // Warm, luminous major chord pad: D3 (146.83), A3 (220.00), D4 (293.66), F#4 (369.99)
+        const chordFreqs = [146.83, 220.00, 293.66, 369.99];
         this.droneOscs = [];
 
-        droneFreqs.forEach((freq, idx) => {
+        chordFreqs.forEach((freq, idx) => {
             const osc = this.ctx.createOscillator();
             const filter = this.ctx.createBiquadFilter();
             const gain = this.ctx.createGain();
 
-            osc.type = idx === 0 ? 'sine' : 'triangle';
+            osc.type = 'sine';
             osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
 
+            // Gentle warm lowpass filter - lets warm harmonics through without mud
             filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(320 + idx * 80, this.ctx.currentTime);
+            filter.frequency.setValueAtTime(540 + idx * 120, this.ctx.currentTime);
 
-            gain.gain.setValueAtTime(0.06 / (idx + 1), this.ctx.currentTime);
+            // Soft atmospheric volume
+            gain.gain.setValueAtTime(0.035 / (idx * 0.4 + 1), this.ctx.currentTime);
 
             osc.connect(filter);
             filter.connect(gain);
@@ -441,51 +469,79 @@ class NagoyaSoundscape {
         });
     }
 
-    pluckKotoNote(freq) {
+    pluckKotoNote(freq, velocity = 0.16) {
         if (!this.ctx || !this.isPlaying) return;
 
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
+        const harmonicOsc = this.ctx.createOscillator();
         const filter = this.ctx.createBiquadFilter();
         const noteGain = this.ctx.createGain();
 
+        // Warm plucked string with gentle octave shimmer
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, now);
 
-        filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(freq * 1.5, now);
-        filter.Q.setValueAtTime(4.2, now);
+        harmonicOsc.type = 'sine';
+        harmonicOsc.frequency.setValueAtTime(freq * 2, now);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(Math.min(freq * 3.5, 4500), now);
+        filter.frequency.exponentialRampToValueAtTime(Math.max(freq * 1.2, 300), now + 2.5);
 
         noteGain.gain.setValueAtTime(0.0001, now);
-        noteGain.gain.linearRampToValueAtTime(0.18, now + 0.015);
-        noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 3.2);
+        noteGain.gain.linearRampToValueAtTime(velocity, now + 0.012);
+        noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.8);
 
         osc.connect(filter);
+        harmonicOsc.connect(filter);
         filter.connect(noteGain);
         noteGain.connect(this.masterGain);
         noteGain.connect(this.delay);
 
         osc.start(now);
-        osc.stop(now + 3.5);
+        harmonicOsc.start(now);
+        osc.stop(now + 3.0);
+        harmonicOsc.stop(now + 3.0);
+    }
+
+    playPhrase(phraseNotes) {
+        if (!this.isPlaying) return;
+        phraseNotes.forEach((note, index) => {
+            setTimeout(() => {
+                if (this.isPlaying) {
+                    this.pluckKotoNote(note, 0.14 + (index === phraseNotes.length - 1 ? 0.04 : 0));
+                }
+            }, index * 240);
+        });
     }
 
     scheduleNextNote() {
         if (!this.isPlaying) return;
 
-        const note = this.notes[Math.floor(Math.random() * this.notes.length)];
-        this.pluckKotoNote(note);
-
+        // 35% chance to play an uplifting ascending arpeggio phrase, otherwise melodic plucked note
         if (Math.random() < 0.35) {
-            setTimeout(() => {
-                if (this.isPlaying) {
-                    const harmonic = this.notes[Math.floor(Math.random() * this.notes.length)];
-                    this.pluckKotoNote(harmonic);
-                }
-            }, 300 + Math.random() * 400);
-        }
+            const phrase = this.phrases[Math.floor(Math.random() * this.phrases.length)];
+            this.playPhrase(phrase);
+            const delayMs = 2800 + Math.random() * 2000;
+            this.timer = setTimeout(() => this.scheduleNextNote(), delayMs);
+        } else {
+            const note = this.notes[Math.floor(Math.random() * this.notes.length)];
+            this.pluckKotoNote(note, 0.16);
 
-        const delayMs = 1800 + Math.random() * 2400;
-        this.timer = setTimeout(() => this.scheduleNextNote(), delayMs);
+            // Shimmering companion note accompaniment
+            if (Math.random() < 0.45) {
+                setTimeout(() => {
+                    if (this.isPlaying) {
+                        const companion = this.notes[Math.floor(Math.random() * this.notes.length)];
+                        this.pluckKotoNote(companion, 0.11);
+                    }
+                }, 280 + Math.random() * 300);
+            }
+
+            const delayMs = 1500 + Math.random() * 2200;
+            this.timer = setTimeout(() => this.scheduleNextNote(), delayMs);
+        }
     }
 
     start() {
@@ -497,7 +553,7 @@ class NagoyaSoundscape {
         this.isPlaying = true;
         this.masterGain.gain.cancelScheduledValues(this.ctx.currentTime);
         this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, this.ctx.currentTime);
-        this.masterGain.gain.linearRampToValueAtTime(0.35, this.ctx.currentTime + 1.2);
+        this.masterGain.gain.linearRampToValueAtTime(0.32, this.ctx.currentTime + 1.2);
 
         this.startDrone();
         this.scheduleNextNote();
