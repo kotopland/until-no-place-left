@@ -75,6 +75,21 @@ class Npc extends Model
 {
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        static::creating(function (Npc $npc): void {
+            if (empty($npc->name_ja)) {
+                $npc->name_ja = $npc->name;
+            }
+            if (empty($npc->lat)) {
+                $npc->lat = 35.1700;
+            }
+            if (empty($npc->lng)) {
+                $npc->lng = 136.9066;
+            }
+        });
+    }
+
     /**
      * PHP 8.4 Property Hook: Bilingual formatted name
      */

@@ -51,4 +51,11 @@ class ActionResolutionOutcome
             return "{$this->actionType->icon()} {$this->actionType->label()} -> Trust: {$this->newTrustLevel}% ({$changeStr}%) | Status: {$this->newStatus->icon()} {$this->newStatus->label()}";
         }
     }
+
+    /**
+     * PHP 8.4 Property Hook: Alias for narrativeOutcome
+     */
+    public string $outcome_notes {
+        get => $this->narrativeOutcome;
+    }
 }

@@ -68,12 +68,24 @@ use Illuminate\Support\Str;
     'last_daily_tick_at',
     'next_daily_tick_at',
     'last_monthly_tick_at',
+    'game_session_id',
+    'movement_score',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    public function setGameSessionIdAttribute(mixed $value): void
+    {
+        $this->attributes['current_game_session_id'] = $value;
+    }
+
+    public function setMovementScoreAttribute(mixed $value): void
+    {
+        $this->attributes['total_generational_score'] = $value;
+    }
 
     /**
      * PHP 8.4 Property Hook: percentage of bandwidth Action Points remaining

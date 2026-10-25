@@ -767,7 +767,7 @@
                     <ul class="text-xs space-y-1.5 text-slate-300">
                         <li class="flex items-center gap-2 p-1.5 rounded-lg bg-slate-950 border border-slate-800/80">
                             <span>🔥</span>
-                            <span><strong>Spiritual Openness Heatmap</strong> across all 16 wards</span>
+                            <span><strong>Authentic 16-Ward GIS Boundaries & Heatmap</strong>: High-resolution official municipal borders with live spiritual openness choropleth shading</span>
                         </li>
                         <li class="flex items-center gap-2 p-1.5 rounded-lg bg-slate-950 border border-slate-800/80">
                             <span>⭕</span>

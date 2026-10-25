@@ -54,6 +54,9 @@ class GameSession extends Model
             if (empty($session->code)) {
                 $session->code = 'session-'.Str::lower(Str::random(6));
             }
+            if (empty($session->next_tick_at)) {
+                $session->next_tick_at = now()->addHours(12);
+            }
         });
     }
 

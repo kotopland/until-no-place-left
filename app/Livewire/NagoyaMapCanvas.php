@@ -9,6 +9,7 @@ use App\Models\OikosRelationship;
 use App\Models\PrayerWalk;
 use App\Models\User;
 use App\Models\Ward;
+use App\Services\NagoyaGeoJsonService;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
@@ -89,42 +90,9 @@ class NagoyaMapCanvas extends Component
             ? Church::with(['ward', 'leaderNpc', 'leaderUser', 'parentChurch', 'daughterChurches'])->find($this->selectedChurchId)
             : null;
 
-        // Transform Ward GeoJSON features for Leaflet client-side layer
-        $wardsGeoJson = [
-            'type' => 'FeatureCollection',
-            'features' => $wards->map(function (Ward $ward) {
-                // Approximate bounding polygon around ward center
-                $lat = (float) $ward->center_lat;
-                $lng = (float) $ward->center_lng;
-                $d = 0.016; // approx 1.8km radius boundary offset
-
-                return [
-                    'type' => 'Feature',
-                    'id' => $ward->id,
-                    'properties' => [
-                        'id' => $ward->id,
-                        'name' => $ward->name,
-                        'name_ja' => $ward->name_ja,
-                        'slug' => $ward->slug,
-                        'openness' => $ward->spiritual_openness,
-                        'poverty' => $ward->poverty_need_index,
-                        'population' => $ward->population,
-                        'npcs_count' => $ward->npcs_count,
-                        'churches_count' => $ward->churches_count,
-                    ],
-                    'geometry' => [
-                        'type' => 'Polygon',
-                        'coordinates' => [[
-                            [$lng - $d, $lat - $d * 0.8],
-                            [$lng + $d, $lat - $d * 0.8],
-                            [$lng + $d * 1.2, $lat + $d * 0.8],
-                            [$lng - $d * 0.8, $lat + $d],
-                            [$lng - $d, $lat - $d * 0.8],
-                        ]],
-                    ],
-                ];
-            })->values()->all(),
-        ];
+        // Transform Ward GeoJSON features using authentic GIS borders
+        $geoJsonService = app(NagoyaGeoJsonService::class);
+        $wardsGeoJson = $geoJsonService->getWardsGeoJson($wards);
 
         // Format Oikos lines for client-side Leaflet polylines
         $linesData = $oikosEdges->filter(fn ($edge) => $edge->npc && $edge->relatedNpc)->map(function ($edge) {

@@ -72,14 +72,14 @@ test('nagoya map canvas provides house markers for player and co-laborers', func
         'current_game_session_id' => $session->id,
         'home_ward_id' => $wardA->id,
         'name' => 'Main Player',
-        'movement_score' => 500,
+        'total_generational_score' => 500,
     ]);
 
     $fellow = User::factory()->create([
         'current_game_session_id' => $session->id,
         'home_ward_id' => $wardB->id,
         'name' => 'Sarah Jenkins',
-        'movement_score' => 320,
+        'total_generational_score' => 320,
     ]);
 
     $this->actingAs($player);

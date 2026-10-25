@@ -43,7 +43,7 @@ test('user can set and change their home base ward via livewire action planner',
     ]);
 
     $user = User::factory()->create([
-        'game_session_id' => $session->id,
+        'current_game_session_id' => $session->id,
         'home_ward_id' => $wardA->id,
         'action_points' => 12,
         'current_game_day' => 1,
@@ -102,19 +102,19 @@ test('commute metrics properly calculate transit minutes, ap surcharge, and trus
         'spiritual_openness' => 20,
     ]);
 
-    // Distant ward (~13.5 km away)
+    // Distant ward (> 10 km away)
     $distantWard = Ward::create([
         'game_session_id' => $session->id,
         'name' => 'Minato-ku',
         'slug' => 'minato-ku',
-        'latitude' => 35.0850,
-        'longitude' => 136.8800,
+        'latitude' => 35.0400,
+        'longitude' => 136.8500,
         'population' => 140000,
         'spiritual_openness' => 20,
     ]);
 
     $user = User::factory()->create([
-        'game_session_id' => $session->id,
+        'current_game_session_id' => $session->id,
         'home_ward_id' => $homeWard->id,
     ]);
 
@@ -162,14 +162,14 @@ test('action queue planner deducts base action points plus commute ap surcharge'
         'game_session_id' => $session->id,
         'name' => 'Minato-ku',
         'slug' => 'minato-ku',
-        'latitude' => 35.0850,
-        'longitude' => 136.8800,
+        'latitude' => 35.0400,
+        'longitude' => 136.8500,
         'population' => 140000,
         'spiritual_openness' => 20,
     ]);
 
     $user = User::factory()->create([
-        'game_session_id' => $session->id,
+        'current_game_session_id' => $session->id,
         'home_ward_id' => $homeWard->id,
         'action_points' => 12,
         'current_game_day' => 1,
@@ -223,14 +223,14 @@ test('four fields engine integrates proximity bonus for home ward and friction f
         'game_session_id' => $session->id,
         'name' => 'Minato-ku',
         'slug' => 'minato-ku',
-        'latitude' => 35.0850,
-        'longitude' => 136.8800,
+        'latitude' => 35.0400,
+        'longitude' => 136.8500,
         'population' => 140000,
         'spiritual_openness' => 20,
     ]);
 
     $user = User::factory()->create([
-        'game_session_id' => $session->id,
+        'current_game_session_id' => $session->id,
         'home_ward_id' => $homeWard->id,
         'action_points' => 12,
         'current_game_day' => 1,
@@ -240,10 +240,9 @@ test('four fields engine integrates proximity bonus for home ward and friction f
         'game_session_id' => $session->id,
         'ward_id' => $homeWard->id,
         'name' => 'Kenji Local',
-        'gender' => 'male',
-        'age' => 30,
-        'receptivity_status' => ReceptivityStatus::Seeking,
-        'need_state' => NpcNeedState::SpiritualEmptiness,
+        'name_ja' => 'ケンジ',
+        'status' => ReceptivityStatus::Yellow,
+        'need_state' => NpcNeedState::Lonely,
         'role_archetype' => NpcRoleArchetype::Salaryman,
         'trust_level' => 10,
     ]);
@@ -252,10 +251,9 @@ test('four fields engine integrates proximity bonus for home ward and friction f
         'game_session_id' => $session->id,
         'ward_id' => $distantWard->id,
         'name' => 'Hiroshi Far',
-        'gender' => 'male',
-        'age' => 35,
-        'receptivity_status' => ReceptivityStatus::Seeking,
-        'need_state' => NpcNeedState::SpiritualEmptiness,
+        'name_ja' => 'ヒロシ',
+        'status' => ReceptivityStatus::Yellow,
+        'need_state' => NpcNeedState::Lonely,
         'role_archetype' => NpcRoleArchetype::Salaryman,
         'trust_level' => 10,
     ]);
@@ -272,7 +270,7 @@ test('four fields engine integrates proximity bonus for home ward and friction f
     );
 
     expect($localNpc->fresh()->trust_level)->toBeGreaterThan(10)
-        ->and($localOutcome->outcome_notes)->toContain('🏡 Local neighbor presence bonus (+25% trust gain)');
+        ->and($localOutcome->outcome_notes)->toContain('🏡 Local Neighbor');
 
     // Execute Casual Talk in Distant Ward (base trust = 15, multiplied by 0.70 = round(10.5) = 11)
     $distantOutcome = $engine->executeAction(
@@ -284,7 +282,7 @@ test('four fields engine integrates proximity bonus for home ward and friction f
     );
 
     expect($distantNpc->fresh()->trust_level)->toBeGreaterThan(10)
-        ->and($distantOutcome->outcome_notes)->toContain('🚇 Commute distance from home base created friction');
+        ->and($distantOutcome->outcome_notes)->toContain('Distant Commute');
 
     // Local trust gain (19) should exceed distant trust gain (11)
     expect($localNpc->fresh()->trust_level)->toBeGreaterThan($distantNpc->fresh()->trust_level);

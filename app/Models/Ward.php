@@ -31,6 +31,8 @@ use Illuminate\Support\Carbon;
     'slug',
     'center_lat',
     'center_lng',
+    'latitude',
+    'longitude',
     'spiritual_openness',
     'poverty_need_index',
     'population',
@@ -40,6 +42,65 @@ use Illuminate\Support\Carbon;
 class Ward extends Model
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::creating(function (Ward $ward): void {
+            if (empty($ward->name_ja)) {
+                $nameMap = [
+                    'Naka-ku' => '中区',
+                    'Chikusa-ku' => '千種区',
+                    'Higashi-ku' => '東区',
+                    'Kita-ku' => '北区',
+                    'Nishi-ku' => '西区',
+                    'Nakamura-ku' => '中村区',
+                    'Showa-ku' => '昭和区',
+                    'Mizuho-ku' => '瑞穂区',
+                    'Atsuta-ku' => '熱田区',
+                    'Nakagawa-ku' => '中川区',
+                    'Minato-ku' => '港区',
+                    'Minami-ku' => '南区',
+                    'Moriyama-ku' => '守山区',
+                    'Midori-ku' => '緑区',
+                    'Meito-ku' => '名東区',
+                    'Tempaku-ku' => '天白区',
+                ];
+                $ward->name_ja = $nameMap[$ward->name] ?? $ward->name;
+            }
+
+            if (empty($ward->attributes['center_lat'])) {
+                $ward->attributes['center_lat'] = 35.1700;
+            }
+
+            if (empty($ward->attributes['center_lng'])) {
+                $ward->attributes['center_lng'] = 136.9066;
+            }
+
+            if (empty($ward->slug) && ! empty($ward->name)) {
+                $ward->slug = \Illuminate\Support\Str::slug($ward->name);
+            }
+        });
+    }
+
+    public function setLatitudeAttribute(mixed $value): void
+    {
+        $this->attributes['center_lat'] = $value;
+    }
+
+    public function setLongitudeAttribute(mixed $value): void
+    {
+        $this->attributes['center_lng'] = $value;
+    }
+
+    public function getLatitudeAttribute(): float
+    {
+        return (float) ($this->attributes['center_lat'] ?? 0.0);
+    }
+
+    public function getLongitudeAttribute(): float
+    {
+        return (float) ($this->attributes['center_lng'] ?? 0.0);
+    }
 
     /**
      * PHP 8.4 Property Hook: Bilingual formatted name

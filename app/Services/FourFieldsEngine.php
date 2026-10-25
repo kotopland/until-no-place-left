@@ -477,6 +477,32 @@ class FourFieldsEngine
     }
 
     /**
+     * Executes and resolves an immediate action for tests or direct simulation.
+     */
+    public function executeAction(User $user, Ward $ward, MinistryActionType $actionType, ?Npc $targetNpc = null, int $gameMonth = 1): ActionResolutionOutcome
+    {
+        $action = QueuedMonthlyAction::create([
+            'game_session_id' => $user->current_game_session_id ?? $ward->game_session_id,
+            'user_id' => $user->id,
+            'ward_id' => $ward->id,
+            'action_type' => $actionType,
+            'target_npc_id' => $targetNpc?->id,
+            'game_month' => $gameMonth,
+            'game_day' => $user->current_game_day ?: 1,
+            'status' => QueuedActionStatus::Pending,
+        ]);
+
+        $outcome = $this->resolveSingleAction($action, $gameMonth);
+
+        $action->update([
+            'status' => QueuedActionStatus::Processed,
+            'outcome_notes' => $outcome->narrativeOutcome,
+        ]);
+
+        return $outcome;
+    }
+
+    /**
      * Resolves a single player ministry action with holistic Japanese relational dynamics.
      */
     public function resolveSingleAction(QueuedMonthlyAction $action, int $gameMonth): ActionResolutionOutcome
