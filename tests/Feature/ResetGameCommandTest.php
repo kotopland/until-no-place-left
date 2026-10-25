@@ -181,4 +181,3 @@ test('game:reset with --wipe-players removes non-coach players and keeps coach',
         ->and($coach->current_game_day)->toBe(1)
         ->and($coach->action_points)->toBe(12);
 });
-

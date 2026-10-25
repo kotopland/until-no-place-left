@@ -6,6 +6,7 @@ namespace App\Livewire\Auth;
 
 use App\Models\User;
 use App\Notifications\MagicLoginLinkNotification;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Livewire\Attributes\Layout;
@@ -136,7 +137,7 @@ class PasswordlessLogin extends Component
         $this->localMagicLink = null;
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.auth.passwordless-login');
     }

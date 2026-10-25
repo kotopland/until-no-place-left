@@ -14,15 +14,10 @@ use App\Models\PrayerWalk;
 use App\Models\QueuedMonthlyAction;
 use App\Models\User;
 use Database\Seeders\NagoyaOikosSeeder;
-use Illuminate\Console\Attributes\Command;
-use Illuminate\Console\Command as BaseCommand;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-#[Command(
-    name: 'game:reset',
-    description: 'Reset the Nagoya Oikos game simulation back to Month 1 Day 1'
-)]
-class ResetGameCommand extends BaseCommand
+class ResetGameCommand extends Command
 {
     /**
      * The name and signature of the console command.
@@ -32,6 +27,11 @@ class ResetGameCommand extends BaseCommand
                             {--all : Reset all game sessions}
                             {--wipe-players : Delete all player accounts (except default missionary coach)}
                             {--force : Force reset without confirmation prompt}';
+
+    /**
+     * The console command description.
+     */
+    protected $description = 'Reset the Nagoya Oikos game simulation back to Month 1 Day 1';
 
     /**
      * Execute the console command.

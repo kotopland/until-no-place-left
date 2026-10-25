@@ -4,14 +4,9 @@ namespace App\Console\Commands;
 
 use App\Models\GameSession;
 use App\Services\FourFieldsEngine;
-use Illuminate\Console\Attributes\Command;
-use Illuminate\Console\Command as BaseCommand;
+use Illuminate\Console\Command;
 
-#[Command(
-    name: 'game:process-daily-tick',
-    description: 'Process 10-minute game day ticks for active sessions with online players'
-)]
-class ProcessDailyTickCommand extends BaseCommand
+class ProcessDailyTickCommand extends Command
 {
     /**
      * The name and signature of the console command.
@@ -19,6 +14,11 @@ class ProcessDailyTickCommand extends BaseCommand
     protected $signature = 'game:process-daily-tick
                             {--session= : Optional specific GameSession code (e.g. nagoya-2026)}
                             {--force : Force daily tick regardless of 10-minute countdown or online status}';
+
+    /**
+     * The console command description.
+     */
+    protected $description = 'Process 10-minute game day ticks for active sessions with online players';
 
     /**
      * Execute the console command.

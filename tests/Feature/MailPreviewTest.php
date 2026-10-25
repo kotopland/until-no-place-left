@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Notifications\MagicLoginLinkNotification;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Notification;
+use Symfony\Component\Mailer\Bridge\Mailgun\Transport\MailgunTransportFactory;
 
 test('mail preview route returns clean 200 empty state when no emails are in storage', function (): void {
     $storagePath = storage_path('email-previews');
@@ -63,7 +64,7 @@ test('visiting mail preview renders latest captured email', function (): void {
 });
 
 test('mailgun driver resolves transport with configured credentials', function (): void {
-    if (! class_exists(\Symfony\Component\Mailer\Bridge\Mailgun\Transport\MailgunTransportFactory::class)) {
+    if (! class_exists(MailgunTransportFactory::class)) {
         test()->markTestSkipped('symfony/mailgun-mailer is not installed yet in this environment.');
     }
 

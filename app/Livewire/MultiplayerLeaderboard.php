@@ -9,6 +9,7 @@ use App\Models\Npc;
 use App\Models\NpcContribution;
 use App\Models\User;
 use App\Models\Ward;
+use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 class MultiplayerLeaderboard extends Component
@@ -20,7 +21,7 @@ class MultiplayerLeaderboard extends Component
         $this->activeTab = $tab;
     }
 
-    public function render()
+    public function render(): View
     {
         $session = GameSession::where('is_active', true)->first();
 

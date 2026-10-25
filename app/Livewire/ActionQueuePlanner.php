@@ -9,6 +9,8 @@ use App\Models\Npc;
 use App\Models\QueuedMonthlyAction;
 use App\Models\User;
 use App\Models\Ward;
+use App\Services\FourFieldsEngine;
+use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 class ActionQueuePlanner extends Component
@@ -29,6 +31,7 @@ class ActionQueuePlanner extends Component
 
     public ?GameSession $session = null;
 
+    /** @var array<string, string> */
     protected $listeners = [
         'day-advanced' => '$refresh',
         'action-queued' => '$refresh',
@@ -37,7 +40,7 @@ class ActionQueuePlanner extends Component
     public function mount(): void
     {
         $this->player = auth()->user() ?? User::first();
-        $this->session = $this->player?->currentGameSession ?? GameSession::first();
+        $this->session = $this->player ? ($this->player->currentGameSession ?? GameSession::first()) : GameSession::first();
 
         // Mark player active (online)
         $this->player?->touchActive();
@@ -191,14 +194,14 @@ class ActionQueuePlanner extends Component
             if ($isManual) {
                 $this->dispatch('notify', [
                     'type' => 'info',
-                    'message' => "Month {$this->player->current_game_month} has completed all 30 days! You can now advance to Month " . ($this->player->current_game_month + 1) . ".",
+                    'message' => "Month {$this->player->current_game_month} has completed all 30 days! You can now advance to Month ".($this->player->current_game_month + 1).'.',
                 ]);
             }
 
             return;
         }
 
-        $engine = app(\App\Services\FourFieldsEngine::class);
+        $engine = app(FourFieldsEngine::class);
         $result = $engine->resolveDailyTick($this->session, specificUser: $this->player, force: true);
 
         $this->player->refresh();
@@ -225,13 +228,13 @@ class ActionQueuePlanner extends Component
         if ($this->player->days_processed_this_month < 30) {
             $this->dispatch('notify', [
                 'type' => 'warning',
-                'message' => "You must complete all 30 days before advancing to Month " . ($this->player->current_game_month + 1) . " ({$this->player->days_processed_this_month}/30 days completed).",
+                'message' => 'You must complete all 30 days before advancing to Month '.($this->player->current_game_month + 1)." ({$this->player->days_processed_this_month}/30 days completed).",
             ]);
 
             return;
         }
 
-        $engine = app(\App\Services\FourFieldsEngine::class);
+        $engine = app(FourFieldsEngine::class);
         $result = $engine->resolveGameMonthForUser($this->player);
 
         $this->player->refresh();
@@ -244,7 +247,7 @@ class ActionQueuePlanner extends Component
         ]);
     }
 
-    public function render()
+    public function render(): View
     {
         $this->player?->refresh();
         $this->session?->refresh();
@@ -263,9 +266,11 @@ class ActionQueuePlanner extends Component
 
         $selectedNpc = $this->selectedNpcId ? Npc::with(['oikosConnections.relatedNpc', 'ward'])->find($this->selectedNpcId) : null;
 
+        $targetMonth = $this->player ? $this->player->current_game_month : 1;
+
         $queuedActions = QueuedMonthlyAction::where('game_session_id', $this->session?->id)
             ->where('user_id', $this->player?->id)
-            ->where('game_month', $this->player?->current_game_month ?? 1)
+            ->where('game_month', $targetMonth)
             ->where('status', QueuedActionStatus::Pending)
             ->with(['targetNpc', 'ward'])
             ->latest()

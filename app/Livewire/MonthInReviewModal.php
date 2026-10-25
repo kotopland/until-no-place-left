@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\MonthlyReport;
 use App\Models\User;
+use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 class MonthInReviewModal extends Component
@@ -12,6 +13,7 @@ class MonthInReviewModal extends Component
 
     public ?MonthlyReport $report = null;
 
+    /** @var array<string, string> */
     protected $listeners = [
         'open-month-review' => 'openModal',
         'report-generated' => 'checkLatestReport',
@@ -60,7 +62,7 @@ class MonthInReviewModal extends Component
         $this->isOpen = false;
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.month-in-review-modal');
     }

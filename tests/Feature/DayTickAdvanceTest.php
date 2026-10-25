@@ -393,4 +393,3 @@ test('scheduled month advance skips players who have already changed their month
         ->and($playerB->days_processed_this_month)->toBe(0)
         ->and($playerB->days_played_today)->toBe(0);
 });
-

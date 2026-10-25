@@ -25,7 +25,7 @@ class PrayerWalkFactory extends Factory
         return [
             'game_session_id' => GameSession::factory(),
             'user_id' => User::factory(),
-            'ward_id' => Ward::first()?->id ?? 1,
+            'ward_id' => Ward::first() ? Ward::first()->id : 1,
             'game_month' => 1,
             'game_day' => 1,
             'route_name' => 'Sakae & Hisaya Odori Central Avenue',

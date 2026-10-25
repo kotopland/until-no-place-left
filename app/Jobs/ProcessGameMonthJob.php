@@ -9,13 +9,18 @@ use App\Notifications\MonthlyMovementReportNotification;
 use App\Services\FourFieldsEngine;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Queue\Attributes\WithQueue;
 use Illuminate\Support\Facades\Log;
 
-#[WithQueue('game-engine')]
 class ProcessGameMonthJob implements ShouldQueue
 {
     use Queueable;
+
+    /**
+     * The name of the queue the job should be sent to.
+     *
+     * @var string|null
+     */
+    public $queue = 'game-engine';
 
     /**
      * Create a new job instance.

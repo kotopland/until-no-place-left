@@ -295,6 +295,7 @@ class FourFieldsEngine
                 // If a player has already changed their month today, do NOT change it to the next one!
                 if ($user->hasChangedMonthToday) {
                     $user->update(['days_played_today' => 0]);
+
                     continue;
                 }
 
@@ -441,7 +442,7 @@ class FourFieldsEngine
                 'churches_planted_count' => $churchesPlanted,
                 'generational_score_gained' => $totalScoreGain,
                 'total_generational_score' => $user->total_generational_score,
-                'coach_tips_json' => array_values($coachTips),
+                'coach_tips_json' => $coachTips,
                 'read_at' => null,
             ]);
 
@@ -456,7 +457,7 @@ class FourFieldsEngine
             ]);
 
             return new MonthResolutionResult(
-                gameSessionId: $session?->id ?? 1,
+                gameSessionId: $session ? $session->id : 1,
                 gameMonth: $gameMonth,
                 actionsProcessed: $actionsProcessed,
                 breakthroughsCount: $breakthroughsCount,
@@ -468,7 +469,7 @@ class FourFieldsEngine
                 prayersAnswered: $prayersAnswered,
                 coopCollaborationsCount: $coopCollaborationsCount,
                 actionOutcomes: $outcomes,
-                playerScoreGains: [$user->id => $totalScoreGain],
+                playerScoreGains: [$user->id => (int) $totalScoreGain],
                 autonomousHighlights: $autonomousHighlights,
                 coachTips: $coachTips,
             );
@@ -1045,7 +1046,7 @@ class FourFieldsEngine
             targetNpcId: $discoveredNpc?->id,
             wardId: $ward->id,
             trustChange: $popDiscovered ? 20 : 5,
-            newTrustLevel: $discoveredNpc?->trust_level ?? 40,
+            newTrustLevel: $discoveredNpc ? $discoveredNpc->trust_level : 40,
             previousStatus: ReceptivityStatus::Unreached,
             newStatus: $discoveredNpc ? $discoveredNpc->status : ReceptivityStatus::Yellow,
             statusChanged: $popDiscovered,
@@ -1174,16 +1175,18 @@ class FourFieldsEngine
 
     /**
      * Spawn an archetypal Japanese resident in a ward who is a Luke 10 Person of Peace.
+     *
+     * @param  array<int, float>  $coord
      */
     protected function spawnPersonOfPeaceResident(int $gameSessionId, Ward $ward, array $coord): Npc
     {
         $namesPool = [
-            ['name' => 'Satoshi Yamada', 'name_ja' => '山田 聡', 'role' => NpcRoleArchetype::Shopkeeper, 'need' => NpcNeedState::WorkBurnout],
-            ['name' => 'Yuka Shibata', 'name_ja' => '柴田 優香', 'role' => NpcRoleArchetype::Creative, 'need' => NpcNeedState::Lonely],
-            ['name' => 'Kazuo Kondo', 'name_ja' => '近藤 一男', 'role' => NpcRoleArchetype::Pensioner, 'need' => NpcNeedState::SpiritualCuriosity],
-            ['name' => 'Mari Ishikawa', 'name_ja' => '石川 まり', 'role' => NpcRoleArchetype::Homemaker, 'need' => NpcNeedState::FamilyPressure],
-            ['name' => 'Takumi Ogawa', 'name_ja' => '小川 拓海', 'role' => NpcRoleArchetype::Student, 'need' => NpcNeedState::SpiritualCuriosity],
-            ['name' => 'Emi Suzuki', 'name_ja' => '鈴木 恵美', 'role' => NpcRoleArchetype::SalariedWorker, 'need' => NpcNeedState::WorkBurnout],
+            ['name' => 'Satoshi Yamada', 'name_ja' => '山田 聡', 'role' => NpcRoleArchetype::Shopkeeper, 'need' => NpcNeedState::EmotionalCrisis],
+            ['name' => 'Yuka Shibata', 'name_ja' => '柴田 優香', 'role' => NpcRoleArchetype::InternationalExpat, 'need' => NpcNeedState::Lonely],
+            ['name' => 'Kazuo Kondo', 'name_ja' => '近藤 一男', 'role' => NpcRoleArchetype::ElderlyResident, 'need' => NpcNeedState::Lonely],
+            ['name' => 'Mari Ishikawa', 'name_ja' => '石川 まり', 'role' => NpcRoleArchetype::SingleParent, 'need' => NpcNeedState::EmotionalCrisis],
+            ['name' => 'Takumi Ogawa', 'name_ja' => '小川 拓海', 'role' => NpcRoleArchetype::UniversityStudent, 'need' => NpcNeedState::SeekingCommunity],
+            ['name' => 'Emi Suzuki', 'name_ja' => '鈴木 恵美', 'role' => NpcRoleArchetype::Salaryman, 'need' => NpcNeedState::EmotionalCrisis],
         ];
 
         $existingCount = Npc::where('game_session_id', $gameSessionId)->count();
@@ -1199,8 +1202,8 @@ class FourFieldsEngine
             'status' => ReceptivityStatus::Yellow,
             'trust_level' => rand(35, 50),
             'is_person_of_peace' => true,
-            'lat' => $coord[0],
-            'lng' => $coord[1],
+            'lat' => $coord[0] ?? (float) $ward->center_lat,
+            'lng' => $coord[1] ?? (float) $ward->center_lng,
             'backstory' => "Surfaced as a Person of Peace through prayer walking in {$ward->name}. Receptive and welcoming to community believers.",
         ]);
     }
@@ -1208,6 +1211,8 @@ class FourFieldsEngine
     /**
      * Autonomous Multiplication Phase (Field 3 & Field 5)
      * Equipped believers (trained in 411) autonomously witness to their own Oikos networks.
+     *
+     * @return array{new_believers_count: int, new_churches_count: int, highlights: list<string>, player_scores: array<int, int>}
      */
     public function runAutonomousMultiplication(GameSession $session, int $gameMonth): array
     {

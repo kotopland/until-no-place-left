@@ -24,6 +24,10 @@ use Illuminate\Support\Carbon;
  * @property int|null $discovered_npc_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read GameSession $gameSession
+ * @property-read User|null $user
+ * @property-read Ward $ward
+ * @property-read Npc|null $discoveredNpc
  */
 #[Table('prayer_walks')]
 #[Fillable([
@@ -54,21 +58,33 @@ class PrayerWalk extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<GameSession, $this>
+     */
     public function gameSession(): BelongsTo
     {
         return $this->belongsTo(GameSession::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsTo<Ward, $this>
+     */
     public function ward(): BelongsTo
     {
         return $this->belongsTo(Ward::class);
     }
 
+    /**
+     * @return BelongsTo<Npc, $this>
+     */
     public function discoveredNpc(): BelongsTo
     {
         return $this->belongsTo(Npc::class, 'discovered_npc_id');

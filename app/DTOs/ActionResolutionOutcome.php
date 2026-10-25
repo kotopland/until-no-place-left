@@ -10,6 +10,8 @@ class ActionResolutionOutcome
 {
     /**
      * PHP 8.4 Asymmetric Visibility protects internal game state mutation
+     *
+     * @param  array<int, mixed>  $collaboratorsImpacted
      */
     public function __construct(
         public private(set) int $actionId,

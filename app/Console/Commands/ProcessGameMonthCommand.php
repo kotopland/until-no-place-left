@@ -5,14 +5,9 @@ namespace App\Console\Commands;
 use App\Jobs\ProcessGameMonthJob;
 use App\Models\GameSession;
 use App\Services\FourFieldsEngine;
-use Illuminate\Console\Attributes\Command;
-use Illuminate\Console\Command as BaseCommand;
+use Illuminate\Console\Command;
 
-#[Command(
-    name: 'game:process-month',
-    description: 'Process the scheduled Game Month resolution tick across Nagoya multiplayer sessions'
-)]
-class ProcessGameMonthCommand extends BaseCommand
+class ProcessGameMonthCommand extends Command
 {
     /**
      * The name and signature of the console command.
@@ -21,6 +16,11 @@ class ProcessGameMonthCommand extends BaseCommand
                             {--session= : Optional specific GameSession code (e.g. nagoya-2026)}
                             {--force : Force resolution regardless of next_tick_at timestamp}
                             {--queue : Dispatch as background queue job instead of running synchronously}';
+
+    /**
+     * The console command description.
+     */
+    protected $description = 'Process the scheduled Game Month resolution tick across Nagoya multiplayer sessions';
 
     /**
      * Execute the console command.

@@ -8,6 +8,7 @@ use App\Models\Npc;
 use App\Models\OikosRelationship;
 use App\Models\PrayerWalk;
 use App\Models\Ward;
+use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 class NagoyaMapCanvas extends Component
@@ -28,6 +29,7 @@ class NagoyaMapCanvas extends Component
 
     public bool $showPrayerWalks = true;
 
+    /** @var array<string, string> */
     protected $listeners = [
         'map-church-selected' => 'selectChurch',
         'map-ward-selected' => 'selectWard',
@@ -61,7 +63,7 @@ class NagoyaMapCanvas extends Component
         };
     }
 
-    public function render()
+    public function render(): View
     {
         $session = GameSession::where('is_active', true)->first();
 
@@ -149,7 +151,7 @@ class NagoyaMapCanvas extends Component
                 'health_score' => $ch->health_score,
                 'lat' => (float) $ch->lat,
                 'lng' => (float) $ch->lng,
-                'leader' => $ch->leaderNpc?->displayName ?? ($ch->leaderUser?->name ?? 'Missionary Leader'),
+                'leader' => $ch->leaderNpc ? $ch->leaderNpc->displayName : ($ch->leaderUser ? $ch->leaderUser->name : 'Missionary Leader'),
                 'is_autonomous' => $ch->isAutonomous,
             ];
         })->values()->all();
@@ -204,17 +206,17 @@ class NagoyaMapCanvas extends Component
             ->take(50)
             ->get();
 
-        $prayerWalksData = $prayerWalks->map(function (PrayerWalk $walk) {
+        $prayerWalksData = $prayerWalks->map(function (PrayerWalk $walk): array {
             return [
                 'id' => $walk->id,
                 'ward_name' => $walk->ward->name,
                 'ward_name_ja' => $walk->ward->name_ja,
                 'route_name' => $walk->route_name ?: 'Prayer Walk Route',
-                'walker_name' => $walk->user?->name ?: 'Missionary',
+                'walker_name' => $walk->user ? $walk->user->name : 'Missionary',
                 'day' => $walk->game_day,
                 'month' => $walk->game_month,
                 'pop_discovered' => $walk->pop_discovered,
-                'discovered_npc' => $walk->discoveredNpc?->displayName,
+                'discovered_npc' => $walk->discoveredNpc ? $walk->discoveredNpc->displayName : null,
                 'coords' => $walk->path_coords,
             ];
         })->values()->all();

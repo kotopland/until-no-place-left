@@ -8,6 +8,8 @@ use App\Models\Church;
 use App\Models\GameSession;
 use App\Models\MonthlyReport;
 use App\Models\User;
+use App\Services\FourFieldsEngine;
+use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -41,7 +43,7 @@ class NagoyaMovementDashboard extends Component
 
     public function openEditNameModal(): void
     {
-        $this->editingName = auth()->user()?->name ?? '';
+        $this->editingName = auth()->user() ? auth()->user()->name : '';
         $this->showEditNameModal = true;
     }
 
@@ -67,6 +69,7 @@ class NagoyaMovementDashboard extends Component
         }
     }
 
+    /** @var array<string, string> */
     protected $listeners = [
         'day-advanced' => '$refresh',
         'action-queued' => '$refresh',
@@ -79,7 +82,7 @@ class NagoyaMovementDashboard extends Component
     public function advanceDay(bool $isManual = true): void
     {
         $user = auth()->user() ?? User::first();
-        $session = $user?->currentGameSession ?? GameSession::first();
+        $session = $user ? ($user->currentGameSession ?? GameSession::first()) : GameSession::first();
 
         if (! $user || ! $session) {
             return;
@@ -103,14 +106,14 @@ class NagoyaMovementDashboard extends Component
             if ($isManual) {
                 $this->dispatch('notify', [
                     'type' => 'info',
-                    'message' => "Month {$user->current_game_month} has completed all 30 days! You can now advance to Month " . ($user->current_game_month + 1) . ".",
+                    'message' => "Month {$user->current_game_month} has completed all 30 days! You can now advance to Month ".($user->current_game_month + 1).'.',
                 ]);
             }
 
             return;
         }
 
-        $engine = app(\App\Services\FourFieldsEngine::class);
+        $engine = app(FourFieldsEngine::class);
         $result = $engine->resolveDailyTick($session, specificUser: $user, force: true);
 
         $user->refresh();
@@ -129,7 +132,7 @@ class NagoyaMovementDashboard extends Component
     public function advanceMonth(): void
     {
         $user = auth()->user() ?? User::first();
-        $session = $user?->currentGameSession ?? GameSession::first();
+        $session = $user ? ($user->currentGameSession ?? GameSession::first()) : GameSession::first();
 
         if (! $user || ! $session) {
             return;
@@ -140,13 +143,13 @@ class NagoyaMovementDashboard extends Component
         if ($user->days_processed_this_month < 30) {
             $this->dispatch('notify', [
                 'type' => 'warning',
-                'message' => "You must complete all 30 days before advancing to Month " . ($user->current_game_month + 1) . " ({$user->days_processed_this_month}/30 days completed).",
+                'message' => 'You must complete all 30 days before advancing to Month '.($user->current_game_month + 1)." ({$user->days_processed_this_month}/30 days completed).",
             ]);
 
             return;
         }
 
-        $engine = app(\App\Services\FourFieldsEngine::class);
+        $engine = app(FourFieldsEngine::class);
         $result = $engine->resolveGameMonthForUser($user);
 
         $user->refresh();
@@ -159,11 +162,11 @@ class NagoyaMovementDashboard extends Component
         ]);
     }
 
-    public function render()
+    public function render(): View
     {
         $user = auth()->user() ?? User::first();
         $user?->touchActive();
-        $session = $user?->currentGameSession ?? GameSession::first();
+        $session = $user ? ($user->currentGameSession ?? GameSession::first()) : GameSession::first();
 
         $unreadReportsCount = MonthlyReport::where('user_id', $user?->id)
             ->whereNull('read_at')

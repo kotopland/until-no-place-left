@@ -6,6 +6,11 @@ class MonthResolutionResult
 {
     /**
      * PHP 8.4 Asymmetric Visibility protects batch simulation results
+     *
+     * @param  array<int, mixed>  $actionOutcomes
+     * @param  array<int, int>  $playerScoreGains
+     * @param  array<int, string>  $autonomousHighlights
+     * @param  array<int, mixed>  $coachTips
      */
     public function __construct(
         public private(set) int $gameSessionId,

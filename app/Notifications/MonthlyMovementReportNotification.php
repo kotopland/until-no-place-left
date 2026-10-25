@@ -51,9 +51,11 @@ class MonthlyMovementReportNotification extends Notification implements ShouldQu
         $multiplied = $this->report->disciples_multiplied_count;
         $churches = $this->report->churches_planted_count;
 
+        $name = property_exists($notifiable, 'name') ? (string) $notifiable->name : 'Missionary';
+
         $mail = (new MailMessage)
             ->subject("🌱 Nagoya Movement Report — Month {$month} Summary")
-            ->greeting("Konnichiwa, {$notifiable->name}!")
+            ->greeting("Konnichiwa, {$name}!")
             ->line("Game Month {$month} in Nagoya has concluded and the server tick has resolved your relational actions.")
             ->line('**Monthly Kingdom Impact Summary:**')
             ->line("• **Generational Score Gained:** +{$scoreGain} pts (Total: {$totalScore} pts)")

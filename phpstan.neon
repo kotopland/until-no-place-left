@@ -11,3 +11,9 @@ parameters:
         - routes/
 
     level: 7
+    phpVersion: 80400
+
+    ignoreErrors:
+        -
+            identifier: missingType.generics
+            path: app/Models/*

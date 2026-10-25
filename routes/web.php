@@ -5,7 +5,10 @@ declare(strict_types=1);
 use App\Http\Controllers\PasswordlessAuthController;
 use App\Livewire\Auth\PasswordlessLogin;
 use App\Livewire\NagoyaMovementDashboard;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Spatie\MailPreview\Http\Controllers\ShowMailController;
+use Spatie\MailPreview\MailPreviewServiceProvider;
 
 // Public Lore, Story & Rules
 Route::view('/welcome', 'welcome')->name('welcome');
@@ -26,8 +29,8 @@ Route::middleware('auth')->group(function (): void {
 });
 
 // Mail Preview for Local Development
-if (class_exists(\Spatie\MailPreview\MailPreviewServiceProvider::class)) {
-    Route::get('/spatie-mail-preview', function (\Illuminate\Http\Request $request) {
+if (class_exists(MailPreviewServiceProvider::class)) {
+    Route::get('/spatie-mail-preview', function (Request $request) {
         if (! config('mail-preview.enabled')) {
             abort(404);
         }
@@ -49,6 +52,6 @@ if (class_exists(\Spatie\MailPreview\MailPreviewServiceProvider::class)) {
             return response()->view('mail-preview-empty', [], 200);
         }
 
-        return app(\Spatie\MailPreview\Http\Controllers\ShowMailController::class)($request);
+        return app(ShowMailController::class)($request);
     })->name('mail.preview');
 }

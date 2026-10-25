@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Enums\ChurchElement;
 use App\Models\Church;
+use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 class ChurchCircleSvg extends Component
@@ -23,9 +24,9 @@ class ChurchCircleSvg extends Component
         }
     }
 
-    public function render()
+    public function render(): View
     {
-        $practiced = $this->church?->elements_json ?? [];
+        $practiced = $this->church ? $this->church->elements_json : [];
 
         // All 11 Acts 2 Church Circle elements with angles around the 360 circle
         $elements = [
@@ -61,9 +62,9 @@ class ChurchCircleSvg extends Component
 
         return view('livewire.church-circle-svg', [
             'items' => $items,
-            'isHealthy' => $this->church?->is_healthy_church ?? false,
-            'generation' => $this->church?->generation ?? 1,
-            'healthScore' => $this->church?->health_score ?? 0,
+            'isHealthy' => $this->church ? $this->church->is_healthy_church : false,
+            'generation' => $this->church ? $this->church->generation : 1,
+            'healthScore' => $this->church ? $this->church->health_score : 0,
         ]);
     }
 }
