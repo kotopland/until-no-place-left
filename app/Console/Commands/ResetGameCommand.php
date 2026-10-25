@@ -107,6 +107,9 @@ class ResetGameCommand extends BaseCommand
                     $isCoach = $user->email === 'coach@nagoyaharvest.jp';
 
                     $user->update([
+                        'current_game_month' => 1,
+                        'current_game_day' => 1,
+                        'days_processed_this_month' => 0,
                         'action_points' => 12,
                         'max_action_points' => 12,
                         'daily_action_points' => 12,
@@ -115,6 +118,9 @@ class ResetGameCommand extends BaseCommand
                         'days_played_today' => 0,
                         'last_played_real_date' => now()->toDateString(),
                         'last_active_at' => now(),
+                        'last_monthly_tick_at' => null,
+                        'last_daily_tick_at' => null,
+                        'next_daily_tick_at' => now()->addMinutes(10),
                     ]);
                 });
 
