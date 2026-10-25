@@ -81,10 +81,13 @@
     color: #334155;
 }
 :root:not(.dark) .text-slate-400 {
-    color: #64748b;
+    color: #475569; /* Slate 600 - crisp, readable contrast */
 }
 :root:not(.dark) .text-slate-500 {
     color: #64748b;
+}
+:root:not(.dark) .text-slate-600 {
+    color: #1e293b;
 }
 
 /* Gradients in Light Mode */
@@ -231,20 +234,28 @@
 }
 
 /* Keep High-Emphasis Action Buttons crisp with white text */
-:root:not(.dark) .bg-indigo-600,
-:root:not(.dark) .bg-indigo-500,
-:root:not(.dark) .bg-emerald-600,
-:root:not(.dark) .bg-emerald-500,
-:root:not(.dark) .bg-rose-600,
-:root:not(.dark) .bg-amber-600,
-:root:not(.dark) .bg-gradient-to-r,
-:root:not(.dark) .bg-gradient-to-tr {
+:root:not(.dark) button.bg-indigo-600,
+:root:not(.dark) button.bg-indigo-500,
+:root:not(.dark) button.bg-emerald-600,
+:root:not(.dark) button.bg-emerald-500,
+:root:not(.dark) button.bg-rose-600,
+:root:not(.dark) button.bg-amber-600,
+:root:not(.dark) a.bg-indigo-600,
+:root:not(.dark) a.bg-emerald-600,
+:root:not(.dark) button.bg-gradient-to-r,
+:root:not(.dark) button.bg-gradient-to-tr,
+:root:not(.dark) a.bg-gradient-to-r,
+:root:not(.dark) a.bg-gradient-to-tr {
     color: #ffffff !important;
 }
-:root:not(.dark) .bg-gradient-to-r *,
-:root:not(.dark) .bg-gradient-to-tr *,
-:root:not(.dark) .bg-indigo-600 *,
-:root:not(.dark) .bg-emerald-600 * {
+:root:not(.dark) button.bg-gradient-to-r *,
+:root:not(.dark) button.bg-gradient-to-tr *,
+:root:not(.dark) a.bg-gradient-to-r *,
+:root:not(.dark) a.bg-gradient-to-tr *,
+:root:not(.dark) button.bg-indigo-600 *,
+:root:not(.dark) a.bg-indigo-600 *,
+:root:not(.dark) button.bg-emerald-600 *,
+:root:not(.dark) a.bg-emerald-600 * {
     color: inherit;
 }
 

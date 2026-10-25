@@ -696,40 +696,54 @@ function setupAlpineAudioStore() {
 function setupAlpineThemeStore() {
     if (window.Alpine && !window.Alpine.store('theme')) {
         window.Alpine.store('theme', {
-            mode: localStorage.getItem('theme') || 'dark',
+            mode: (typeof window.__getTheme === 'function' ? window.__getTheme() : (localStorage.getItem('theme') || 'dark')),
 
             init() {
+                this.mode = (typeof window.__getTheme === 'function' ? window.__getTheme() : (localStorage.getItem('theme') || 'dark'));
                 this.apply();
+                window.addEventListener('theme-changed', (e) => {
+                    if (e.detail && e.detail.mode) {
+                        this.mode = e.detail.mode;
+                    }
+                });
             },
 
             toggle() {
-                this.mode = this.mode === 'dark' ? 'light' : 'dark';
-                localStorage.setItem('theme', this.mode);
-                this.apply();
-                window.dispatchEvent(new CustomEvent('theme-changed', { detail: { mode: this.mode } }));
+                if (typeof window.__toggleTheme === 'function') {
+                    window.__toggleTheme();
+                    this.mode = typeof window.__getTheme === 'function' ? window.__getTheme() : (localStorage.getItem('theme') || 'dark');
+                } else {
+                    this.mode = this.mode === 'dark' ? 'light' : 'dark';
+                    localStorage.setItem('theme', this.mode);
+                    this.apply();
+                    window.dispatchEvent(new CustomEvent('theme-changed', { detail: { mode: this.mode } }));
+                }
             },
 
             apply() {
-                if (this.mode === 'dark') {
-                    document.documentElement.classList.add('dark');
+                if (typeof window.__applyTheme === 'function') {
+                    window.__applyTheme(this.mode);
                 } else {
-                    document.documentElement.classList.remove('dark');
+                    if (this.mode === 'dark') {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
                 }
             }
         });
     }
 }
 
-if (window.Alpine) {
-    window.Alpine.data('nagoyaMap', window.nagoyaMap);
-    setupAlpineAudioStore();
-    setupAlpineThemeStore();
-}
-
-document.addEventListener('alpine:init', () => {
+function initAlpineExtensions() {
     if (window.Alpine) {
         window.Alpine.data('nagoyaMap', window.nagoyaMap);
         setupAlpineAudioStore();
         setupAlpineThemeStore();
     }
-});
+}
+
+initAlpineExtensions();
+document.addEventListener('alpine:init', initAlpineExtensions);
+document.addEventListener('livewire:init', initAlpineExtensions);
+document.addEventListener('DOMContentLoaded', initAlpineExtensions);

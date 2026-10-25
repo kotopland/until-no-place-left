@@ -192,6 +192,11 @@ class User extends Authenticatable
         $today = now()->startOfDay();
         $isNewRealDay = ! $this->isPlayedToday();
 
+        // Throttle updates: avoid redundant database write queries if touched within the last 15 seconds
+        if (! $isNewRealDay && $this->last_active_at && $this->last_active_at->diffInSeconds(now()) < 15) {
+            return;
+        }
+
         $this->update([
             'last_active_at' => now(),
             'last_played_real_date' => $today,

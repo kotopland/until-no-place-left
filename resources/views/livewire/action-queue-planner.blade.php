@@ -1,6 +1,6 @@
 <div class="space-y-6" wire:poll.60s="touchHeartbeat" x-data="{ mobileStep: @entangle('mobileStep') }">
     <!-- Welcome Guide Banner with Official Logo -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800/80 p-4 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-100 via-indigo-50/60 to-slate-100 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 border border-slate-200 dark:border-slate-800/80 p-4 shadow-sm dark:shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
             <img 
                 src="{{ asset('images/until-no-place-left-logo-small.png') }}" 
@@ -8,11 +8,11 @@
                 class="w-12 h-12 object-contain rounded-xl border border-indigo-500/30 shadow-md shrink-0"
             >
             <div>
-                <h3 class="text-xs font-bold text-white flex items-center gap-1.5">
+                <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                     <span>New to Nagoya Oikos?</span>
-                    <span class="px-1.5 py-0.2 rounded bg-indigo-900/60 text-indigo-300 text-[10px] font-semibold border border-indigo-700">Story & Field Guide</span>
+                    <span class="px-1.5 py-0.2 rounded bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-[10px] font-semibold border border-indigo-300 dark:border-indigo-700">Story & Field Guide</span>
                 </h3>
-                <p class="text-[11px] text-slate-400 mt-0.5">
+                <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
                     Explore the biblical narrative, the 5 Fields of CPM multiplication, and the rules of relational church planting in Japan.
                 </p>
             </div>
@@ -20,7 +20,7 @@
 
         <a 
             href="{{ route('welcome') }}" 
-            class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600/80 hover:bg-indigo-600 text-white border border-indigo-500/40 transition shrink-0 flex items-center gap-1.5 cursor-pointer self-start sm:self-center shadow"
+            class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400/40 transition shrink-0 flex items-center gap-1.5 cursor-pointer self-start sm:self-center shadow"
         >
             <span>📖</span>
             <span>Read Story & Rules</span>
@@ -28,55 +28,55 @@
     </div>
 
     <!-- Header: Time & Energy Bandwidth Status Bar -->
-    <div class="bg-gradient-to-r from-slate-900 via-indigo-950/60 to-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+    <div class="bg-gradient-to-r from-white via-indigo-50/50 to-white dark:from-slate-900 dark:via-indigo-950/60 dark:to-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm dark:shadow-xl">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="text-xl">🗾</span>
-                    <h2 class="text-lg font-bold text-white tracking-tight">Nagoya Relational Action HQ</h2>
-                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-950 text-indigo-300 border border-indigo-700">
+                    <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Nagoya Relational Action HQ</h2>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700">
                         {{ $session?->monthLabel ?? 'Month 1' }}
                     </span>
-                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-700 flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></span>
                         <span>Day {{ $player?->current_game_day ?? 1 }} / 30</span>
                     </span>
                     @if($player?->isOnline)
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-950 text-cyan-300 border border-cyan-800">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-800">
                             🟢 Online (10m Ticks Active)
                         </span>
                     @endif
                 </div>
-                <p class="text-xs text-slate-400 mt-1">
+                <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 font-medium leading-relaxed">
                     Relational evangelization takes steady faithfulness. 1 Game Day processes every 10 min while online (max 30 days/day). Remaining days resolve at midnight!
                 </p>
             </div>
 
             <!-- AP Bandwidth Meter, Daily Limit & Digital Countdown Clock -->
-            <div class="flex flex-wrap items-center gap-4 bg-slate-950/90 px-4 py-3 rounded-2xl border border-slate-800 shadow-xl">
+            <div class="flex flex-wrap items-center gap-4 bg-slate-100/90 dark:bg-slate-950/90 px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl">
                 <!-- Action Points Bandwidth -->
                 <div class="pr-2">
                     <div class="flex items-center justify-between text-xs mb-1">
-                        <span class="text-slate-400 font-medium">Bandwidth AP:</span>
-                        <span class="font-bold text-white ml-2">{{ $player?->action_points ?? 0 }} / {{ $player?->max_action_points ?? 12 }} AP</span>
+                        <span class="text-slate-600 dark:text-slate-400 font-medium">Bandwidth AP:</span>
+                        <span class="font-bold text-slate-900 dark:text-white ml-2">{{ $player?->action_points ?? 0 }} / {{ $player?->max_action_points ?? 12 }} AP</span>
                     </div>
-                    <div class="w-28 h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div class="w-28 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 rounded-full transition-all duration-300" style="width: {{ $player?->remainingBandwidthPercent ?? 0 }}%"></div>
                     </div>
                 </div>
 
                 <!-- Daily Real-Life Play Cap (30 Days Max) -->
-                <div class="border-l border-slate-800 pl-4 pr-2">
+                <div class="border-l border-slate-200 dark:border-slate-800 pl-4 pr-2">
                     <div class="flex items-center justify-between text-xs mb-1">
-                        <span class="text-slate-400 font-medium">Played Today:</span>
-                        <span class="font-bold {{ ($player?->days_played_today ?? 0) >= 30 ? 'text-amber-400' : 'text-slate-200' }} ml-2">
+                        <span class="text-slate-600 dark:text-slate-400 font-medium">Played Today:</span>
+                        <span class="font-bold {{ ($player?->days_played_today ?? 0) >= 30 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-800 dark:text-slate-200' }} ml-2">
                             {{ $player?->days_played_today ?? 0 }} / 30 Days
                         </span>
                     </div>
-                    <div class="w-28 h-2 bg-slate-800 rounded-full overflow-hidden">
-                        <div class="h-full {{ ($player?->days_played_today ?? 0) >= 30 ? 'bg-amber-400 shadow-sm shadow-amber-400' : 'bg-cyan-500' }} rounded-full transition-all duration-300" style="width: {{ min(100, round((($player?->days_played_today ?? 0) / 30) * 100)) }}%"></div>
+                    <div class="w-28 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div class="h-full {{ ($player?->days_played_today ?? 0) >= 30 ? 'bg-amber-500 shadow-sm shadow-amber-400' : 'bg-cyan-500' }} rounded-full transition-all duration-300" style="width: {{ min(100, round((($player?->days_played_today ?? 0) / 30) * 100)) }}%"></div>
                     </div>
-                    <span class="text-[9px] text-slate-500 block mt-0.5">New month every night</span>
+                    <span class="text-[9px] text-slate-500 dark:text-slate-400 block mt-0.5">New month every night</span>
                 </div>
 
                 <!-- Digital Clock Visualizer (10m Countdown) -->
@@ -84,11 +84,11 @@
                     wire:key="digital-clock-{{ $player?->current_game_day }}-{{ $player?->days_processed_this_month }}-{{ $player?->days_played_today }}"
                     x-data="digitalClock({{ max(0, $player?->secondsUntilNextDailyTick ?? 600) }}, '{{ $player?->next_daily_tick_at?->toIso8601String() }}', {{ (!($player?->hasReachedDailyPlayLimit ?? false) && ($player?->days_processed_this_month ?? 0) < 30) ? 'true' : 'false' }})"
                     x-init="init()"
-                    class="border-l border-slate-800 pl-4 flex items-center gap-3"
+                    class="border-l border-slate-200 dark:border-slate-800 pl-4 flex items-center gap-3"
                 >
                     <div>
-                        <div class="text-[9px] uppercase font-bold tracking-wider mb-1 flex items-center gap-1.5 {{ ($player?->hasReachedDailyPlayLimit ?? false) ? 'text-amber-400' : 'text-slate-400' }}">
-                            <span class="w-1.5 h-1.5 rounded-full {{ ($player?->hasReachedDailyPlayLimit ?? false) ? 'bg-amber-400' : 'bg-emerald-400 animate-pulse' }}"></span>
+                        <div class="text-[9px] uppercase font-bold tracking-wider mb-1 flex items-center gap-1.5 {{ ($player?->hasReachedDailyPlayLimit ?? false) ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-400' }}">
+                            <span class="w-1.5 h-1.5 rounded-full {{ ($player?->hasReachedDailyPlayLimit ?? false) ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse' }}"></span>
                             <span>{{ ($player?->hasReachedDailyPlayLimit ?? false) ? 'Night Rest • 30d Cap' : (($player?->days_processed_this_month ?? 0) >= 30 ? 'Month Done' : 'Auto Day Tick') }}</span>
                         </div>
                         

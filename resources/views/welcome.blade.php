@@ -13,11 +13,48 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 
     <script>
-        if (localStorage.getItem('theme') === 'light') {
-            document.documentElement.classList.remove('dark');
-        } else {
-            document.documentElement.classList.add('dark');
-        }
+        (function() {
+            var lastToggleTime = 0;
+            window.__getTheme = function() {
+                var stored = localStorage.getItem('theme');
+                if (stored) return stored;
+                return 'dark';
+            };
+            window.__applyTheme = function(mode) {
+                var isDark = mode === 'dark';
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+                document.querySelectorAll('[data-theme-icon]').forEach(function(el) {
+                    el.textContent = isDark ? '☀️' : '🌙';
+                });
+                document.querySelectorAll('[data-theme-label]').forEach(function(el) {
+                    el.textContent = isDark ? 'Light' : 'Dark';
+                });
+            };
+            window.__toggleTheme = function() {
+                var now = Date.now();
+                if (now - lastToggleTime < 150) {
+                    return;
+                }
+                lastToggleTime = now;
+
+                var current = window.__getTheme();
+                var next = current === 'dark' ? 'light' : 'dark';
+                localStorage.setItem('theme', next);
+                window.__applyTheme(next);
+                if (window.Alpine && window.Alpine.store && window.Alpine.store('theme')) {
+                    window.Alpine.store('theme').mode = next;
+                }
+                window.dispatchEvent(new CustomEvent('theme-changed', { detail: { mode: next } }));
+            };
+            window.__applyTheme(window.__getTheme());
+            document.addEventListener('DOMContentLoaded', function() {
+                window.__applyTheme(window.__getTheme());
+            });
+        })();
     </script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -58,13 +95,12 @@
                 <!-- Theme Mode Toggle Button (Light/Dark) -->
                 <button 
                     type="button" 
-                    @click="$store.theme?.toggle()" 
-                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-slate-800/80 hover:bg-slate-700/80 border-slate-700/80 text-amber-300 dark:text-slate-300 hover:text-white"
-                    :title="$store.theme?.mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+                    onclick="window.__toggleTheme ? window.__toggleTheme() : null"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 border-slate-300 dark:border-slate-700/80 text-amber-600 dark:text-amber-300 hover:text-amber-700 dark:hover:text-white"
+                    title="Switch Light/Dark Mode"
                 >
-                    <span x-show="$store.theme?.mode === 'dark'">☀️</span>
-                    <span x-show="$store.theme?.mode !== 'dark'">🌙</span>
-                    <span class="hidden sm:inline text-[11px]" x-text="$store.theme?.mode === 'dark' ? 'Light' : 'Dark'"></span>
+                    <span data-theme-icon>☀️</span>
+                    <span data-theme-label class="hidden sm:inline text-[11px]">Light</span>
                 </button>
 
                 <!-- Ambient Music Toggle Button -->

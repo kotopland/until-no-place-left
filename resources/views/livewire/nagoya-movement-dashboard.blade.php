@@ -1,6 +1,6 @@
-<div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+<div class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-200">
     <!-- Top Navigation Bar -->
-    <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-md">
+    <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-md transition-colors duration-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
             <!-- Brand & Game Title with Official Logo -->
             <a href="{{ route('welcome') }}" class="flex items-center gap-2.5 sm:gap-3 group cursor-pointer shrink-0" title="View Story, Lore & Game Rules">
@@ -10,24 +10,24 @@
                     class="w-10 h-10 sm:w-11 sm:h-11 object-contain rounded-2xl shadow-lg shadow-indigo-500/20 border border-indigo-500/40 group-hover:scale-105 group-hover:border-indigo-400 transition duration-200 shrink-0"
                 >
                 <div class="flex flex-col justify-center whitespace-nowrap min-w-0">
-                    <h1 class="text-xs sm:text-sm font-black text-white tracking-tight leading-none flex items-center gap-1.5 whitespace-nowrap">
+                    <h1 class="text-xs sm:text-sm font-black text-slate-900 dark:text-white tracking-tight leading-none flex items-center gap-1.5 whitespace-nowrap">
                         <span>Nagoya Oikos</span>
-                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-400 border border-indigo-800 uppercase tracking-wider">Four Fields</span>
+                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-800 uppercase tracking-wider">Four Fields</span>
                     </h1>
-                    <p class="text-[10px] sm:text-[11px] text-slate-400 font-medium group-hover:text-indigo-300 transition whitespace-nowrap leading-none mt-1 hidden sm:block">
+                    <p class="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition whitespace-nowrap leading-none mt-1 hidden sm:block">
                         <span>Multiplayer Movement Simulation</span>
-                        <span class="text-slate-600 mx-1 hidden xl:inline">•</span>
+                        <span class="text-slate-400 dark:text-slate-600 mx-1 hidden xl:inline">•</span>
                         <span class="hidden xl:inline text-slate-500">No Place Left</span>
                     </p>
                 </div>
             </a>
 
             <!-- Main Tab Navigation -->
-            <nav class="hidden md:flex items-center gap-1 p-1 bg-slate-950/80 rounded-2xl border border-slate-800 text-xs font-semibold">
+            <nav class="hidden md:flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-950/80 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-semibold">
                 <button 
                     type="button" 
                     wire:click="setTab('planner')"
-                    class="px-4 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'planner' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white' }}"
+                    class="px-4 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'planner' ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
                 >
                     <span>⚡</span>
                     <span>Action HQ</span>
@@ -35,7 +35,7 @@
                 <button 
                     type="button" 
                     wire:click="setTab('churches')"
-                    class="px-4 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'churches' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white' }}"
+                    class="px-4 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'churches' ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
                 >
                     <span>⛪</span>
                     <span>Church Circles</span>
@@ -43,7 +43,7 @@
                 <button 
                     type="button" 
                     wire:click="setTab('leaderboard')"
-                    class="px-4 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'leaderboard' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white' }}"
+                    class="px-4 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'leaderboard' ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
                 >
                     <span>🏆</span>
                     <span>Leaderboard & Co-op</span>
@@ -51,14 +51,14 @@
                 <button 
                     type="button" 
                     wire:click="setTab('map')"
-                    class="px-4 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'map' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white' }}"
+                    class="px-4 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'map' ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
                 >
                     <span>🗺️</span>
                     <span>Nagoya Map</span>
                 </button>
                 <a 
                     href="{{ route('welcome') }}"
-                    class="px-3.5 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-slate-400 hover:text-amber-300 hover:bg-slate-900 border border-transparent hover:border-slate-800"
+                    class="px-3.5 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-slate-200 dark:hover:bg-slate-900 border border-transparent hover:border-slate-300 dark:hover:border-slate-800"
                     title="View Full Story, Biblical Framework & Game Rules"
                 >
                     <span>📖</span>
@@ -130,14 +130,14 @@
 
                 <!-- Theme Mode Toggle Button (Light/Dark) -->
                 <button 
+                    wire:ignore
                     type="button" 
-                    @click="$store.theme?.toggle()" 
-                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-slate-800 border-slate-700 text-amber-300 dark:text-slate-300 hover:text-white"
-                    :title="$store.theme?.mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+                    onclick="window.__toggleTheme ? window.__toggleTheme() : null"
+                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-amber-600 dark:text-amber-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-amber-700 dark:hover:text-white shadow-sm"
+                    title="Switch Light/Dark Mode"
                 >
-                    <span x-show="$store.theme?.mode === 'dark'">☀️</span>
-                    <span x-show="$store.theme?.mode !== 'dark'">🌙</span>
-                    <span class="hidden xl:inline text-[11px]" x-text="$store.theme?.mode === 'dark' ? 'Light' : 'Dark'"></span>
+                    <span data-theme-icon>☀️</span>
+                    <span data-theme-label class="hidden xl:inline text-[11px]">Light</span>
                 </button>
 
                 <!-- Ambient Music Toggle Button -->
@@ -211,15 +211,15 @@
         </div>
 
         <!-- Mobile Tab Navigation Bar -->
-        <div class="flex md:hidden items-center justify-around px-2 py-2 border-t border-slate-800/80 text-[11px] font-semibold bg-slate-950">
-            <button wire:click="setTab('planner')" class="px-2 py-1 rounded-lg {{ $currentTab === 'planner' ? 'bg-indigo-600 text-white' : 'text-slate-400' }}">⚡ HQ</button>
-            <button wire:click="setTab('churches')" class="px-2 py-1 rounded-lg {{ $currentTab === 'churches' ? 'bg-indigo-600 text-white' : 'text-slate-400' }}">⛪ Circles</button>
-            <button wire:click="setTab('leaderboard')" class="px-2 py-1 rounded-lg {{ $currentTab === 'leaderboard' ? 'bg-indigo-600 text-white' : 'text-slate-400' }}">🏆 Ladder</button>
-            <button wire:click="setTab('map')" class="px-2 py-1 rounded-lg {{ $currentTab === 'map' ? 'bg-indigo-600 text-white' : 'text-slate-400' }}">🗺️ Map</button>
-            <button type="button" @click="$store.audio?.toggle()" class="px-2 py-1 rounded-lg" :class="$store.audio?.isPlaying ? 'text-indigo-300 font-bold' : 'text-slate-400'"><span x-text="$store.audio?.isPlaying ? '🎵 On' : '🔇 Off'"></span></button>
-            <button type="button" @click="$store.theme?.toggle()" class="px-2 py-1 rounded-lg text-amber-400 font-bold" title="Toggle Light / Dark Mode"><span x-text="$store.theme?.mode === 'dark' ? '☀️' : '🌙'"></span></button>
-            <button wire:click="openEditNameModal" class="px-2 py-1 rounded-lg text-indigo-400">👤 Name</button>
-            <a href="{{ route('welcome') }}" class="px-2 py-1 rounded-lg text-amber-400 font-bold">📖 Story</a>
+        <div class="flex md:hidden items-center justify-around px-2 py-2 border-t border-slate-200 dark:border-slate-800/80 text-[11px] font-semibold bg-white dark:bg-slate-950 transition-colors duration-200">
+            <button wire:click="setTab('planner')" class="px-2 py-1 rounded-lg {{ $currentTab === 'planner' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400' }}">⚡ HQ</button>
+            <button wire:click="setTab('churches')" class="px-2 py-1 rounded-lg {{ $currentTab === 'churches' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400' }}">⛪ Circles</button>
+            <button wire:click="setTab('leaderboard')" class="px-2 py-1 rounded-lg {{ $currentTab === 'leaderboard' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400' }}">🏆 Ladder</button>
+            <button wire:click="setTab('map')" class="px-2 py-1 rounded-lg {{ $currentTab === 'map' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400' }}">🗺️ Map</button>
+            <button type="button" @click="$store.audio?.toggle()" class="px-2 py-1 rounded-lg" :class="$store.audio?.isPlaying ? 'text-indigo-600 dark:text-indigo-300 font-bold' : 'text-slate-500 dark:text-slate-400'"><span x-text="$store.audio?.isPlaying ? '🎵 On' : '🔇 Off'"></span></button>
+            <button wire:ignore type="button" onclick="window.__toggleTheme ? window.__toggleTheme() : null" class="px-2 py-1 rounded-lg text-amber-500 dark:text-amber-400 font-bold" title="Toggle Light / Dark Mode"><span data-theme-icon>☀️</span></button>
+            <button wire:click="openEditNameModal" class="px-2 py-1 rounded-lg text-indigo-600 dark:text-indigo-400">👤 Name</button>
+            <a href="{{ route('welcome') }}" class="px-2 py-1 rounded-lg text-amber-600 dark:text-amber-400 font-bold">📖 Story</a>
         </div>
     </header>
 
