@@ -30,6 +30,7 @@ class ResetGameCommand extends BaseCommand
     protected $signature = 'game:reset
                             {--session= : Optional specific GameSession code (e.g. nagoya-2026)}
                             {--all : Reset all game sessions}
+                            {--wipe-players : Delete all player accounts (except default missionary coach)}
                             {--force : Force reset without confirmation prompt}';
 
     /**
@@ -40,6 +41,7 @@ class ResetGameCommand extends BaseCommand
         $sessionCode = $this->option('session');
         $all = (bool) $this->option('all');
         $force = (bool) $this->option('force');
+        $wipePlayers = (bool) $this->option('wipe-players');
 
         if ($all) {
             $sessions = GameSession::all();
@@ -70,7 +72,7 @@ class ResetGameCommand extends BaseCommand
         foreach ($sessions as $session) {
             $this->components->info("Resetting session: {$session->name} [{$session->code}]...");
 
-            DB::transaction(function () use ($session): void {
+            DB::transaction(function () use ($session, $wipePlayers): void {
                 // 1. Delete transient gameplay records
                 QueuedMonthlyAction::where('game_session_id', $session->id)->delete();
                 MonthlyReport::where('game_session_id', $session->id)->delete();
@@ -102,7 +104,13 @@ class ResetGameCommand extends BaseCommand
                     'is_active' => true,
                 ]);
 
-                // 7. Reset player Action Points & scoring while preserving accounts & logins
+                // 7. Reset player Action Points & scoring, and optionally wipe player accounts
+                if ($wipePlayers) {
+                    User::where('current_game_session_id', $session->id)
+                        ->where('email', '!=', 'coach@nagoyaharvest.jp')
+                        ->delete();
+                }
+
                 User::where('current_game_session_id', $session->id)->each(function (User $user): void {
                     $isCoach = $user->email === 'coach@nagoyaharvest.jp';
 
@@ -132,6 +140,9 @@ class ResetGameCommand extends BaseCommand
             $this->components->twoColumnDetail('Game Day', '1 / 30');
             $this->components->twoColumnDetail('Calendar Date', '2026-04-01 (Nagoya Spring)');
             $this->components->twoColumnDetail('Player Action Points', '12 / 12 AP restored');
+            if ($wipePlayers) {
+                $this->components->twoColumnDetail('Player Accounts', 'Wiped (Only coach restored)');
+            }
             $this->components->twoColumnDetail('Root Church', 'Meito Living Seed (G1)');
             $this->components->twoColumnDetail('Archetypal Believer', 'Daisuke Kato (Ready for 411 Training)');
             $this->components->twoColumnDetail('Luke 10 Person of Peace', 'Kenji Tanaka (Osu Market)');

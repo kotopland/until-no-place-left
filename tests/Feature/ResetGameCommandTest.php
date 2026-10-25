@@ -144,3 +144,41 @@ test('game:reset command respects confirmation prompt when cancelled', function 
     $session->refresh();
     expect($session->current_game_month)->toBe(5);
 });
+
+test('game:reset with --wipe-players removes non-coach players and keeps coach', function (): void {
+    $session = GameSession::create([
+        'name' => 'Wipe Test Session',
+        'code' => 'nagoya-2026',
+        'current_game_month' => 4,
+        'current_game_day' => 15,
+        'calendar_date' => '2026-07-15',
+        'next_tick_at' => now()->addHours(12),
+        'is_active' => true,
+    ]);
+
+    $coach = User::factory()->create([
+        'email' => 'coach@nagoyaharvest.jp',
+        'current_game_session_id' => $session->id,
+        'current_game_month' => 4,
+        'action_points' => 2,
+    ]);
+
+    $player = User::factory()->create([
+        'email' => 'regular_player@nagoyaharvest.jp',
+        'current_game_session_id' => $session->id,
+        'current_game_month' => 4,
+    ]);
+
+    $this->artisan('game:reset', ['--force' => true, '--wipe-players' => true])
+        ->expectsOutputToContain('Player Accounts')
+        ->assertSuccessful();
+
+    expect(User::where('email', 'regular_player@nagoyaharvest.jp')->exists())->toBeFalse();
+    expect(User::where('email', 'coach@nagoyaharvest.jp')->exists())->toBeTrue();
+
+    $coach->refresh();
+    expect($coach->current_game_month)->toBe(1)
+        ->and($coach->current_game_day)->toBe(1)
+        ->and($coach->action_points)->toBe(12);
+});
+
