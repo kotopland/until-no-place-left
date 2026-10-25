@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
@@ -7,50 +9,338 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-/* Dark Cartography for OpenStreetMap (Zero API Keys) */
-#nagoya-leaflet-map .leaflet-tile-pane {
+/* ==========================================================================
+   LIGHT MODE DESIGN SYSTEM OVERRIDES (when .dark class is removed)
+   ========================================================================== */
+
+:root:not(.dark) {
+    color-scheme: light;
+}
+
+:root:not(.dark) body {
+    background-color: #f8fafc;
+    color: #0f172a;
+}
+
+/* Surfaces & Containers */
+:root:not(.dark) .bg-slate-950 {
+    background-color: #ffffff;
+}
+:root:not(.dark) .bg-slate-900 {
+    background-color: #f8fafc;
+}
+:root:not(.dark) .bg-slate-900\/90,
+:root:not(.dark) .bg-slate-900\/80,
+:root:not(.dark) .bg-slate-900\/70,
+:root:not(.dark) .bg-slate-900\/60,
+:root:not(.dark) .bg-slate-900\/50,
+:root:not(.dark) .bg-slate-900\/40 {
+    background-color: rgba(255, 255, 255, 0.95);
+}
+:root:not(.dark) .bg-slate-950\/90,
+:root:not(.dark) .bg-slate-950\/80,
+:root:not(.dark) .bg-slate-950\/70,
+:root:not(.dark) .bg-slate-950\/60,
+:root:not(.dark) .bg-slate-950\/50,
+:root:not(.dark) .bg-slate-950\/40 {
+    background-color: rgba(241, 245, 249, 0.85);
+}
+:root:not(.dark) .bg-slate-800,
+:root:not(.dark) .bg-slate-800\/90,
+:root:not(.dark) .bg-slate-800\/80,
+:root:not(.dark) .bg-slate-800\/60,
+:root:not(.dark) .bg-slate-800\/40 {
+    background-color: #f1f5f9;
+}
+:root:not(.dark) .hover\:bg-slate-800:hover,
+:root:not(.dark) .hover\:bg-slate-700:hover {
+    background-color: #e2e8f0;
+}
+
+/* Borders & Dividers */
+:root:not(.dark) .border-slate-800,
+:root:not(.dark) .border-slate-800\/80,
+:root:not(.dark) .border-slate-800\/60,
+:root:not(.dark) .border-slate-700,
+:root:not(.dark) .border-slate-700\/60,
+:root:not(.dark) .border-slate-700\/50 {
+    border-color: #cbd5e1;
+}
+
+/* Typography in Light Mode */
+:root:not(.dark) .text-white {
+    color: #0f172a;
+}
+:root:not(.dark) .text-slate-100 {
+    color: #0f172a;
+}
+:root:not(.dark) .text-slate-200 {
+    color: #1e293b;
+}
+:root:not(.dark) .text-slate-300 {
+    color: #334155;
+}
+:root:not(.dark) .text-slate-400 {
+    color: #64748b;
+}
+:root:not(.dark) .text-slate-500 {
+    color: #64748b;
+}
+
+/* Gradients in Light Mode */
+:root:not(.dark) .from-slate-900 {
+    --tw-gradient-from: #ffffff var(--tw-gradient-from-position);
+}
+:root:not(.dark) .via-indigo-950\/40,
+:root:not(.dark) .via-indigo-950\/60,
+:root:not(.dark) .via-indigo-950\/70 {
+    --tw-gradient-via: rgba(238, 242, 255, 0.7) var(--tw-gradient-via-position);
+}
+:root:not(.dark) .to-slate-900 {
+    --tw-gradient-to: #ffffff var(--tw-gradient-to-position);
+}
+
+/* Accent Backgrounds & Text (Indigo, Emerald, Amber, Rose, Purple, Cyan) */
+:root:not(.dark) .bg-indigo-950,
+:root:not(.dark) .bg-indigo-950\/90,
+:root:not(.dark) .bg-indigo-950\/80,
+:root:not(.dark) .bg-indigo-950\/60,
+:root:not(.dark) .bg-indigo-950\/50,
+:root:not(.dark) .bg-indigo-950\/40,
+:root:not(.dark) .bg-indigo-950\/30,
+:root:not(.dark) .bg-indigo-950\/20 {
+    background-color: #e0e7ff;
+}
+:root:not(.dark) .text-indigo-300,
+:root:not(.dark) .text-indigo-400 {
+    color: #4338ca;
+}
+:root:not(.dark) .border-indigo-800,
+:root:not(.dark) .border-indigo-700 {
+    border-color: #c7d2fe;
+}
+
+:root:not(.dark) .bg-emerald-950,
+:root:not(.dark) .bg-emerald-950\/90,
+:root:not(.dark) .bg-emerald-950\/80,
+:root:not(.dark) .bg-emerald-950\/60,
+:root:not(.dark) .bg-emerald-950\/50,
+:root:not(.dark) .bg-emerald-950\/40,
+:root:not(.dark) .bg-emerald-950\/20 {
+    background-color: #d1fae5;
+}
+:root:not(.dark) .text-emerald-300,
+:root:not(.dark) .text-emerald-400 {
+    color: #047857;
+}
+:root:not(.dark) .border-emerald-800,
+:root:not(.dark) .border-emerald-700 {
+    border-color: #a7f3d0;
+}
+
+:root:not(.dark) .bg-amber-950,
+:root:not(.dark) .bg-amber-950\/90,
+:root:not(.dark) .bg-amber-950\/80,
+:root:not(.dark) .bg-amber-950\/60,
+:root:not(.dark) .bg-amber-950\/50,
+:root:not(.dark) .bg-amber-950\/40,
+:root:not(.dark) .bg-amber-950\/30 {
+    background-color: #fef3c7;
+}
+:root:not(.dark) .text-amber-300,
+:root:not(.dark) .text-amber-400 {
+    color: #b45309;
+}
+:root:not(.dark) .border-amber-800,
+:root:not(.dark) .border-amber-700 {
+    border-color: #fde68a;
+}
+
+:root:not(.dark) .bg-rose-950,
+:root:not(.dark) .bg-rose-950\/90,
+:root:not(.dark) .bg-rose-950\/80,
+:root:not(.dark) .bg-rose-950\/60,
+:root:not(.dark) .bg-rose-950\/50,
+:root:not(.dark) .bg-rose-950\/40 {
+    background-color: #ffe4e6;
+}
+:root:not(.dark) .text-rose-300,
+:root:not(.dark) .text-rose-400 {
+    color: #be123c;
+}
+:root:not(.dark) .border-rose-800,
+:root:not(.dark) .border-rose-700 {
+    border-color: #fecdd3;
+}
+
+:root:not(.dark) .bg-purple-950,
+:root:not(.dark) .bg-purple-950\/90,
+:root:not(.dark) .bg-purple-950\/80,
+:root:not(.dark) .bg-purple-950\/60,
+:root:not(.dark) .bg-purple-950\/50 {
+    background-color: #f3e8ff;
+}
+:root:not(.dark) .text-purple-300,
+:root:not(.dark) .text-purple-400 {
+    color: #6b21a8;
+}
+:root:not(.dark) .border-purple-800,
+:root:not(.dark) .border-purple-700 {
+    border-color: #e9d5ff;
+}
+
+:root:not(.dark) .bg-cyan-950,
+:root:not(.dark) .bg-cyan-950\/90,
+:root:not(.dark) .bg-cyan-950\/80,
+:root:not(.dark) .bg-cyan-950\/60 {
+    background-color: #cffafe;
+}
+:root:not(.dark) .text-cyan-300,
+:root:not(.dark) .text-cyan-400 {
+    color: #0e7490;
+}
+:root:not(.dark) .border-cyan-800,
+:root:not(.dark) .border-cyan-700 {
+    border-color: #a5f3fc;
+}
+
+:root:not(.dark) .bg-blue-950 {
+    background-color: #dbeafe;
+}
+:root:not(.dark) .text-blue-300,
+:root:not(.dark) .text-blue-400 {
+    color: #1d4ed8;
+}
+:root:not(.dark) .border-blue-800 {
+    border-color: #bfdbfe;
+}
+
+/* Inputs & Form Controls in Light Mode */
+:root:not(.dark) input[type="text"],
+:root:not(.dark) input[type="email"],
+:root:not(.dark) input[type="password"],
+:root:not(.dark) textarea,
+:root:not(.dark) select {
+    background-color: #ffffff;
+    color: #0f172a;
+    border-color: #cbd5e1;
+}
+:root:not(.dark) input::placeholder,
+:root:not(.dark) textarea::placeholder {
+    color: #94a3b8;
+}
+
+/* Keep High-Emphasis Action Buttons crisp with white text */
+:root:not(.dark) .bg-indigo-600,
+:root:not(.dark) .bg-indigo-500,
+:root:not(.dark) .bg-emerald-600,
+:root:not(.dark) .bg-emerald-500,
+:root:not(.dark) .bg-rose-600,
+:root:not(.dark) .bg-amber-600,
+:root:not(.dark) .bg-gradient-to-r,
+:root:not(.dark) .bg-gradient-to-tr {
+    color: #ffffff !important;
+}
+:root:not(.dark) .bg-gradient-to-r *,
+:root:not(.dark) .bg-gradient-to-tr *,
+:root:not(.dark) .bg-indigo-600 *,
+:root:not(.dark) .bg-emerald-600 * {
+    color: inherit;
+}
+
+/* Ambient glow in Light Mode */
+:root:not(.dark) .from-indigo-900\/20 {
+    --tw-gradient-from: rgba(199, 210, 254, 0.4) var(--tw-gradient-from-position);
+}
+:root:not(.dark) .via-emerald-900\/10 {
+    --tw-gradient-via: rgba(209, 250, 229, 0.3) var(--tw-gradient-via-position);
+}
+
+/* ==========================================================================
+   OPENSTREETMAP & LEAFLET MAP THEME STYLING
+   ========================================================================== */
+
+/* Dark Mode Cartography */
+.dark #nagoya-leaflet-map .leaflet-tile-pane {
     filter: brightness(0.65) invert(1) contrast(2.2) hue-rotate(200deg) saturate(0.3);
 }
 
-#nagoya-leaflet-map .leaflet-container {
+.dark #nagoya-leaflet-map .leaflet-container {
     background: #020617;
 }
 
-/* High-Contrast Sleek Dark Theme for Leaflet Tooltips & Popovers */
+/* Light Mode Cartography (Zero filters, clean OpenStreetMap tiles) */
+#nagoya-leaflet-map .leaflet-container {
+    background: #f8fafc;
+}
+
+/* Leaflet Tooltips & Popovers - Adaptive */
 .leaflet-tooltip {
-    background: rgba(15, 23, 42, 0.96) !important; /* slate-900 */
+    background: rgba(255, 255, 255, 0.96) !important;
     backdrop-filter: blur(12px) !important;
     -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(51, 65, 85, 0.85) !important; /* slate-700 */
+    border: 1px solid rgba(203, 213, 225, 0.9) !important;
     border-radius: 14px !important;
-    color: #f8fafc !important; /* slate-50 */
+    color: #0f172a !important;
     padding: 8px 12px !important;
-    box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.75), 0 4px 6px -2px rgba(0, 0, 0, 0.5) !important;
+    box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
     font-family: inherit !important;
 }
 
+.dark .leaflet-tooltip {
+    background: rgba(15, 23, 42, 0.96) !important;
+    border: 1px solid rgba(51, 65, 85, 0.85) !important;
+    color: #f8fafc !important;
+    box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.75), 0 4px 6px -2px rgba(0, 0, 0, 0.5) !important;
+}
+
 .leaflet-tooltip-top:before {
+    border-top-color: rgba(255, 255, 255, 0.96) !important;
+}
+.dark .leaflet-tooltip-top:before {
     border-top-color: rgba(15, 23, 42, 0.96) !important;
 }
+
 .leaflet-tooltip-bottom:before {
+    border-bottom-color: rgba(255, 255, 255, 0.96) !important;
+}
+.dark .leaflet-tooltip-bottom:before {
     border-bottom-color: rgba(15, 23, 42, 0.96) !important;
 }
+
 .leaflet-tooltip-left:before {
+    border-left-color: rgba(255, 255, 255, 0.96) !important;
+}
+.dark .leaflet-tooltip-left:before {
     border-left-color: rgba(15, 23, 42, 0.96) !important;
 }
+
 .leaflet-tooltip-right:before {
+    border-right-color: rgba(255, 255, 255, 0.96) !important;
+}
+.dark .leaflet-tooltip-right:before {
     border-right-color: rgba(15, 23, 42, 0.96) !important;
 }
 
 .leaflet-popup-content-wrapper {
-    background: rgba(15, 23, 42, 0.96) !important;
+    background: rgba(255, 255, 255, 0.96) !important;
     backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(51, 65, 85, 0.85) !important;
+    border: 1px solid rgba(203, 213, 225, 0.9) !important;
     border-radius: 16px !important;
+    color: #0f172a !important;
+    box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.15) !important;
+}
+
+.dark .leaflet-popup-content-wrapper {
+    background: rgba(15, 23, 42, 0.96) !important;
+    border: 1px solid rgba(51, 65, 85, 0.85) !important;
     color: #f8fafc !important;
     box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.8) !important;
 }
 
 .leaflet-popup-tip {
+    background: rgba(255, 255, 255, 0.96) !important;
+}
+.dark .leaflet-popup-tip {
     background: rgba(15, 23, 42, 0.96) !important;
 }

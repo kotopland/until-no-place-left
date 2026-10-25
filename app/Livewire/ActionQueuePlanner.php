@@ -27,6 +27,8 @@ class ActionQueuePlanner extends Component
 
     public string $notes = '';
 
+    public bool $filterEligibleOnly = false;
+
     public int $mobileStep = 2;
 
     public ?User $player = null;
@@ -47,9 +49,36 @@ class ActionQueuePlanner extends Component
         // Mark player active (online)
         $this->player?->touchActive();
 
-        // Default to Naka-ku or first ward
-        $defaultWard = Ward::where('slug', 'naka-ku')->first() ?? Ward::first();
+        // Default to player's home ward, or Naka-ku
+        $defaultWard = $this->player?->homeWard ?? Ward::where('slug', 'naka-ku')->first() ?? Ward::first();
+        if ($this->player && ! $this->player->home_ward_id && $defaultWard) {
+            $this->player->update(['home_ward_id' => $defaultWard->id]);
+            $this->player->refresh();
+        }
         $this->selectedWardId = $defaultWard?->id;
+    }
+
+    public function moveToWard(int $wardId): void
+    {
+        if (! $this->player) {
+            return;
+        }
+
+        $ward = Ward::find($wardId);
+        if (! $ward) {
+            return;
+        }
+
+        $previousWard = $this->player->homeWard;
+        $this->player->update(['home_ward_id' => $ward->id]);
+        $this->player->refresh();
+
+        $fromText = $previousWard ? "from {$previousWard->name} " : '';
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => "🏡 Relocated your residence {$fromText}to {$ward->name}! You are now an embedded neighbor here (+25% relational trust bonus and zero transit friction).",
+        ]);
+        $this->selectedWardId = $ward->id;
     }
 
     public function setMobileStep(int $step): void
@@ -88,13 +117,36 @@ class ActionQueuePlanner extends Component
         $this->mobileStep = 2;
     }
 
+    public function toggleFilterEligibleOnly(): void
+    {
+        $this->filterEligibleOnly = ! $this->filterEligibleOnly;
+    }
+
     public function selectNpc(int $npcId): void
     {
         $this->selectedNpcId = $npcId;
         $npc = Npc::find($npcId);
         if ($npc) {
-            // Pre-select recommended action based on NPC need state
-            $this->selectedActionType = $npc->need_state->recommendedAction()->value;
+            // Smartly select recommended action based on 5 Levels of Leadership & spiritual readiness
+            if ($npc->need_state !== \App\Enums\NpcNeedState::None) {
+                $this->selectedActionType = $npc->need_state->recommendedAction()->value;
+            } elseif ($npc->status === \App\Enums\ReceptivityStatus::Green || $npc->hasPrayedSalvation) {
+                if (! $npc->trained_411) {
+                    $this->selectedActionType = MinistryActionType::Train411->value;
+                } elseif (! $npc->is_baptized) {
+                    $this->selectedActionType = MinistryActionType::CommandsOfChrist->value;
+                } elseif ($npc->leadership_tier->level() === 1) {
+                    $this->selectedActionType = MinistryActionType::MentorTimothy->value;
+                } elseif ($npc->leadership_tier->level() === 2) {
+                    $this->selectedActionType = MinistryActionType::IronOnIron->value;
+                } else {
+                    $this->selectedActionType = MinistryActionType::SwarmTraining->value;
+                }
+            } elseif ($npc->status === \App\Enums\ReceptivityStatus::Yellow) {
+                $this->selectedActionType = MinistryActionType::Share3Circles->value;
+            } else {
+                $this->selectedActionType = MinistryActionType::CasualTalk->value;
+            }
         }
         $this->mobileStep = 3;
     }
@@ -117,21 +169,29 @@ class ActionQueuePlanner extends Component
         }
 
         $actionEnum = MinistryActionType::tryFrom($this->selectedActionType) ?? MinistryActionType::CasualTalk;
-        $apCost = $actionEnum->apCost();
+        $baseApCost = $actionEnum->apCost();
+        $targetWard = Ward::find($this->selectedWardId);
+        $commuteApCost = $this->player->commuteApCostForWard($targetWard);
+        $totalApCost = $baseApCost + $commuteApCost;
 
         // Refresh player state
         $this->player->refresh();
 
-        if ($this->player->action_points < $apCost) {
+        if ($this->player->action_points < $totalApCost) {
+            $commuteDetail = $commuteApCost > 0
+                ? " ({$baseApCost} AP base + {$commuteApCost} AP transit commute from {$this->player->homeWard?->name})"
+                : '';
             $this->dispatch('notify', [
                 'type' => 'error',
-                'message' => "Insufficient Action Points! You have {$this->player->action_points} AP, but {$actionEnum->label()} requires {$apCost} AP.",
+                'message' => "Insufficient Action Points! You have {$this->player->action_points} AP, but {$actionEnum->label()} requires {$totalApCost} AP{$commuteDetail}.",
             ]);
 
             return;
         }
 
-        if ($actionEnum->requiresTargetNpc() && ! $this->selectedNpcId) {
+        $targetNpc = $this->selectedNpcId ? Npc::find($this->selectedNpcId) : null;
+
+        if ($actionEnum->requiresTargetNpc() && ! $targetNpc) {
             $this->dispatch('notify', [
                 'type' => 'warning',
                 'message' => 'Please select a resident NPC in the ward before scheduling this action.',
@@ -140,28 +200,46 @@ class ActionQueuePlanner extends Component
             return;
         }
 
-        // Deduct player AP
-        $this->player->decrement('action_points', $apCost);
+        // Validate 5 Levels of Leadership readiness
+        if ($targetNpc && ! $actionEnum->isEligibleFor($targetNpc)) {
+            $reason = $actionEnum->ineligibilityReason($targetNpc);
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => "Action Blocked: {$reason}",
+            ]);
 
-        // Queue action for the daily/monthly resolution tick
+            return;
+        }
+
+        // Deduct player AP (including transit commute surcharge)
+        $this->player->decrement('action_points', $totalApCost);
+
+        // Queue action for the daily/monthly resolution tick (supports joint prayer walking with a resident)
+        $targetNpcId = match ($actionEnum) {
+            MinistryActionType::PrayerWalk => $this->selectedNpcId,
+            MinistryActionType::InternationalEvent => null,
+            default => $actionEnum->requiresTargetNpc() ? $this->selectedNpcId : null,
+        };
+
         QueuedMonthlyAction::create([
             'game_session_id' => $this->session->id,
             'user_id' => $this->player->id,
             'ward_id' => $this->selectedWardId,
-            'target_npc_id' => $actionEnum->requiresTargetNpc() ? $this->selectedNpcId : null,
+            'target_npc_id' => $targetNpcId,
             'action_type' => $actionEnum,
             'status' => QueuedActionStatus::Pending,
             'game_month' => $this->player->current_game_month,
             'game_day' => $this->player->current_game_day,
-            'ap_cost' => $apCost,
+            'ap_cost' => $totalApCost,
             'notes' => $this->notes,
         ]);
 
         $this->notes = '';
         $this->dispatch('action-queued');
+        $commuteMsg = $commuteApCost > 0 ? " (includes +{$commuteApCost} AP transit)" : '';
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => "Successfully queued {$actionEnum->label()} for Day {$this->player->current_game_day} / Month {$this->player->current_game_month}! ({$apCost} AP consumed)",
+            'message' => "Successfully queued {$actionEnum->label()} for Day {$this->player->current_game_day} / Month {$this->player->current_game_month}! ({$totalApCost} AP consumed{$commuteMsg})",
         ]);
     }
 
@@ -305,8 +383,22 @@ class ActionQueuePlanner extends Component
             ->take(5)
             ->get();
 
-        $actionTypes = MinistryActionType::cases();
+        $allActionTypes = MinistryActionType::cases();
+        $actionTypes = ($this->filterEligibleOnly && $selectedNpc)
+            ? array_values(array_filter($allActionTypes, fn (MinistryActionType $action) => $action->isEligibleFor($selectedNpc)))
+            : $allActionTypes;
+
         $infoActionEnum = $this->infoActionType ? MinistryActionType::tryFrom($this->infoActionType) : null;
+
+        $commuteApCost = $this->player ? $this->player->commuteApCostForWard($selectedWard) : 0;
+        $commuteMinutes = $this->player ? $this->player->commuteTransitMinutesForWard($selectedWard) : 0;
+        $commuteDistanceKm = $this->player ? $this->player->distanceToWard($selectedWard) : 0.0;
+        $isHomeWard = $this->player && $selectedWard && $this->player->home_ward_id === $selectedWard->id;
+
+        $residentMissionariesByWard = User::where('current_game_session_id', $this->session?->id)
+            ->whereNotNull('home_ward_id')
+            ->get()
+            ->groupBy('home_ward_id');
 
         return view('livewire.action-queue-planner', [
             'wards' => $wards,
@@ -316,7 +408,13 @@ class ActionQueuePlanner extends Component
             'queuedActions' => $queuedActions,
             'recentOutcomes' => $recentOutcomes,
             'actionTypes' => $actionTypes,
+            'allActionTypes' => $allActionTypes,
             'infoActionEnum' => $infoActionEnum,
+            'commuteApCost' => $commuteApCost,
+            'commuteMinutes' => $commuteMinutes,
+            'commuteDistanceKm' => $commuteDistanceKm,
+            'isHomeWard' => $isHomeWard,
+            'residentMissionariesByWard' => $residentMissionariesByWard,
         ]);
     }
 }

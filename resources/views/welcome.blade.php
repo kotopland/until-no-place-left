@@ -12,9 +12,17 @@
     <!-- Leaflet CSS for preview map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 
+    <script>
+        if (localStorage.getItem('theme') === 'light') {
+            document.documentElement.classList.remove('dark');
+        } else {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white antialiased overflow-x-hidden">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-500 selection:text-white antialiased overflow-x-hidden transition-colors duration-200">
 
     <!-- Top Glow / Ambient Background Gradient -->
     <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] bg-gradient-to-b from-indigo-900/20 via-emerald-900/10 to-transparent blur-3xl pointer-events-none -z-10"></div>
@@ -40,11 +48,25 @@
             <nav class="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-300">
                 <a href="#story" class="hover:text-indigo-400 transition">The Story</a>
                 <a href="#four-fields" class="hover:text-emerald-400 transition">The Four Fields</a>
+                <a href="#toolbox" class="hover:text-cyan-400 transition">5 Levels Toolbox</a>
                 <a href="#rules" class="hover:text-amber-400 transition">Game Rules</a>
                 <a href="#wards" class="hover:text-purple-400 transition">16 Wards</a>
+                <a href="#quickstart" class="hover:text-emerald-400 transition">Quick Start</a>
             </nav>
 
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2.5">
+                <!-- Theme Mode Toggle Button (Light/Dark) -->
+                <button 
+                    type="button" 
+                    @click="$store.theme?.toggle()" 
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-slate-800/80 hover:bg-slate-700/80 border-slate-700/80 text-amber-300 dark:text-slate-300 hover:text-white"
+                    :title="$store.theme?.mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+                >
+                    <span x-show="$store.theme?.mode === 'dark'">☀️</span>
+                    <span x-show="$store.theme?.mode !== 'dark'">🌙</span>
+                    <span class="hidden sm:inline text-[11px]" x-text="$store.theme?.mode === 'dark' ? 'Light' : 'Dark'"></span>
+                </button>
+
                 <!-- Ambient Music Toggle Button -->
                 <button 
                     type="button" 
@@ -251,11 +273,11 @@
                         </div>
                         <h4 class="text-base font-bold text-white">Empty Field (Entry Strategy)</h4>
                         <p class="text-xs text-slate-300 leading-relaxed">
-                            Entering new territory. Prayer walking streets and discerning spiritual openness to discover <strong class="text-blue-300">Persons of Peace (Luke 10)</strong> through Casual Talk, active listening to grief/burnout, practical mercy (Shirakawa Park soup kitchens), and International Cafes.
+                            Entering new territory. Softening spiritual soil and discovering <strong class="text-blue-300">Persons of Peace (Luke 10)</strong> through solo street prayer walks or <strong class="text-emerald-400">Joint MAWL Prayer Walks</strong> with residents, Casual Talk, listening to corporate burnout, healing prayer, mercy care, and International Cafes.
                         </p>
                     </div>
                     <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[11px] text-blue-300">
-                        ⚡ Actions: Prayer Walking, Casual Talk, Deep Listening, Healing Prayer, Mercy Outreach.
+                        ⚡ Actions: Prayer Walking (Solo/Joint), Casual Talk, Deep Listening, Healing Prayer, Mercy Outreach, International Cafe.
                     </div>
                 </div>
 
@@ -268,11 +290,11 @@
                         </div>
                         <h4 class="text-base font-bold text-white">Seeded Field (Gospel Sowing)</h4>
                         <p class="text-xs text-slate-300 leading-relaxed">
-                            Proclaiming the Good News simply and reproducibly. Sharing your <strong class="text-emerald-300">15-Second Testimony</strong> and the <strong class="text-emerald-300">3 Circles Gospel Presentation</strong>. Leading seekers into the Prayer of Salvation.
+                            Proclaiming the Good News simply and reproducibly. Sharing your <strong class="text-emerald-300">15-Second Testimony</strong> (before, how Christ met me, life now) and the visual <strong class="text-emerald-300">3 Circles Gospel Presentation</strong>. Guiding seekers through the Prayer of Salvation.
                         </p>
                     </div>
                     <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[11px] text-emerald-300">
-                        ⚡ Actions: 15-Sec Testimony, 3 Circles, Prayer of Salvation (Sinner's Prayer).
+                        ⚡ Actions: 15-Sec Testimony, 3 Circles Gospel, Prayer of Salvation.
                     </div>
                 </div>
 
@@ -285,11 +307,11 @@
                         </div>
                         <h4 class="text-base font-bold text-white">Growing Field (Discipleship)</h4>
                         <p class="text-xs text-slate-300 leading-relaxed">
-                            Navigating the cultural cost of baptism with Japanese families. Immediately equipping new disciples with the <strong class="text-amber-300">411 Tool</strong> (4 Questions, 1 Sheet, 1 Hour) so they share with their own Oikos from week one.
+                            Grounding believers in immediate loving obedience through the <strong class="text-amber-300">Commands of Christ</strong> (with hand motions) and <strong class="text-amber-300">Sword Bible Studies</strong>. Equipping them with the <strong class="text-amber-300">411 Tool</strong> to share with their own Oikos and count the cost of baptism.
                         </p>
                     </div>
                     <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[11px] text-amber-300">
-                        ⚡ Actions: Counting Cost & Baptism, 411 Discipleship Training.
+                        ⚡ Actions: Commands of Christ, Sword Bible Study, Counting Cost & Baptism, 411 Discipleship.
                     </div>
                 </div>
 
@@ -302,11 +324,11 @@
                         </div>
                         <h4 class="text-base font-bold text-white">Harvested Field (Acts 2 Church Circles)</h4>
                         <p class="text-xs text-slate-300 leading-relaxed">
-                            Gathering disciples into simple 3/3rds groups practicing the <strong class="text-purple-300">11 Acts 2 rhythms</strong>: Word, Prayer, Fellowship, Communion, Baptism, Giving, Worship, Local Leaders, and Multiplying Groups.
+                            Gathering baptized disciples into self-governing 3/3rds groups practicing the <strong class="text-purple-300">11 Acts 2 rhythms</strong>: Word, Prayer, Fellowship, Communion, Baptism, Giving, Worship, Local Leaders, and Multiplying Groups.
                         </p>
                     </div>
                     <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[11px] text-purple-300">
-                        ⚡ Rule: Developing dashed circle turns solid when all 11 rhythms are active!
+                        ⚡ Actions: Acts 2 Church Circles (3/3rds: Look Back, Look Up, Look Ahead).
                     </div>
                 </div>
 
@@ -317,13 +339,205 @@
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950 text-rose-400 border border-rose-800 uppercase">Field 5</span>
                             <span class="text-xl">👑</span>
                         </div>
-                        <h4 class="text-base font-bold text-white">Multiplication (Timothy Leaders)</h4>
+                        <h4 class="text-base font-bold text-white">Multiplication (5 Levels of Leadership)</h4>
                         <p class="text-xs text-slate-300 leading-relaxed">
-                            Multiplying leadership. Mentoring emerging Japanese elders and planters (2 Tim 2:2). When a disciple has a new believer or becomes a Timothy, they autonomously birth <strong class="text-rose-300">G2, G3, and G4+ daughter churches</strong>!
+                            Multiplying leadership beyond missionary bottlenecks. Mentoring Timothys (L1 to L2), conducting quarterly <strong class="text-rose-300">Iron-on-Iron peer coaching</strong> with generational mapping, and deploying regional <strong class="text-rose-300">Swarm Training teams</strong>.
                         </p>
                     </div>
                     <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[11px] text-rose-300">
-                        ⚡ Actions: Mentor Timothy, Autonomously Plant G2/G3/G4+ Streams.
+                        ⚡ Actions: Mentor Timothy, Iron-on-Iron Coaching, Swarm Training & Movement Catalyzing.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2.5: THE 5 LEVELS OF LEADERSHIP TRAINING & COACHING TOOLBOX -->
+        <section id="toolbox" class="space-y-8 scroll-mt-24">
+            <div class="text-center max-w-3xl mx-auto space-y-3">
+                <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest flex items-center justify-center gap-1.5">
+                    <span>🧰</span>
+                    <span>Movement Leadership Matrix</span>
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-black text-white">5 Levels of Leadership Training & Coaching Toolbox</h2>
+                <p class="text-sm text-slate-400">
+                    A comprehensive framework to identify, train, coach, and multiply Japanese Christian workers from first-time seed sowers to regional strategy coordinators.
+                </p>
+            </div>
+
+            <!-- Guiding Principle Banner -->
+            <div class="p-6 rounded-3xl bg-gradient-to-r from-cyan-950/80 via-indigo-950/70 to-slate-900 border border-cyan-800/60 shadow-xl space-y-3">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">💡</span>
+                    <h3 class="text-base font-bold text-cyan-200">The Guiding Principle of Movement Coaching</h3>
+                </div>
+                <blockquote class="text-sm text-cyan-100 font-medium italic border-l-4 border-cyan-500 pl-4 py-1 leading-relaxed">
+                    "Lead from one level ahead of wherever the leader is who you are with! Once your leaders are confident and competent with the tools for their current level, begin equipping them with tools from 1 level above!"
+                </blockquote>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    In the simulation, every resident's spiritual readiness and leadership tier are tracked in real-time. The system strictly guards against pedagogical mismatches: <em>people who have never heard about Jesus cannot be assigned Timothy Mentoring or Swarm Training</em>.
+                </p>
+            </div>
+
+            <!-- 5 Levels Cards Matrix -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <!-- Level 1 -->
+                <div class="p-5 rounded-3xl bg-slate-900/80 border border-cyan-800/40 flex flex-col justify-between space-y-4 hover:border-cyan-500/60 transition group">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-950 text-cyan-400 border border-cyan-800">LEVEL 1</span>
+                            <span class="text-xl">🌱</span>
+                        </div>
+                        <div>
+                            <h4 class="text-base font-bold text-white group-hover:text-cyan-300 transition">Seed Sower</h4>
+                            <span class="text-[11px] text-cyan-400 font-medium block">種まく人 (Personal Sower)</span>
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            <strong>Core Focus:</strong> Personal evangelism, entry into new relational spheres, and basic discipleship tools.
+                        </p>
+                        <div class="space-y-1.5 text-[11px] text-slate-400">
+                            <div><strong class="text-slate-200">Tools:</strong> 411, 15-Sec Testimony, 3 Circles, 3-Touch Entry, Oikos Mapping.</div>
+                            <div><strong class="text-slate-200">Studies:</strong> Commands of Christ, My Story / Jesus Story.</div>
+                            <div><strong class="text-slate-200">Progression:</strong> Overcome fear of man; witness consistently to family & friends.</div>
+                        </div>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800 text-[10px] font-bold text-cyan-300 flex items-center justify-between">
+                        <span>Residential: 3-Touch Entry</span>
+                        <span>Multiplication: 1x</span>
+                    </div>
+                </div>
+
+                <!-- Level 2 -->
+                <div class="p-5 rounded-3xl bg-slate-900/80 border border-emerald-800/40 flex flex-col justify-between space-y-4 hover:border-emerald-500/60 transition group">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">LEVEL 2</span>
+                            <span class="text-xl">⛪</span>
+                        </div>
+                        <div>
+                            <h4 class="text-base font-bold text-white group-hover:text-emerald-300 transition">Church Planter</h4>
+                            <span class="text-[11px] text-emerald-400 font-medium block">開拓者 (Simple Church Planter)</span>
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            <strong>Core Focus:</strong> Gathering disciples, forming simple reproducing churches, and pastoral care.
+                        </p>
+                        <div class="space-y-1.5 text-[11px] text-slate-400">
+                            <div><strong class="text-slate-200">Tools:</strong> 3/3rds Church Circles, Commands of Christ, Sword DBS, Baptism practice.</div>
+                            <div><strong class="text-slate-200">Studies:</strong> 3/3rds Meeting Pattern, Lord's Supper, Acts 2 Church Health.</div>
+                            <div><strong class="text-slate-200">Progression:</strong> Lead a 3/3rds church; practice loving accountability.</div>
+                        </div>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800 text-[10px] font-bold text-emerald-300 flex items-center justify-between">
+                        <span>Residential: Church Formation</span>
+                        <span>Multiplication: 2x–3x</span>
+                    </div>
+                </div>
+
+                <!-- Level 3 -->
+                <div class="p-5 rounded-3xl bg-slate-900/80 border border-amber-800/40 flex flex-col justify-between space-y-4 hover:border-amber-500/60 transition group">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-400 border border-amber-800">LEVEL 3</span>
+                            <span class="text-xl">🌿</span>
+                        </div>
+                        <div>
+                            <h4 class="text-base font-bold text-white group-hover:text-amber-300 transition">CPMer / Multiplier</h4>
+                            <span class="text-[11px] text-amber-400 font-medium block">増殖者 (Generational Multiplier)</span>
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            <strong>Core Focus:</strong> Multiplying churches to 2nd, 3rd, and 4th generations (G2–G4+).
+                        </p>
+                        <div class="space-y-1.5 text-[11px] text-slate-400">
+                            <div><strong class="text-slate-200">Tools:</strong> Iron-on-Iron Coaching, Generational Mapping, 4 Fields Diagnostics.</div>
+                            <div><strong class="text-slate-200">Studies:</strong> 4 Fields Diagnostics, 12 Diagnostic Questions, 5 Levels Matrix.</div>
+                            <div><strong class="text-slate-200">Progression:</strong> Solve generational bottlenecks; coach daughter churches.</div>
+                        </div>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800 text-[10px] font-bold text-amber-300 flex items-center justify-between">
+                        <span>Residential: Left/Right Hand</span>
+                        <span>Multiplication: 4x–8x</span>
+                    </div>
+                </div>
+
+                <!-- Level 4 -->
+                <div class="p-5 rounded-3xl bg-slate-900/80 border border-purple-800/40 flex flex-col justify-between space-y-4 hover:border-purple-500/60 transition group">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950 text-purple-400 border border-purple-800">LEVEL 4</span>
+                            <span class="text-xl">🐝</span>
+                        </div>
+                        <div>
+                            <h4 class="text-base font-bold text-white group-hover:text-purple-300 transition">Movement Trainer</h4>
+                            <span class="text-[11px] text-purple-400 font-medium block">運動トレーナー (Regional Trainer)</span>
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            <strong>Core Focus:</strong> Equipping and multiplying trainers across multiple wards and networks.
+                        </p>
+                        <div class="space-y-1.5 text-[11px] text-slate-400">
+                            <div><strong class="text-slate-200">Tools:</strong> Swarm Training, Mid-Level Leadership Training, Strategy Evaluation.</div>
+                            <div><strong class="text-slate-200">Studies:</strong> CPM Case Studies, Training Trainers (T4T), Catalyst Multiplication.</div>
+                            <div><strong class="text-slate-200">Progression:</strong> Lead multi-team field saturation; establish regional cohorts.</div>
+                        </div>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800 text-[10px] font-bold text-purple-300 flex items-center justify-between">
+                        <span>Residential: Mid-Level Training</span>
+                        <span>Multiplication: 10x–20x</span>
+                    </div>
+                </div>
+
+                <!-- Level 5 -->
+                <div class="p-5 rounded-3xl bg-slate-900/80 border border-rose-800/40 flex flex-col justify-between space-y-4 hover:border-rose-500/60 transition group">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950 text-rose-400 border border-rose-800">LEVEL 5</span>
+                            <span class="text-xl">👑</span>
+                        </div>
+                        <div>
+                            <h4 class="text-base font-bold text-white group-hover:text-rose-300 transition">Strategy Coordinator</h4>
+                            <span class="text-[11px] text-rose-400 font-medium block">戦略コーディネーター (Regional SC)</span>
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            <strong>Core Focus:</strong> City-wide and regional saturation strategy across all 16 Nagoya wards.
+                        </p>
+                        <div class="space-y-1.5 text-[11px] text-slate-400">
+                            <div><strong class="text-slate-200">Tools:</strong> Master Ward Mapping, Unreached Group Mapping, Movement Labs, CPM Summits.</div>
+                            <div><strong class="text-slate-200">Studies:</strong> Aichi Demographics, Luke 10 Macro Strategy, G4 Movements.</div>
+                            <div><strong class="text-slate-200">Progression:</strong> Cast city-wide vision and deploy trainers Until No Place Left.</div>
+                        </div>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800 text-[10px] font-bold text-rose-300 flex items-center justify-between">
+                        <span>Residential: Movement Summit</span>
+                        <span>Multiplication: 50x+</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Option B Callout: Dual-Mode Prayer Walking (Solo & Joint MAWL) -->
+            <div class="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">👣</span>
+                    <div>
+                        <h3 class="text-base font-bold text-white">Dual-Mode Prayer Walking & Spiritual Mapping (Option B)</h3>
+                        <span class="text-xs text-emerald-400 font-semibold">Solo Ward Intercession vs. Joint MAWL Walk with a Resident</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300 leading-relaxed">
+                    <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+                        <strong class="text-white block font-semibold flex items-center gap-1.5">
+                            <span>🚶</span>
+                            <span>Solo Ward-Wide Intercession (No Target NPC)</span>
+                        </strong>
+                        <p>
+                            Walk through unknown neighborhoods, transit stations, and shrine districts to soften spiritual soil (+2% ward openness). Each walk increases the cumulative probability (base 35% + 15% per walk, up to 90%) of discovering a <strong class="text-blue-300">Luke 10 Person of Peace</strong>.
+                        </p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+                        <strong class="text-white block font-semibold flex items-center gap-1.5">
+                            <span>👥</span>
+                            <span>Joint MAWL Prayer Walk (With Target Resident)</span>
+                        </strong>
+                        <p>
+                            Invite an open contact, seeker, or believer to walk together using <strong class="text-emerald-400">MAWL</strong> (<em>Model, Assist, Watch, Leave</em>). Walking their neighborhood models prayer evangelism directly in their world, surges their personal trust by <strong class="text-emerald-300">+22% to +32%</strong>, and covers their immediate family & coworker <strong class="text-indigo-300">Oikos network (+15% trust)</strong> in intercession!
+                        </p>
                     </div>
                 </div>
             </div>
@@ -353,41 +567,118 @@
                         </div>
                     </div>
                     <p class="text-xs text-slate-300 leading-relaxed">
-                        Missionary energy is finite. Each day you receive <strong class="text-indigo-400">12 Action Points (AP)</strong>. Different actions consume different amounts of AP:
+                        Missionary energy and time are finite. Each day you receive <strong class="text-indigo-400">12 Action Points (AP)</strong>. Actions consume base AP, plus an additional <strong class="text-amber-400">+1 to +2 AP transit surcharge</strong> when commuting to distant wards from your Home Base:
                     </p>
-                    <ul class="text-xs space-y-2 text-slate-300">
-                        <li class="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800">
-                            <span>Prayer Walking & Spiritual Mapping</span>
+                    <ul class="text-xs space-y-1.5 text-slate-300 max-h-80 overflow-y-auto pr-1">
+                        <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span>🚶 Prayer Walk (Solo or Joint MAWL)</span>
                             <span class="font-bold text-emerald-400">1 AP</span>
                         </li>
-                        <li class="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800">
-                            <span>Casual Talk & Friendship</span>
+                        <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span>💬 Casual Talk & Friendship</span>
                             <span class="font-bold text-emerald-400">1 AP</span>
                         </li>
-                        <li class="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800">
-                            <span>Deep Talk & Active Listening</span>
+                        <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span>👂 Deep Listening & Burdens</span>
                             <span class="font-bold text-emerald-400">2 AP</span>
                         </li>
-                        <li class="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800">
-                            <span>Share 3 Circles Gospel</span>
+                        <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span>🙏 Prayer for Healing & Peace</span>
                             <span class="font-bold text-emerald-400">2 AP</span>
                         </li>
-                        <li class="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800">
-                            <span>Mercy Outreach & Practical Service</span>
+                        <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span>⏱️ 15-Second Testimony</span>
+                            <span class="font-bold text-emerald-400">2 AP</span>
+                        </li>
+                        <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span>⭕ Share 3 Circles Gospel</span>
+                            <span class="font-bold text-emerald-400">2 AP</span>
+                        </li>
+                        <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span>🕊️ Guide Prayer of Salvation</span>
+                            <span class="font-bold text-emerald-400">2 AP</span>
+                        </li>
+                        <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span>📜 Commands of Christ (L2 Curriculum)</span>
+                            <span class="font-bold text-emerald-400">2 AP</span>
+                        </li>
+                        <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span>🗡️ Sword Discovery Bible Study</span>
+                            <span class="font-bold text-emerald-400">2 AP</span>
+                        </li>
+                        <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span>🍲 Mercy Outreach & Practical Care</span>
                             <span class="font-bold text-amber-400">3 AP</span>
                         </li>
-                        <li class="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800">
-                            <span>Equip with 411 Discipleship</span>
+                        <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span>🌊 Count Cost & Baptism</span>
                             <span class="font-bold text-amber-400">3 AP</span>
                         </li>
-                        <li class="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800">
-                            <span>Host International Cultural Cafe</span>
+                        <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span>📋 Equip with 411 Discipleship</span>
+                            <span class="font-bold text-amber-400">3 AP</span>
+                        </li>
+                        <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span>⛪ Form Acts 2 Church Circles</span>
+                            <span class="font-bold text-amber-400">3 AP</span>
+                        </li>
+                        <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span>🌱 Mentor Timothy Leader (L1 to L2)</span>
+                            <span class="font-bold text-amber-400">3 AP</span>
+                        </li>
+                        <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span>⚔️ Iron-on-Iron Peer Coaching (L2 to L3)</span>
+                            <span class="font-bold text-amber-400">3 AP</span>
+                        </li>
+                        <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span>🍱 Host International Cultural Cafe</span>
+                            <span class="font-bold text-rose-400">4 AP</span>
+                        </li>
+                        <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
+                            <span>🐝 Swarm Training & Movement Catalyzing</span>
                             <span class="font-bold text-rose-400">4 AP</span>
                         </li>
                     </ul>
                 </div>
 
-                <!-- Mechanic 2: Independent Player Pacing & Progression -->
+                <!-- Mechanic 2: Home Base, Commuting & Proximity -->
+                <div class="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">🏡</span>
+                        <div>
+                            <h3 class="text-base font-bold text-white">Home Base & Commuting Friction</h3>
+                            <span class="text-xs text-slate-400">Incarnational Ministry & Proximity</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Jesus ministered incarnationally where He dwelt. In Nagoya Oikos, you establish a <strong class="text-emerald-400">Home Ward</strong> where you live, and you can relocate your residence anytime:
+                    </p>
+                    <div class="space-y-2 text-xs text-slate-300">
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                            <span class="text-emerald-400 font-bold block flex items-center gap-1">
+                                <span>🏡</span>
+                                <span>Home Ward (0 km): Neighbor Advantage</span>
+                            </span>
+                            <span class="text-slate-400 text-[11px]">
+                                <strong>0 AP transit penalty</strong>, effortless casual bumping, and a <strong>+25% Trust & Rapid Follow-Up Bonus</strong> when cultivating relationships or walking with neighbors.
+                            </span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                            <span class="text-amber-400 font-bold block flex items-center gap-1">
+                                <span>🚇</span>
+                                <span>Cross-City Travel (5–10+ km)</span>
+                            </span>
+                            <span class="text-slate-400 text-[11px]">
+                                Subways take valuable ministry hours. Long distances add <strong>+1 to +2 AP transit surcharges</strong> per action and introduce <strong>-15% to -30% follow-up friction</strong>.
+                            </span>
+                        </div>
+                        <div class="p-2 rounded-xl bg-indigo-950/40 border border-indigo-800/60 text-[11px] text-indigo-300">
+                            💡 <em>Pioneer Tip:</em> Click <strong>"🏡 Move Here"</strong> in the Action Queue Planner to relocate your missionary base whenever your ministry focus shifts to a new ward! You can also view your house (🏡) and fellow co-laborers' homes (🏠) on the GIS map to coordinate team deployments across the 16 wards.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mechanic 3: Independent Player Pacing & Progression -->
                 <div class="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4">
                     <div class="flex items-center gap-3">
                         <span class="text-3xl">⏱️</span>
@@ -490,6 +781,10 @@
                             <span>👣</span>
                             <span><strong>Historical Prayer Walks</strong> & discovered Persons of Peace</span>
                         </li>
+                        <li class="flex items-center gap-2 p-1.5 rounded-lg bg-slate-950 border border-slate-800/80">
+                            <span>🏡</span>
+                            <span><strong>Missionary Residences & Team Bases</strong>: View your home (🏡) and fellow co-laborers' houses (🏠) with dedicated map toggles and status tooltips</span>
+                        </li>
                     </ul>
                 </div>
 
@@ -565,48 +860,71 @@
                     </div>
                 @endforeach
             </div>
+
+            <!-- Home Base & Incarnational Relocation Banner -->
+            <div class="p-5 rounded-3xl bg-gradient-to-r from-emerald-950/60 via-slate-900 to-indigo-950/60 border border-emerald-800/60 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
+                <div class="flex items-center gap-3.5">
+                    <span class="text-3xl">🏡</span>
+                    <div>
+                        <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                            <span>Choose Where You Live & Work</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-900/80 text-emerald-300 border border-emerald-700">Incarnational Presence</span>
+                        </h4>
+                        <p class="text-xs text-slate-300 mt-0.5 max-w-2xl leading-relaxed">
+                            Every missionary needs a physical home base in the city. Living in your <strong>Home Ward</strong> grants effortless local access: <strong>0 AP transit penalty</strong>, <strong>+25% rapid follow-up trust</strong>, and enhanced prayer walk openness. Traveling across town adds <strong>+1 to +2 AP transit costs</strong>. You can relocate anytime by clicking <strong>"🏡 Move Here"</strong> in the Action Queue Planner!
+                        </p>
+                    </div>
+                </div>
+                <a 
+                    href="{{ route('home') }}" 
+                    class="shrink-0 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition flex items-center gap-1.5 cursor-pointer"
+                >
+                    <span>🧭</span>
+                    <span>Set Home Ward in HQ</span>
+                </a>
+            </div>
         </section>
 
         <!-- SECTION 5: QUICK START CHECKLIST FOR NEW MISSIONARIES -->
-        <section class="p-8 sm:p-12 rounded-3xl bg-gradient-to-tr from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 shadow-2xl space-y-8">
+        <section id="quickstart" class="scroll-mt-24 p-8 sm:p-12 rounded-3xl bg-gradient-to-tr from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 shadow-2xl space-y-8">
             <div class="text-center max-w-2xl mx-auto space-y-2">
                 <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center justify-center gap-1.5">
                     <span>🚀</span>
                     <span>Quick-Start Walkthrough</span>
                 </span>
                 <h3 class="text-2xl sm:text-3xl font-black text-white">Your First 5 Steps in Nagoya</h3>
-                <p class="text-xs sm:text-sm text-slate-400">Follow this simple roadmap to plant your first disciple and daughter church.</p>
+                <p class="text-xs sm:text-sm text-slate-400">Follow this simple roadmap to establish your base and multiply indigenous churches.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4 text-left text-xs">
                 <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">1</span>
-                    <strong class="text-white block font-semibold">Prayer Walk & Discern</strong>
-                    <span class="text-slate-400 block leading-relaxed">Prayer walk ward streets to map openness and reveal Persons of Peace with Yellow status (like Kenji in Osu or Linh in Tempaku).</span>
+                    <strong class="text-white block font-semibold">Choose Home Base & Settle In</strong>
+                    <span class="text-slate-400 block leading-relaxed">Choose where to live among Nagoya's 16 wards. Being a local neighbor provides a <strong class="text-emerald-400">+25% trust & rapid follow-up advantage</strong> and 0 AP transit costs.</span>
                 </div>
 
                 <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">2</span>
-                    <strong class="text-white block font-semibold">Build Relational Trust</strong>
-                    <span class="text-slate-400 block leading-relaxed">Execute Casual Talk or Deep Listening. Pray for healing if they are in crisis until trust rises to 60%+.</span>
+                    <strong class="text-white block font-semibold">Prayer Walk & Discern (Solo/MAWL)</strong>
+                    <span class="text-slate-400 block leading-relaxed">Intercede on ward streets solo or conduct a <strong class="text-emerald-400">Joint MAWL Prayer Walk</strong> with a local resident to soften soil, discover Persons of Peace, and cover their Oikos.</span>
                 </div>
 
                 <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">3</span>
-                    <strong class="text-white block font-semibold">Share the Gospel</strong>
-                    <span class="text-slate-400 block leading-relaxed">Share the 3 Circles. Lead them in the Prayer of Salvation. Their status will turn Green!</span>
+                    <strong class="text-white block font-semibold">Build Relational Trust</strong>
+                    <span class="text-slate-400 block leading-relaxed">Engage in Casual Talk, active listening to corporate burnout, and healing prayer. Elevate trust to 60%+ to open hearts to the Gospel.</span>
                 </div>
 
                 <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">4</span>
-                    <strong class="text-white block font-semibold">Train 411 Discipleship</strong>
-                    <span class="text-slate-400 block leading-relaxed">Equip your new believer in 411. They become an Apprentice and begin sharing with their own family.</span>
+                    <strong class="text-white block font-semibold">Proclaim & Harvest</strong>
+                    <span class="text-slate-400 block leading-relaxed">Share your 15-second testimony and 3 Circles Gospel. Guide seekers through the Prayer of Salvation to become new reproducing believers.</span>
                 </div>
 
-                <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+                <div class="p-4 rounded-2xl bg-slate-950/80 border border-emerald-600 text-white space-y-2">
                     <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-[11px]">5</span>
-                    <strong class="text-white block font-semibold">Birth G2–G4+ Churches</strong>
-                    <span class="text-slate-400 block leading-relaxed">When their family accepts Christ, an autonomous G2 Church Circle is birthed! Watch generational streams multiply!</span>
+                    <strong class="text-white block font-semibold">Multiply L1–L5 Movements</strong>
+                    <span class="text-slate-400 block leading-relaxed">Equip with Commands of Christ & 411, form Acts 2 Church Circles, mentor Timothys (L2), sharpen peers via Iron-on-Iron (L3), and launch Swarms (L4/L5) to G4+ victory!</span>
                 </div>
             </div>
 
@@ -618,6 +936,11 @@
                     <span>⚡</span>
                     <span>Start Playing: Enter Action HQ</span>
                 </a>
+            </div>
+
+            <div class="text-center text-[11px] text-slate-500 flex items-center justify-center gap-2 pt-2 border-t border-slate-800/60">
+                <span>🌓</span>
+                <span>Visual Preference: Toggle between <strong>Dark Mode</strong> and <strong>Light Mode</strong> anytime using the ☀️/🌙 button in the top navigation bar.</span>
             </div>
         </section>
 

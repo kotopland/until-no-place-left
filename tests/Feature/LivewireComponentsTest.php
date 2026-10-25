@@ -189,14 +189,13 @@ test('action queue planner supports mobile mission funnel steps with smart auto-
         'ward_id' => $ward->id,
         'name' => 'Kenta',
         'name_ja' => '健太',
-        'displayName' => 'Kenta M.',
         'status' => ReceptivityStatus::Yellow,
         'need_state' => NpcNeedState::None,
         'role_archetype' => NpcRoleArchetype::UniversityStudent,
         'trust_level' => 30,
         'is_person_of_peace' => false,
-        'latitude' => 35.17,
-        'longitude' => 136.99,
+        'lat' => 35.17,
+        'lng' => 136.99,
     ]);
 
     $this->actingAs($user);

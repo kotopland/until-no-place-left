@@ -116,4 +116,38 @@ class Ward extends Model
     {
         return $this->hasMany(QueuedMonthlyAction::class);
     }
+
+    /**
+     * Missionaries and players who have their residence/home base in this ward.
+     *
+     * @return HasMany<User, $this>
+     */
+    public function residentUsers(): HasMany
+    {
+        return $this->hasMany(User::class, 'home_ward_id');
+    }
+
+    /**
+     * Calculates geodesic distance in kilometers to another ward using Haversine formula.
+     */
+    public function distanceTo(self $other): float
+    {
+        if ($this->id === $other->id) {
+            return 0.0;
+        }
+
+        $earthRadiusKm = 6371.0;
+        $latFrom = deg2rad($this->center_lat);
+        $lonFrom = deg2rad($this->center_lng);
+        $latTo = deg2rad($other->center_lat);
+        $lonTo = deg2rad($other->center_lng);
+
+        $latDelta = $latTo - $latFrom;
+        $lonDelta = $lonTo - $lonFrom;
+
+        $angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) +
+            cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
+
+        return round($angle * $earthRadiusKm, 1);
+    }
 }

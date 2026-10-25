@@ -7,6 +7,7 @@ window.nagoyaMap = function(config) {
         oikosLayer: null,
         spotsLayer: null,
         prayerWalksLayer: null,
+        housesLayer: null,
 
         // Reactive layer visibility states bound with entangle
         showHeatmap: config.showHeatmap ?? true,
@@ -15,12 +16,14 @@ window.nagoyaMap = function(config) {
         showMercySpots: config.showMercySpots ?? true,
         showEventPins: config.showEventPins ?? true,
         showPrayerWalks: config.showPrayerWalks ?? true,
+        showHouses: config.showHouses ?? true,
 
         wardsGeoJson: config.wardsGeoJson || null,
         churches: config.churches || [],
         lines: config.lines || [],
         specialSpots: config.specialSpots || [],
         prayerWalks: config.prayerWalks || [],
+        houses: config.houses || [],
 
         toggleLayer(layer) {
             if (layer === 'heatmap') this.showHeatmap = !this.showHeatmap;
@@ -29,6 +32,7 @@ window.nagoyaMap = function(config) {
             else if (layer === 'mercy') this.showMercySpots = !this.showMercySpots;
             else if (layer === 'events') this.showEventPins = !this.showEventPins;
             else if (layer === 'prayer_walks') this.showPrayerWalks = !this.showPrayerWalks;
+            else if (layer === 'houses') this.showHouses = !this.showHouses;
 
             this.renderLayers();
         },
@@ -85,6 +89,7 @@ window.nagoyaMap = function(config) {
             this.$watch('showMercySpots', () => this.renderLayers());
             this.$watch('showEventPins', () => this.renderLayers());
             this.$watch('showPrayerWalks', () => this.renderLayers());
+            this.$watch('showHouses', () => this.renderLayers());
         },
 
         renderLayers() {
@@ -326,6 +331,70 @@ window.nagoyaMap = function(config) {
                     startMarker.addTo(this.prayerWalksLayer);
                 });
                 this.prayerWalksLayer.addTo(this.map);
+            }
+
+            // 6. Missionary Houses Layer (Player & Co-Laborer Residences)
+            if (this.housesLayer) {
+                this.map.removeLayer(this.housesLayer);
+                this.housesLayer = null;
+            }
+
+            if (this.showHouses && this.houses && this.houses.length > 0) {
+                this.housesLayer = L.layerGroup();
+                this.houses.forEach(house => {
+                    const isPlayer = house.is_current_player;
+                    const bgGradient = isPlayer 
+                        ? 'linear-gradient(135deg, #10b981, #047857)' 
+                        : 'linear-gradient(135deg, #6366f1, #4338ca)';
+                    const borderColor = isPlayer ? '#fef08a' : '#ffffff';
+                    const shadowColor = isPlayer ? 'rgba(16, 185, 129, 0.75)' : 'rgba(99, 102, 241, 0.6)';
+                    const size = isPlayer ? 34 : 28;
+                    const iconEmoji = isPlayer ? '🏡' : '🏠';
+
+                    const icon = L.divIcon({
+                        className: 'custom-house-pin',
+                        html: `
+                            <div style="background: ${bgGradient}; width: ${size}px; height: ${size}px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: ${isPlayer ? 17 : 14}px; box-shadow: 0 0 12px ${shadowColor}; border: 2px solid ${borderColor}; cursor: pointer; transform: translate(-50%, -50%);">
+                                ${iconEmoji}
+                            </div>
+                        `,
+                        iconSize: [size, size],
+                        iconAnchor: [size / 2, size / 2]
+                    });
+
+                    const marker = L.marker([house.lat, house.lng], { icon });
+
+                    const statusBadge = isPlayer
+                        ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-700">🏡 Your Home Base</span>`
+                        : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-950 text-indigo-300 border border-indigo-700">🏠 Co-Missionary Base</span>`;
+
+                    const tooltipHtml = `
+                        <div class="max-w-[240px] p-3 rounded-2xl bg-slate-900 text-slate-100 border border-slate-700 shadow-2xl space-y-1.5">
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="font-bold text-white text-xs">${house.name}</span>
+                                ${statusBadge}
+                            </div>
+                            <div class="text-[11px] text-slate-300 font-medium">${house.ward_name} (${house.ward_name_ja})</div>
+                            <div class="text-[10px] text-emerald-400 leading-snug">
+                                ${isPlayer ? '✨ Local Neighbor Advantage: 0 AP transit • +25% follow-up trust bonus!' : '🤝 Fellow missionary laboring in this harvest field.'}
+                            </div>
+                            <div class="text-[10px] text-slate-400 pt-1 border-t border-slate-800 flex items-center justify-between">
+                                <span>Day ${house.day}</span>
+                                <span class="text-amber-400 font-semibold">${house.score} pts</span>
+                            </div>
+                        </div>
+                    `;
+
+                    marker.bindTooltip(tooltipHtml, {
+                        permanent: false,
+                        direction: 'top',
+                        offset: [0, -14],
+                        className: 'house-tooltip'
+                    });
+
+                    marker.addTo(this.housesLayer);
+                });
+                this.housesLayer.addTo(this.map);
             }
         }
     };
@@ -624,14 +693,43 @@ function setupAlpineAudioStore() {
     }
 }
 
+function setupAlpineThemeStore() {
+    if (window.Alpine && !window.Alpine.store('theme')) {
+        window.Alpine.store('theme', {
+            mode: localStorage.getItem('theme') || 'dark',
+
+            init() {
+                this.apply();
+            },
+
+            toggle() {
+                this.mode = this.mode === 'dark' ? 'light' : 'dark';
+                localStorage.setItem('theme', this.mode);
+                this.apply();
+                window.dispatchEvent(new CustomEvent('theme-changed', { detail: { mode: this.mode } }));
+            },
+
+            apply() {
+                if (this.mode === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }
+        });
+    }
+}
+
 if (window.Alpine) {
     window.Alpine.data('nagoyaMap', window.nagoyaMap);
     setupAlpineAudioStore();
+    setupAlpineThemeStore();
 }
 
 document.addEventListener('alpine:init', () => {
     if (window.Alpine) {
         window.Alpine.data('nagoyaMap', window.nagoyaMap);
         setupAlpineAudioStore();
+        setupAlpineThemeStore();
     }
 });

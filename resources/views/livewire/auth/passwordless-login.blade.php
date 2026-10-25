@@ -16,13 +16,27 @@
             </div>
         </a>
 
-        <a 
-            href="{{ route('welcome') }}" 
-            class="text-xs font-bold text-slate-400 hover:text-white px-3.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 transition flex items-center gap-1.5"
-        >
-            <span>📖</span>
-            <span>Story & Rules</span>
-        </a>
+        <div class="flex items-center gap-2">
+            <!-- Theme Mode Toggle Button (Light/Dark) -->
+            <button 
+                type="button" 
+                @click="$store.theme?.toggle()" 
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-slate-900 border-slate-800 text-amber-300 dark:text-slate-300 hover:text-white"
+                :title="$store.theme?.mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+            >
+                <span x-show="$store.theme?.mode === 'dark'">☀️</span>
+                <span x-show="$store.theme?.mode !== 'dark'">🌙</span>
+                <span class="hidden sm:inline text-[11px]" x-text="$store.theme?.mode === 'dark' ? 'Light' : 'Dark'"></span>
+            </button>
+
+            <a 
+                href="{{ route('welcome') }}" 
+                class="text-xs font-bold text-slate-400 hover:text-white px-3.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 transition flex items-center gap-1.5"
+            >
+                <span>📖</span>
+                <span>Story & Rules</span>
+            </a>
+        </div>
     </header>
 
     <!-- Main Auth Card -->

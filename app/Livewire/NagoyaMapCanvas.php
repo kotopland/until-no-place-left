@@ -7,6 +7,7 @@ use App\Models\GameSession;
 use App\Models\Npc;
 use App\Models\OikosRelationship;
 use App\Models\PrayerWalk;
+use App\Models\User;
 use App\Models\Ward;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
@@ -28,6 +29,8 @@ class NagoyaMapCanvas extends Component
     public bool $showEventPins = true;
 
     public bool $showPrayerWalks = true;
+
+    public bool $showHouses = true;
 
     /** @var array<string, string> */
     protected $listeners = [
@@ -59,6 +62,7 @@ class NagoyaMapCanvas extends Component
             'mercy' => $this->showMercySpots = ! $this->showMercySpots,
             'events' => $this->showEventPins = ! $this->showEventPins,
             'prayer_walks' => $this->showPrayerWalks = ! $this->showPrayerWalks,
+            'houses' => $this->showHouses = ! $this->showHouses,
             default => null,
         };
     }
@@ -221,12 +225,54 @@ class NagoyaMapCanvas extends Component
             ];
         })->values()->all();
 
+        $missionaries = User::where('current_game_session_id', $session?->id)
+            ->whereNotNull('home_ward_id')
+            ->with('homeWard')
+            ->get();
+
+        $currentPlayerId = auth()->id();
+        $wardCounts = [];
+
+        $housesData = $missionaries->map(function (User $user) use ($currentPlayerId, &$wardCounts): ?array {
+            $ward = $user->homeWard;
+            if (! $ward) {
+                return null;
+            }
+
+            $idx = $wardCounts[$ward->id] ?? 0;
+            $wardCounts[$ward->id] = $idx + 1;
+
+            // Deterministic angular offset if multiple missionaries reside in the same ward
+            $angle = $idx * 1.57;
+            $offsetLat = $idx === 0 ? 0.002 : (0.004 * sin($angle));
+            $offsetLng = $idx === 0 ? 0.002 : (0.004 * cos($angle));
+
+            $isCurrent = $user->id === $currentPlayerId;
+
+            return [
+                'id' => $user->id,
+                'user_id' => $user->id,
+                'name' => $isCurrent ? "You ({$user->name})" : $user->name,
+                'user_name' => $user->name,
+                'raw_name' => $user->name,
+                'is_current_player' => $isCurrent,
+                'ward_id' => $ward->id,
+                'ward_name' => $ward->name,
+                'ward_name_ja' => $ward->name_ja,
+                'score' => $user->compositeScore ?? 0,
+                'day' => $user->current_game_day,
+                'lat' => (float) $ward->center_lat + $offsetLat,
+                'lng' => (float) $ward->center_lng + $offsetLng,
+            ];
+        })->filter()->values()->all();
+
         return view('livewire.nagoya-map-canvas', [
             'wardsGeoJson' => $wardsGeoJson,
             'churchesData' => $churchesData,
             'linesData' => $linesData,
             'specialSpots' => $specialSpots,
             'prayerWalksData' => $prayerWalksData,
+            'housesData' => $housesData,
             'selectedChurch' => $selectedChurch,
             'session' => $session,
         ]);

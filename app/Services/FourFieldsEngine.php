@@ -485,13 +485,17 @@ class FourFieldsEngine
         $ward = $action->ward;
         $npc = $action->targetNpc;
 
-        // Handle ward-wide platform actions (e.g., International Event, Prayer Walk)
+        // Handle ward-wide platform actions (e.g., International Event, Prayer Walk, Swarm Training)
         if ($action->action_type === MinistryActionType::InternationalEvent) {
             return $this->resolveInternationalEvent($action, $gameMonth);
         }
 
         if ($action->action_type === MinistryActionType::PrayerWalk) {
             return $this->resolvePrayerWalk($action, $gameMonth);
+        }
+
+        if ($action->action_type === MinistryActionType::SwarmTraining && ! $npc) {
+            return $this->resolveSwarmTrainingPlatform($action, $gameMonth);
         }
 
         if (! $npc) {
@@ -753,13 +757,69 @@ class FourFieldsEngine
                 }
                 break;
 
+            case MinistryActionType::CommandsOfChrist:
+                // Field 3: Discipleship Growth - 7-9 commands of Jesus with hand motions
+                $trustChange = rand(22, 32);
+                $points = 45;
+                $roleAssigned = ContributionRole::Discipler;
+
+                if (! $npc->is_baptized) {
+                    if ($npc->baptism_status === BaptismStatus::CountingCost) {
+                        $npc->update(['baptism_status' => BaptismStatus::Committed]);
+                        $narrative = "Discipled {$npc->name} in the Commands of Christ (Hand Motions)! Convicted by Command 2 (Be Baptized), they resolved their ancestral fears and committed to baptism!";
+                    } elseif ($npc->baptism_status === BaptismStatus::Committed) {
+                        $npc->update([
+                            'is_baptized' => true,
+                            'baptism_status' => BaptismStatus::Baptized,
+                            'baptized_at' => now(),
+                        ]);
+                        $points += 35;
+                        $narrative = "Discipled {$npc->name} in the Commands of Christ! In immediate biblical obedience to Jesus, {$npc->name} was publicly baptized in water!";
+                    } else {
+                        $narrative = "Discipled {$npc->name} in the Commands of Christ (Repent, Believe, Be Baptized, Pray, Love, Lord's Supper, Give, Make Disciples). They memorized the hand motions to teach their family!";
+                    }
+                } else {
+                    $narrative = "Discipled {$npc->name} in the Commands of Christ with hand motions. Loving obedience to Jesus took deep root in their daily walk!";
+                }
+
+                $coachTip = 'L2 Discipleship: The Commands of Christ establish loving obedience rather than mere head knowledge (John 14:15), reproducible in any home.';
+                break;
+
+            case MinistryActionType::SwordBibleStudy:
+                // Field 3: Discovery Bible Study (God, People, Command, Example)
+                $trustChange = rand(18, 28);
+                $points = 35;
+                $roleAssigned = ContributionRole::Discipler;
+
+                if ($prevStatus === ReceptivityStatus::Yellow) {
+                    // 60% chance of breakthrough to Green through discovery of Jesus in Scripture
+                    if (rand(1, 100) <= 60) {
+                        $newStatus = ReceptivityStatus::Green;
+                        $npc->update([
+                            'prayed_salvation' => true,
+                            'prayed_salvation_at' => now(),
+                            'baptism_status' => BaptismStatus::CountingCost,
+                        ]);
+                        $points += 40;
+                        $narrative = "Facilitated a SWORD discovery Bible study with {$npc->name}. As they answered the 4 questions, the Holy Spirit convicted them and they joyfully gave their life to Christ!";
+                    } else {
+                        $narrative = "Facilitated a SWORD discovery Bible study with {$npc->name}. They loved exploring Scripture directly and are eager to read more with their family.";
+                    }
+                } else {
+                    $narrative = "Conducted a SWORD Bible study with {$npc->name}. They practiced finding what God says and applying obedience into their workplace and relational circle.";
+                }
+
+                $coachTip = 'L2 Discipleship: SWORD Bible study empowers self-feeding disciples who hear God directly without dependency on missionary sermons.';
+                break;
+
             case MinistryActionType::Train411:
                 // Field 3: Discipleship Equipping (Why, Who, What, When)
                 if ($npc->status === ReceptivityStatus::Green) {
                     $trustChange = rand(20, 30);
+                    $newTier = $npc->leadership_tier->level() === 0 ? LeadershipTier::L1_SeedSower : $npc->leadership_tier;
                     $npc->update([
                         'trained_411' => true,
-                        'leadership_tier' => LeadershipTier::Apprentice,
+                        'leadership_tier' => $newTier,
                     ]);
                     $points = 50;
                     $roleAssigned = ContributionRole::Discipler;
@@ -778,10 +838,10 @@ class FourFieldsEngine
                             $points += 40;
                             $narrative = "Trained {$npc->name} in 411 Discipleship! Obeying the Great Commission, {$npc->name} was joyfully baptized in water during the 411 training gathering!";
                         } else {
-                            $narrative = "Trained {$npc->name} in 411: Why make disciples? Who (Oikos Map)? What (15s & 3 Circles)? When (Goals)? They are now an active sower!";
+                            $narrative = "Trained {$npc->name} in 411: Why make disciples? Who (Oikos Map)? What (15s & 3 Circles)? When (Goals)? They are now an active L1 Seed Sower!";
                         }
                     } else {
-                        $narrative = "Trained {$npc->name} in 411: Why make disciples? Who (Oikos Map)? What (15s & 3 Circles)? When (Goals)? They are now an equipped sower!";
+                        $narrative = "Trained {$npc->name} in 411: Why make disciples? Who (Oikos Map)? What (15s & 3 Circles)? When (Goals)? Equipped as an L1 Seed Sower!";
                     }
 
                     $coachTip = 'Field 3 activated: Equipped believers multiply automatically during monthly ticks by reaching their own family and friends. (They can also complete baptism afterward if still counting the cost!)';
@@ -792,16 +852,63 @@ class FourFieldsEngine
                 }
                 break;
 
-            case MinistryActionType::MentorTimothy:
-                // Field 5: Leadership Multiplication
-                if ($npc->trained_411 && $npc->leadership_tier === LeadershipTier::Apprentice) {
-                    $trustChange = rand(20, 25);
-                    $npc->update([
-                        'leadership_tier' => LeadershipTier::Timothy,
+            case MinistryActionType::ChurchCircles:
+                // Field 4: Acts 2 Church Formation (3/3rds pattern)
+                $trustChange = rand(25, 35);
+                $points = 85;
+                $roleAssigned = ContributionRole::Discipler;
+
+                if ($npc->leadership_tier->level() < 2) {
+                    $npc->update(['leadership_tier' => LeadershipTier::L2_ChurchPlanter]);
+                }
+
+                $alreadyPlanted = Church::where('leader_npc_id', $npc->id)->exists();
+                if (! $alreadyPlanted) {
+                    $churchGen = max(1, $npc->generation);
+                    $parentChurch = Church::where('game_session_id', $action->game_session_id)->orderBy('generation')->first();
+                    Church::create([
+                        'game_session_id' => $action->game_session_id,
+                        'ward_id' => $npc->ward_id,
+                        'name' => "{$npc->name}'s Acts 2 Church Circle (G{$churchGen})",
+                        'parent_church_id' => $parentChurch?->id,
+                        'leader_npc_id' => $npc->id,
+                        'leader_user_id' => null,
+                        'generation' => $churchGen,
+                        'elements_json' => [
+                            ChurchElement::RepentanceBelief->value,
+                            ChurchElement::Baptism->value,
+                            ChurchElement::Word->value,
+                            ChurchElement::Prayer->value,
+                            ChurchElement::Fellowship->value,
+                            ChurchElement::MakingDisciples->value,
+                        ],
+                        'is_healthy_church' => false,
+                        'health_score' => 65,
+                        'lat' => $npc->lat,
+                        'lng' => $npc->lng,
+                        'founded_game_month' => $gameMonth,
                     ]);
+                    $narrative = "Gathered believers with {$npc->name} to form an Acts 2 Church Circle using the 3/3rds pattern (Look Back, Look Up, Look Ahead). An autonomous simple church is now birthed in {$ward->name}!";
+                } else {
+                    $narrative = "Coached {$npc->name}'s Acts 2 Church Circle in the 3/3rds pattern. Healthy church fellowship, Lord's Supper, and mutual care deepened!";
+                }
+
+                $coachTip = 'L2 Church Planting: Acts 2:38-47 simple church circles give believers biblical ecclesial identity without needing dedicated church buildings.';
+                break;
+
+            case MinistryActionType::MentorTimothy:
+                // Field 5: Leadership Multiplication (L1 -> L2 or L2 -> L3)
+                if ($npc->trained_411 && $npc->leadership_tier->level() >= 1) {
+                    $trustChange = rand(22, 30);
+                    $newTier = match ($npc->leadership_tier->level()) {
+                        1 => LeadershipTier::L2_ChurchPlanter,
+                        2 => LeadershipTier::L3_Multiplier,
+                        default => $npc->leadership_tier,
+                    };
+                    $npc->update(['leadership_tier' => $newTier]);
                     $points = 100;
                     $roleAssigned = ContributionRole::Discipler;
-                    $narrative = "Invested deep pastoral coaching into {$npc->name}. Elevated to a Timothy leader capable of planting autonomous daughter churches!";
+                    $narrative = "Invested deep pastoral coaching into {$npc->name}. Elevated from L1 Seed Sower to {$newTier->roleTitle()} capable of multiplying autonomous daughter churches!";
                     $coachTip = '2 Timothy 2:2: Entrust to faithful people who will be able to teach others also. Timothys break the missionary bandwidth bottleneck!';
                 } else {
                     $trustChange = 8;
@@ -809,6 +916,58 @@ class FourFieldsEngine
                     $coachTip = 'To raise a Timothy, ensure the disciple is first faithful in 411 and actively leading others.';
                 }
                 break;
+
+            case MinistryActionType::IronOnIron:
+                // Field 5: Peer Coaching with Generational Mapping (L2 -> L3 / L4)
+                $trustChange = rand(25, 35);
+                $newTier = match ($npc->leadership_tier->level()) {
+                    2 => LeadershipTier::L3_Multiplier,
+                    3 => LeadershipTier::L4_MovementTrainer,
+                    default => $npc->leadership_tier,
+                };
+                $npc->update(['leadership_tier' => $newTier]);
+                $points = 110;
+                $roleAssigned = ContributionRole::Discipler;
+
+                // Generational ripple: all disciples under this leader receive +15 trust!
+                Npc::where('discipler_npc_id', $npc->id)->increment('trust_level', 15);
+
+                $narrative = "Conducted quarterly Iron on Iron (IoI) coaching with {$npc->name}. Diagnosed the 4 Fields, mapped 2nd & 3rd generational fruit, and resolved growth bottlenecks. Elevated to {$newTier->roleTitle()}!";
+                $coachTip = 'L3 Multiplication: Iron on Iron (Proverbs 27:17) uses generational mapping to shift leaders from addition to exponential multiplication.';
+                break;
+
+            case MinistryActionType::SwarmTraining:
+                // Field 5: Regional Movement Catalyzing (L4 / L5)
+                $trustChange = rand(30, 40);
+                $newTier = match ($npc->leadership_tier->level()) {
+                    3 => LeadershipTier::L4_MovementTrainer,
+                    4 => LeadershipTier::L5_StrategyCoordinator,
+                    default => $npc->leadership_tier,
+                };
+                $npc->update(['leadership_tier' => $newTier]);
+                $points = 130;
+                $roleAssigned = ContributionRole::Discipler;
+
+                // Soften soil across the ward
+                Npc::where('ward_id', $npc->ward_id)->increment('trust_level', 10);
+
+                $narrative = "Mobilized a regional Swarm Training with {$npc->name}! Modeled 4 Fields entry, assisted local teams, and aligned unreached strategy across {$ward->name}. Elevated to {$newTier->roleTitle()}!";
+                $coachTip = 'L4/L5 Movement Catalyzing: Swarm training brings multi-generational teams to saturate an unreached zone, seeding new 3/3rds groups and coaching regional trainers.';
+                break;
+        }
+
+        // Proximity & Commuting dynamics:
+        // Living close (home ward) yields +25% trust bonus due to spontaneous neighborly follow-up.
+        // Long distance commuting across town introduces follow-up friction (0.85x or 0.70x).
+        if ($user->home_ward_id && $trustChange > 0) {
+            $proximityMultiplier = $user->commuteTrustMultiplierForWard($ward);
+            $trustChange = (int) max(1, round($trustChange * $proximityMultiplier));
+            $distanceKm = $user->distanceToWard($ward);
+            if ($user->home_ward_id === $ward->id) {
+                $narrative .= " [🏡 Local Neighbor: Based in {$ward->name}, regular follow-up accelerated trust +25%!]";
+            } elseif ($distanceKm > 10.0) {
+                $narrative .= " [⚠️ Distant Commute: Traveling {$distanceKm}km from {$user->homeWard?->name} limits frequent follow-up.]";
+            }
         }
 
         // Apply new trust level bounded 1-100
@@ -965,16 +1124,84 @@ class FourFieldsEngine
             ->where('ward_id', $ward->id)
             ->count();
 
-        // Progressive Luke 10 Person of Peace probability formula:
-        // Base 35% + 15% per previous walk in that ward (up to 90% cap)
-        $popChance = min(90, 35 + ($previousWardWalks * 15));
-        $popDiscovered = rand(1, 100) <= $popChance;
-
         // Generate street route path coordinates and route name
         $routeData = $this->generateStreetRoute($ward, $previousWardWalks + 1, (int) $action->game_day);
         $routeName = $routeData['name'];
         $pathCoords = $routeData['coords'];
 
+        // Option B: Joint Prayer Walk when a target resident is selected (MAWL Luke 10 harvest intercession)
+        $targetNpc = $action->targetNpc;
+        if ($targetNpc) {
+            $trustChange = rand(22, 32);
+            if ($user->home_ward_id) {
+                $proximityMultiplier = $user->commuteTrustMultiplierForWard($ward);
+                $trustChange = (int) max(1, round($trustChange * $proximityMultiplier));
+            }
+            $prevStatus = $targetNpc->status;
+            $targetNpc->increment('trust_level', $trustChange);
+
+            if ($targetNpc->status === ReceptivityStatus::Unreached) {
+                $targetNpc->update(['status' => ReceptivityStatus::Yellow]);
+            }
+
+            // Oikos connection trust boost (+15%)
+            OikosRelationship::where('npc_id', $targetNpc->id)->increment('trust_level', 15);
+            OikosRelationship::where('related_npc_id', $targetNpc->id)->increment('trust_level', 15);
+
+            // Record pioneer sowing / MAWL contribution
+            NpcContribution::create([
+                'game_session_id' => $action->game_session_id,
+                'npc_id' => $targetNpc->id,
+                'user_id' => $user->id,
+                'action_type' => MinistryActionType::PrayerWalk,
+                'contribution_role' => ContributionRole::PioneerSower,
+                'game_month' => $gameMonth,
+                'trust_gained' => $trustChange,
+                'points_awarded' => 40,
+                'triggered_breakthrough' => true,
+                'notes' => "Joint Prayer Walk with {$targetNpc->displayName} along {$routeName} in {$ward->name}. Modeled Luke 10 harvest intercession and placed their Oikos under prayer.",
+            ]);
+
+            // Save prayer walk route record linked to the resident
+            PrayerWalk::create([
+                'game_session_id' => $action->game_session_id,
+                'user_id' => $user->id,
+                'ward_id' => $ward->id,
+                'game_month' => $gameMonth,
+                'game_day' => (int) $action->game_day,
+                'route_name' => $routeName,
+                'path_coords' => $pathCoords,
+                'pop_discovered' => false,
+                'discovered_npc_id' => $targetNpc->id,
+            ]);
+
+            // Soften ward atmosphere
+            $ward->increment('spiritual_openness', 3);
+
+            return new ActionResolutionOutcome(
+                actionId: $action->id,
+                actionType: $action->action_type,
+                userId: $user->id,
+                targetNpcId: $targetNpc->id,
+                wardId: $ward->id,
+                trustChange: $trustChange,
+                newTrustLevel: $targetNpc->trust_level,
+                previousStatus: $prevStatus,
+                newStatus: $targetNpc->status,
+                statusChanged: $prevStatus !== $targetNpc->status,
+                pointsAwarded: 40,
+                coopPointsAwarded: 10,
+                roleAssigned: ContributionRole::PioneerSower,
+                collaboratorsImpacted: [],
+                narrativeOutcome: "Joint Luke 10 prayer walk with {$targetNpc->displayName} across {$ward->name} along {$routeName}! Modeled intercession on the streets, softening spiritual ground. Their personal trust surged by +{$trustChange}% and their relational Oikos network is opened in prayer.",
+                pedagogicalTip: 'MAWL (Model, Assist, Watch, Leave): Walking the streets with a resident models prayer evangelism directly in their everyday environment (Luke 10:1-9).',
+                newOikosUnlocked: true,
+            );
+        }
+
+        // Solo Ward-wide Prayer Walk: progressive Luke 10 Person of Peace discovery
+        $popChance = min(90, 35 + ($previousWardWalks * 15));
+        $popDiscovered = rand(1, 100) <= $popChance;
         $discoveredNpc = null;
         $points = 15;
 
@@ -1020,8 +1247,9 @@ class FourFieldsEngine
             $narrative = "Interceded on foot along {$routeName} in {$ward->name}. Spiritual ground softened (Openness +2%). Prayer walk count in {$ward->name} is now ".($previousWardWalks + 1).", raising Person of Peace discovery chance to {$nextChance}%!";
         }
 
-        // Soften ward atmosphere and increment openness
-        $ward->increment('spiritual_openness', $popDiscovered ? 4 : 2);
+        // Soften ward atmosphere and increment openness (+1 extra boost when interceding in your home base!)
+        $opennessGain = ($popDiscovered ? 4 : 2) + ($user->home_ward_id === $ward->id ? 1 : 0);
+        $ward->increment('spiritual_openness', $opennessGain);
         Npc::where('game_session_id', $action->game_session_id)
             ->where('ward_id', $ward->id)
             ->increment('trust_level', rand(2, 5));
@@ -1057,6 +1285,51 @@ class FourFieldsEngine
             narrativeOutcome: $narrative,
             pedagogicalTip: 'Luke 10:2-6 teaches that prayer walking precedes finding the Person of Peace. Intercession softens spiritual soil before sowing the Gospel.',
             newOikosUnlocked: $popDiscovered,
+        );
+    }
+
+    /**
+     * Resolves ward-wide Swarm Training platform action (Field 5: Movement Strategy).
+     */
+    protected function resolveSwarmTrainingPlatform(QueuedMonthlyAction $action, int $gameMonth): ActionResolutionOutcome
+    {
+        $user = $action->user;
+        $ward = $action->ward;
+
+        // Soften soil across all NPCs in the ward
+        Npc::where('game_session_id', $action->game_session_id)
+            ->where('ward_id', $ward->id)
+            ->increment('trust_level', rand(12, 18));
+
+        // Surface Person of Peace if unreached
+        $pop = Npc::where('game_session_id', $action->game_session_id)
+            ->where('ward_id', $ward->id)
+            ->where('is_person_of_peace', true)
+            ->first();
+
+        if ($pop && $pop->status === ReceptivityStatus::Unreached) {
+            $pop->update(['status' => ReceptivityStatus::Yellow]);
+        }
+
+        $narrative = "Mobilized a catalytic Swarm Training team across {$ward->name}! Sowing teams blanketed transit hubs, shopping arcades, and parks, leaving behind fresh contacts and lifting spiritual receptivity across the ward.";
+
+        return new ActionResolutionOutcome(
+            actionId: $action->id,
+            actionType: $action->action_type,
+            userId: $user->id,
+            targetNpcId: null,
+            wardId: $ward->id,
+            trustChange: 18,
+            newTrustLevel: 55,
+            previousStatus: ReceptivityStatus::Unreached,
+            newStatus: ReceptivityStatus::Yellow,
+            statusChanged: true,
+            pointsAwarded: 50,
+            coopPointsAwarded: 0,
+            roleAssigned: ContributionRole::PioneerSower,
+            collaboratorsImpacted: [],
+            narrativeOutcome: $narrative,
+            pedagogicalTip: 'Swarm trainings take multi-generational disciple makers into new territory to seed 3/3rds groups and model reproducible entry.',
         );
     }
 
@@ -1281,8 +1554,8 @@ class FourFieldsEngine
                 ->where('generation', '>', 1)
                 ->exists();
 
-            // When an equipped believer has at least 1 disciple or is elevated to Timothy, they birth an autonomous church!
-            if (! $alreadyPlantedDaughter && ($believer->leadership_tier === LeadershipTier::Timothy || $disciplesCount >= 1)) {
+            // When an equipped believer has at least 1 disciple or can lead a church (L2+), they birth an autonomous church!
+            if (! $alreadyPlantedDaughter && ($believer->leadership_tier->canLeadChurch() || $disciplesCount >= 1)) {
                 $churchGen = max(2, $believer->generation + 1);
                 $parentChurch = Church::where('leader_npc_id', $believer->discipler_npc_id)->first()
                     ?? Church::where('game_session_id', $session->id)->orderBy('generation')->first();

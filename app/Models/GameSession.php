@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -46,6 +47,15 @@ use Illuminate\Support\Carbon;
 class GameSession extends Model
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::creating(function (GameSession $session): void {
+            if (empty($session->code)) {
+                $session->code = 'session-'.Str::lower(Str::random(6));
+            }
+        });
+    }
 
     /**
      * PHP 8.4 Property Hook: Human-friendly calendar month label (e.g., Year 1, Month 1 (Apr 2026))

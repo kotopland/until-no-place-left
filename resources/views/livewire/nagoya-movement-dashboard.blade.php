@@ -128,6 +128,18 @@
                     @endif
                 </div>
 
+                <!-- Theme Mode Toggle Button (Light/Dark) -->
+                <button 
+                    type="button" 
+                    @click="$store.theme?.toggle()" 
+                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-slate-800 border-slate-700 text-amber-300 dark:text-slate-300 hover:text-white"
+                    :title="$store.theme?.mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+                >
+                    <span x-show="$store.theme?.mode === 'dark'">☀️</span>
+                    <span x-show="$store.theme?.mode !== 'dark'">🌙</span>
+                    <span class="hidden xl:inline text-[11px]" x-text="$store.theme?.mode === 'dark' ? 'Light' : 'Dark'"></span>
+                </button>
+
                 <!-- Ambient Music Toggle Button -->
                 <button 
                     type="button" 
@@ -205,6 +217,7 @@
             <button wire:click="setTab('leaderboard')" class="px-2 py-1 rounded-lg {{ $currentTab === 'leaderboard' ? 'bg-indigo-600 text-white' : 'text-slate-400' }}">🏆 Ladder</button>
             <button wire:click="setTab('map')" class="px-2 py-1 rounded-lg {{ $currentTab === 'map' ? 'bg-indigo-600 text-white' : 'text-slate-400' }}">🗺️ Map</button>
             <button type="button" @click="$store.audio?.toggle()" class="px-2 py-1 rounded-lg" :class="$store.audio?.isPlaying ? 'text-indigo-300 font-bold' : 'text-slate-400'"><span x-text="$store.audio?.isPlaying ? '🎵 On' : '🔇 Off'"></span></button>
+            <button type="button" @click="$store.theme?.toggle()" class="px-2 py-1 rounded-lg text-amber-400 font-bold" title="Toggle Light / Dark Mode"><span x-text="$store.theme?.mode === 'dark' ? '☀️' : '🌙'"></span></button>
             <button wire:click="openEditNameModal" class="px-2 py-1 rounded-lg text-indigo-400">👤 Name</button>
             <a href="{{ route('welcome') }}" class="px-2 py-1 rounded-lg text-amber-400 font-bold">📖 Story</a>
         </div>

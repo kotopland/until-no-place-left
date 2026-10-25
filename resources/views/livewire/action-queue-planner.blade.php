@@ -234,6 +234,12 @@
 
             <div class="overflow-y-auto space-y-1.5 pr-1 flex-1 custom-scrollbar">
                 @foreach($wards as $ward)
+                    @php
+                        $isHome = $player && $player->home_ward_id === $ward->id;
+                        $distKm = $player ? $player->distanceToWard($ward) : 0.0;
+                        $transitAp = $player ? $player->commuteApCostForWard($ward) : 0;
+                        $otherMissionariesInWard = ($residentMissionariesByWard->get($ward->id) ?? collect())->filter(fn($u) => $u->id !== $player?->id);
+                    @endphp
                     <button 
                         type="button"
                         wire:click="selectWard({{ $ward->id }})"
@@ -241,10 +247,29 @@
                         class="w-full text-left px-3 py-2.5 rounded-xl text-xs transition-all flex items-center justify-between {{ $selectedWardId === $ward->id ? 'bg-indigo-600/30 text-white border border-indigo-500/60 shadow-sm' : 'bg-slate-800/40 text-slate-300 hover:bg-slate-800/70 border border-transparent' }}"
                     >
                         <div>
-                            <div class="font-semibold">{{ $ward->name }}</div>
-                            <div class="text-[11px] text-slate-400">{{ $ward->name_ja }}</div>
+                            <div class="font-semibold flex items-center gap-1.5 flex-wrap">
+                                <span>{{ $ward->name }}</span>
+                                @if($isHome)
+                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                                        🏡 Home
+                                    </span>
+                                @endif
+                                @if($otherMissionariesInWard->isNotEmpty())
+                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-500/30" title="{{ $otherMissionariesInWard->pluck('name')->join(', ') }}">
+                                        🏠 {{ $otherMissionariesInWard->count() }} co-worker{{ $otherMissionariesInWard->count() > 1 ? 's' : '' }}
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                                <span>{{ $ward->name_ja }}</span>
+                                @if(! $isHome && $player?->home_ward_id)
+                                    <span class="text-[10px] {{ $transitAp > 0 ? 'text-amber-400 font-semibold' : 'text-slate-400' }}">
+                                        • {{ $distKm }} km {{ $transitAp > 0 ? "(+{$transitAp} AP)" : '' }}
+                                    </span>
+                                @endif
+                            </div>
                         </div>
-                        <div class="text-right">
+                        <div class="text-right shrink-0">
                             <span class="text-[10px] font-medium px-1.5 py-0.5 rounded {{ $ward->spiritual_openness >= 40 ? 'bg-emerald-950/70 text-emerald-400' : 'bg-slate-800 text-slate-400' }}">
                                 {{ $ward->spiritual_openness }}% Open
                             </span>
@@ -302,6 +327,64 @@
                 @endif
             </div>
 
+            <!-- Home Base & Relocation Banner -->
+            @if($selectedWard)
+                @php
+                    $coLaborersInWard = ($residentMissionariesByWard->get($selectedWard->id) ?? collect())->filter(fn($u) => $u->id !== $player?->id);
+                @endphp
+                <div class="mb-2 p-2.5 rounded-xl border {{ $isHomeWard ? 'bg-amber-950/30 border-amber-500/50 text-amber-200' : 'bg-slate-950/60 border-slate-800 text-slate-300' }} text-xs">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="min-w-0 flex-1">
+                            @if($isHomeWard)
+                                <div class="font-bold flex items-center gap-1.5 text-amber-300 text-xs">
+                                    <span>🏡</span>
+                                    <span>Your Home Base & Residence</span>
+                                </div>
+                                <div class="text-[10px] text-amber-400/90 mt-0.5 leading-tight">
+                                    Embedded Neighbor: 0 min commute • <strong>+25% Trust & Rapid Follow-up Bonus</strong>
+                                </div>
+                            @else
+                                <div class="font-semibold flex items-center gap-1.5 text-white text-xs">
+                                    <span>{{ $commuteApCost > 0 ? '🚆' : '🚇' }}</span>
+                                    <span>{{ $commuteDistanceKm }} km from Home ({{ $player?->homeWard?->name ?? 'Nagoya' }})</span>
+                                    @if($commuteApCost > 0)
+                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-950 text-amber-400 border border-amber-800">
+                                            +{{ $commuteApCost }} AP Commute
+                                        </span>
+                                    @else
+                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-medium bg-emerald-950 text-emerald-300 border border-emerald-800">
+                                            0 AP Commute
+                                        </span>
+                                    @endif
+                                </div>
+                                <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">
+                                    ~{{ $commuteMinutes }} min transit • Follow-up: {{ $commuteApCost > 1 ? 'Harder to follow up (-30% trust)' : ($commuteApCost > 0 ? 'Moderate friction (-15% trust)' : 'Standard follow-up') }}
+                                </div>
+                            @endif
+                        </div>
+
+                        @if(! $isHomeWard)
+                            <button 
+                                type="button" 
+                                wire:click="moveToWard({{ $selectedWard->id }})"
+                                class="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] transition cursor-pointer shrink-0 shadow flex items-center gap-1 active:scale-95"
+                                title="Relocate your residence and make {{ $selectedWard->name }} your ministry home base"
+                            >
+                                <span>🏡</span>
+                                <span>Move Here</span>
+                            </button>
+                        @endif
+                    </div>
+
+                    @if($coLaborersInWard->isNotEmpty())
+                        <div class="mt-2 pt-2 border-t border-slate-700/50 flex items-center gap-1.5 text-[10px] text-indigo-300">
+                            <span>🏠</span>
+                            <span><strong>Fellow Missionaries Living Here:</strong> {{ $coLaborersInWard->pluck('name')->join(', ') }}</span>
+                        </div>
+                    @endif
+                </div>
+            @endif
+
             <!-- Ward-Wide Platform Action Shortcut -->
             <div class="mb-2">
                 <button 
@@ -354,9 +437,13 @@
                                             💭 Cost
                                         </span>
                                     @endif
-                                    @if($npc->trained_411)
+                                    @if($npc->leadership_tier->level() > 0)
+                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-bold border {{ $npc->leadership_tier->badgeClasses() }}" title="{{ $npc->leadership_tier->label() }}: {{ $npc->leadership_tier->coreFocus() }}">
+                                            {{ $npc->leadership_tier->levelCode() }} {{ $npc->leadership_tier->roleTitle() }}
+                                        </span>
+                                    @elseif($npc->trained_411)
                                         <span class="px-1.5 py-0.2 rounded text-[9px] bg-purple-950 text-purple-300 border border-purple-700 font-bold">
-                                            411 Sower
+                                            L1 Sower
                                         </span>
                                     @endif
                                 </div>
@@ -430,7 +517,17 @@
                     </div>
                     @if($selectedNpc)
                         <div class="text-right">
-                            <span class="text-xs text-indigo-400 font-bold block">{{ $selectedNpc->displayName }}</span>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-xs text-indigo-400 font-bold block">{{ $selectedNpc->displayName }}</span>
+                                @if($selectedNpc->leadership_tier->level() > 0)
+                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-bold border {{ $selectedNpc->leadership_tier->badgeClasses() }}">
+                                        {{ $selectedNpc->leadership_tier->levelCode() }}
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="text-[10px] text-slate-400">
+                                {{ $selectedNpc->leadership_tier->roleTitle() }}
+                            </div>
                             <button 
                                 type="button" 
                                 @click="mobileStep = 2; $wire.setMobileStep(2)" 
@@ -453,30 +550,96 @@
                     @endif
                 </div>
 
+                <!-- 5 Levels Ability Banner & Filter Toggle -->
+                @if($selectedNpc)
+                    <div class="mb-3 p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-inner">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="text-slate-400 text-[10px] uppercase font-bold tracking-wider">5 Levels Ability:</span>
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold border {{ $selectedNpc->leadership_tier->badgeClasses() }}">
+                                    {{ $selectedNpc->leadership_tier->levelCode() }}: {{ $selectedNpc->leadership_tier->roleTitle() }}
+                                </span>
+                                @if($selectedNpc->leadership_tier->level() > 0)
+                                    <span class="text-slate-400 text-[10px]">Toolset: <strong class="text-slate-300">{{ $selectedNpc->leadership_tier->coreToolset() }}</strong></span>
+                                @endif
+                            </div>
+                            <div class="text-[10px] text-slate-400 mt-0.5 truncate">
+                                {{ $selectedNpc->leadership_tier->coreFocus() }}
+                            </div>
+                        </div>
+                        <button 
+                            type="button"
+                            wire:click="toggleFilterEligibleOnly"
+                            class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition shrink-0 cursor-pointer flex items-center justify-center gap-1 {{ $filterEligibleOnly ? 'bg-indigo-600 text-white border border-indigo-400 shadow' : 'bg-slate-800 text-slate-300 hover:text-white border border-slate-700' }}"
+                            title="Filter actions matching abilities"
+                        >
+                            <span>{{ $filterEligibleOnly ? '✓' : '⚡' }}</span>
+                            <span>{{ $filterEligibleOnly ? 'Eligible Only' : 'Filter by Ability' }}</span>
+                        </button>
+                    </div>
+                @endif
+
                 <!-- Action Type Selector -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3">
                     @foreach($actionTypes as $action)
+                        @php
+                            $isEligible = $action->isEligibleFor($selectedNpc);
+                            $ineligibilityReason = $action->ineligibilityReason($selectedNpc);
+                        @endphp
                         <label 
-                            class="flex items-start gap-2.5 p-2.5 rounded-xl border cursor-pointer transition-all {{ $selectedActionType === $action->value ? 'bg-indigo-950/60 border-indigo-500 text-white shadow-md ring-1 ring-indigo-500/50' : 'bg-slate-800/40 border-slate-800 text-slate-300 hover:border-slate-700' }}"
+                            class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all relative {{ ! $isEligible ? 'opacity-60 bg-slate-900/40 border-slate-800/60 text-slate-400 cursor-not-allowed' : ($selectedActionType === $action->value ? 'bg-indigo-950/60 border-indigo-500 text-white shadow-md ring-1 ring-indigo-500/50 cursor-pointer' : 'bg-slate-800/40 border-slate-800 text-slate-300 hover:border-slate-700 cursor-pointer') }}"
+                            title="{{ $isEligible ? $action->description() : 'Locked: '.$ineligibilityReason }}"
                         >
                             <input 
                                 type="radio" 
                                 name="action_type" 
                                 value="{{ $action->value }}" 
                                 wire:model.live="selectedActionType"
-                                class="mt-1 text-indigo-500 focus:ring-indigo-500"
+                                @disabled(! $isEligible)
+                                class="mt-1 text-indigo-500 focus:ring-indigo-500 disabled:opacity-40"
                             >
                             <div class="min-w-0 flex-1">
                                 <div class="flex items-start justify-between gap-1.5">
-                                    <span class="text-xs font-semibold leading-snug break-words">
-                                        {{ $action->icon() }} {{ $action->label() }}
+                                    <span class="text-xs font-semibold leading-snug break-words flex items-center gap-1">
+                                        <span>{{ $action->icon() }}</span>
+                                        <span>
+                                            @if($action === \App\Enums\MinistryActionType::PrayerWalk && $selectedNpc)
+                                                Prayer Walk together with {{ $selectedNpc->displayName }}
+                                            @else
+                                                {{ $action->label() }}
+                                            @endif
+                                        </span>
                                     </span>
-                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-900/90 text-amber-400 border border-slate-700/50 shrink-0">
-                                        {{ $action->apCost() }} AP
-                                    </span>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        @if(! $isEligible)
+                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-950/80 text-rose-300 border border-rose-800/60 flex items-center gap-0.5" title="{{ $ineligibilityReason }}">
+                                                <span>🔒</span>
+                                                <span>Locked</span>
+                                            </span>
+                                        @endif
+                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-900/90 text-amber-400 border border-slate-700/50 flex items-center gap-1">
+                                            <span>{{ $action->apCost() + $commuteApCost }} AP</span>
+                                            @if($commuteApCost > 0)
+                                                <span class="text-[9px] text-amber-300 font-normal opacity-90" title="Includes +{{ $commuteApCost }} AP transit cost from your home base">(+{{ $commuteApCost }} commute)</span>
+                                            @endif
+                                        </span>
+                                    </div>
                                 </div>
+
+                                @if($action === \App\Enums\MinistryActionType::PrayerWalk && $selectedNpc && $isEligible)
+                                    <div class="text-[10px] text-emerald-400/90 mt-1 leading-tight">
+                                        👣 Joint harvest prayer walk (MAWL). Builds trust (+25%) & covers their Oikos.
+                                    </div>
+                                @endif
+
+                                @if(! $isEligible)
+                                    <div class="text-[10px] text-rose-400/90 mt-1 italic leading-tight">
+                                        {{ $ineligibilityReason }}
+                                    </div>
+                                @endif
+
                                 <div class="flex items-center justify-between gap-1 mt-1.5">
-                                    <span class="text-[10px] text-slate-400 font-medium">{{ $action->fieldName() }}</span>
+                                    <span class="text-[10px] text-slate-400 font-medium truncate">{{ $action->fieldName() }}</span>
                                     <button 
                                         type="button" 
                                         wire:click.stop="openActionInfoModal('{{ $action->value }}')" 
@@ -484,7 +647,7 @@
                                         title="View descriptive text & strategy for {{ $action->label() }}"
                                     >
                                         <span>ℹ️</span>
-                                        <span>More Info</span>
+                                        <span>Info</span>
                                     </button>
                                 </div>
                             </div>
@@ -492,17 +655,45 @@
                     @endforeach
                 </div>
 
+                <!-- Proximity & Commute Cost Indicator Banner -->
+                @if($isHomeWard)
+                    <div class="mb-3 px-3 py-2 rounded-xl bg-emerald-950/40 border border-emerald-800/60 text-[11px] text-emerald-300 flex items-center justify-between">
+                        <div class="flex items-center gap-1.5">
+                            <span>🏡</span>
+                            <span><strong>Home Base Advantage:</strong> Local neighbor presence brings <strong>+25% follow-up trust</strong> and 0 AP commute overhead.</span>
+                        </div>
+                    </div>
+                @elseif($commuteApCost > 0)
+                    <div class="mb-3 px-3 py-2 rounded-xl bg-amber-950/40 border border-amber-800/60 text-[11px] text-amber-300 flex items-center justify-between">
+                        <div class="flex items-center gap-1.5">
+                            <span>🚇</span>
+                            <span><strong>Commute Overhead:</strong> {{ $commuteDistanceKm }} km (~{{ $commuteMinutes }} min). Adds <strong>+{{ $commuteApCost }} AP transit cost</strong> and travel friction on follow-ups.</span>
+                        </div>
+                    </div>
+                @else
+                    <div class="mb-3 px-3 py-2 rounded-xl bg-slate-950/50 border border-slate-800 text-[11px] text-slate-300 flex items-center justify-between">
+                        <div class="flex items-center gap-1.5">
+                            <span>🚶</span>
+                            <span><strong>Nearby Ward:</strong> {{ $commuteDistanceKm }} km (~{{ $commuteMinutes }} min transit). 0 AP surcharge; standard follow-up pace.</span>
+                        </div>
+                    </div>
+                @endif
+
                 <!-- Optional Notes -->
                 <div class="mb-3">
                     <input 
                         type="text" 
                         wire:model="notes" 
                         placeholder="Add prayer focus or personal notes (optional)..." 
-                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none fo                <!-- Queue Button -->
+                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    >
+                </div>
+
+                <!-- Queue Button -->
                 <button 
                     type="button"
                     wire:click="queueAction"
-                    class="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-500 hover:to-emerald-500 text-white shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    class="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-500 hover:to-emerald-500 text-white shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
                 >
                     <span>➕</span>
                     <span>Queue for Day {{ $player?->current_game_day ?? 1 }} • Executes on Next Day</span>
@@ -635,12 +826,15 @@
                     <span class="px-2.5 py-1 rounded-xl bg-emerald-950/60 border border-emerald-600/50 text-emerald-300 text-xs font-bold">
                         {{ $infoActionEnum->fieldName() }}
                     </span>
+                    <span class="px-2.5 py-1 rounded-xl bg-purple-950/60 border border-purple-600/50 text-purple-300 text-xs font-bold">
+                        {{ $infoActionEnum->toolboxLevel() }}
+                    </span>
                     @if($infoActionEnum->requiresTargetNpc())
                         <span class="px-2.5 py-1 rounded-xl bg-blue-950/60 border border-blue-600/50 text-blue-300 text-[11px] font-semibold">
-                            🎯 Requires Target Resident
+                            🎯 Target Resident
                         </span>
                     @else
-                        <span class="px-2.5 py-1 rounded-xl bg-purple-950/60 border border-purple-600/50 text-purple-300 text-[11px] font-semibold">
+                        <span class="px-2.5 py-1 rounded-xl bg-indigo-950/60 border border-indigo-600/50 text-indigo-300 text-[11px] font-semibold">
                             🏙️ Ward-Wide Strategic Event
                         </span>
                     @endif
@@ -659,7 +853,7 @@
 
                     <div class="p-3.5 rounded-2xl bg-indigo-950/30 border border-indigo-900/50 space-y-2">
                         <strong class="text-indigo-300 block font-bold text-[11px] uppercase tracking-wider">
-                            💡 Movement Lore & Four Fields Strategy:
+                            💡 Movement Lore & 5 Levels Coaching Strategy:
                         </strong>
                         @if($infoActionEnum === \App\Enums\MinistryActionType::CasualTalk)
                             <p>In Japanese culture, building trust (*shinrai*) begins with natural, low-pressure conversation. Casual talk is the foundation of Field 1 (Entry Strategy), uncovering relational networks (Oikos).</p>
@@ -672,7 +866,7 @@
                         @elseif($infoActionEnum === \App\Enums\MinistryActionType::InternationalEvent)
                             <p>Organizing a cultural exchange, cooking night, or language cafe in a ward casts a wide net, quickly surfacing seekers and Persons of Peace without needing an initial target resident.</p>
                         @elseif($infoActionEnum === \App\Enums\MinistryActionType::PrayerWalk)
-                            <p>Luke 10:2-6 intercession on foot along neighborhood streets! Softens spiritual soil, increases ward openness, and surfaces receptive Luke 10 Persons of Peace. Prayer walks trace luminous amber street paths on the Nagoya map.</p>
+                            <p>Luke 10:2-6 intercession on foot along neighborhood streets! Can be conducted solo across a ward to discover Persons of Peace, or jointly with a resident contact using MAWL (Model, Assist, Watch, Leave) to train them in harvest prayer and place their relational Oikos under intercession. Traces luminous street prayer paths on the Nagoya map.</p>
                         @elseif($infoActionEnum === \App\Enums\MinistryActionType::Share15SecTestimony)
                             <p>A simple 15-second testimony (My life before Christ -> How Christ met me -> My life now with Christ) empowers any believer to reproduce without fear.</p>
                         @elseif($infoActionEnum === \App\Enums\MinistryActionType::Share3Circles)
@@ -681,10 +875,20 @@
                             <p>Guiding an open seeker to pray and confess Jesus Christ as Lord and Savior (Romans 10:9-10). When a Person of Peace is saved, their entire family network often follows!</p>
                         @elseif($infoActionEnum === \App\Enums\MinistryActionType::CommitToBaptism)
                             <p>Baptism in Japan carries deep spiritual significance, often requiring courage to transcend ancestral Buddhist/Shinto traditions. Essential for Acts 2 Church Circles.</p>
+                        @elseif($infoActionEnum === \App\Enums\MinistryActionType::CommandsOfChrist)
+                            <p>L2 Discipleship Curriculum: 7 to 9 basic commands of Jesus (Repent & Believe, Be Baptized, Pray, Love, Lord's Supper, Give, Make Disciples) accompanied by hand motions. Establishes immediate loving obedience in reproducing house churches.</p>
+                        @elseif($infoActionEnum === \App\Enums\MinistryActionType::SwordBibleStudy)
+                            <p>The primary Discovery Bible Study method in movements! Four simple questions: (1) What does this say about God? (2) What does this say about people? (3) Any sin to avoid or command to obey? (4) Any example to follow? Cultivates self-feeding disciples.</p>
                         @elseif($infoActionEnum === \App\Enums\MinistryActionType::Train411)
-                            <p>The catalytic discipleship engine! 4 Questions, 1 sheet of paper, 1 hour. Trains new believers to immediately share with their own Oikos, sparking G2 Church reproduction.</p>
+                            <p>The catalytic discipleship engine! 4 Questions, 1 sheet of paper, 1 hour. Trains new believers to immediately share with their own Oikos, sparking G2 Church reproduction as L1 Seed Sowers.</p>
+                        @elseif($infoActionEnum === \App\Enums\MinistryActionType::ChurchCircles)
+                            <p>Acts 2:38-47 healthy church formation! Uses the 3/3rds pattern: Look Back (Care, Worship, Loving Accountability), Look Up (Scripture discovery), and Look Ahead (Practice, Goals, Commissioning). Gives groups biblical identity as autonomous churches.</p>
                         @elseif($infoActionEnum === \App\Enums\MinistryActionType::MentorTimothy)
-                            <p>Investing in emerging Japanese leaders (2 Timothy 2:2) to transition churches from missionary dependence to autonomous local reproduction (Field 5).</p>
+                            <p>Investing in emerging Japanese leaders (2 Timothy 2:2) to transition from L1 Seed Sower to L2 Church Planter. Breaks missionary bottlenecks by empowering local believers to pastor simple churches.</p>
+                        @elseif($infoActionEnum === \App\Enums\MinistryActionType::IronOnIron)
+                            <p>Quarterly peer coaching using Generational Mapping and 4 Fields diagnostic questions. Proverbs 27:17 "Iron sharpens iron" elevates L2 Church Planters to L3 Church Plant Multipliers through brutal facts, celebration, and bottleneck troubleshooting.</p>
+                        @elseif($infoActionEnum === \App\Enums\MinistryActionType::SwarmTraining)
+                            <p>Multi-team movement saturation! Brings experienced training teams (L4 Movement Trainers & L5 Strategy Coordinators) to model harvest entry, assist local sowers, watch them lead, and launch regional midlevel training cohorts.</p>
                         @endif
                     </div>
                 </div>

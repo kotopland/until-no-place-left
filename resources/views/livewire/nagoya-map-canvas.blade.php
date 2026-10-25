@@ -6,12 +6,14 @@
         lines: @js($linesData),
         specialSpots: @js($specialSpots),
         prayerWalks: @js($prayerWalksData),
+        houses: @js($housesData),
         showHeatmap: @entangle('showHeatmap').live,
         showChurches: @entangle('showChurches').live,
         showOikosLines: @entangle('showOikosLines').live,
         showMercySpots: @entangle('showMercySpots').live,
         showEventPins: @entangle('showEventPins').live,
-        showPrayerWalks: @entangle('showPrayerWalks').live
+        showPrayerWalks: @entangle('showPrayerWalks').live,
+        showHouses: @entangle('showHouses').live
     })"
 >
     <style>
@@ -117,6 +119,18 @@
                 <span class="w-2 h-2 rounded-full" :class="showPrayerWalks ? 'bg-amber-200 animate-pulse' : 'bg-amber-500/50'"></span>
                 <span>🚶 Prayer Walks ({{ count($prayerWalksData) }})</span>
             </button>
+
+            <!-- Houses / Missionary Bases: Emerald 🏡 -->
+            <button 
+                type="button" 
+                @click="toggleLayer('houses')" 
+                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border"
+                :class="showHouses ? 'bg-emerald-600 text-white border-emerald-400 shadow-md shadow-emerald-950/60 ring-1 ring-emerald-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800'"
+                title="Toggle Missionary Residences & Houses (🏡)"
+            >
+                <span class="w-2 h-2 rounded-full" :class="showHouses ? 'bg-emerald-200 animate-pulse' : 'bg-emerald-500/50'"></span>
+                <span>🏡 Houses ({{ count($housesData) }})</span>
+            </button>
         </div>
     </div>
 
@@ -145,6 +159,14 @@
         <!-- Ministries & Layers Group -->
         <div class="flex items-center gap-3">
             <span class="text-slate-500 font-bold uppercase tracking-wider text-[10px]">Layers:</span>
+            <div class="flex items-center gap-1.5">
+                <span class="text-xs">🏡</span>
+                <span class="text-emerald-400 font-semibold">Your Home</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="text-xs">🏠</span>
+                <span class="text-indigo-400 font-semibold">Co-Laborers</span>
+            </div>
             <div class="flex items-center gap-1.5">
                 <span class="w-3.5 h-1.5 rounded-full bg-amber-400 shadow-sm shadow-amber-400/50"></span>
                 <span class="text-amber-300 font-semibold">🚶 Prayer Walks</span>
