@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nagoya Oikos: The Four Fields • Movement Simulation Story & Rules</title>
     
-    <link rel="icon" href="{{ asset('images/until-no-place-left-logo-small.png') }}" type="image/jpeg">
+    <link rel="icon" href="{{ asset('images/until-no-place-left-logo-small.png') }}" type="image/png">
     <link rel="apple-touch-icon" href="{{ asset('images/until-no-place-left-logo-small.png') }}">
     @fonts
 
@@ -251,11 +251,11 @@
                         </div>
                         <h4 class="text-base font-bold text-white">Empty Field (Entry Strategy)</h4>
                         <p class="text-xs text-slate-300 leading-relaxed">
-                            Entering new territory. Identifying <strong class="text-blue-300">Persons of Peace (Luke 10)</strong> through Casual Talk, active listening to grief/insomnia, practical mercy (Shirakawa Park soup kitchens), and International Cafes.
+                            Entering new territory. Prayer walking streets and discerning spiritual openness to discover <strong class="text-blue-300">Persons of Peace (Luke 10)</strong> through Casual Talk, active listening to grief/burnout, practical mercy (Shirakawa Park soup kitchens), and International Cafes.
                         </p>
                     </div>
                     <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[11px] text-blue-300">
-                        ⚡ Actions: Casual Talk, Deep Listening, Healing Prayer, Mercy Outreach.
+                        ⚡ Actions: Prayer Walking, Casual Talk, Deep Listening, Healing Prayer, Mercy Outreach.
                     </div>
                 </div>
 
@@ -342,7 +342,7 @@
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Mechanic 1: Action Points -->
                 <div class="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4">
                     <div class="flex items-center gap-3">
@@ -357,6 +357,10 @@
                     </p>
                     <ul class="text-xs space-y-2 text-slate-300">
                         <li class="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800">
+                            <span>Prayer Walking & Spiritual Mapping</span>
+                            <span class="font-bold text-emerald-400">1 AP</span>
+                        </li>
+                        <li class="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800">
                             <span>Casual Talk & Friendship</span>
                             <span class="font-bold text-emerald-400">1 AP</span>
                         </li>
@@ -369,6 +373,10 @@
                             <span class="font-bold text-emerald-400">2 AP</span>
                         </li>
                         <li class="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800">
+                            <span>Mercy Outreach & Practical Service</span>
+                            <span class="font-bold text-amber-400">3 AP</span>
+                        </li>
+                        <li class="flex items-center justify-between p-2 rounded-xl bg-slate-950 border border-slate-800">
                             <span>Equip with 411 Discipleship</span>
                             <span class="font-bold text-amber-400">3 AP</span>
                         </li>
@@ -379,23 +387,27 @@
                     </ul>
                 </div>
 
-                <!-- Mechanic 2: Daily & Monthly Ticks -->
+                <!-- Mechanic 2: Independent Player Pacing & Progression -->
                 <div class="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4">
                     <div class="flex items-center gap-3">
                         <span class="text-3xl">⏱️</span>
                         <div>
-                            <h3 class="text-base font-bold text-white">Daily & Monthly Ticks</h3>
-                            <span class="text-xs text-slate-400">Relational Ripple Progression</span>
+                            <h3 class="text-base font-bold text-white">Independent Player Pacing</h3>
+                            <span class="text-xs text-slate-400">Personal Clock & Self-Advancement</span>
                         </div>
                     </div>
                     <div class="space-y-3 text-xs text-slate-300 leading-relaxed">
                         <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                            <strong class="text-white block font-semibold">🕒 Daily Ticks (Every 10 Minutes Online)</strong>
-                            <span>Days advance while you interact with the game. Relational trust deepens and answered prayer ripples through family and friend networks (capped at 30 game days per real day).</span>
+                            <strong class="text-white block font-semibold">⚡ Personal Daily Progression</strong>
+                            <span>Clicking <em>Next Day</em> advances <strong>only your</strong> game day and replenishes your 12 AP instantly. You progress at your own pace without waiting for or disrupting other players.</span>
                         </div>
                         <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                            <strong class="text-white block font-semibold">📅 Monthly Tick (Every 30 Game Days)</strong>
-                            <span>When the 30-day month concludes, all queued actions are resolved, 411-trained believers step out into the harvest, daughter churches plant, and you receive an in-depth Monthly Movement Digest report.</span>
+                            <strong class="text-white block font-semibold">📅 Self-Paced Month Advance & Review</strong>
+                            <span>Upon completing 30 game days in a month, manual month advancement unlocks. Review your rich <strong>Month in Review Digest</strong> celebrating answered prayers, church health, and coach insights.</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                            <strong class="text-white block font-semibold">🛡️ Automated Nightly Safeguards</strong>
+                            <span>A nightly automated tick advances inactive players, while active players who already advanced are safely guarded against double-advancement.</span>
                         </div>
                     </div>
                 </div>
@@ -445,6 +457,62 @@
                         <div class="p-2 rounded-lg bg-slate-950 border border-slate-800">
                             <span class="text-slate-400 block text-[11px]">G4+ Movement Stream</span>
                             <span class="font-bold text-amber-400">+5,000 pts!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mechanic 5: Interactive GIS Movement Map -->
+                <div class="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">🗺️</span>
+                        <div>
+                            <h3 class="text-base font-bold text-white">Interactive GIS Movement Map</h3>
+                            <span class="text-xs text-slate-400">Real-Time Spiritual Intelligence</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        The Action HQ map provides live tactical overlays across Nagoya:
+                    </p>
+                    <ul class="text-xs space-y-1.5 text-slate-300">
+                        <li class="flex items-center gap-2 p-1.5 rounded-lg bg-slate-950 border border-slate-800/80">
+                            <span>🔥</span>
+                            <span><strong>Spiritual Openness Heatmap</strong> across all 16 wards</span>
+                        </li>
+                        <li class="flex items-center gap-2 p-1.5 rounded-lg bg-slate-950 border border-slate-800/80">
+                            <span>⭕</span>
+                            <span><strong>Acts 2 Church Circles</strong> (dashed developing vs solid multiplying)</span>
+                        </li>
+                        <li class="flex items-center gap-2 p-1.5 rounded-lg bg-slate-950 border border-slate-800/80">
+                            <span>🌐</span>
+                            <span><strong>Oikos Relational Arcs</strong> connecting families & coworkers</span>
+                        </li>
+                        <li class="flex items-center gap-2 p-1.5 rounded-lg bg-slate-950 border border-slate-800/80">
+                            <span>👣</span>
+                            <span><strong>Historical Prayer Walks</strong> & discovered Persons of Peace</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Mechanic 6: Live Multiplayer Leaderboard -->
+                <div class="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">📊</span>
+                        <div>
+                            <h3 class="text-base font-bold text-white">Live Multiplayer Leaderboard</h3>
+                            <span class="text-xs text-slate-400">Movement Metrics & City-Wide Impact</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Track progress across the whole body of Christ in Nagoya:
+                    </p>
+                    <div class="space-y-2 text-xs text-slate-300">
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                            <span class="text-indigo-400 font-bold block">🏅 Generational Depth Tracking</span>
+                            <span class="text-slate-400 text-[11px]">Compare individual and team contributions to G1–G4 church reproduction.</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                            <span class="text-emerald-400 font-bold block">✨ Shared Victory Condition</span>
+                            <span class="text-slate-400 text-[11px]">Win together when every ward has healthy, reproducing indigenous churches.</span>
                         </div>
                     </div>
                 </div>
@@ -513,8 +581,8 @@
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4 text-left text-xs">
                 <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">1</span>
-                    <strong class="text-white block font-semibold">Enter Action HQ</strong>
-                    <span class="text-slate-400 block leading-relaxed">Select a resident in Nagoya. Look for Persons of Peace with Yellow status (like Kenji in Osu or Linh in Tempaku).</span>
+                    <strong class="text-white block font-semibold">Prayer Walk & Discern</strong>
+                    <span class="text-slate-400 block leading-relaxed">Prayer walk ward streets to map openness and reveal Persons of Peace with Yellow status (like Kenji in Osu or Linh in Tempaku).</span>
                 </div>
 
                 <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
@@ -537,8 +605,8 @@
 
                 <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-[11px]">5</span>
-                    <strong class="text-white block font-semibold">Birth G2 Discovery Church</strong>
-                    <span class="text-slate-400 block leading-relaxed">When their family accepts Christ, an autonomous G2 Church Circle is birthed! Watch reproduction explode!</span>
+                    <strong class="text-white block font-semibold">Birth G2–G4+ Churches</strong>
+                    <span class="text-slate-400 block leading-relaxed">When their family accepts Christ, an autonomous G2 Church Circle is birthed! Watch generational streams multiply!</span>
                 </div>
             </div>
 
