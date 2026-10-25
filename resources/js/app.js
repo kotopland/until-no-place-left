@@ -8,6 +8,31 @@ window.nagoyaMap = function(config) {
         spotsLayer: null,
         prayerWalksLayer: null,
 
+        // Reactive layer visibility states bound with entangle
+        showHeatmap: config.showHeatmap ?? true,
+        showChurches: config.showChurches ?? true,
+        showOikosLines: config.showOikosLines ?? true,
+        showMercySpots: config.showMercySpots ?? true,
+        showEventPins: config.showEventPins ?? true,
+        showPrayerWalks: config.showPrayerWalks ?? true,
+
+        wardsGeoJson: config.wardsGeoJson || null,
+        churches: config.churches || [],
+        lines: config.lines || [],
+        specialSpots: config.specialSpots || [],
+        prayerWalks: config.prayerWalks || [],
+
+        toggleLayer(layer) {
+            if (layer === 'heatmap') this.showHeatmap = !this.showHeatmap;
+            else if (layer === 'churches') this.showChurches = !this.showChurches;
+            else if (layer === 'oikos') this.showOikosLines = !this.showOikosLines;
+            else if (layer === 'mercy') this.showMercySpots = !this.showMercySpots;
+            else if (layer === 'events') this.showEventPins = !this.showEventPins;
+            else if (layer === 'prayer_walks') this.showPrayerWalks = !this.showPrayerWalks;
+
+            this.renderLayers();
+        },
+
         initMap() {
             if (typeof L === 'undefined') {
                 console.error('Leaflet is not loaded yet');
@@ -66,10 +91,13 @@ window.nagoyaMap = function(config) {
             if (!this.map || typeof L === 'undefined') return;
 
             // 1. Wards Heatmap Layer
-            if (this.geoJsonLayer) this.map.removeLayer(this.geoJsonLayer);
+            if (this.geoJsonLayer) {
+                this.map.removeLayer(this.geoJsonLayer);
+                this.geoJsonLayer = null;
+            }
 
-            if (config.showHeatmap && config.wardsGeoJson) {
-                this.geoJsonLayer = L.geoJSON(config.wardsGeoJson, {
+            if (this.showHeatmap && this.wardsGeoJson) {
+                this.geoJsonLayer = L.geoJSON(this.wardsGeoJson, {
                     style: (feature) => {
                         const openness = feature.properties.openness;
                         let fillColor = '#64748b'; // slate-500
@@ -103,11 +131,14 @@ window.nagoyaMap = function(config) {
             }
 
             // 2. Oikos Relational Lines (Arcs)
-            if (this.oikosLayer) this.map.removeLayer(this.oikosLayer);
+            if (this.oikosLayer) {
+                this.map.removeLayer(this.oikosLayer);
+                this.oikosLayer = null;
+            }
 
-            if (config.showOikosLines && config.lines) {
+            if (this.showOikosLines && this.lines) {
                 this.oikosLayer = L.layerGroup();
-                config.lines.forEach(line => {
+                this.lines.forEach(line => {
                     let strokeColor = '#38bdf8'; // friend cyan
                     if (line.type === 'family') strokeColor = '#f43f5e'; // rose
                     else if (line.type === 'coworker') strokeColor = '#a855f7'; // purple
@@ -134,11 +165,14 @@ window.nagoyaMap = function(config) {
             }
 
             // 3. Churches Layer
-            if (this.churchesLayer) this.map.removeLayer(this.churchesLayer);
+            if (this.churchesLayer) {
+                this.map.removeLayer(this.churchesLayer);
+                this.churchesLayer = null;
+            }
 
-            if (config.showChurches && config.churches) {
+            if (this.showChurches && this.churches) {
                 this.churchesLayer = L.layerGroup();
-                config.churches.forEach(church => {
+                this.churches.forEach(church => {
                     const icon = L.divIcon({
                         className: 'custom-church-pin',
                         html: `
@@ -171,13 +205,16 @@ window.nagoyaMap = function(config) {
             }
 
             // 4. Special Spots: Mercy Outreaches & Event Platforms
-            if (this.spotsLayer) this.map.removeLayer(this.spotsLayer);
+            if (this.spotsLayer) {
+                this.map.removeLayer(this.spotsLayer);
+                this.spotsLayer = null;
+            }
 
-            if ((config.showMercySpots || config.showEventPins) && config.specialSpots) {
+            if ((this.showMercySpots || this.showEventPins) && this.specialSpots) {
                 this.spotsLayer = L.layerGroup();
-                config.specialSpots.forEach(spot => {
-                    if (spot.type === 'mercy' && !config.showMercySpots) return;
-                    if (spot.type === 'event' && !config.showEventPins) return;
+                this.specialSpots.forEach(spot => {
+                    if (spot.type === 'mercy' && !this.showMercySpots) return;
+                    if (spot.type === 'event' && !this.showEventPins) return;
 
                     const bg = spot.type === 'mercy' ? '#e11d48' : '#7c3aed';
                     const icon = L.divIcon({
@@ -206,11 +243,14 @@ window.nagoyaMap = function(config) {
             }
 
             // 5. Prayer Walks Street Polylines Layer (Uniform Amber / Gold System)
-            if (this.prayerWalksLayer) this.map.removeLayer(this.prayerWalksLayer);
+            if (this.prayerWalksLayer) {
+                this.map.removeLayer(this.prayerWalksLayer);
+                this.prayerWalksLayer = null;
+            }
 
-            if (config.showPrayerWalks && config.prayerWalks && config.prayerWalks.length > 0) {
+            if (this.showPrayerWalks && this.prayerWalks && this.prayerWalks.length > 0) {
                 this.prayerWalksLayer = L.layerGroup();
-                config.prayerWalks.forEach(walk => {
+                this.prayerWalks.forEach(walk => {
                     if (!walk.coords || walk.coords.length === 0) return;
 
                     // Uniform Amber / Gold Palette matching the Amber filter button and legend

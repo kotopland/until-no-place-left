@@ -3,18 +3,22 @@
     <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
             <!-- Brand & Game Title with Official Logo -->
-            <a href="{{ route('welcome') }}" class="flex items-center gap-3 group cursor-pointer" title="View Story, Lore & Game Rules">
+            <a href="{{ route('welcome') }}" class="flex items-center gap-2.5 sm:gap-3 group cursor-pointer shrink-0" title="View Story, Lore & Game Rules">
                 <img 
                     src="{{ asset('images/until-no-place-left-logo-small.png') }}" 
                     alt="Nagoya Oikos: The Four Fields Logo" 
-                    class="w-11 h-11 object-contain rounded-2xl shadow-lg shadow-indigo-500/20 border border-indigo-500/40 group-hover:scale-105 group-hover:border-indigo-400 transition duration-200"
+                    class="w-10 h-10 sm:w-11 sm:h-11 object-contain rounded-2xl shadow-lg shadow-indigo-500/20 border border-indigo-500/40 group-hover:scale-105 group-hover:border-indigo-400 transition duration-200 shrink-0"
                 >
-                <div>
-                    <h1 class="text-sm font-black text-white tracking-tight leading-none flex items-center gap-1.5">
+                <div class="flex flex-col justify-center whitespace-nowrap min-w-0">
+                    <h1 class="text-xs sm:text-sm font-black text-white tracking-tight leading-none flex items-center gap-1.5 whitespace-nowrap">
                         <span>Nagoya Oikos</span>
-                        <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-400 border border-indigo-800 uppercase">Four Fields</span>
+                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-400 border border-indigo-800 uppercase tracking-wider">Four Fields</span>
                     </h1>
-                    <span class="text-[11px] text-slate-400 font-medium group-hover:text-indigo-300 transition">Multiplayer Movement Simulation • No Place Left</span>
+                    <p class="text-[10px] sm:text-[11px] text-slate-400 font-medium group-hover:text-indigo-300 transition whitespace-nowrap leading-none mt-1 hidden sm:block">
+                        <span>Multiplayer Movement Simulation</span>
+                        <span class="text-slate-600 mx-1 hidden xl:inline">•</span>
+                        <span class="hidden xl:inline text-slate-500">No Place Left</span>
+                    </p>
                 </div>
             </a>
 

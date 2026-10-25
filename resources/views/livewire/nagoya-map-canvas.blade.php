@@ -1,4 +1,19 @@
-<div class="relative w-full h-[720px] rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950 flex flex-col">
+<div 
+    class="relative w-full h-[720px] rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950 flex flex-col"
+    x-data="nagoyaMap({
+        wardsGeoJson: @js($wardsGeoJson),
+        churches: @js($churchesData),
+        lines: @js($linesData),
+        specialSpots: @js($specialSpots),
+        prayerWalks: @js($prayerWalksData),
+        showHeatmap: @entangle('showHeatmap').live,
+        showChurches: @entangle('showChurches').live,
+        showOikosLines: @entangle('showOikosLines').live,
+        showMercySpots: @entangle('showMercySpots').live,
+        showEventPins: @entangle('showEventPins').live,
+        showPrayerWalks: @entangle('showPrayerWalks').live
+    })"
+>
     <style>
         .leaflet-tooltip {
             background: rgba(15, 23, 42, 0.96) !important;
@@ -29,71 +44,77 @@
             </div>
         </div>
 
-        <!-- Layer Toggle Pills with Unified Color Coding -->
+        <!-- Layer Toggle Pills with Real-Time Alpine & Livewire Integration -->
         <div class="flex items-center gap-1.5 overflow-x-auto text-xs font-semibold">
             <!-- Heatmap: Emerald -->
             <button 
                 type="button" 
-                wire:click="toggleLayer('heatmap')" 
-                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border {{ $showHeatmap ? 'bg-emerald-600 text-white border-emerald-400 shadow-md shadow-emerald-950/60 ring-1 ring-emerald-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800' }}"
+                @click="toggleLayer('heatmap')" 
+                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border"
+                :class="showHeatmap ? 'bg-emerald-600 text-white border-emerald-400 shadow-md shadow-emerald-950/60 ring-1 ring-emerald-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800'"
                 title="Toggle Ward Spiritual Openness Heatmap (Emerald)"
             >
-                <span class="w-2 h-2 rounded-full {{ $showHeatmap ? 'bg-emerald-200 animate-pulse' : 'bg-emerald-500/50' }}"></span>
+                <span class="w-2 h-2 rounded-full" :class="showHeatmap ? 'bg-emerald-200 animate-pulse' : 'bg-emerald-500/50'"></span>
                 <span>🔥 Heatmap</span>
             </button>
 
             <!-- G1-G4 Churches: Royal Blue -->
             <button 
                 type="button" 
-                wire:click="toggleLayer('churches')" 
-                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border {{ $showChurches ? 'bg-blue-600 text-white border-blue-400 shadow-md shadow-blue-950/60 ring-1 ring-blue-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800' }}"
+                @click="toggleLayer('churches')" 
+                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border"
+                :class="showChurches ? 'bg-blue-600 text-white border-blue-400 shadow-md shadow-blue-950/60 ring-1 ring-blue-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800'"
                 title="Toggle G1–G4 Church Plant Circles (Blue/Purple/Pink/Gold)"
             >
-                <span class="w-2 h-2 rounded-full {{ $showChurches ? 'bg-blue-200 animate-pulse' : 'bg-blue-500/50' }}"></span>
+                <span class="w-2 h-2 rounded-full" :class="showChurches ? 'bg-blue-200 animate-pulse' : 'bg-blue-500/50'"></span>
                 <span>⛪ G1–G4 Churches</span>
             </button>
 
             <!-- Oikos Arcs: Cyan -->
             <button 
                 type="button" 
-                wire:click="toggleLayer('oikos')" 
-                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border {{ $showOikosLines ? 'bg-cyan-600 text-white border-cyan-400 shadow-md shadow-cyan-950/60 ring-1 ring-cyan-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800' }}"
+                @click="toggleLayer('oikos')" 
+                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border"
+                :class="showOikosLines ? 'bg-cyan-600 text-white border-cyan-400 shadow-md shadow-cyan-950/60 ring-1 ring-cyan-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800'"
                 title="Toggle Relational Oikos Bridges (Cyan Arcs)"
             >
-                <span class="w-2 h-2 rounded-full {{ $showOikosLines ? 'bg-cyan-200 animate-pulse' : 'bg-cyan-500/50' }}"></span>
+                <span class="w-2 h-2 rounded-full" :class="showOikosLines ? 'bg-cyan-200 animate-pulse' : 'bg-cyan-500/50'"></span>
                 <span>🌐 Oikos Arcs</span>
             </button>
 
             <!-- Mercy Hubs: Rose -->
             <button 
                 type="button" 
-                wire:click="toggleLayer('mercy')" 
-                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border {{ $showMercySpots ? 'bg-rose-600 text-white border-rose-400 shadow-md shadow-rose-950/60 ring-1 ring-rose-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800' }}"
+                @click="toggleLayer('mercy')" 
+                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border"
+                :class="showMercySpots ? 'bg-rose-600 text-white border-rose-400 shadow-md shadow-rose-950/60 ring-1 ring-rose-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800'"
                 title="Toggle Mercy Outreach Centers (Rose 🍜)"
             >
-                <span class="w-2 h-2 rounded-full {{ $showMercySpots ? 'bg-rose-200 animate-pulse' : 'bg-rose-500/50' }}"></span>
+                <span class="w-2 h-2 rounded-full" :class="showMercySpots ? 'bg-rose-200 animate-pulse' : 'bg-rose-500/50'"></span>
                 <span>🍲 Mercy Hubs</span>
             </button>
 
             <!-- Event Platforms: Purple -->
             <button 
                 type="button" 
-                wire:click="toggleLayer('events')" 
-                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border {{ $showEventPins ? 'bg-purple-600 text-white border-purple-400 shadow-md shadow-purple-950/60 ring-1 ring-purple-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800' }}"
+                @click="toggleLayer('events')" 
+                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border"
+                :class="showEventPins ? 'bg-purple-600 text-white border-purple-400 shadow-md shadow-purple-950/60 ring-1 ring-purple-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800'"
                 title="Toggle Platform Outreach Events (Purple 🎉)"
             >
-                <span class="w-2 h-2 rounded-full {{ $showEventPins ? 'bg-purple-200 animate-pulse' : 'bg-purple-500/50' }}"></span>
+                <span class="w-2 h-2 rounded-full" :class="showEventPins ? 'bg-purple-200 animate-pulse' : 'bg-purple-500/50'"></span>
                 <span>🎉 Event Platforms</span>
             </button>
 
             <!-- Prayer Walks: Amber -->
             <button 
                 type="button" 
-                wire:click="toggleLayer('prayer_walks')" 
-                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border {{ $showPrayerWalks ? 'bg-amber-600 text-white border-amber-400 shadow-md shadow-amber-950/60 ring-1 ring-amber-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800' }}"
+                @click="toggleLayer('prayer_walks')" 
+                class="px-2.5 py-1 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-bold border"
+                :class="showPrayerWalks ? 'bg-amber-600 text-white border-amber-400 shadow-md shadow-amber-950/60 ring-1 ring-amber-400/40' : 'bg-slate-800/90 text-slate-400 border-slate-700/70 hover:text-white hover:bg-slate-800'"
                 title="Toggle Prayer Walking Street Routes (Amber 🚶)"
             >
-                <span class="w-2 h-2 rounded-full {{ $showPrayerWalks ? 'bg-amber-200 animate-pulse' : 'bg-amber-500/50' }}"></span>
+                <span class="w-2 h-2 rounded-full" :class="showPrayerWalks ? 'bg-amber-200 animate-pulse' : 'bg-amber-500/50'"></span>
                 <span>🚶 Prayer Walks ({{ count($prayerWalksData) }})</span>
             </button>
         </div>
@@ -105,19 +126,6 @@
         class="w-full flex-1 z-10" 
         style="min-height: 640px;"
         wire:ignore
-        x-data="nagoyaMap({
-            wardsGeoJson: @js($wardsGeoJson),
-            churches: @js($churchesData),
-            lines: @js($linesData),
-            specialSpots: @js($specialSpots),
-            prayerWalks: @js($prayerWalksData),
-            showHeatmap: @entangle('showHeatmap'),
-            showChurches: @entangle('showChurches'),
-            showOikosLines: @entangle('showOikosLines'),
-            showMercySpots: @entangle('showMercySpots'),
-            showEventPins: @entangle('showEventPins'),
-            showPrayerWalks: @entangle('showPrayerWalks')
-        })"
         x-init="initMap()"
     ></div>
 
