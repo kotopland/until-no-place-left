@@ -38,9 +38,16 @@ class NagoyaGeoJsonService
      *
      * @var array<int, string>
      */
-    protected array $sourceCandidates = [
-        '/Users/ko/code/development/praystation/public/geojson/nagoya-border.json',
-    ];
+    protected array $sourceCandidates = [];
+
+    public function __construct()
+    {
+        $this->sourceCandidates = [
+            resource_path('data/nagoya-border.json'),
+            storage_path('app/nagoya-border.json'),
+            '/Users/ko/code/development/praystation/public/geojson/nagoya-border.json',
+        ];
+    }
 
     /**
      * Get or build the rich GeoJSON FeatureCollection for Nagoya's 16 wards.
@@ -50,8 +57,9 @@ class NagoyaGeoJsonService
      */
     public function getWardsGeoJson(Collection $wards): array
     {
+        $repoFile = resource_path('data/nagoya-border.json');
         $targetFile = storage_path('app/nagoya-border.json');
-        $geoData = $this->loadOrImportWardGeoJson($targetFile);
+        $geoData = $this->loadOrImportWardGeoJson($repoFile) ?: $this->loadOrImportWardGeoJson($targetFile);
 
         if ($geoData && ! empty($geoData['features'])) {
             $wardsBySlug = $wards->keyBy('slug');
@@ -140,11 +148,35 @@ class NagoyaGeoJsonService
      * @param  string  $targetFile
      * @return array<string, mixed>|null
      */
-    public function loadOrImportWardGeoJson(string $targetFile): ?array
+    public function loadOrImportWardGeoJson(?string $targetFile = null): ?array
     {
+        $repoFile = resource_path('data/nagoya-border.json');
+        $storageFile = storage_path('app/nagoya-border.json');
+        $targetFile = $targetFile ?: $repoFile;
+
+        // Auto-sync between storage and resources/data if either already exists
+        if (File::exists($storageFile) && ! File::exists($repoFile)) {
+            File::ensureDirectoryExists(dirname($repoFile));
+            @File::copy($storageFile, $repoFile);
+        } elseif (File::exists($repoFile) && ! File::exists($storageFile)) {
+            File::ensureDirectoryExists(dirname($storageFile));
+            @File::copy($repoFile, $storageFile);
+        }
+
         // 1. Check if targetFile already exists and contains all 16 ward features
         if (File::exists($targetFile)) {
             $content = File::get($targetFile);
+            $decoded = json_decode($content, true);
+
+            if (is_array($decoded) && isset($decoded['features']) && count($decoded['features']) >= 16) {
+                return $decoded;
+            }
+        }
+
+        // Check alternate file
+        $altFile = ($targetFile === $storageFile) ? $repoFile : $storageFile;
+        if (File::exists($altFile)) {
+            $content = File::get($altFile);
             $decoded = json_decode($content, true);
 
             if (is_array($decoded) && isset($decoded['features']) && count($decoded['features']) >= 16) {
@@ -157,6 +189,15 @@ class NagoyaGeoJsonService
             if (File::exists($candidatePath)) {
                 $imported = $this->importFromSource($candidatePath, $targetFile);
                 if ($imported) {
+                    if (File::exists($targetFile) && ! File::exists($repoFile)) {
+                        File::ensureDirectoryExists(dirname($repoFile));
+                        @File::copy($targetFile, $repoFile);
+                    }
+                    if (File::exists($targetFile) && ! File::exists($storageFile)) {
+                        File::ensureDirectoryExists(dirname($storageFile));
+                        @File::copy($targetFile, $storageFile);
+                    }
+
                     return $imported;
                 }
             }
@@ -207,9 +248,21 @@ class NagoyaGeoJsonService
             'features' => $normalizedFeatures,
         ];
 
-        if ($destinationPath && count($normalizedFeatures) >= 16) {
-            File::ensureDirectoryExists(dirname($destinationPath));
-            File::put($destinationPath, json_encode($result, JSON_UNESCAPED_UNICODE));
+        if (count($normalizedFeatures) >= 16) {
+            $repoFile = resource_path('data/nagoya-border.json');
+            $storageFile = storage_path('app/nagoya-border.json');
+            $encoded = json_encode($result, JSON_UNESCAPED_UNICODE);
+
+            if ($destinationPath) {
+                File::ensureDirectoryExists(dirname($destinationPath));
+                File::put($destinationPath, $encoded);
+            }
+
+            File::ensureDirectoryExists(dirname($repoFile));
+            File::put($repoFile, $encoded);
+
+            File::ensureDirectoryExists(dirname($storageFile));
+            File::put($storageFile, $encoded);
         }
 
         return $result;

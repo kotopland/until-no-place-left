@@ -29,10 +29,24 @@ class ImportNagoyaBordersCommand extends Command
         $this->info('Starting Nagoya Ward GIS boundary import...');
 
         $destination = storage_path('app/nagoya-border.json');
-        $source = $this->option('source') ?: '/Users/ko/code/development/praystation/public/geojson/nagoya-border.json';
+        $repoDestination = resource_path('data/nagoya-border.json');
 
-        if (! file_exists($source)) {
-            $this->error("Source file not found at: {$source}");
+        $source = $this->option('source');
+        if (! $source) {
+            foreach ([
+                $destination,
+                $repoDestination,
+                '/Users/ko/code/development/praystation/public/geojson/nagoya-border.json',
+            ] as $candidate) {
+                if (file_exists($candidate)) {
+                    $source = $candidate;
+                    break;
+                }
+            }
+        }
+
+        if (! $source || ! file_exists($source)) {
+            $this->error("Source file not found. Please provide --source path to nagoya-border.json");
 
             return self::FAILURE;
         }

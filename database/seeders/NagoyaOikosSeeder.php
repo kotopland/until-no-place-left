@@ -25,8 +25,19 @@ class NagoyaOikosSeeder extends Seeder
      */
     public function run(): void
     {
-        // 0. Ensure authentic 16-ward GIS boundaries are imported into storage/app/nagoya-border.json
-        app(\App\Services\NagoyaGeoJsonService::class)->loadOrImportWardGeoJson(storage_path('app/nagoya-border.json'));
+        // 0. Ensure authentic 16-ward GIS boundaries are imported and synced
+        $repoFile = resource_path('data/nagoya-border.json');
+        $storageFile = storage_path('app/nagoya-border.json');
+
+        if (\Illuminate\Support\Facades\File::exists($storageFile) && ! \Illuminate\Support\Facades\File::exists($repoFile)) {
+            \Illuminate\Support\Facades\File::ensureDirectoryExists(dirname($repoFile));
+            @\Illuminate\Support\Facades\File::copy($storageFile, $repoFile);
+        } elseif (\Illuminate\Support\Facades\File::exists($repoFile) && ! \Illuminate\Support\Facades\File::exists($storageFile)) {
+            \Illuminate\Support\Facades\File::ensureDirectoryExists(dirname($storageFile));
+            @\Illuminate\Support\Facades\File::copy($repoFile, $storageFile);
+        }
+
+        app(\App\Services\NagoyaGeoJsonService::class)->loadOrImportWardGeoJson($repoFile);
 
         // 1. Seed Nagoya's 16 Wards
         $wardsData = [
