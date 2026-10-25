@@ -34,6 +34,12 @@ use Illuminate\Support\Str;
  * @property int $days_played_today
  * @property Carbon|null $last_played_real_date
  * @property int $daily_action_points
+ * @property int $current_game_month
+ * @property int $current_game_day
+ * @property int $days_processed_this_month
+ * @property Carbon|null $last_daily_tick_at
+ * @property Carbon|null $next_daily_tick_at
+ * @property Carbon|null $last_monthly_tick_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -54,6 +60,12 @@ use Illuminate\Support\Str;
     'days_played_today',
     'last_played_real_date',
     'daily_action_points',
+    'current_game_month',
+    'current_game_day',
+    'days_processed_this_month',
+    'last_daily_tick_at',
+    'next_daily_tick_at',
+    'last_monthly_tick_at',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
@@ -106,6 +118,51 @@ class User extends Authenticatable
     }
 
     /**
+     * PHP 8.4 Property Hook: Human-friendly Day in Month label (e.g. Day 12/30 (Month 1))
+     */
+    public string $dayInMonthLabel {
+        get => "Day {$this->current_game_day}/30 (Month {$this->current_game_month})";
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Remaining unplayed days in the player's current 30-day game month
+     */
+    public int $remainingDaysInMonth {
+        get => max(0, 30 - $this->days_processed_this_month);
+    }
+
+    /**
+     * PHP 8.4 Property Hook: whether player has completed all 30 days of this game month
+     */
+    public bool $hasCompletedMonth {
+        get => $this->days_processed_this_month >= 30;
+    }
+
+    /**
+     * PHP 8.4 Property Hook: whether player already changed their month today (e.g. manually)
+     */
+    public bool $hasChangedMonthToday {
+        get => $this->last_monthly_tick_at !== null && $this->last_monthly_tick_at->isToday();
+    }
+
+    /**
+     * PHP 8.4 Property Hook: whether the 10-minute daily tick is due for this user
+     */
+    public bool $isDailyTickDue {
+        get => ($this->next_daily_tick_at === null || now()->greaterThanOrEqualTo($this->next_daily_tick_at))
+            && $this->days_processed_this_month < 30;
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Remaining seconds until next 10-minute online daily tick
+     */
+    public int $secondsUntilNextDailyTick {
+        get => $this->next_daily_tick_at
+            ? max(0, (int) now()->diffInSeconds($this->next_daily_tick_at, false))
+            : 0;
+    }
+
+    /**
      * Check if the user's recorded play date matches today's real-life date.
      */
     public function isPlayedToday(): bool
@@ -149,6 +206,12 @@ class User extends Authenticatable
             'days_played_today' => 'integer',
             'last_played_real_date' => 'date',
             'daily_action_points' => 'integer',
+            'current_game_month' => 'integer',
+            'current_game_day' => 'integer',
+            'days_processed_this_month' => 'integer',
+            'last_daily_tick_at' => 'datetime',
+            'next_daily_tick_at' => 'datetime',
+            'last_monthly_tick_at' => 'datetime',
         ];
     }
 

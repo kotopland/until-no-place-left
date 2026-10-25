@@ -71,6 +71,8 @@ test('daily tick processes game day, advances day counters, and replenishes AP w
 
     $user = User::factory()->create([
         'current_game_session_id' => $session->id,
+        'current_game_day' => 5,
+        'days_processed_this_month' => 4,
         'last_active_at' => now()->subMinutes(2),
         'days_played_today' => 4,
         'last_played_real_date' => now()->startOfDay(),

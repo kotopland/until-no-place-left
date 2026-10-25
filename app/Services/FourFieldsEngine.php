@@ -16,6 +16,7 @@ use App\Enums\QueuedActionStatus;
 use App\Enums\ReceptivityStatus;
 use App\Models\Church;
 use App\Models\GameSession;
+use App\Models\MonthlyReport;
 use App\Models\Npc;
 use App\Models\NpcContribution;
 use App\Models\OikosRelationship;
@@ -32,14 +33,87 @@ class FourFieldsEngine
      * Resolves a single 10-minute game day tick when participating players are online.
      * Cap: Each player can play at most 30 game days per real-life day.
      */
-    public function resolveDailyTick(GameSession $session, bool $force = false): ?DailyTickResolutionResult
+    public function resolveDailyTick(GameSession $session, ?User $specificUser = null, bool $force = false): ?DailyTickResolutionResult
     {
-        // 1. Session must be active and not have completed all 30 days of this month
+        // 1. If a specific user turned the day, advance ONLY this user independently
+        if ($specificUser !== null) {
+            if ($specificUser->hasReachedDailyPlayLimit || $specificUser->days_processed_this_month >= 30) {
+                return null;
+            }
+
+            return DB::transaction(function () use ($session, $specificUser) {
+                $gameMonth = $specificUser->current_game_month;
+                $currentDay = $specificUser->current_game_day;
+
+                // Fetch pending actions queued for this user on or before this day in their current month
+                $pendingActions = QueuedMonthlyAction::where('user_id', $specificUser->id)
+                    ->where('game_month', $gameMonth)
+                    ->where('game_day', '<=', $currentDay)
+                    ->where('status', QueuedActionStatus::Pending)
+                    ->with(['user', 'targetNpc', 'ward'])
+                    ->get();
+
+                $actionsProcessed = 0;
+                $outcomes = [];
+                $scoreGain = 0;
+
+                foreach ($pendingActions as $action) {
+                    $outcome = $this->resolveSingleAction($action, $gameMonth);
+                    $outcomes[] = $outcome;
+                    $actionsProcessed++;
+                    $scoreGain += $outcome->pointsAwarded;
+
+                    $action->update([
+                        'status' => QueuedActionStatus::Processed,
+                        'outcome_notes' => $outcome->narrativeOutcome,
+                    ]);
+                }
+
+                if ($scoreGain > 0) {
+                    $specificUser->increment('total_generational_score', $scoreGain);
+                }
+
+                $specificUser->touchActive();
+                $specificUser->increment('days_played_today');
+                $specificUser->increment('days_processed_this_month');
+
+                $nextDay = min(30, $specificUser->current_game_day + 1);
+                $newAp = min($specificUser->max_action_points, $specificUser->action_points + $specificUser->daily_action_points);
+
+                $specificUser->update([
+                    'current_game_day' => $nextDay,
+                    'last_daily_tick_at' => now(),
+                    'next_daily_tick_at' => now()->addMinutes(10),
+                    'action_points' => $newAp,
+                ]);
+
+                // Update session state without modifying other players
+                $session->update([
+                    'current_game_day' => max($session->current_game_day, $nextDay),
+                    'days_processed_this_month' => max($session->days_processed_this_month, $specificUser->days_processed_this_month),
+                    'last_daily_tick_at' => now(),
+                    'next_daily_tick_at' => now()->addMinutes(10),
+                ]);
+
+                return new DailyTickResolutionResult(
+                    gameSessionId: $session->id,
+                    gameMonth: $gameMonth,
+                    gameDay: $currentDay,
+                    actionsProcessed: $actionsProcessed,
+                    onlinePlayersCount: 1,
+                    actionOutcomes: $outcomes,
+                    playerScoreGains: [$specificUser->id => $scoreGain],
+                    onlineUserIds: [$specificUser->id],
+                );
+            });
+        }
+
+        // 2. Global / automated tick across online players who are due
         if (! $session->is_active || $session->days_processed_this_month >= 30) {
             return null;
         }
 
-        // 2. Identify online players (active within last 15 minutes) who have not reached the 30-day cap today
+        // Identify online players (active within last 15 minutes) who have not reached the 30-day cap today
         $onlineUsers = User::where('current_game_session_id', $session->id)
             ->whereNotNull('last_active_at')
             ->where('last_active_at', '>=', now()->subMinutes(15))
@@ -49,7 +123,7 @@ class FourFieldsEngine
             $onlineUsers = User::where('current_game_session_id', $session->id)->get();
         }
 
-        $eligibleUsers = $onlineUsers->filter(fn (User $user) => ! $user->hasReachedDailyPlayLimit);
+        $eligibleUsers = $onlineUsers->filter(fn (User $user) => ! $user->hasReachedDailyPlayLimit && $user->days_processed_this_month < 30);
 
         if ($eligibleUsers->isEmpty()) {
             return null;
@@ -95,10 +169,17 @@ class FourFieldsEngine
                 // Increment days played today and refresh real-life day tracking
                 $user->touchActive();
                 $user->increment('days_played_today');
+                $user->increment('days_processed_this_month');
 
-                // Replenish daily Action Points up to maximum bandwidth
+                $nextDay = min(30, $user->current_game_day + 1);
                 $newAp = min($user->max_action_points, $user->action_points + $user->daily_action_points);
-                $user->update(['action_points' => $newAp]);
+
+                $user->update([
+                    'current_game_day' => $nextDay,
+                    'last_daily_tick_at' => now(),
+                    'next_daily_tick_at' => now()->addMinutes(10),
+                    'action_points' => $newAp,
+                ]);
             }
 
             // Advance session day counters
@@ -211,9 +292,22 @@ class FourFieldsEngine
             // 4. Update player models and reset monthly bandwidth Action Points
             $participatingUsers = User::where('current_game_session_id', $session->id)->get();
             foreach ($participatingUsers as $user) {
+                // If a player has already changed their month today, do NOT change it to the next one!
+                if ($user->hasChangedMonthToday) {
+                    $user->update(['days_played_today' => 0]);
+                    continue;
+                }
+
                 $scoreGain = $playerScoreGains[$user->id] ?? 0;
-                $user->increment('total_generational_score', $scoreGain);
+                if ($scoreGain > 0) {
+                    $user->increment('total_generational_score', $scoreGain);
+                }
+
+                $user->increment('current_game_month');
                 $user->update([
+                    'current_game_day' => 1,
+                    'days_processed_this_month' => 0,
+                    'last_monthly_tick_at' => now(),
                     'action_points' => $user->max_action_points, // Refresh monthly AP bandwidth
                     'days_played_today' => 0, // Reset daily play limit for new month/day
                 ]);
@@ -244,6 +338,137 @@ class FourFieldsEngine
                 coopCollaborationsCount: $coopCollaborationsCount,
                 actionOutcomes: $outcomes,
                 playerScoreGains: $playerScoreGains,
+                autonomousHighlights: $autonomousHighlights,
+                coachTips: $coachTips,
+            );
+        });
+    }
+
+    /**
+     * Resolves the entire monthly cycle for a single player independently.
+     */
+    public function resolveGameMonthForUser(User $user): MonthResolutionResult
+    {
+        return DB::transaction(function () use ($user) {
+            $session = $user->currentGameSession ?? GameSession::first();
+            $gameMonth = $user->current_game_month;
+
+            // 1. Fetch remaining pending queued player actions for this user in this month
+            $pendingActions = QueuedMonthlyAction::where('user_id', $user->id)
+                ->where('game_month', $gameMonth)
+                ->where('status', QueuedActionStatus::Pending)
+                ->with(['user', 'targetNpc', 'ward'])
+                ->get();
+
+            $actionsProcessed = 0;
+            $breakthroughsCount = 0;
+            $newBelieversCount = 0;
+            $baptismsCount = 0;
+            $trained411Count = 0;
+            $prayersAnswered = 0;
+            $coopCollaborationsCount = 0;
+            $outcomes = [];
+            $playerScoreGain = 0;
+            $coachTips = [];
+
+            foreach ($pendingActions as $action) {
+                $outcome = $this->resolveSingleAction($action, $gameMonth);
+                $outcomes[] = $outcome;
+                $actionsProcessed++;
+
+                if ($outcome->isMajorBreakthrough) {
+                    $breakthroughsCount++;
+                }
+
+                if ($outcome->newStatus === ReceptivityStatus::Green && $outcome->previousStatus !== ReceptivityStatus::Green) {
+                    $newBelieversCount++;
+                    $baptismsCount++;
+                }
+
+                if ($action->action_type === MinistryActionType::Train411 && $outcome->statusChanged) {
+                    $trained411Count++;
+                }
+
+                if ($outcome->prayerAnswered) {
+                    $prayersAnswered++;
+                }
+
+                if ($outcome->coopPointsAwarded > 0) {
+                    $coopCollaborationsCount++;
+                }
+
+                $playerScoreGain += $outcome->pointsAwarded;
+
+                if (! empty($outcome->pedagogicalTip)) {
+                    $coachTips[] = [
+                        'user_id' => $user->id,
+                        'action' => $action->action_type->label(),
+                        'tip' => $outcome->pedagogicalTip,
+                    ];
+                }
+
+                $action->update([
+                    'status' => QueuedActionStatus::Processed,
+                    'outcome_notes' => $outcome->narrativeOutcome,
+                ]);
+            }
+
+            // 2. Autonomous Disciple Multiplication Phase
+            $multiplicationData = $this->runAutonomousMultiplication($session ?? GameSession::first(), $gameMonth);
+            $autonomousMultiplications = $multiplicationData['new_believers_count'];
+            $churchesPlanted = $multiplicationData['new_churches_count'];
+            $autonomousHighlights = $multiplicationData['highlights'];
+
+            $userAutonomousScore = $multiplicationData['player_scores'][$user->id] ?? 0;
+            $totalScoreGain = $playerScoreGain + $userAutonomousScore;
+
+            if ($totalScoreGain > 0) {
+                $user->increment('total_generational_score', $totalScoreGain);
+            }
+
+            // 3. Generate Monthly Report for this user
+            MonthlyReport::create([
+                'game_session_id' => $session?->id,
+                'user_id' => $user->id,
+                'game_month' => $gameMonth,
+                'summary_title' => "Nagoya Movement Digest — Month {$gameMonth}",
+                'highlights_json' => $autonomousHighlights,
+                'answered_prayers_json' => [
+                    'count' => $prayersAnswered,
+                    'notes' => $prayersAnswered > 0 ? 'God moved in power through intercession this month!' : 'Continue faithful prayer walking and intercession.',
+                ],
+                'disciples_multiplied_count' => $autonomousMultiplications,
+                'churches_planted_count' => $churchesPlanted,
+                'generational_score_gained' => $totalScoreGain,
+                'total_generational_score' => $user->total_generational_score,
+                'coach_tips_json' => array_values($coachTips),
+                'read_at' => null,
+            ]);
+
+            // 4. Advance user to next game month and reset day counters
+            $user->increment('current_game_month');
+            $user->update([
+                'current_game_day' => 1,
+                'days_processed_this_month' => 0,
+                'last_monthly_tick_at' => now(),
+                'next_daily_tick_at' => now()->addMinutes(10),
+                'action_points' => $user->max_action_points,
+            ]);
+
+            return new MonthResolutionResult(
+                gameSessionId: $session?->id ?? 1,
+                gameMonth: $gameMonth,
+                actionsProcessed: $actionsProcessed,
+                breakthroughsCount: $breakthroughsCount,
+                newBelieversCount: $newBelieversCount,
+                baptismsCount: $baptismsCount,
+                trained411Count: $trained411Count,
+                autonomousMultiplications: $autonomousMultiplications,
+                churchesPlanted: $churchesPlanted,
+                prayersAnswered: $prayersAnswered,
+                coopCollaborationsCount: $coopCollaborationsCount,
+                actionOutcomes: $outcomes,
+                playerScoreGains: [$user->id => $totalScoreGain],
                 autonomousHighlights: $autonomousHighlights,
                 coachTips: $coachTips,
             );

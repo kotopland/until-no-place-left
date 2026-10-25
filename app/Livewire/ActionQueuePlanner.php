@@ -128,8 +128,8 @@ class ActionQueuePlanner extends Component
             'target_npc_id' => $actionEnum->requiresTargetNpc() ? $this->selectedNpcId : null,
             'action_type' => $actionEnum,
             'status' => QueuedActionStatus::Pending,
-            'game_month' => $this->session->current_game_month,
-            'game_day' => $this->session->current_game_day,
+            'game_month' => $this->player->current_game_month,
+            'game_day' => $this->player->current_game_day,
             'ap_cost' => $apCost,
             'notes' => $this->notes,
         ]);
@@ -138,7 +138,7 @@ class ActionQueuePlanner extends Component
         $this->dispatch('action-queued');
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => "Successfully queued {$actionEnum->label()} for Day {$this->session->current_game_day} / Month {$this->session->current_game_month}! ({$apCost} AP consumed)",
+            'message' => "Successfully queued {$actionEnum->label()} for Day {$this->player->current_game_day} / Month {$this->player->current_game_month}! ({$apCost} AP consumed)",
         ]);
     }
 
@@ -162,8 +162,8 @@ class ActionQueuePlanner extends Component
     }
 
     /**
-     * Advance to the next game day tick (manual turn or auto-tick every ~10 min).
-     * Enforces the 30-day limit per real-life day.
+     * Advance to the next game day tick for this player.
+     * Enforces the 30-day limit per real-life day without advancing other players.
      */
     public function advanceDay(bool $isManual = true): void
     {
@@ -187,11 +187,11 @@ class ActionQueuePlanner extends Component
         }
 
         // Check if the current 30-day month cycle is completed
-        if ($this->session->days_processed_this_month >= 30) {
+        if ($this->player->days_processed_this_month >= 30) {
             if ($isManual) {
                 $this->dispatch('notify', [
                     'type' => 'info',
-                    'message' => "Month {$this->session->current_game_month} has completed all 30 days! The full monthly multiplication report will resolve tonight at midnight.",
+                    'message' => "Month {$this->player->current_game_month} has completed all 30 days! You can now advance to Month " . ($this->player->current_game_month + 1) . ".",
                 ]);
             }
 
@@ -199,7 +199,7 @@ class ActionQueuePlanner extends Component
         }
 
         $engine = app(\App\Services\FourFieldsEngine::class);
-        $result = $engine->resolveDailyTick($this->session, force: true);
+        $result = $engine->resolveDailyTick($this->session, specificUser: $this->player, force: true);
 
         $this->player->refresh();
         $this->session->refresh();
@@ -207,7 +207,40 @@ class ActionQueuePlanner extends Component
         $this->dispatch('day-advanced');
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => "Advanced to Day {$this->session->current_game_day} / 30! Processed {$result?->actionsProcessed} queued action(s). Bandwidth replenished to {$this->player->action_points} AP.",
+            'message' => "Advanced to Day {$this->player->current_game_day} / 30! Processed {$result?->actionsProcessed} queued action(s). Bandwidth replenished to {$this->player->action_points} AP.",
+        ]);
+    }
+
+    /**
+     * Advance to the next game month when all 30 days have been completed.
+     */
+    public function advanceMonth(): void
+    {
+        if (! $this->player || ! $this->session) {
+            return;
+        }
+
+        $this->player->refresh();
+
+        if ($this->player->days_processed_this_month < 30) {
+            $this->dispatch('notify', [
+                'type' => 'warning',
+                'message' => "You must complete all 30 days before advancing to Month " . ($this->player->current_game_month + 1) . " ({$this->player->days_processed_this_month}/30 days completed).",
+            ]);
+
+            return;
+        }
+
+        $engine = app(\App\Services\FourFieldsEngine::class);
+        $result = $engine->resolveGameMonthForUser($this->player);
+
+        $this->player->refresh();
+
+        $this->dispatch('day-advanced');
+        $this->dispatch('open-month-review');
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => "Welcome to Month {$this->player->current_game_month}! AP replenished to {$this->player->action_points} and monthly multiplication report generated.",
         ]);
     }
 
@@ -232,7 +265,7 @@ class ActionQueuePlanner extends Component
 
         $queuedActions = QueuedMonthlyAction::where('game_session_id', $this->session?->id)
             ->where('user_id', $this->player?->id)
-            ->where('game_month', $this->session?->current_game_month)
+            ->where('game_month', $this->player?->current_game_month ?? 1)
             ->where('status', QueuedActionStatus::Pending)
             ->with(['targetNpc', 'ward'])
             ->latest()

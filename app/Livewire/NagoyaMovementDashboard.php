@@ -73,7 +73,8 @@ class NagoyaMovementDashboard extends Component
     ];
 
     /**
-     * Advance to the next game day tick.
+     * Advance to the next game day tick for the current player.
+     * Does NOT change the day for other players in the session.
      */
     public function advanceDay(bool $isManual = true): void
     {
@@ -98,11 +99,11 @@ class NagoyaMovementDashboard extends Component
             return;
         }
 
-        if ($session->days_processed_this_month >= 30) {
+        if ($user->days_processed_this_month >= 30) {
             if ($isManual) {
                 $this->dispatch('notify', [
                     'type' => 'info',
-                    'message' => "Month {$session->current_game_month} has completed all 30 days! The full monthly multiplication report will resolve tonight at midnight.",
+                    'message' => "Month {$user->current_game_month} has completed all 30 days! You can now advance to Month " . ($user->current_game_month + 1) . ".",
                 ]);
             }
 
@@ -110,7 +111,7 @@ class NagoyaMovementDashboard extends Component
         }
 
         $engine = app(\App\Services\FourFieldsEngine::class);
-        $result = $engine->resolveDailyTick($session, force: true);
+        $result = $engine->resolveDailyTick($session, specificUser: $user, force: true);
 
         $user->refresh();
         $session->refresh();
@@ -118,7 +119,43 @@ class NagoyaMovementDashboard extends Component
         $this->dispatch('day-advanced');
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => "Advanced to Day {$session->current_game_day} / 30! Processed {$result?->actionsProcessed} queued action(s). Bandwidth replenished to {$user->action_points} AP.",
+            'message' => "Advanced to Day {$user->current_game_day} / 30! Processed {$result?->actionsProcessed} queued action(s). Bandwidth replenished to {$user->action_points} AP.",
+        ]);
+    }
+
+    /**
+     * Advance to the next game month when all 30 days have been completed.
+     */
+    public function advanceMonth(): void
+    {
+        $user = auth()->user() ?? User::first();
+        $session = $user?->currentGameSession ?? GameSession::first();
+
+        if (! $user || ! $session) {
+            return;
+        }
+
+        $user->refresh();
+
+        if ($user->days_processed_this_month < 30) {
+            $this->dispatch('notify', [
+                'type' => 'warning',
+                'message' => "You must complete all 30 days before advancing to Month " . ($user->current_game_month + 1) . " ({$user->days_processed_this_month}/30 days completed).",
+            ]);
+
+            return;
+        }
+
+        $engine = app(\App\Services\FourFieldsEngine::class);
+        $result = $engine->resolveGameMonthForUser($user);
+
+        $user->refresh();
+
+        $this->dispatch('day-advanced');
+        $this->dispatch('open-month-review');
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => "Welcome to Month {$user->current_game_month}! AP replenished to {$user->action_points} and monthly multiplication report generated.",
         ]);
     }
 

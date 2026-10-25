@@ -70,19 +70,19 @@
             <div class="flex items-center gap-2.5">
                 <!-- Day Progress & Digital Clock -->
                 <div 
-                    wire:key="dash-clock-{{ $session?->current_game_day }}-{{ $session?->days_processed_this_month }}-{{ $user?->days_played_today }}"
-                    x-data="digitalClock({{ max(0, $session?->secondsUntilNextDailyTick ?? 600) }}, '{{ $session?->next_daily_tick_at?->toIso8601String() }}', {{ (!($user?->hasReachedDailyPlayLimit ?? false) && ($session?->days_processed_this_month ?? 0) < 30) ? 'true' : 'false' }})"
+                    wire:key="dash-clock-{{ $user?->current_game_day }}-{{ $user?->days_processed_this_month }}-{{ $user?->days_played_today }}"
+                    x-data="digitalClock({{ max(0, $user?->secondsUntilNextDailyTick ?? 600) }}, '{{ $user?->next_daily_tick_at?->toIso8601String() }}', {{ (!($user?->hasReachedDailyPlayLimit ?? false) && ($user?->days_processed_this_month ?? 0) < 30) ? 'true' : 'false' }})"
                     x-init="init()"
                     class="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-950/80 border border-slate-800"
                 >
                     <!-- Day & Cap badge -->
                     <div class="text-right">
                         <div class="text-[10px] font-bold text-white flex items-center justify-end gap-1">
-                            <span>Day {{ $session?->current_game_day ?? 1 }}/30</span>
+                            <span>Day {{ $user?->current_game_day ?? 1 }}/30</span>
                             <span class="text-[9px] {{ ($user?->days_played_today ?? 0) >= 30 ? 'text-amber-400 font-black' : 'text-slate-400' }}">({{ $user?->days_played_today ?? 0 }}/30d)</span>
                         </div>
                         <div class="text-[9px] text-slate-500 uppercase tracking-tighter">
-                            {{ ($user?->hasReachedDailyPlayLimit ?? false) ? 'Night Rest' : 'Next Tick' }}
+                            {{ ($user?->hasReachedDailyPlayLimit ?? false) ? 'Night Rest' : (($user?->days_processed_this_month ?? 0) >= 30 ? 'Month Done' : 'Next Tick') }}
                         </div>
                     </div>
 
@@ -90,7 +90,7 @@
                     <div class="bg-black/95 border border-slate-800/90 rounded-lg px-2 py-0.5 shadow-[inset_0_1px_4px_rgba(0,0,0,0.8)]">
                         @if($user?->hasReachedDailyPlayLimit ?? false)
                             <span class="font-mono text-xs font-black text-amber-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]">30:30</span>
-                        @elseif(($session?->days_processed_this_month ?? 0) >= 30)
+                        @elseif(($user?->days_processed_this_month ?? 0) >= 30)
                             <span class="font-mono text-xs font-black text-indigo-400">MONTH</span>
                         @else
                             <span class="font-mono text-xs font-black text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.6)] flex items-center">
@@ -100,18 +100,32 @@
                     </div>
 
                     <!-- Turn Advance Button -->
-                    <button 
-                        type="button" 
-                        wire:click="advanceDay(true)"
-                        wire:loading.attr="disabled"
-                        @disabled(($user?->hasReachedDailyPlayLimit ?? false) || ($session?->days_processed_this_month ?? 0) >= 30)
-                        class="px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer {{ (($user?->hasReachedDailyPlayLimit ?? false) || ($session?->days_processed_this_month ?? 0) >= 30) ? 'bg-slate-900 text-slate-600 border border-slate-800/80 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-white shadow-sm hover:scale-[1.02]' }}"
-                        title="{{ ($user?->hasReachedDailyPlayLimit ?? false) ? 'Daily limit of 30 days reached. Next month starts tonight!' : 'Manually advance to next day' }}"
-                    >
-                        <span wire:loading.remove wire:target="advanceDay">⏭️</span>
-                        <span wire:loading wire:target="advanceDay" class="w-2.5 h-2.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                        <span wire:loading.remove wire:target="advanceDay" class="hidden xl:inline">Next Day</span>
-                    </button>
+                    @if(($user?->days_processed_this_month ?? 0) >= 30)
+                        <button 
+                            type="button" 
+                            wire:click="advanceMonth"
+                            wire:loading.attr="disabled"
+                            class="px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-sm hover:scale-[1.02]"
+                            title="Advance to Month {{ ($user?->current_game_month ?? 1) + 1 }}"
+                        >
+                            <span wire:loading.remove wire:target="advanceMonth">🚀</span>
+                            <span wire:loading wire:target="advanceMonth" class="w-2.5 h-2.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                            <span wire:loading.remove wire:target="advanceMonth" class="hidden xl:inline">Next Month</span>
+                        </button>
+                    @else
+                        <button 
+                            type="button" 
+                            wire:click="advanceDay(true)"
+                            wire:loading.attr="disabled"
+                            @disabled($user?->hasReachedDailyPlayLimit ?? false)
+                            class="px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer {{ ($user?->hasReachedDailyPlayLimit ?? false) ? 'bg-slate-900 text-slate-600 border border-slate-800/80 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-white shadow-sm hover:scale-[1.02]' }}"
+                            title="{{ ($user?->hasReachedDailyPlayLimit ?? false) ? 'Daily limit of 30 days reached. Next month starts tonight!' : 'Manually advance to next day' }}"
+                        >
+                            <span wire:loading.remove wire:target="advanceDay">⏭️</span>
+                            <span wire:loading wire:target="advanceDay" class="w-2.5 h-2.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                            <span wire:loading.remove wire:target="advanceDay" class="hidden xl:inline">Next Day</span>
+                        </button>
+                    @endif
                 </div>
 
                 <!-- Ambient Music Toggle Button -->
