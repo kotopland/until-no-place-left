@@ -278,6 +278,57 @@ window.nagoyaMap = function(config) {
     };
 };
 
+// Digital Countdown Clock Controller for 10-Minute Day Ticks
+window.digitalClock = function(initialSeconds, nextTickIso, canAutoTick) {
+    return {
+        secondsLeft: Math.max(0, initialSeconds || 600),
+        nextTickTarget: nextTickIso ? new Date(nextTickIso).getTime() : (Date.now() + (initialSeconds || 600) * 1000),
+        canAutoTick: !!canAutoTick,
+        timer: null,
+
+        init() {
+            this.recalcSeconds();
+            this.timer = setInterval(() => {
+                this.tick();
+            }, 1000);
+        },
+
+        recalcSeconds() {
+            if (this.nextTickTarget) {
+                const diff = Math.floor((this.nextTickTarget - Date.now()) / 1000);
+                this.secondsLeft = Math.max(0, diff);
+            }
+        },
+
+        tick() {
+            this.recalcSeconds();
+
+            if (!this.canAutoTick) return;
+
+            if (this.secondsLeft <= 0) {
+                // Countdown reached 00:00! Trigger automatic day tick
+                this.secondsLeft = 600;
+                this.nextTickTarget = Date.now() + 600000;
+                if (this.$wire && typeof this.$wire.advanceDay === 'function') {
+                    this.$wire.advanceDay(false);
+                }
+            }
+        },
+
+        get minutes() {
+            return String(Math.floor(this.secondsLeft / 60)).padStart(2, '0');
+        },
+
+        get seconds() {
+            return String(this.secondsLeft % 60).padStart(2, '0');
+        },
+
+        destroy() {
+            if (this.timer) clearInterval(this.timer);
+        }
+    };
+};
+
 // Procedural Japanese Koto & Meditative Pad Soundscape (Web Audio API)
 class NagoyaSoundscape {
     constructor() {

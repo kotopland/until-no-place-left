@@ -35,7 +35,7 @@ class FourFieldsEngine
     public function resolveDailyTick(GameSession $session, bool $force = false): ?DailyTickResolutionResult
     {
         // 1. Session must be active and not have completed all 30 days of this month
-        if (! $session->is_active || (! $force && $session->days_processed_this_month >= 30)) {
+        if (! $session->is_active || $session->days_processed_this_month >= 30) {
             return null;
         }
 
@@ -49,7 +49,7 @@ class FourFieldsEngine
             $onlineUsers = User::where('current_game_session_id', $session->id)->get();
         }
 
-        $eligibleUsers = $onlineUsers->filter(fn (User $user) => $force || ! $user->hasReachedDailyPlayLimit);
+        $eligibleUsers = $onlineUsers->filter(fn (User $user) => ! $user->hasReachedDailyPlayLimit);
 
         if ($eligibleUsers->isEmpty()) {
             return null;

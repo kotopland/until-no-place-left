@@ -29,6 +29,11 @@ class ActionQueuePlanner extends Component
 
     public ?GameSession $session = null;
 
+    protected $listeners = [
+        'day-advanced' => '$refresh',
+        'action-queued' => '$refresh',
+    ];
+
     public function mount(): void
     {
         $this->player = auth()->user() ?? User::first();
@@ -154,6 +159,56 @@ class ActionQueuePlanner extends Component
                 'message' => "Action cancelled. {$action->ap_cost} AP refunded.",
             ]);
         }
+    }
+
+    /**
+     * Advance to the next game day tick (manual turn or auto-tick every ~10 min).
+     * Enforces the 30-day limit per real-life day.
+     */
+    public function advanceDay(bool $isManual = true): void
+    {
+        if (! $this->player || ! $this->session) {
+            return;
+        }
+
+        $this->player->refresh();
+        $this->session->refresh();
+
+        // Check if player has reached the 30-day limit for this real-life day
+        if ($this->player->days_played_today >= 30) {
+            if ($isManual) {
+                $this->dispatch('notify', [
+                    'type' => 'warning',
+                    'message' => 'Daily play limit reached: You have completed all 30 game days for today. The new month will begin tonight at midnight!',
+                ]);
+            }
+
+            return;
+        }
+
+        // Check if the current 30-day month cycle is completed
+        if ($this->session->days_processed_this_month >= 30) {
+            if ($isManual) {
+                $this->dispatch('notify', [
+                    'type' => 'info',
+                    'message' => "Month {$this->session->current_game_month} has completed all 30 days! The full monthly multiplication report will resolve tonight at midnight.",
+                ]);
+            }
+
+            return;
+        }
+
+        $engine = app(\App\Services\FourFieldsEngine::class);
+        $result = $engine->resolveDailyTick($this->session, force: true);
+
+        $this->player->refresh();
+        $this->session->refresh();
+
+        $this->dispatch('day-advanced');
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => "Advanced to Day {$this->session->current_game_day} / 30! Processed {$result?->actionsProcessed} queued action(s). Bandwidth replenished to {$this->player->action_points} AP.",
+        ]);
     }
 
     public function render()

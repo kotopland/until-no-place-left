@@ -27,5 +27,28 @@ Route::middleware('auth')->group(function (): void {
 
 // Mail Preview for Local Development
 if (class_exists(\Spatie\MailPreview\MailPreviewServiceProvider::class)) {
-    Route::mailPreview();
+    Route::get('/spatie-mail-preview', function (\Illuminate\Http\Request $request) {
+        if (! config('mail-preview.enabled')) {
+            abort(404);
+        }
+
+        $fileType = (string) $request->query('file_type', 'html');
+        if (! in_array($fileType, ['html', 'eml'], true)) {
+            $fileType = 'html';
+        }
+        $request->merge(['file_type' => $fileType]);
+
+        $fileName = $request->query('mail_preview_file_name');
+        $storagePath = (string) config('mail-preview.storage_path');
+
+        $filePath = $fileName
+            ? $storagePath.'/'.$fileName.'.'.$fileType
+            : last(glob($storagePath.'/*.'.$fileType) ?: []);
+
+        if (! $filePath || ! file_exists($filePath)) {
+            return response()->view('mail-preview-empty', [], 200);
+        }
+
+        return app(\Spatie\MailPreview\Http\Controllers\ShowMailController::class)($request);
+    })->name('mail.preview');
 }

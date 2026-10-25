@@ -52,44 +52,90 @@
                 </p>
             </div>
 
-            <!-- AP Bandwidth Meter & Daily Ticks Status -->
-            <div class="flex flex-wrap items-center gap-4 bg-slate-950/80 px-4 py-2.5 rounded-xl border border-slate-800">
+            <!-- AP Bandwidth Meter, Daily Limit & Digital Countdown Clock -->
+            <div class="flex flex-wrap items-center gap-4 bg-slate-950/90 px-4 py-3 rounded-2xl border border-slate-800 shadow-xl">
                 <!-- Action Points Bandwidth -->
-                <div>
+                <div class="pr-2">
                     <div class="flex items-center justify-between text-xs mb-1">
                         <span class="text-slate-400 font-medium">Bandwidth AP:</span>
                         <span class="font-bold text-white ml-2">{{ $player?->action_points ?? 0 }} / {{ $player?->max_action_points ?? 12 }} AP</span>
                     </div>
-                    <div class="w-32 h-2.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div class="w-28 h-2 bg-slate-800 rounded-full overflow-hidden">
                         <div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 rounded-full transition-all duration-300" style="width: {{ $player?->remainingBandwidthPercent ?? 0 }}%"></div>
                     </div>
                 </div>
 
                 <!-- Daily Real-Life Play Cap (30 Days Max) -->
-                <div class="border-l border-slate-800 pl-4">
+                <div class="border-l border-slate-800 pl-4 pr-2">
                     <div class="flex items-center justify-between text-xs mb-1">
                         <span class="text-slate-400 font-medium">Played Today:</span>
                         <span class="font-bold {{ ($player?->days_played_today ?? 0) >= 30 ? 'text-amber-400' : 'text-slate-200' }} ml-2">
                             {{ $player?->days_played_today ?? 0 }} / 30 Days
                         </span>
                     </div>
-                    <div class="w-28 h-2.5 bg-slate-800 rounded-full overflow-hidden">
-                        <div class="h-full {{ ($player?->days_played_today ?? 0) >= 30 ? 'bg-amber-400' : 'bg-cyan-500' }} rounded-full transition-all duration-300" style="width: {{ min(100, round((($player?->days_played_today ?? 0) / 30) * 100)) }}%"></div>
+                    <div class="w-28 h-2 bg-slate-800 rounded-full overflow-hidden">
+                        <div class="h-full {{ ($player?->days_played_today ?? 0) >= 30 ? 'bg-amber-400 shadow-sm shadow-amber-400' : 'bg-cyan-500' }} rounded-full transition-all duration-300" style="width: {{ min(100, round((($player?->days_played_today ?? 0) / 30) * 100)) }}%"></div>
                     </div>
+                    <span class="text-[9px] text-slate-500 block mt-0.5">New month every night</span>
                 </div>
 
-                <!-- 10-Minute Next Tick Countdown -->
-                <div class="border-l border-slate-800 pl-4 text-right">
-                    <span class="text-[10px] uppercase font-semibold text-slate-400 block tracking-wider">10m Online Tick</span>
-                    <span class="text-xs font-bold text-emerald-400">
-                        @if(($player?->days_played_today ?? 0) >= 30)
-                            <span class="text-amber-400">Daily Cap Reached</span>
-                        @elseif($session?->next_daily_tick_at)
-                            in {{ max(0, (int) round(now()->diffInSeconds($session->next_daily_tick_at, false) / 60)) }}m
-                        @else
-                            Active
-                        @endif
-                    </span>
+                <!-- Digital Clock Visualizer (10m Countdown) -->
+                <div 
+                    wire:key="digital-clock-{{ $session?->current_game_day }}-{{ $session?->days_processed_this_month }}-{{ $player?->days_played_today }}"
+                    x-data="digitalClock({{ max(0, $session?->secondsUntilNextDailyTick ?? 600) }}, '{{ $session?->next_daily_tick_at?->toIso8601String() }}', {{ (!($player?->hasReachedDailyPlayLimit ?? false) && ($session?->days_processed_this_month ?? 0) < 30) ? 'true' : 'false' }})"
+                    x-init="init()"
+                    class="border-l border-slate-800 pl-4 flex items-center gap-3"
+                >
+                    <div>
+                        <div class="text-[9px] uppercase font-bold tracking-wider mb-1 flex items-center gap-1.5 {{ ($player?->hasReachedDailyPlayLimit ?? false) ? 'text-amber-400' : 'text-slate-400' }}">
+                            <span class="w-1.5 h-1.5 rounded-full {{ ($player?->hasReachedDailyPlayLimit ?? false) ? 'bg-amber-400' : 'bg-emerald-400 animate-pulse' }}"></span>
+                            <span>{{ ($player?->hasReachedDailyPlayLimit ?? false) ? 'Night Rest • 30d Cap' : 'Auto Day Tick' }}</span>
+                        </div>
+                        
+                        <!-- Digital LED Clock Face -->
+                        <div class="bg-black/95 border border-slate-800/90 rounded-xl px-2.5 py-1 flex items-center justify-center shadow-[inset_0_2px_6px_rgba(0,0,0,0.9)]">
+                            @if($player?->hasReachedDailyPlayLimit ?? false)
+                                <div class="font-mono text-base font-black tracking-widest text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]">
+                                    <span>30</span><span class="font-bold">:</span><span>30</span>
+                                </div>
+                            @elseif(($session?->days_processed_this_month ?? 0) >= 30)
+                                <div class="font-mono text-base font-black tracking-widest text-indigo-400 drop-shadow-[0_0_6px_rgba(129,140,248,0.6)]">
+                                    <span>MONTH</span>
+                                </div>
+                            @else
+                                <div class="font-mono text-base font-black tracking-widest text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.7)] flex items-center">
+                                    <span class="tabular-nums" x-text="minutes">09</span>
+                                    <span class="font-bold animate-pulse text-emerald-300">:</span>
+                                    <span class="tabular-nums" x-text="seconds">59</span>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Manual Advance to Next Day Button -->
+                    <div class="pt-3.5">
+                        <button 
+                            type="button" 
+                            wire:click="advanceDay(true)"
+                            wire:loading.attr="disabled"
+                            @disabled(($player?->hasReachedDailyPlayLimit ?? false) || ($session?->days_processed_this_month ?? 0) >= 30)
+                            class="px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md cursor-pointer {{ (($player?->hasReachedDailyPlayLimit ?? false) || ($session?->days_processed_this_month ?? 0) >= 30) ? 'bg-slate-900 text-slate-500 border border-slate-800 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-white border border-emerald-400/40 shadow-emerald-950/40 hover:scale-[1.02] active:scale-[0.98]' }}"
+                            title="{{ ($player?->hasReachedDailyPlayLimit ?? false) ? 'Daily limit of 30 days reached. Next month starts tonight!' : 'Manually advance to the next game day tick now' }}"
+                        >
+                            <span wire:loading.remove wire:target="advanceDay">⏭️</span>
+                            <span wire:loading wire:target="advanceDay" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                            <span wire:loading.remove wire:target="advanceDay">
+                                @if($player?->hasReachedDailyPlayLimit ?? false)
+                                    Daily Cap (30/30)
+                                @elseif(($session?->days_processed_this_month ?? 0) >= 30)
+                                    Month Done
+                                @else
+                                    Turn to Day {{ min(30, ($session?->current_game_day ?? 1) + 1) }}
+                                @endif
+                            </span>
+                            <span wire:loading wire:target="advanceDay">Advancing...</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

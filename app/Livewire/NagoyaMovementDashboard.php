@@ -67,6 +67,61 @@ class NagoyaMovementDashboard extends Component
         }
     }
 
+    protected $listeners = [
+        'day-advanced' => '$refresh',
+        'action-queued' => '$refresh',
+    ];
+
+    /**
+     * Advance to the next game day tick.
+     */
+    public function advanceDay(bool $isManual = true): void
+    {
+        $user = auth()->user() ?? User::first();
+        $session = $user?->currentGameSession ?? GameSession::first();
+
+        if (! $user || ! $session) {
+            return;
+        }
+
+        $user->refresh();
+        $session->refresh();
+
+        if ($user->days_played_today >= 30) {
+            if ($isManual) {
+                $this->dispatch('notify', [
+                    'type' => 'warning',
+                    'message' => 'Daily play limit reached: You have completed all 30 game days for today. The new month will begin tonight at midnight!',
+                ]);
+            }
+
+            return;
+        }
+
+        if ($session->days_processed_this_month >= 30) {
+            if ($isManual) {
+                $this->dispatch('notify', [
+                    'type' => 'info',
+                    'message' => "Month {$session->current_game_month} has completed all 30 days! The full monthly multiplication report will resolve tonight at midnight.",
+                ]);
+            }
+
+            return;
+        }
+
+        $engine = app(\App\Services\FourFieldsEngine::class);
+        $result = $engine->resolveDailyTick($session, force: true);
+
+        $user->refresh();
+        $session->refresh();
+
+        $this->dispatch('day-advanced');
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => "Advanced to Day {$session->current_game_day} / 30! Processed {$result?->actionsProcessed} queued action(s). Bandwidth replenished to {$user->action_points} AP.",
+        ]);
+    }
+
     public function render()
     {
         $user = auth()->user() ?? User::first();

@@ -1,0 +1,231 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Livewire\ActionQueuePlanner;
+use App\Livewire\NagoyaMovementDashboard;
+use App\Models\GameSession;
+use App\Models\User;
+use App\Models\Ward;
+use App\Services\FourFieldsEngine;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
+
+uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    Ward::create([
+        'name' => 'Naka-ku',
+        'name_ja' => '中区',
+        'slug' => 'naka-ku',
+        'center_lat' => 35.17,
+        'center_lng' => 136.90,
+    ]);
+});
+
+test('logged in player can manually advance day tick via action queue planner', function () {
+    $session = GameSession::create([
+        'name' => 'Manual Advance Session',
+        'code' => 'adv-1',
+        'current_game_month' => 1,
+        'current_game_day' => 1,
+        'days_processed_this_month' => 0,
+        'calendar_date' => '2026-04-01',
+        'month_duration_minutes' => 720,
+        'next_tick_at' => now()->addHours(12),
+        'next_daily_tick_at' => now()->addMinutes(10),
+        'is_active' => true,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'last_active_at' => now(),
+        'days_played_today' => 0,
+        'last_played_real_date' => now()->startOfDay(),
+        'action_points' => 2,
+        'max_action_points' => 12,
+        'daily_action_points' => 2,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(ActionQueuePlanner::class)
+        ->call('advanceDay', true)
+        ->assertDispatched('day-advanced')
+        ->assertDispatched('notify');
+
+    $session->refresh();
+    $user->refresh();
+
+    expect($session->current_game_day)->toBe(2)
+        ->and($session->days_processed_this_month)->toBe(1)
+        ->and($user->days_played_today)->toBe(1)
+        ->and($user->action_points)->toBe(4); // 2 + 2 replenished
+});
+
+test('logged in player can manually advance day tick via nagoya movement dashboard', function () {
+    $session = GameSession::create([
+        'name' => 'Dashboard Advance Session',
+        'code' => 'adv-2',
+        'current_game_month' => 1,
+        'current_game_day' => 1,
+        'days_processed_this_month' => 0,
+        'calendar_date' => '2026-04-01',
+        'month_duration_minutes' => 720,
+        'next_tick_at' => now()->addHours(12),
+        'next_daily_tick_at' => now()->addMinutes(10),
+        'is_active' => true,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'last_active_at' => now(),
+        'days_played_today' => 0,
+        'last_played_real_date' => now()->startOfDay(),
+        'action_points' => 5,
+        'max_action_points' => 12,
+        'daily_action_points' => 2,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(NagoyaMovementDashboard::class)
+        ->call('advanceDay', true)
+        ->assertDispatched('day-advanced')
+        ->assertDispatched('notify');
+
+    $session->refresh();
+    $user->refresh();
+
+    expect($session->current_game_day)->toBe(2)
+        ->and($session->days_processed_this_month)->toBe(1)
+        ->and($user->days_played_today)->toBe(1)
+        ->and($user->action_points)->toBe(7);
+});
+
+test('auto day tick triggered after countdown passes successfully without manual notifications', function () {
+    $session = GameSession::create([
+        'name' => 'Auto Tick Session',
+        'code' => 'adv-3',
+        'current_game_month' => 1,
+        'current_game_day' => 3,
+        'days_processed_this_month' => 2,
+        'calendar_date' => '2026-04-01',
+        'month_duration_minutes' => 720,
+        'next_tick_at' => now()->addHours(12),
+        'next_daily_tick_at' => now()->subSecond(),
+        'is_active' => true,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'last_active_at' => now(),
+        'days_played_today' => 2,
+        'last_played_real_date' => now()->startOfDay(),
+        'action_points' => 4,
+        'max_action_points' => 12,
+        'daily_action_points' => 2,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(ActionQueuePlanner::class)
+        ->call('advanceDay', false)
+        ->assertDispatched('day-advanced');
+
+    $session->refresh();
+    $user->refresh();
+
+    expect($session->current_game_day)->toBe(4)
+        ->and($session->days_processed_this_month)->toBe(3)
+        ->and($user->days_played_today)->toBe(3);
+});
+
+test('player is prevented from playing more than 30 days per real life day', function () {
+    $session = GameSession::create([
+        'name' => 'Daily Cap Session',
+        'code' => 'adv-4',
+        'current_game_month' => 1,
+        'current_game_day' => 10,
+        'days_processed_this_month' => 9,
+        'calendar_date' => '2026-04-01',
+        'month_duration_minutes' => 720,
+        'next_tick_at' => now()->addHours(12),
+        'next_daily_tick_at' => now()->addMinutes(10),
+        'is_active' => true,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'last_active_at' => now(),
+        'days_played_today' => 30, // Already hit the 30-day cap today
+        'last_played_real_date' => now()->startOfDay(),
+        'action_points' => 12,
+        'max_action_points' => 12,
+        'daily_action_points' => 2,
+    ]);
+
+    expect($user->hasReachedDailyPlayLimit)->toBeTrue();
+
+    Livewire::actingAs($user)
+        ->test(ActionQueuePlanner::class)
+        ->call('advanceDay', true)
+        ->assertDispatched('notify', function (string $name, array $params) {
+            $data = $params[0] ?? $params;
+
+            return ($data['type'] ?? '') === 'warning' && str_contains($data['message'] ?? '', 'Daily play limit reached');
+        });
+
+    $session->refresh();
+    $user->refresh();
+
+    // Session and user counters must remain unchanged
+    expect($session->current_game_day)->toBe(10)
+        ->and($session->days_processed_this_month)->toBe(9)
+        ->and($user->days_played_today)->toBe(30);
+
+    // Dashboard also respects the 30 day limit
+    Livewire::actingAs($user)
+        ->test(NagoyaMovementDashboard::class)
+        ->call('advanceDay', true)
+        ->assertDispatched('notify', function (string $name, array $params) {
+            $data = $params[0] ?? $params;
+
+            return ($data['type'] ?? '') === 'warning' && str_contains($data['message'] ?? '', 'Daily play limit reached');
+        });
+});
+
+test('advanceDay stops when 30 days have been processed in the current game month', function () {
+    $session = GameSession::create([
+        'name' => 'Month Cap Session',
+        'code' => 'adv-5',
+        'current_game_month' => 1,
+        'current_game_day' => 30,
+        'days_processed_this_month' => 30, // All 30 days in month already finished
+        'calendar_date' => '2026-04-01',
+        'month_duration_minutes' => 720,
+        'next_tick_at' => now()->addHours(12),
+        'next_daily_tick_at' => now()->addMinutes(10),
+        'is_active' => true,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'last_active_at' => now(),
+        'days_played_today' => 15,
+        'last_played_real_date' => now()->startOfDay(),
+        'action_points' => 6,
+        'max_action_points' => 12,
+        'daily_action_points' => 2,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(ActionQueuePlanner::class)
+        ->call('advanceDay', true)
+        ->assertDispatched('notify', function (string $name, array $params) {
+            $data = $params[0] ?? $params;
+
+            return ($data['type'] ?? '') === 'info' && str_contains($data['message'] ?? '', 'has completed all 30 days');
+        });
+
+    $session->refresh();
+    expect($session->current_game_day)->toBe(30)
+        ->and($session->days_processed_this_month)->toBe(30);
+});
