@@ -296,6 +296,15 @@ class ActionQueuePlanner extends Component
             ->latest()
             ->get();
 
+        $recentOutcomes = QueuedMonthlyAction::where('game_session_id', $this->session?->id)
+            ->where('user_id', $this->player?->id)
+            ->where('status', QueuedActionStatus::Processed)
+            ->whereNotNull('outcome_notes')
+            ->with(['targetNpc', 'ward'])
+            ->latest('updated_at')
+            ->take(5)
+            ->get();
+
         $actionTypes = MinistryActionType::cases();
         $infoActionEnum = $this->infoActionType ? MinistryActionType::tryFrom($this->infoActionType) : null;
 
@@ -305,6 +314,7 @@ class ActionQueuePlanner extends Component
             'npcs' => $npcs,
             'selectedNpc' => $selectedNpc,
             'queuedActions' => $queuedActions,
+            'recentOutcomes' => $recentOutcomes,
             'actionTypes' => $actionTypes,
             'infoActionEnum' => $infoActionEnum,
         ]);

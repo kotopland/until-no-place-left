@@ -498,18 +498,14 @@
                         type="text" 
                         wire:model="notes" 
                         placeholder="Add prayer focus or personal notes (optional)..." 
-                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                    >
-                </div>
-
-                <!-- Queue Button -->
+                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none fo                <!-- Queue Button -->
                 <button 
                     type="button"
                     wire:click="queueAction"
                     class="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-500 hover:to-emerald-500 text-white shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                     <span>➕</span>
-                    <span>Queue for Month {{ $session?->current_game_month ?? 1 }} Resolution Tick</span>
+                    <span>Queue for Day {{ $player?->current_game_day ?? 1 }} • Executes on Next Day</span>
                 </button>
 
                 <!-- Mobile Quick Action: Choose another person in ward -->
@@ -525,46 +521,79 @@
                 </div>
             </div>
 
-            <!-- Current Month Queued Actions Drawer -->
-            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-lg flex-1 flex flex-col">
-                <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-800">
-                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                        <span>📋</span>
-                        <span>Queued for This Month</span>
-                    </h3>
-                    <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 font-semibold">
-                        {{ $queuedActions->count() }} Actions Queued
-                    </span>
-                </div>
+            <!-- Current Scheduled Actions & Recent Breakthroughs Drawer -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-lg flex-1 flex flex-col space-y-4">
+                <!-- Scheduled for Today -->
+                <div>
+                    <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
+                        <div>
+                            <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                                <span>📋</span>
+                                <span>Scheduled for Day {{ $player?->current_game_day ?? 1 }}</span>
+                            </h3>
+                            <p class="text-[10px] text-slate-400">Executes immediately when turning to Day {{ min(30, ($player?->current_game_day ?? 1) + 1) }}</p>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 font-semibold">
+                            {{ $queuedActions->count() }} Pending
+                        </span>
+                    </div>
 
-                <div class="overflow-y-auto space-y-2 flex-1 max-h-56 pr-1 custom-scrollbar">
-                    @forelse($queuedActions as $queued)
-                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs">
-                            <div class="min-w-0 pr-2">
-                                <div class="font-semibold text-white flex items-center gap-1.5">
-                                    <span>{{ $queued->actionTitle }}</span>
-                                    <span class="text-[10px] font-bold text-amber-400">({{ $queued->ap_cost }} AP)</span>
+                    <div class="overflow-y-auto space-y-2 max-h-44 pr-1 custom-scrollbar">
+                        @forelse($queuedActions as $queued)
+                            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs">
+                                <div class="min-w-0 pr-2">
+                                    <div class="font-semibold text-white flex items-center gap-1.5">
+                                        <span>{{ $queued->actionTitle }}</span>
+                                        <span class="text-[10px] font-bold text-amber-400">({{ $queued->ap_cost }} AP)</span>
+                                    </div>
+                                    <div class="text-[11px] text-slate-400 mt-0.5 truncate">
+                                        {{ $queued->ward->name }} • {{ $queued->targetNpc?->name ?? 'Ward-wide platform event' }}
+                                    </div>
                                 </div>
-                                <div class="text-[11px] text-slate-400 mt-0.5 truncate">
-                                    {{ $queued->ward->name }} • {{ $queued->targetNpc?->name ?? 'Ward-wide platform event' }}
-                                </div>
+
+                                <button 
+                                    type="button" 
+                                    wire:click="cancelAction({{ $queued->id }})"
+                                    class="text-rose-400 hover:text-rose-300 px-2 py-1 rounded bg-rose-950/50 border border-rose-900 text-[10px] shrink-0 transition cursor-pointer"
+                                    title="Cancel and refund AP"
+                                >
+                                    Cancel ✕
+                                </button>
                             </div>
-
-                            <button 
-                                type="button"
-                                wire:click="cancelAction({{ $queued->id }})"
-                                class="text-rose-400 hover:text-rose-300 px-2 py-1 rounded bg-rose-950/50 border border-rose-900 text-[10px] shrink-0 transition cursor-pointer"
-                                title="Cancel and refund AP"
-                            >
-                                Cancel ✕
-                            </button>
-                        </div>
-                    @empty
-                        <div class="text-center py-6 text-slate-500 text-xs">
-                            No actions scheduled yet for this month.<br>Spend your AP bandwidth above to start sowing!
-                        </div>
-                    @endforelse
+                        @empty
+                            <div class="text-center py-4 text-slate-500 text-xs">
+                                No actions scheduled yet for Day {{ $player?->current_game_day ?? 1 }}.<br>Spend your AP bandwidth above, then advance the day to see developments!
+                            </div>
+                        @endforelse
+                    </div>
                 </div>
+
+                <!-- Recent Daily Developments Feed -->
+                @if($recentOutcomes->isNotEmpty())
+                    <div class="pt-2 border-t border-slate-800/80">
+                        <div class="flex items-center justify-between pb-1.5 mb-2">
+                            <h4 class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <span>🌱</span>
+                                <span>Recent Daily Developments</span>
+                            </h4>
+                            <span class="text-[10px] text-slate-500">Last {{ $recentOutcomes->count() }} outcomes</span>
+                        </div>
+
+                        <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+                            @foreach($recentOutcomes as $outcome)
+                                <div class="p-2.5 rounded-xl bg-slate-950/50 border border-slate-800/80 text-xs space-y-1">
+                                    <div class="flex items-center justify-between text-[10px]">
+                                        <span class="font-bold text-indigo-300">{{ $outcome->actionTitle }}</span>
+                                        <span class="text-slate-400">{{ $outcome->ward->name }} • Day {{ $outcome->game_day }}</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-300 leading-relaxed">
+                                        {{ $outcome->outcome_notes }}
+                                    </p>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
