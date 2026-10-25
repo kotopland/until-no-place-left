@@ -24,7 +24,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
             <a href="{{ route('welcome') }}" class="flex items-center gap-3 group">
                 <img 
-                    src="{{ asset('images/until-no-place-left-logo-small.jpeg') }}" 
+                    src="{{ asset('images/until-no-place-left-logo-small.png') }}" 
                     alt="Nagoya Oikos: The Four Fields Logo" 
                     class="w-11 h-11 object-contain rounded-2xl shadow-xl shadow-indigo-500/25 border border-indigo-500/40 group-hover:scale-105 transition duration-300"
                 >

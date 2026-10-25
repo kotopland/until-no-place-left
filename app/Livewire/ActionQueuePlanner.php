@@ -27,6 +27,8 @@ class ActionQueuePlanner extends Component
 
     public string $notes = '';
 
+    public int $mobileStep = 2;
+
     public ?User $player = null;
 
     public ?GameSession $session = null;
@@ -48,6 +50,11 @@ class ActionQueuePlanner extends Component
         // Default to Naka-ku or first ward
         $defaultWard = Ward::where('slug', 'naka-ku')->first() ?? Ward::first();
         $this->selectedWardId = $defaultWard?->id;
+    }
+
+    public function setMobileStep(int $step): void
+    {
+        $this->mobileStep = max(1, min(3, $step));
     }
 
     public function openActionInfoModal(?string $type = null): void
@@ -78,6 +85,7 @@ class ActionQueuePlanner extends Component
     {
         $this->selectedWardId = $wardId;
         $this->selectedNpcId = null;
+        $this->mobileStep = 2;
     }
 
     public function selectNpc(int $npcId): void
@@ -88,6 +96,18 @@ class ActionQueuePlanner extends Component
             // Pre-select recommended action based on NPC need state
             $this->selectedActionType = $npc->need_state->recommendedAction()->value;
         }
+        $this->mobileStep = 3;
+    }
+
+    public function selectWardPlatformAction(?string $actionType = null): void
+    {
+        $this->selectedNpcId = null;
+        if ($actionType) {
+            $this->selectedActionType = $actionType;
+        } else {
+            $this->selectedActionType = MinistryActionType::PrayerWalk->value;
+        }
+        $this->mobileStep = 3;
     }
 
     public function queueAction(): void

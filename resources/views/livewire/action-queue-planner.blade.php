@@ -1,4 +1,4 @@
-<div class="space-y-6" wire:poll.60s="touchHeartbeat">
+<div class="space-y-6" wire:poll.60s="touchHeartbeat" x-data="{ mobileStep: @entangle('mobileStep') }">
     <!-- Welcome Guide Banner with Official Logo -->
     <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800/80 p-4 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
@@ -156,10 +156,74 @@
         </div>
     </div>
 
-    <!-- Main 3-Column Planning Grid -->
+    <!-- Mobile Step Funnel Navigation Bar (Visible only on mobile/tablet, hidden on lg screens) -->
+    <div class="block lg:hidden bg-slate-900/90 border border-slate-800 rounded-2xl p-2 shadow-lg mb-2">
+        <div class="flex items-center justify-between gap-1.5">
+            <!-- Step 1 Button: Ward -->
+            <button 
+                type="button" 
+                @click="mobileStep = 1; $wire.setMobileStep(1)"
+                class="flex-1 py-2 px-1.5 rounded-xl text-center transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer"
+                :class="mobileStep === 1 ? 'bg-indigo-600 text-white shadow-md font-bold ring-1 ring-indigo-400' : 'bg-slate-800/60 text-slate-400 hover:text-white'"
+            >
+                <span class="text-[9px] uppercase tracking-wider flex items-center gap-1 opacity-80">
+                    <span class="w-3.5 h-3.5 rounded-full bg-white/20 inline-flex items-center justify-center text-[8px] font-bold">1</span>
+                    <span>Ward</span>
+                </span>
+                <span class="text-xs font-bold truncate max-w-[95px]">
+                    {{ $selectedWard?->name ? str_replace('-ku', '', $selectedWard->name) : 'Pick' }}
+                </span>
+            </button>
+
+            <span class="text-slate-600 text-xs">➔</span>
+
+            <!-- Step 2 Button: Residents -->
+            <button 
+                type="button" 
+                @click="mobileStep = 2; $wire.setMobileStep(2)"
+                class="flex-1 py-2 px-1.5 rounded-xl text-center transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer"
+                :class="mobileStep === 2 ? 'bg-indigo-600 text-white shadow-md font-bold ring-1 ring-indigo-400' : 'bg-slate-800/60 text-slate-400 hover:text-white'"
+            >
+                <span class="text-[9px] uppercase tracking-wider flex items-center gap-1 opacity-80">
+                    <span class="w-3.5 h-3.5 rounded-full bg-white/20 inline-flex items-center justify-center text-[8px] font-bold">2</span>
+                    <span>People</span>
+                </span>
+                <span class="text-xs font-bold truncate max-w-[95px]">
+                    @if($selectedNpc)
+                        {{ $selectedNpc->displayName }}
+                    @else
+                        {{ $npcs->count() }} Residents
+                    @endif
+                </span>
+            </button>
+
+            <span class="text-slate-600 text-xs">➔</span>
+
+            <!-- Step 3 Button: Action -->
+            <button 
+                type="button" 
+                @click="mobileStep = 3; $wire.setMobileStep(3)"
+                class="flex-1 py-2 px-1.5 rounded-xl text-center transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer"
+                :class="mobileStep === 3 ? 'bg-indigo-600 text-white shadow-md font-bold ring-1 ring-indigo-400' : 'bg-slate-800/60 text-slate-400 hover:text-white'"
+            >
+                <span class="text-[9px] uppercase tracking-wider flex items-center gap-1 opacity-80">
+                    <span class="w-3.5 h-3.5 rounded-full bg-white/20 inline-flex items-center justify-center text-[8px] font-bold">3</span>
+                    <span>Action</span>
+                </span>
+                <span class="text-xs font-bold truncate max-w-[95px] text-amber-300">
+                    {{ $player->action_points ?? 12 }} AP left
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Planning Grid (3 Columns on Desktop, Step-Focused on Mobile) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
         <!-- Column 1: Nagoya 16 Wards (lg:col-span-3) -->
-        <div class="lg:col-span-3 bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 shadow-lg flex flex-col h-[640px]">
+        <div 
+            class="lg:col-span-3 bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 shadow-lg flex-col h-[560px] lg:h-[640px]"
+            :class="mobileStep === 1 ? 'flex' : 'hidden lg:flex'"
+        >
             <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
                 <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                     <span>📍</span>
@@ -173,6 +237,7 @@
                     <button 
                         type="button"
                         wire:click="selectWard({{ $ward->id }})"
+                        @click="mobileStep = 2"
                         class="w-full text-left px-3 py-2.5 rounded-xl text-xs transition-all flex items-center justify-between {{ $selectedWardId === $ward->id ? 'bg-indigo-600/30 text-white border border-indigo-500/60 shadow-sm' : 'bg-slate-800/40 text-slate-300 hover:bg-slate-800/70 border border-transparent' }}"
                     >
                         <div>
@@ -190,16 +255,43 @@
                     </button>
                 @endforeach
             </div>
+
+            <!-- Mobile Quick Advance Footer -->
+            <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs lg:hidden">
+                <span class="text-[11px] text-slate-400 truncate">Selected: <strong class="text-white">{{ $selectedWard?->name }}</strong></span>
+                <button 
+                    type="button"
+                    @click="mobileStep = 2; $wire.setMobileStep(2)"
+                    class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition flex items-center gap-1 shadow shrink-0"
+                >
+                    <span>View People</span>
+                    <span>➔</span>
+                </button>
+            </div>
         </div>
 
         <!-- Column 2: Ward Residents / NPCs (lg:col-span-4) -->
-        <div class="lg:col-span-4 bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 shadow-lg flex flex-col h-[640px]">
-            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+        <div 
+            class="lg:col-span-4 bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 shadow-lg flex-col h-[560px] lg:h-[640px]"
+            :class="mobileStep === 2 ? 'flex' : 'hidden lg:flex'"
+        >
+            <div class="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-800">
                 <div>
-                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                        <span>👥</span>
-                        <span>{{ $selectedWard?->name ?? 'Ward' }} Residents</span>
-                    </h3>
+                    <div class="flex items-center gap-2">
+                        <button 
+                            type="button" 
+                            @click="mobileStep = 1; $wire.setMobileStep(1)"
+                            class="lg:hidden text-indigo-400 hover:text-indigo-300 text-xs font-bold flex items-center gap-0.5"
+                            title="Switch Ward"
+                        >
+                            <span>‹</span>
+                            <span>Wards</span>
+                        </button>
+                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <span>👥</span>
+                            <span>{{ $selectedWard?->name ?? 'Ward' }} Residents</span>
+                        </h3>
+                    </div>
                     <p class="text-[11px] text-slate-400">{{ $npcs->count() }} simulated residents</p>
                 </div>
 
@@ -210,10 +302,29 @@
                 @endif
             </div>
 
+            <!-- Ward-Wide Platform Action Shortcut -->
+            <div class="mb-2">
+                <button 
+                    type="button"
+                    wire:click="selectWardPlatformAction('prayer_walk')"
+                    @click="mobileStep = 3"
+                    class="w-full py-2 px-3 rounded-xl border border-dashed border-emerald-500/50 bg-emerald-950/20 hover:bg-emerald-950/40 text-emerald-300 text-xs font-semibold flex items-center justify-between transition cursor-pointer"
+                >
+                    <span class="flex items-center gap-1.5 truncate">
+                        <span>👣</span>
+                        <span>Prayer Walk or Event in {{ $selectedWard?->name ?? 'Ward' }}</span>
+                    </span>
+                    <span class="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800 shrink-0">
+                        1 AP ➔
+                    </span>
+                </button>
+            </div>
+
             <div class="overflow-y-auto space-y-2 pr-1 flex-1 custom-scrollbar">
                 @forelse($npcs as $npc)
                     <div 
                         wire:click="selectNpc({{ $npc->id }})"
+                        @click="mobileStep = 3"
                         class="p-3 rounded-xl border transition-all cursor-pointer {{ $selectedNpcId === $npc->id ? 'bg-indigo-950/40 border-indigo-500 shadow-md ring-1 ring-indigo-500/50' : 'bg-slate-800/40 border-slate-800 hover:border-slate-700' }}"
                     >
                         <div class="flex items-start justify-between gap-2">
@@ -286,11 +397,23 @@
         </div>
 
         <!-- Column 3: Action Planner & Queued Drawer (lg:col-span-5) -->
-        <div class="lg:col-span-5 flex flex-col gap-5">
+        <div 
+            class="lg:col-span-5 flex flex-col gap-5"
+            :class="mobileStep === 3 ? 'flex' : 'hidden lg:flex'"
+        >
             <!-- Action Selector Card -->
             <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-lg">
                 <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-800">
                     <div class="flex items-center gap-2">
+                        <button 
+                            type="button" 
+                            @click="mobileStep = 2; $wire.setMobileStep(2)"
+                            class="lg:hidden text-indigo-400 hover:text-indigo-300 text-xs font-bold flex items-center gap-0.5 mr-1"
+                            title="Back to Residents"
+                        >
+                            <span>‹</span>
+                            <span>People</span>
+                        </button>
                         <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                             <span>⚡</span>
                             <span>Schedule Relational Action</span>
@@ -302,13 +425,31 @@
                             title="Open detailed guide with descriptive text for all actions"
                         >
                             <span>ℹ️</span>
-                            <span>More Info</span>
+                            <span>Info</span>
                         </button>
                     </div>
                     @if($selectedNpc)
-                        <span class="text-xs text-indigo-400 font-medium">Target: {{ $selectedNpc->name }}</span>
+                        <div class="text-right">
+                            <span class="text-xs text-indigo-400 font-bold block">{{ $selectedNpc->displayName }}</span>
+                            <button 
+                                type="button" 
+                                @click="mobileStep = 2; $wire.setMobileStep(2)" 
+                                class="text-[10px] text-slate-400 hover:text-indigo-300 underline lg:hidden"
+                            >
+                                Change
+                            </button>
+                        </div>
                     @else
-                        <span class="text-xs text-amber-400 font-medium">Ward Platform Action</span>
+                        <div class="text-right">
+                            <span class="text-xs text-amber-400 font-semibold block">{{ $selectedWard?->name }} (Ward Action)</span>
+                            <button 
+                                type="button" 
+                                @click="mobileStep = 2; $wire.setMobileStep(2)" 
+                                class="text-[10px] text-slate-400 hover:text-amber-300 underline lg:hidden"
+                            >
+                                Pick Person
+                            </button>
+                        </div>
                     @endif
                 </div>
 
@@ -370,6 +511,18 @@
                     <span>➕</span>
                     <span>Queue for Month {{ $session?->current_game_month ?? 1 }} Resolution Tick</span>
                 </button>
+
+                <!-- Mobile Quick Action: Choose another person in ward -->
+                <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs lg:hidden">
+                    <button 
+                        type="button"
+                        @click="mobileStep = 2; $wire.setMobileStep(2)"
+                        class="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"
+                    >
+                        <span>👥</span>
+                        <span>Select Another Person in {{ $selectedWard?->name }}</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Current Month Queued Actions Drawer -->

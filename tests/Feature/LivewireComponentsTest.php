@@ -2,6 +2,8 @@
 
 use App\Enums\ChurchElement;
 use App\Enums\MinistryActionType;
+use App\Enums\NpcNeedState;
+use App\Enums\NpcRoleArchetype;
 use App\Enums\ReceptivityStatus;
 use App\Livewire\ActionQueuePlanner;
 use App\Livewire\ChurchCircleSvg;
@@ -76,7 +78,7 @@ test('welcome route renders full story and game rules page', function () {
     $response->assertSee('The 5 Fields of Kingdom Multiplication');
     $response->assertSee('Daily Action Points (12 AP)');
     $response->assertSee('until-no-place-left-logo.jpeg');
-    $response->assertSee('until-no-place-left-logo-small.jpeg');
+    $response->assertSee('until-no-place-left-logo-small.png');
 });
 
 test('action queue planner queues relational action and deducts AP', function () {
@@ -154,6 +156,65 @@ test('action queue planner opens and closes action info modal with full descript
         ->call('selectActionFromModal', MinistryActionType::Train411->value)
         ->assertSet('showActionInfoModal', false)
         ->assertSet('selectedActionType', MinistryActionType::Train411->value);
+});
+
+test('action queue planner supports mobile mission funnel steps with smart auto-advance', function () {
+    $session = GameSession::create([
+        'name' => 'Nagoya Test Session',
+        'code' => 'nagoya-test-funnel',
+        'current_game_month' => 1,
+        'calendar_date' => '2026-04-01',
+        'next_tick_at' => now()->addHours(12),
+        'is_active' => true,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'action_points' => 12,
+        'max_action_points' => 12,
+    ]);
+
+    $ward = Ward::create([
+        'name' => 'Meito-ku',
+        'slug' => 'meito-ku',
+        'name_ja' => '名東区',
+        'spiritual_openness' => 40,
+        'poverty_need_index' => 20,
+        'center_lat' => 35.17,
+        'center_lng' => 136.99,
+    ]);
+
+    $npc = Npc::create([
+        'game_session_id' => $session->id,
+        'ward_id' => $ward->id,
+        'name' => 'Kenta',
+        'name_ja' => '健太',
+        'displayName' => 'Kenta M.',
+        'status' => ReceptivityStatus::Yellow,
+        'need_state' => NpcNeedState::None,
+        'role_archetype' => NpcRoleArchetype::UniversityStudent,
+        'trust_level' => 30,
+        'is_person_of_peace' => false,
+        'latitude' => 35.17,
+        'longitude' => 136.99,
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test(ActionQueuePlanner::class)
+        ->assertSet('mobileStep', 2)
+        ->call('setMobileStep', 1)
+        ->assertSet('mobileStep', 1)
+        ->call('selectWard', $ward->id)
+        ->assertSet('selectedWardId', $ward->id)
+        ->assertSet('mobileStep', 2)
+        ->call('selectNpc', $npc->id)
+        ->assertSet('selectedNpcId', $npc->id)
+        ->assertSet('mobileStep', 3)
+        ->call('selectWardPlatformAction', MinistryActionType::PrayerWalk->value)
+        ->assertSet('selectedNpcId', null)
+        ->assertSet('selectedActionType', MinistryActionType::PrayerWalk->value)
+        ->assertSet('mobileStep', 3);
 });
 
 test('church circle svg visualizes acts 2 elements', function () {
