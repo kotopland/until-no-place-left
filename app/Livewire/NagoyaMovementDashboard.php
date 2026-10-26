@@ -313,6 +313,11 @@ class NagoyaMovementDashboard extends Component
         $user->refresh();
         $session->refresh();
 
+        // If triggered automatically by the countdown timer, ensure a tick is actually due
+        if (! $isManual && ! $user->isDailyTickDue) {
+            return;
+        }
+
         if ($user->days_played_today >= 30) {
             if ($isManual) {
                 $this->dispatch('notify', [

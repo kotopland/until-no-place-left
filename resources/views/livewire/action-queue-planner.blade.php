@@ -7,7 +7,7 @@
 @endphp
 
 
-<div class="space-y-6 pb-28 lg:pb-0" wire:poll.60s="touchHeartbeat" x-data="{ 
+<div class="space-y-6 pb-28 lg:pb-0" wire:poll.300s="touchHeartbeat" x-data="{ 
     mobileStep: @entangle('mobileStep'),
     scrollToQueue() {
         this.$nextTick(() => {

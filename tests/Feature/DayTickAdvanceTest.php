@@ -393,3 +393,104 @@ test('scheduled month advance skips players who have already changed their month
         ->and($playerB->days_processed_this_month)->toBe(0)
         ->and($playerB->days_played_today)->toBe(0);
 });
+
+test('automatic advanceDay in ActionQueuePlanner does not advance if daily tick is not yet due', function () {
+    $session = GameSession::create([
+        'name' => 'Auto Tick Test Session',
+        'code' => 'auto-tick-1',
+        'current_game_month' => 1,
+        'current_game_day' => 1,
+        'days_processed_this_month' => 0,
+        'calendar_date' => '2026-04-01',
+        'month_duration_minutes' => 720,
+        'next_tick_at' => now()->addHours(12),
+        'next_daily_tick_at' => now()->addMinutes(10),
+        'is_active' => true,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'current_game_day' => 1,
+        'last_active_at' => now(),
+        'days_played_today' => 0,
+        'last_played_real_date' => now()->startOfDay(),
+        'next_daily_tick_at' => now()->addMinutes(8), // In the future, not due yet!
+        'action_points' => 2,
+        'max_action_points' => 12,
+        'daily_action_points' => 2,
+    ]);
+
+    // Automatic tick ($isManual = false) should be ignored because tick is not due
+    Livewire::actingAs($user)
+        ->test(ActionQueuePlanner::class)
+        ->call('advanceDay', false);
+
+    $user->refresh();
+    expect($user->current_game_day)->toBe(1)
+        ->and($user->days_played_today)->toBe(0);
+});
+
+test('automatic advanceDay in NagoyaMovementDashboard does not advance if daily tick is not yet due', function () {
+    $session = GameSession::create([
+        'name' => 'Auto Tick Dashboard Session',
+        'code' => 'auto-tick-dash',
+        'current_game_month' => 1,
+        'current_game_day' => 1,
+        'days_processed_this_month' => 0,
+        'calendar_date' => '2026-04-01',
+        'month_duration_minutes' => 720,
+        'next_tick_at' => now()->addHours(12),
+        'next_daily_tick_at' => now()->addMinutes(10),
+        'is_active' => true,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'current_game_day' => 1,
+        'last_active_at' => now(),
+        'days_played_today' => 0,
+        'last_played_real_date' => now()->startOfDay(),
+        'next_daily_tick_at' => now()->addMinutes(8), // In the future
+        'action_points' => 2,
+        'max_action_points' => 12,
+        'daily_action_points' => 2,
+    ]);
+
+    // Automatic tick ($isManual = false) should be ignored
+    Livewire::actingAs($user)
+        ->test(NagoyaMovementDashboard::class)
+        ->call('advanceDay', false);
+
+    $user->refresh();
+    expect($user->current_game_day)->toBe(1)
+        ->and($user->days_played_today)->toBe(0);
+});
+
+test('touchHeartbeat in ActionQueuePlanner updates active timestamp cleanly', function () {
+    $session = GameSession::create([
+        'name' => 'Heartbeat Session',
+        'code' => 'hb-sess-1',
+        'current_game_month' => 1,
+        'current_game_day' => 1,
+        'days_processed_this_month' => 0,
+        'calendar_date' => '2026-04-01',
+        'month_duration_minutes' => 720,
+        'next_tick_at' => now()->addHours(12),
+        'next_daily_tick_at' => now()->addMinutes(10),
+        'is_active' => true,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'last_active_at' => now()->subMinutes(10),
+        'days_played_today' => 0,
+        'last_played_real_date' => now()->startOfDay(),
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(ActionQueuePlanner::class)
+        ->call('touchHeartbeat');
+
+    $user->refresh();
+    expect($user->last_active_at->diffInSeconds(now()))->toBeLessThan(5);
+});

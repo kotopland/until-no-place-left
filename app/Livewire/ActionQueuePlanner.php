@@ -212,7 +212,12 @@ class ActionQueuePlanner extends Component
 
     public function touchHeartbeat(): void
     {
-        $this->player?->touchActive();
+        try {
+            $this->player?->touchActive();
+        } catch (\Throwable $e) {
+            // Heartbeat touch is non-essential; avoid failing request if another process holds user lock
+            report($e);
+        }
     }
 
     public function selectWard(int $wardId): void
@@ -403,6 +408,11 @@ class ActionQueuePlanner extends Component
 
         $this->player->refresh();
         $this->session->refresh();
+
+        // If triggered automatically by the countdown timer, ensure a tick is actually due
+        if (! $isManual && ! $this->player->isDailyTickDue) {
+            return;
+        }
 
         // Check if player has reached the 30-day limit for this real-life day
         if ($this->player->days_played_today >= 30) {

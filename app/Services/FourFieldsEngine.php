@@ -42,11 +42,22 @@ class FourFieldsEngine
             }
 
             return DB::transaction(function () use ($session, $specificUser) {
-                $gameMonth = $specificUser->current_game_month;
-                $currentDay = $specificUser->current_game_day;
+                // Pessimistically lock user row to prevent snapshot isolation / write conflict errors
+                /** @var User|null $lockedUser */
+                $lockedUser = User::where('id', $specificUser->id)->lockForUpdate()->first();
+                if (! $lockedUser) {
+                    return null;
+                }
+
+                if ($lockedUser->hasReachedDailyPlayLimit || $lockedUser->days_processed_this_month >= 30) {
+                    return null;
+                }
+
+                $gameMonth = $lockedUser->current_game_month;
+                $currentDay = $lockedUser->current_game_day;
 
                 // Fetch pending actions queued for this user on or before this day in their current month
-                $pendingActions = QueuedMonthlyAction::where('user_id', $specificUser->id)
+                $pendingActions = QueuedMonthlyAction::where('user_id', $lockedUser->id)
                     ->where('game_month', $gameMonth)
                     ->where('game_day', '<=', $currentDay)
                     ->where('status', QueuedActionStatus::Pending)
@@ -69,28 +80,38 @@ class FourFieldsEngine
                     ]);
                 }
 
-                if ($scoreGain > 0) {
-                    $specificUser->increment('total_generational_score', $scoreGain);
-                }
+                $today = now()->startOfDay();
+                $isNewRealDay = ! $lockedUser->isPlayedToday();
+                $daysPlayedToday = $isNewRealDay ? 1 : ($lockedUser->days_played_today + 1);
 
-                $specificUser->touchActive();
-                $specificUser->increment('days_played_today');
-                $specificUser->increment('days_processed_this_month');
+                $nextDay = min(30, $lockedUser->current_game_day + 1);
+                $newAp = min($lockedUser->max_action_points, $lockedUser->action_points + $lockedUser->daily_action_points);
 
-                $nextDay = min(30, $specificUser->current_game_day + 1);
-                $newAp = min($specificUser->max_action_points, $specificUser->action_points + $specificUser->daily_action_points);
-
-                $specificUser->update([
+                $userUpdates = [
                     'current_game_day' => $nextDay,
                     'last_daily_tick_at' => now(),
                     'next_daily_tick_at' => now()->addMinutes(10),
                     'action_points' => $newAp,
-                ]);
+                    'days_played_today' => $daysPlayedToday,
+                    'days_processed_this_month' => $lockedUser->days_processed_this_month + 1,
+                    'last_active_at' => now(),
+                    'last_played_real_date' => $today,
+                ];
+
+                if ($scoreGain > 0) {
+                    $userUpdates['total_generational_score'] = $lockedUser->total_generational_score + $scoreGain;
+                }
+
+                $lockedUser->update($userUpdates);
+
+                // Sync attributes back to caller's in-memory model instance
+                $specificUser->fill($lockedUser->getAttributes());
+                $specificUser->syncOriginal();
 
                 // Update session state without modifying other players
                 $session->update([
                     'current_game_day' => max($session->current_game_day, $nextDay),
-                    'days_processed_this_month' => max($session->days_processed_this_month, $specificUser->days_processed_this_month),
+                    'days_processed_this_month' => max($session->days_processed_this_month, $lockedUser->days_processed_this_month),
                     'last_daily_tick_at' => now(),
                     'next_daily_tick_at' => now()->addMinutes(10),
                 ]);
@@ -107,10 +128,10 @@ class FourFieldsEngine
                     actionsProcessed: $actionsProcessed,
                     onlinePlayersCount: 1,
                     actionOutcomes: $outcomes,
-                    playerScoreGains: [$specificUser->id => $scoreGain],
-                    onlineUserIds: [$specificUser->id],
+                    playerScoreGains: [$lockedUser->id => $scoreGain],
+                    onlineUserIds: [$lockedUser->id],
                 );
-            });
+            }, attempts: 3);
         }
 
         // 2. Global / automated tick across online players who are due
@@ -140,6 +161,11 @@ class FourFieldsEngine
             $gameMonth = $session->current_game_month;
             $currentDay = $session->current_game_day;
 
+            $lockedUsers = User::whereIn('id', $eligibleUsers->pluck('id'))
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
             // Fetch pending actions queued for this day or earlier days in this month
             $pendingActions = QueuedMonthlyAction::where('game_session_id', $session->id)
                 ->where('game_month', $gameMonth)
@@ -167,26 +193,31 @@ class FourFieldsEngine
             }
 
             // Award points and replenish daily AP for eligible active players
-            foreach ($eligibleUsers as $user) {
+            $today = now()->startOfDay();
+            foreach ($lockedUsers as $user) {
                 $scoreGain = $playerScoreGains[$user->id] ?? 0;
-                if ($scoreGain > 0) {
-                    $user->increment('total_generational_score', $scoreGain);
-                }
-
-                // Increment days played today and refresh real-life day tracking
-                $user->touchActive();
-                $user->increment('days_played_today');
-                $user->increment('days_processed_this_month');
+                $isNewRealDay = ! $user->isPlayedToday();
+                $daysPlayedToday = $isNewRealDay ? 1 : ($user->days_played_today + 1);
 
                 $nextDay = min(30, $user->current_game_day + 1);
                 $newAp = min($user->max_action_points, $user->action_points + $user->daily_action_points);
 
-                $user->update([
+                $userUpdates = [
                     'current_game_day' => $nextDay,
                     'last_daily_tick_at' => now(),
                     'next_daily_tick_at' => now()->addMinutes(10),
                     'action_points' => $newAp,
-                ]);
+                    'days_played_today' => $daysPlayedToday,
+                    'days_processed_this_month' => $user->days_processed_this_month + 1,
+                    'last_active_at' => now(),
+                    'last_played_real_date' => $today,
+                ];
+
+                if ($scoreGain > 0) {
+                    $userUpdates['total_generational_score'] = $user->total_generational_score + $scoreGain;
+                }
+
+                $user->update($userUpdates);
             }
 
             // Advance session day counters
@@ -208,12 +239,12 @@ class FourFieldsEngine
                 gameMonth: $gameMonth,
                 gameDay: $currentDay,
                 actionsProcessed: $actionsProcessed,
-                onlinePlayersCount: $eligibleUsers->count(),
+                onlinePlayersCount: $lockedUsers->count(),
                 actionOutcomes: $outcomes,
                 playerScoreGains: $playerScoreGains,
-                onlineUserIds: $eligibleUsers->pluck('id')->all(),
+                onlineUserIds: $lockedUsers->keys()->all(),
             );
-        });
+        }, attempts: 3);
     }
 
     /**
@@ -302,7 +333,7 @@ class FourFieldsEngine
             }
 
             // 4. Update player models and reset monthly bandwidth Action Points
-            $participatingUsers = User::where('current_game_session_id', $session->id)->get();
+            $participatingUsers = User::where('current_game_session_id', $session->id)->lockForUpdate()->get();
             foreach ($participatingUsers as $user) {
                 // If a player has already changed their month today, do NOT change it to the next one!
                 if ($user->hasChangedMonthToday) {
@@ -312,18 +343,20 @@ class FourFieldsEngine
                 }
 
                 $scoreGain = $playerScoreGains[$user->id] ?? 0;
-                if ($scoreGain > 0) {
-                    $user->increment('total_generational_score', $scoreGain);
-                }
-
-                $user->increment('current_game_month');
-                $user->update([
+                $userUpdates = [
+                    'current_game_month' => $user->current_game_month + 1,
                     'current_game_day' => 1,
                     'days_processed_this_month' => 0,
                     'last_monthly_tick_at' => now(),
                     'action_points' => $user->max_action_points, // Refresh monthly AP bandwidth
                     'days_played_today' => 0, // Reset daily play limit for new month/day
-                ]);
+                ];
+
+                if ($scoreGain > 0) {
+                    $userUpdates['total_generational_score'] = $user->total_generational_score + $scoreGain;
+                }
+
+                $user->update($userUpdates);
             }
 
             // 5. Advance Game Session Calendar and reset daily tick counters
@@ -354,7 +387,7 @@ class FourFieldsEngine
                 autonomousHighlights: $autonomousHighlights,
                 coachTips: $coachTips,
             );
-        });
+        }, attempts: 3);
     }
 
     /**
