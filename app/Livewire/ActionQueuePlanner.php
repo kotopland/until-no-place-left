@@ -39,6 +39,7 @@ class ActionQueuePlanner extends Component
     protected $listeners = [
         'day-advanced' => '$refresh',
         'action-queued' => '$refresh',
+        'home-ward-selected' => 'onHomeWardSelected',
     ];
 
     public function mount(): void
@@ -49,13 +50,16 @@ class ActionQueuePlanner extends Component
         // Mark player active (online)
         $this->player?->touchActive();
 
-        // Default to player's home ward, or Naka-ku
+        // Default viewing selection to player's home ward, or Naka-ku (without auto-assigning residence)
         $defaultWard = $this->player?->homeWard ?? Ward::where('slug', 'naka-ku')->first() ?? Ward::first();
-        if ($this->player && ! $this->player->home_ward_id && $defaultWard) {
-            $this->player->update(['home_ward_id' => $defaultWard->id]);
-            $this->player->refresh();
-        }
         $this->selectedWardId = $defaultWard?->id;
+    }
+
+    public function onHomeWardSelected(int $wardId): void
+    {
+        $this->player = auth()->user() ?? User::first();
+        $this->player?->refresh();
+        $this->selectedWardId = $wardId;
     }
 
     public function moveToWard(int $wardId): void
@@ -79,6 +83,68 @@ class ActionQueuePlanner extends Component
             'message' => "🏡 Relocated your residence {$fromText}to {$ward->name}! You are now an embedded neighbor here (+25% relational trust bonus and zero transit friction).",
         ]);
         $this->selectedWardId = $ward->id;
+    }
+
+    public function conductJointPrayerWalk(int $coLaborerId): void
+    {
+        if (! $this->player || ! $this->selectedWardId) {
+            return;
+        }
+
+        $ward = Ward::find($this->selectedWardId);
+        $coLaborer = User::find($coLaborerId);
+
+        if (! $ward || ! $coLaborer) {
+            return;
+        }
+
+        $commuteApCost = $this->player->commuteApCostForWard($ward);
+        $requiredAp = 2 + $commuteApCost;
+
+        if ($this->player->action_points < $requiredAp) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => "Not enough Action Points. Joint Prayer Walk in {$ward->name} requires {$requiredAp} AP (2 base + {$commuteApCost} commute). You have {$this->player->action_points} AP.",
+            ]);
+
+            return;
+        }
+
+        $this->player->decrement('action_points', $requiredAp);
+
+        $aiService = app(\App\Services\AiColaborerService::class);
+        $outcome = $aiService->conductJointPrayerWalk($this->player, $coLaborer, $ward);
+
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => "🤝 Joint MAWL Prayer Walk with {$coLaborer->name} completed! Earned +15 Co-op Synergy Points. {$outcome->narrativeOutcome}",
+        ]);
+
+        $this->player->refresh();
+        $this->dispatch('action-queued');
+    }
+
+    public function conductIronOnIron(int $coLaborerId): void
+    {
+        if (! $this->player) {
+            return;
+        }
+
+        $coLaborer = User::find($coLaborerId);
+        if (! $coLaborer) {
+            return;
+        }
+
+        $aiService = app(\App\Services\AiColaborerService::class);
+        $result = $aiService->conductIronOnIron($this->player, $coLaborer);
+
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => "⚔️ Iron-on-Iron with {$coLaborer->name}: +{$result['bonus_ap']} AP, +{$result['coop_points']} Co-op Points! {$result['coaching_tip']}",
+        ]);
+
+        $this->player->refresh();
+        $this->dispatch('action-queued');
     }
 
     public function setMobileStep(int $step): void
@@ -400,6 +466,13 @@ class ActionQueuePlanner extends Component
             ->get()
             ->groupBy('home_ward_id');
 
+        $aiCoLaborersInWard = ($this->session?->isCoopMode && $selectedWard)
+            ? User::where('current_game_session_id', $this->session?->id)
+                ->where('is_ai_colaborer', true)
+                ->where('home_ward_id', $selectedWard->id)
+                ->get()
+            : collect();
+
         return view('livewire.action-queue-planner', [
             'wards' => $wards,
             'selectedWard' => $selectedWard,
@@ -415,6 +488,7 @@ class ActionQueuePlanner extends Component
             'commuteDistanceKm' => $commuteDistanceKm,
             'isHomeWard' => $isHomeWard,
             'residentMissionariesByWard' => $residentMissionariesByWard,
+            'aiCoLaborersInWard' => $aiCoLaborersInWard,
         ]);
     }
 }

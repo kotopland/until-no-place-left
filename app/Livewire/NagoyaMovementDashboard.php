@@ -8,6 +8,7 @@ use App\Models\Church;
 use App\Models\GameSession;
 use App\Models\MonthlyReport;
 use App\Models\User;
+use App\Models\Ward;
 use App\Services\FourFieldsEngine;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
@@ -25,6 +26,18 @@ class NagoyaMovementDashboard extends Component
     public bool $showEditNameModal = false;
 
     public string $editingName = '';
+
+    public bool $showOnboardingModal = false;
+
+    public ?int $selectedHomeWardId = null;
+
+    public function mount(): void
+    {
+        $user = auth()->user();
+        if ($user && ! $user->home_ward_id) {
+            $this->showOnboardingModal = true;
+        }
+    }
 
     public function setTab(string $tab): void
     {
@@ -50,6 +63,57 @@ class NagoyaMovementDashboard extends Component
     public function closeEditNameModal(): void
     {
         $this->showEditNameModal = false;
+    }
+
+    public function openOnboardingModal(): void
+    {
+        $this->showOnboardingModal = true;
+    }
+
+    public function closeOnboardingModal(): void
+    {
+        $user = auth()->user();
+        if ($user && $user->home_ward_id) {
+            $this->showOnboardingModal = false;
+        }
+    }
+
+    public function selectStartingWard(int $wardId): void
+    {
+        $this->selectedHomeWardId = $wardId;
+    }
+
+    public function confirmStartingWard(): void
+    {
+        $user = auth()->user() ?? User::first();
+        if (! $user) {
+            return;
+        }
+
+        if (! $this->selectedHomeWardId) {
+            $this->dispatch('notify', [
+                'type' => 'warning',
+                'message' => 'Please select a district to establish your starting residence.',
+            ]);
+
+            return;
+        }
+
+        $ward = Ward::find($this->selectedHomeWardId);
+        if (! $ward) {
+            return;
+        }
+
+        $user->update(['home_ward_id' => $ward->id]);
+        $user->refresh();
+
+        $this->showOnboardingModal = false;
+        $this->dispatch('home-ward-selected', wardId: $ward->id);
+        $this->dispatch('day-advanced');
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => "🏡 Welcome to {$ward->name}! Your residence has been established as an embedded neighbor (+25% trust bonus and zero transit friction).",
+        ]);
     }
 
     public function savePlayerName(): void
@@ -183,12 +247,38 @@ class NagoyaMovementDashboard extends Component
 
         $activeChurch = $this->activeChurchId ? Church::with(['ward', 'leaderNpc', 'leaderUser'])->find($this->activeChurchId) : $churches->first();
 
+        // Calculate other missionaries stationed in wards to spotlight pioneering frontiers (0 co-laborers)
+        $otherMissionariesQuery = User::whereNotNull('home_ward_id')
+            ->where('id', '!=', $user?->id)
+            ->with('homeWard');
+
+        if (! ($session?->isCoopMode ?? true)) {
+            $otherMissionariesQuery->where('is_ai_colaborer', false);
+        }
+
+        $otherMissionaries = $otherMissionariesQuery->get();
+
+        $occupiedWardIds = $otherMissionaries->pluck('home_ward_id')->unique()->toArray();
+        $missionariesByWard = $otherMissionaries->groupBy('home_ward_id');
+
+        $allWards = Ward::orderBy('name')->get();
+        $pioneeringWards = $allWards->filter(fn (Ward $w) => ! in_array($w->id, $occupiedWardIds))->values();
+        $recommendedWard = $pioneeringWards->sortByDesc('spiritual_openness')->first() ?? $allWards->first();
+
+        if (! $this->selectedHomeWardId && $recommendedWard) {
+            $this->selectedHomeWardId = $recommendedWard->id;
+        }
+
         return view('livewire.nagoya-movement-dashboard', [
             'user' => $user,
             'session' => $session,
             'unreadReportsCount' => $unreadReportsCount,
             'churches' => $churches,
             'activeChurch' => $activeChurch,
+            'allWards' => $allWards,
+            'pioneeringWards' => $pioneeringWards,
+            'recommendedWard' => $recommendedWard,
+            'missionariesByWard' => $missionariesByWard,
         ]);
     }
 }

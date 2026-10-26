@@ -26,6 +26,8 @@ class ResetGameCommand extends Command
                             {--session= : Optional specific GameSession code (e.g. nagoya-2026)}
                             {--all : Reset all game sessions}
                             {--wipe-players : Delete all player accounts (except default missionary coach)}
+                            {--solo : Set mode to 100% Solo Pioneer (disable automated AI co-laborers)}
+                            {--coop : Set mode to Team Co-op (enable automated AI co-laborers)}
                             {--force : Force reset without confirmation prompt}';
 
     /**
@@ -42,6 +44,8 @@ class ResetGameCommand extends Command
         $all = (bool) $this->option('all');
         $force = (bool) $this->option('force');
         $wipePlayers = (bool) $this->option('wipe-players');
+        $solo = (bool) $this->option('solo');
+        $coop = (bool) $this->option('coop');
 
         if ($all) {
             $sessions = GameSession::all();
@@ -72,7 +76,7 @@ class ResetGameCommand extends Command
         foreach ($sessions as $session) {
             $this->components->info("Resetting session: {$session->name} [{$session->code}]...");
 
-            DB::transaction(function () use ($session, $wipePlayers): void {
+            DB::transaction(function () use ($session, $wipePlayers, $solo, $coop): void {
                 // 1. Delete transient gameplay records
                 QueuedMonthlyAction::where('game_session_id', $session->id)->delete();
                 MonthlyReport::where('game_session_id', $session->id)->delete();
@@ -104,6 +108,12 @@ class ResetGameCommand extends Command
                     'is_active' => true,
                 ]);
 
+                if ($solo) {
+                    $session->enableSoloMode();
+                } elseif ($coop) {
+                    $session->enableCoopMode();
+                }
+
                 // 7. Reset player Action Points & scoring, and optionally wipe player accounts
                 if ($wipePlayers) {
                     User::where('current_game_session_id', $session->id)
@@ -111,10 +121,10 @@ class ResetGameCommand extends Command
                         ->delete();
                 }
 
-                User::where('current_game_session_id', $session->id)->each(function (User $user): void {
+                User::where('current_game_session_id', $session->id)->each(function (User $user) use ($wipePlayers): void {
                     $isCoach = $user->email === 'coach@nagoyaharvest.jp';
 
-                    $user->update([
+                    $updates = [
                         'current_game_month' => 1,
                         'current_game_day' => 1,
                         'days_processed_this_month' => 0,
@@ -129,15 +139,23 @@ class ResetGameCommand extends Command
                         'last_monthly_tick_at' => null,
                         'last_daily_tick_at' => null,
                         'next_daily_tick_at' => now()->addMinutes(10),
-                    ]);
+                    ];
+
+                    if ($wipePlayers) {
+                        $updates['home_ward_id'] = null;
+                    }
+
+                    $user->update($updates);
                 });
 
                 // 8. Re-seed archetypal Nagoya NPCs, initial Oikos graph & G1 Church
                 (new NagoyaOikosSeeder)->run();
             });
 
+            $session->refresh();
             $this->components->twoColumnDetail('Game Month', '1 (Reset)');
             $this->components->twoColumnDetail('Game Day', '1 / 30');
+            $this->components->twoColumnDetail('Gameplay Mode', $session->isCoopMode ? 'Team Co-op (AI Co-Laborers Active)' : '100% Solo Pioneer');
             $this->components->twoColumnDetail('Calendar Date', '2026-04-01 (Nagoya Spring)');
             $this->components->twoColumnDetail('Player Action Points', '12 / 12 AP restored');
             if ($wipePlayers) {

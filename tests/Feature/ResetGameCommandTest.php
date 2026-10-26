@@ -179,5 +179,39 @@ test('game:reset with --wipe-players removes non-coach players and keeps coach',
     $coach->refresh();
     expect($coach->current_game_month)->toBe(1)
         ->and($coach->current_game_day)->toBe(1)
-        ->and($coach->action_points)->toBe(12);
+        ->and($coach->action_points)->toBe(12)
+        ->and($coach->home_ward_id)->toBeNull();
 });
+
+test('game:reset with --solo flag disables AI co-laborers for solo pioneer experience', function (): void {
+    $session = GameSession::create([
+        'name' => 'Solo Session',
+        'code' => 'nagoya-2026',
+        'current_game_month' => 2,
+        'settings' => ['coop_team_mode' => true],
+    ]);
+
+    $this->artisan('game:reset', ['--force' => true, '--solo' => true])
+        ->expectsOutputToContain('100% Solo Pioneer')
+        ->assertSuccessful();
+
+    $session->refresh();
+    expect($session->isCoopMode)->toBeFalse();
+});
+
+test('game:reset with --coop flag enables AI co-laborers for team mode', function (): void {
+    $session = GameSession::create([
+        'name' => 'Coop Session',
+        'code' => 'nagoya-2026',
+        'current_game_month' => 2,
+        'settings' => ['coop_team_mode' => false],
+    ]);
+
+    $this->artisan('game:reset', ['--force' => true, '--coop' => true])
+        ->expectsOutputToContain('Team Co-op (AI Co-Laborers Active)')
+        ->assertSuccessful();
+
+    $session->refresh();
+    expect($session->isCoopMode)->toBeTrue();
+});
+

@@ -242,14 +242,14 @@ class NagoyaOikosSeeder extends Seeder
             ]
         );
 
-        // 3. Create or Update Default Player (Missionary Coach)
+        // 3. Create or Update Default Solo Player (Missionary Coach)
         $player = User::firstOrCreate(
             ['email' => 'coach@nagoyaharvest.jp'],
             [
                 'name' => 'Missionary Coach',
                 'password' => Hash::make('password123'),
                 'current_game_session_id' => $session->id,
-                'home_ward_id' => $wards['naka-ku']->id,
+                'home_ward_id' => null, // 100% Solo Pioneer: start unassigned to choose in onboarding!
                 'action_points' => 12,
                 'max_action_points' => 12,
                 'total_generational_score' => 60,
@@ -262,61 +262,6 @@ class NagoyaOikosSeeder extends Seeder
         if (! $player->current_game_session_id) {
             $player->update(['current_game_session_id' => $session->id]);
         }
-
-        if (! $player->home_ward_id) {
-            $player->update(['home_ward_id' => $wards['naka-ku']->id]);
-        }
-
-        // Fellow Missionary 1: Sarah Jenkins (Pioneering Chikusa-ku near Nagoya University)
-        User::firstOrCreate(
-            ['email' => 'sarah.jenkins@nagoyaharvest.jp'],
-            [
-                'name' => 'Sarah Jenkins',
-                'password' => Hash::make('password123'),
-                'current_game_session_id' => $session->id,
-                'home_ward_id' => $wards['chikusa-ku']->id,
-                'action_points' => 12,
-                'max_action_points' => 12,
-                'total_generational_score' => 120,
-                'badges' => ['Campus Sower', 'Fast Starter'],
-                'notify_email' => false,
-                'notify_in_app' => true,
-            ]
-        );
-
-        // Fellow Missionary 2: Kenji Yamada (Catalyst living in Meito-ku near Fujigaoka)
-        User::firstOrCreate(
-            ['email' => 'kenji.yamada@nagoyaharvest.jp'],
-            [
-                'name' => 'Kenji Yamada',
-                'password' => Hash::make('password123'),
-                'current_game_session_id' => $session->id,
-                'home_ward_id' => $wards['meito-ku']->id,
-                'action_points' => 12,
-                'max_action_points' => 12,
-                'total_generational_score' => 95,
-                'badges' => ['Oikos Pioneer'],
-                'notify_email' => false,
-                'notify_in_app' => true,
-            ]
-        );
-
-        // Fellow Missionary 3: Marcus Silva (Living in Minato-ku near port & immigrant communities)
-        User::firstOrCreate(
-            ['email' => 'marcus.silva@nagoyaharvest.jp'],
-            [
-                'name' => 'Marcus Silva',
-                'password' => Hash::make('password123'),
-                'current_game_session_id' => $session->id,
-                'home_ward_id' => $wards['minato-ku']->id,
-                'action_points' => 12,
-                'max_action_points' => 12,
-                'total_generational_score' => 80,
-                'badges' => ['Mercy Catalyst'],
-                'notify_email' => false,
-                'notify_in_app' => true,
-            ]
-        );
 
         // 4. Seed Archetypal Nagoya NPCs
         $npcsData = [
@@ -727,5 +672,8 @@ class NagoyaOikosSeeder extends Seeder
                 'founded_game_month' => 1,
             ]
         );
+
+        // 7. Seed/Ensure Automated Missionary Co-Laborers (for Team Co-op Mode)
+        app(\App\Services\AiColaborerService::class)->ensureAiColaborers($session);
     }
 }

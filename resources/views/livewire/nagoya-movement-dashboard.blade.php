@@ -175,8 +175,21 @@
                     @endif
                 </button>
 
+                <!-- Home Ward Pill -->
+                @if($user?->homeWard)
+                    <button 
+                        type="button" 
+                        wire:click="openOnboardingModal"
+                        class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-white shadow-sm"
+                        title="Your Embedded Residence: {{ $user->homeWard->name }} (Click to view or change)"
+                    >
+                        <span>🏡</span>
+                        <span class="text-[11px] font-bold">{{ $user->homeWard->name }}</span>
+                    </button>
+                @endif
+
                 <!-- Player Profile Pill -->
-                <div class="flex items-center gap-2 pl-2 border-l border-slate-800">
+                <div class="flex items-center gap-2 pl-2 border-l border-slate-300 dark:border-slate-800">
                     <button 
                         type="button" 
                         wire:click="openEditNameModal"
@@ -387,6 +400,196 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    @endif
+
+    <!-- Modal: Choose Starting Home Ward Onboarding Prompt -->
+    @if($showOnboardingModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-md overflow-hidden animate-in fade-in duration-200">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl max-w-3xl lg:max-w-4xl w-full shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden transition-colors duration-200">
+                <!-- Header (Pinned at Top) -->
+                <div class="shrink-0 px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-10">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <span class="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-800 uppercase tracking-wider">
+                                    🗾 Nagoya Mission Field
+                                </span>
+                                <span class="text-[10px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                    <span>✨</span>
+                                    <span>Until No Place Left</span>
+                                </span>
+                            </div>
+                            <h2 class="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                                Choose Your Starting Home Base
+                            </h2>
+                            <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 max-w-2xl leading-relaxed">
+                                Living in your <strong class="text-slate-900 dark:text-slate-200">Home Ward</strong> grants <strong class="text-emerald-600 dark:text-emerald-400">0 AP transit cost</strong> and a <strong class="text-emerald-600 dark:text-emerald-400">+25% trust bonus</strong> with neighbors. Choose where to establish your residence!
+                            </p>
+                        </div>
+
+                        @if($user?->home_ward_id)
+                            <button 
+                                type="button" 
+                                wire:click="closeOnboardingModal"
+                                class="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                                title="Close"
+                            >
+                                ✕
+                            </button>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Body (Scrollable Content Area) -->
+                <div class="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4 space-y-4 text-slate-900 dark:text-slate-100">
+                    <!-- Recommended Pioneering Frontier Spotlight Banner (High Contrast & Theme Adaptive) -->
+                    @if($recommendedWard)
+                        <div class="p-3.5 sm:p-4 rounded-2xl bg-emerald-50 dark:bg-slate-800 border border-emerald-300 dark:border-emerald-500/50 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3.5 transition-colors">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-600 text-white shadow-xs">
+                                        ✨ Recommended Pioneering Frontier
+                                    </span>
+                                    <span class="text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+                                        0 Co-laborers Stationed Here
+                                    </span>
+                                </div>
+                                <h3 class="text-base sm:text-lg font-black tracking-tight text-slate-950 dark:text-white flex items-center gap-2">
+                                    <span>{{ $recommendedWard->name }}</span>
+                                    <span class="text-sm font-semibold text-slate-600 dark:text-slate-300">({{ $recommendedWard->name_ja }})</span>
+                                </h3>
+                                <p class="text-xs text-slate-700 dark:text-slate-200 leading-relaxed max-w-xl font-normal">
+                                    <strong class="text-emerald-800 dark:text-emerald-300 font-bold">{{ number_format($recommendedWard->spiritual_openness) }}% Spiritual Openness</strong> • High seeker readiness. In the spirit of Romans 15:20, settling where no other missionary lives accelerates citywide saturation!
+                                </p>
+                            </div>
+
+                            <button 
+                                type="button" 
+                                wire:click="selectStartingWard({{ $recommendedWard->id }})"
+                                class="shrink-0 px-4 py-2.5 rounded-xl text-xs font-black transition cursor-pointer shadow-md {{ $selectedHomeWardId === $recommendedWard->id ? 'bg-emerald-600 text-white ring-2 ring-emerald-400 shadow-emerald-600/30' : 'bg-slate-900 dark:bg-emerald-600 text-white hover:bg-slate-800 dark:hover:bg-emerald-500' }}"
+                            >
+                                @if($selectedHomeWardId === $recommendedWard->id)
+                                    <span>✓ Recommended Choice Selected</span>
+                                @else
+                                    <span>Choose Recommended Base ➔</span>
+                                @endif
+                            </button>
+                        </div>
+                    @endif
+
+                    <!-- All 16 Nagoya Wards Grid -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                                All 16 Nagoya Districts (Click to Select):
+                            </h4>
+                            <span class="text-[11px] text-slate-500 dark:text-slate-400">
+                                <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ $pioneeringWards->count() }} Pioneering</span> (0 Co-laborers)
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                            @foreach($allWards as $ward)
+                                @php
+                                    $isSelected = ($selectedHomeWardId === $ward->id);
+                                    $coLaborers = $missionariesByWard[$ward->id] ?? collect();
+                                    $isPioneering = $coLaborers->isEmpty();
+                                @endphp
+                                <button
+                                    type="button"
+                                    wire:click="selectStartingWard({{ $ward->id }})"
+                                    class="p-2.5 sm:p-3 rounded-2xl border text-left transition cursor-pointer relative flex flex-col justify-between gap-2 {{ $isSelected ? 'bg-indigo-50 dark:bg-indigo-950/70 border-indigo-500 dark:border-indigo-400 shadow-md ring-2 ring-indigo-500/30' : 'bg-white dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/80' }}"
+                                >
+                                    <div>
+                                        <div class="flex items-center justify-between gap-1">
+                                            <span class="text-xs font-bold text-slate-900 dark:text-white leading-tight">
+                                                {{ $ward->name }}
+                                            </span>
+                                            <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                                                {{ $ward->name_ja }}
+                                            </span>
+                                        </div>
+
+                                        <!-- Missionary Stationed Badge -->
+                                        <div class="mt-1.5">
+                                            @if($isPioneering)
+                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                                                    <span>✨</span>
+                                                    <span>Pioneering (0)</span>
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 dark:bg-slate-800 text-amber-800 dark:text-slate-300 border border-amber-300 dark:border-slate-700" title="{{ $coLaborers->pluck('name')->join(', ') }}">
+                                                    <span>👥</span>
+                                                    <span>{{ $coLaborers->count() }} Co-laborer{{ $coLaborers->count() > 1 ? 's' : '' }}</span>
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <!-- Metrics & Select indicator -->
+                                    <div class="pt-1.5 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400">
+                                        <div class="flex items-center gap-2">
+                                            <span title="Spiritual Openness Index">
+                                                🌱 <strong class="text-slate-800 dark:text-slate-200">{{ number_format($ward->spiritual_openness) }}%</strong>
+                                            </span>
+                                            <span title="Need & Brokenness Index">
+                                                ❤️ <strong class="text-slate-800 dark:text-slate-200">{{ number_format($ward->poverty_index) }}%</strong>
+                                            </span>
+                                        </div>
+                                        @if($isSelected)
+                                            <span class="w-4 h-4 rounded-full bg-indigo-600 text-white font-black text-[10px] flex items-center justify-center">✓</span>
+                                        @endif
+                                    </div>
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Action Bar (Pinned at Bottom) -->
+                @php
+                    $selectedWard = $allWards->firstWhere('id', $selectedHomeWardId);
+                @endphp
+                <div class="shrink-0 px-4 sm:px-6 py-3.5 sm:py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 z-10 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="text-xs text-slate-600 dark:text-slate-400 text-center sm:text-left">
+                        @if($selectedWard)
+                            <span>Selected Home Base: <strong class="text-slate-900 dark:text-white font-bold">{{ $selectedWard->name }} ({{ $selectedWard->name_ja }})</strong></span>
+                            <span class="block text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                                +25% Neighbor Trust Bonus & 0 AP Commute in {{ $selectedWard->name }}
+                            </span>
+                        @else
+                            <span class="text-amber-600 dark:text-amber-400 font-medium">Please pick a district above to establish your residence.</span>
+                        @endif
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        @if($user?->home_ward_id)
+                            <button 
+                                type="button" 
+                                wire:click="closeOnboardingModal"
+                                class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
+                            >
+                                Keep Current Base
+                            </button>
+                        @endif
+
+                        <button 
+                            type="button" 
+                            wire:click="confirmStartingWard"
+                            wire:loading.attr="disabled"
+                            @disabled(! $selectedHomeWardId)
+                            class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg transition cursor-pointer flex items-center justify-center gap-2 {{ $selectedHomeWardId ? 'bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 shadow-indigo-600/30' : 'bg-slate-400 dark:bg-slate-800 text-slate-600 dark:text-slate-500 cursor-not-allowed' }}"
+                        >
+                            <span wire:loading.remove wire:target="confirmStartingWard">🏡 Establish Home Base & Begin Mission ➔</span>
+                            <span wire:loading wire:target="confirmStartingWard" class="flex items-center gap-1.5">
+                                <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                <span>Establishing Base...</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     @endif

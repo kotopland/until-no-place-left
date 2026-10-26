@@ -376,7 +376,53 @@
                         @endif
                     </div>
 
-                    @if($coLaborersInWard->isNotEmpty())
+                    @if($aiCoLaborersInWard->isNotEmpty())
+                        <div class="mt-2.5 pt-2 border-t border-slate-700/60 space-y-2">
+                            @foreach($aiCoLaborersInWard as $aiCoLaborer)
+                                <div class="bg-indigo-950/40 border border-indigo-500/30 rounded-xl p-2.5 text-xs">
+                                    <div class="flex items-center justify-between gap-1.5 flex-wrap">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="text-sm">🤝</span>
+                                            <div>
+                                                <span class="font-bold text-white">{{ $aiCoLaborer->name }}</span>
+                                                <span class="ml-1 px-1.5 py-0.2 rounded text-[9px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                                                    {{ $aiCoLaborer->archetypeBadgeLabel }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <span class="text-[10px] text-indigo-300 font-medium">
+                                            Co-op: {{ $aiCoLaborer->coop_synergy_score }} pts
+                                        </span>
+                                    </div>
+                                    @if($aiCoLaborer->ai_strategy_notes)
+                                        <p class="text-[10px] text-slate-300 mt-1 leading-snug">
+                                            {{ $aiCoLaborer->ai_strategy_notes }}
+                                        </p>
+                                    @endif
+                                    <div class="mt-2 flex items-center gap-1.5 flex-wrap">
+                                        <button 
+                                            type="button"
+                                            wire:click="conductJointPrayerWalk({{ $aiCoLaborer->id }})"
+                                            class="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] transition cursor-pointer shadow flex items-center gap-1 active:scale-95"
+                                            title="Conduct a 2-by-2 joint prayer walk with {{ $aiCoLaborer->name }} (+15 Co-op score, +50% ward openness softening)"
+                                        >
+                                            <span>👣</span>
+                                            <span>Joint Prayer Walk (2 AP)</span>
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            wire:click="conductIronOnIron({{ $aiCoLaborer->id }})"
+                                            class="px-2 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] transition cursor-pointer shadow flex items-center gap-1 active:scale-95"
+                                            title="Iron-on-Iron meeting with {{ $aiCoLaborer->name }} (+2 bonus AP, +25 Co-op score, and tactical missionary advice)"
+                                        >
+                                            <span>⚔️</span>
+                                            <span>Iron-on-Iron (+2 AP)</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @elseif($coLaborersInWard->isNotEmpty())
                         <div class="mt-2 pt-2 border-t border-slate-700/50 flex items-center gap-1.5 text-[10px] text-indigo-300">
                             <span>🏠</span>
                             <span><strong>Fellow Missionaries Living Here:</strong> {{ $coLaborersInWard->pluck('name')->join(', ') }}</span>

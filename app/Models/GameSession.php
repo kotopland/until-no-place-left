@@ -131,6 +131,33 @@ class GameSession extends Model
     }
 
     /**
+     * PHP 8.4 Property Hook: whether automated AI missionary co-laborers are active
+     */
+    public bool $isCoopMode {
+        get => (bool) ($this->settings['coop_team_mode'] ?? true);
+    }
+
+    /**
+     * Enable AI co-laborers in this session
+     */
+    public function enableCoopMode(): void
+    {
+        $settings = $this->settings ?? [];
+        $settings['coop_team_mode'] = true;
+        $this->update(['settings' => $settings]);
+    }
+
+    /**
+     * Disable AI co-laborers (100% Solo Pioneer mode)
+     */
+    public function enableSoloMode(): void
+    {
+        $settings = $this->settings ?? [];
+        $settings['coop_team_mode'] = false;
+        $this->update(['settings' => $settings]);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -160,6 +187,16 @@ class GameSession extends Model
     public function users(): HasMany
     {
         return $this->hasMany(User::class, 'current_game_session_id');
+    }
+
+    /**
+     * Automated computer-based missionary co-laborers in this session
+     *
+     * @return HasMany<User, $this>
+     */
+    public function aiColaborers(): HasMany
+    {
+        return $this->hasMany(User::class, 'current_game_session_id')->where('is_ai_colaborer', true);
     }
 
     /**

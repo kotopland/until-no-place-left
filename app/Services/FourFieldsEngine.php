@@ -95,6 +95,11 @@ class FourFieldsEngine
                     'next_daily_tick_at' => now()->addMinutes(10),
                 ]);
 
+                // Simulate AI co-laborer turns if co-op mode is active
+                if ($session->isCoopMode) {
+                    app(AiColaborerService::class)->simulateDailyTurn($session, $nextDay);
+                }
+
                 return new DailyTickResolutionResult(
                     gameSessionId: $session->id,
                     gameMonth: $gameMonth,
@@ -190,6 +195,11 @@ class FourFieldsEngine
                 'last_daily_tick_at' => now(),
                 'next_daily_tick_at' => now()->addMinutes(10),
             ]);
+
+            // Simulate AI co-laborer turns if co-op mode is active
+            if ($session->isCoopMode) {
+                app(AiColaborerService::class)->simulateDailyTurn($session, $nextDay);
+            }
 
             return new DailyTickResolutionResult(
                 gameSessionId: $session->id,

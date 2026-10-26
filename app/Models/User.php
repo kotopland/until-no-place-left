@@ -38,6 +38,9 @@ use Illuminate\Support\Str;
  * @property int $current_game_month
  * @property int $current_game_day
  * @property int $days_processed_this_month
+ * @property bool $is_ai_colaborer
+ * @property string|null $colaborer_archetype
+ * @property string|null $ai_strategy_notes
  * @property Carbon|null $last_daily_tick_at
  * @property Carbon|null $next_daily_tick_at
  * @property Carbon|null $last_monthly_tick_at
@@ -51,6 +54,9 @@ use Illuminate\Support\Str;
     'password',
     'current_game_session_id',
     'home_ward_id',
+    'is_ai_colaborer',
+    'colaborer_archetype',
+    'ai_strategy_notes',
     'action_points',
     'max_action_points',
     'total_generational_score',
@@ -228,10 +234,30 @@ class User extends Authenticatable
             'current_game_month' => 'integer',
             'current_game_day' => 'integer',
             'days_processed_this_month' => 'integer',
+            'is_ai_colaborer' => 'boolean',
             'last_daily_tick_at' => 'datetime',
             'next_daily_tick_at' => 'datetime',
             'last_monthly_tick_at' => 'datetime',
         ];
+    }
+
+    /**
+     * PHP 8.4 Property Hook: whether user is an automated computer-based missionary co-laborer
+     */
+    public bool $isAi {
+        get => (bool) $this->is_ai_colaborer;
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Archetype badge label for UI display
+     */
+    public string $archetypeBadgeLabel {
+        get => match ($this->colaborer_archetype) {
+            'campus_sower' => '🎓 Campus Sower',
+            'mercy_catalyst' => '❤️ Mercy Catalyst',
+            'discipleship_trainer' => '📖 Discipleship Trainer',
+            default => 'Missionary Disciple',
+        };
     }
 
     /**

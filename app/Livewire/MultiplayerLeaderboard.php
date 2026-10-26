@@ -16,24 +16,45 @@ class MultiplayerLeaderboard extends Component
 {
     public string $activeTab = 'generational'; // 'generational' or 'coop'
 
+    public bool $isCoopMode = true;
+
+    public function mount(): void
+    {
+        $session = GameSession::where('is_active', true)->first();
+        $this->isCoopMode = $session?->isCoopMode ?? true;
+    }
+
     public function setTab(string $tab): void
     {
-        $this->activeTab = $tab;
+        $this->activeTab = in_array($tab, ['generational', 'coop'], true) ? $tab : 'generational';
     }
 
     public function render(): View
     {
         $session = GameSession::where('is_active', true)->first();
+        $isCoop = $session?->isCoopMode ?? true;
 
         // Ladder 1: Generational Depth
-        $generationalLeaders = User::where('current_game_session_id', $session?->id)
-            ->withCount(['ledChurches', 'discipledNpcs'])
+        $generationalQuery = User::where('current_game_session_id', $session?->id)
+            ->withCount(['ledChurches', 'discipledNpcs']);
+
+        if (! $isCoop) {
+            $generationalQuery->where('is_ai_colaborer', false);
+        }
+
+        $generationalLeaders = $generationalQuery
             ->orderByDesc('total_generational_score')
             ->take(10)
             ->get();
 
         // Ladder 2: Co-op Synergy & Sower Assists
-        $coopLeaders = User::where('current_game_session_id', $session?->id)
+        $coopQuery = User::where('current_game_session_id', $session?->id);
+
+        if (! $isCoop) {
+            $coopQuery->where('is_ai_colaborer', false);
+        }
+
+        $coopLeaders = $coopQuery
             ->orderByDesc('coop_synergy_score')
             ->take(10)
             ->get();

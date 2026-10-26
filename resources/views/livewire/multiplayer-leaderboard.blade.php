@@ -13,8 +13,22 @@
                 </p>
             </div>
 
-            <!-- Saturation Stats Counter -->
-            <div class="flex items-center gap-3">
+            <!-- Saturation Stats Counter & Session Mode Status -->
+            <div class="flex flex-wrap items-center gap-3">
+                <div 
+                    class="px-3.5 py-2 rounded-2xl border text-xs font-bold flex items-center gap-2 select-none {{ $session?->isCoopMode ? 'bg-indigo-950/80 border-indigo-500/50 text-indigo-300' : 'bg-slate-950/80 border-slate-700/60 text-slate-400' }}"
+                    title="Gameplay mode configured by administrator via artisan command (game:mode)"
+                >
+                    <span class="text-sm">{{ $session?->isCoopMode ? '🤝' : '🌱' }}</span>
+                    <span class="text-left">
+                        <span class="block text-[11px] leading-tight font-black text-white">{{ $session?->isCoopMode ? 'Team Co-op Mode' : 'Solo Pioneer Mode' }}</span>
+                        <span class="block text-[9px] font-medium text-slate-400 leading-none mt-0.5">{{ $session?->isCoopMode ? '3 AI Co-laborers Playing' : 'Single Player Pioneer' }}</span>
+                    </span>
+                    <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded {{ $session?->isCoopMode ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400' }}">
+                        {{ $session?->isCoopMode ? 'Active' : 'Solo' }}
+                    </span>
+                </div>
+
                 <div class="px-3.5 py-2 rounded-2xl bg-slate-950/70 border border-slate-800 text-center">
                     <span class="text-[10px] text-slate-400 uppercase font-bold block">Wards Reached</span>
                     <span class="text-base font-extrabold text-white">{{ $reachedWardsCount }} / {{ $totalWards }}</span>
@@ -101,8 +115,17 @@
                                                 {{ $leader->initials() }}
                                             </div>
                                             <div>
-                                                <div class="font-bold text-white">{{ $leader->name }}</div>
-                                                <div class="text-[10px] text-slate-400">Bandwidth: {{ $leader->action_points }} AP</div>
+                                                <div class="font-bold text-white flex items-center gap-1.5 flex-wrap">
+                                                    <span>{{ $leader->name }}</span>
+                                                    @if($leader->is_ai_colaborer)
+                                                        <span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-indigo-950 text-indigo-300 border border-indigo-700/60 shadow-xs" title="{{ $leader->ai_strategy_notes }}">
+                                                            {{ $leader->archetypeBadgeLabel }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <div class="text-[10px] text-slate-400">
+                                                    {{ $leader->homeWard?->name ? 'Base: '.$leader->homeWard->name.' • ' : '' }}Bandwidth: {{ $leader->action_points }} AP
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
@@ -153,7 +176,14 @@
                                                 {{ $leader->initials() }}
                                             </div>
                                             <div>
-                                                <div class="font-bold text-white">{{ $leader->name }}</div>
+                                                <div class="font-bold text-white flex items-center gap-1.5 flex-wrap">
+                                                    <span>{{ $leader->name }}</span>
+                                                    @if($leader->is_ai_colaborer)
+                                                        <span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-indigo-950 text-indigo-300 border border-indigo-700/60 shadow-xs">
+                                                            {{ $leader->archetypeBadgeLabel }}
+                                                        </span>
+                                                    @endif
+                                                </div>
                                                 <div class="text-[10px] text-slate-400">Combined: {{ $leader->compositeScore }} pts</div>
                                             </div>
                                         </div>

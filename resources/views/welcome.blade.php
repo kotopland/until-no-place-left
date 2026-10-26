@@ -739,20 +739,89 @@
                     </div>
                 </div>
 
-                <!-- Mechanic 3: 1 Cor 3:6 Co-op Synergy -->
+                <!-- Mechanic 3: 1 Cor 3:6 Co-op Synergy & Automated Missionary Co-Laborers -->
                 <div class="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4">
-                    <div class="flex items-center gap-3">
-                        <span class="text-3xl">🤝</span>
-                        <div>
-                            <h3 class="text-base font-bold text-white">Cooperative Synergy (1 Cor 3:6-8)</h3>
-                            <span class="text-xs text-slate-400">No Solo Heroes • Body Ministry</span>
+                    <div class="flex items-center justify-between gap-3 flex-wrap">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">🤝</span>
+                            <div>
+                                <h3 class="text-base font-bold text-white">Cooperative Synergy & Missionary Co-Laborers</h3>
+                                <span class="text-xs text-slate-400">1 Cor 3:6-8 • Solo Pioneer or Team Co-op</span>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-950 text-emerald-300 border border-emerald-800">
+                            Command Configured
+                        </span>
+                    </div>
+
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        <em>"Paul planted, Apollos watered, but God gave the growth."</em> Nagoya Oikos supports two dedicated gameplay modes configured by administrators via the <code class="px-1.5 py-0.5 rounded bg-slate-800 text-indigo-300 font-mono text-[10px]">php artisan game:mode</code> command (players cannot alter the mode in-game, ensuring consistent competitive and cooperative fairness):
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                            <strong class="text-white block font-semibold flex items-center gap-1.5">
+                                <span>🏔️</span>
+                                <span>Solo Pioneer Mode</span>
+                            </strong>
+                            <p class="text-slate-400 text-[11px] leading-relaxed">
+                                You are the sole catalytic missionary in Nagoya. All 16 wards and thousands of oikos connections depend on your pioneering faithfulness without computer aid.
+                            </p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-950 border border-indigo-900/50 space-y-1">
+                            <strong class="text-indigo-300 block font-semibold flex items-center gap-1.5">
+                                <span>👥</span>
+                                <span>Team Co-op Mode (AI Co-Laborers)</span>
+                            </strong>
+                            <p class="text-slate-400 text-[11px] leading-relaxed">
+                                Three specialized automated missionary co-laborers sow, pray, and disciple alongside you on daily ticks, modeling biblical teamwork:
+                            </p>
                         </div>
                     </div>
-                    <p class="text-xs text-slate-300 leading-relaxed">
-                        <em>"Paul planted, Apollos watered, but God gave the growth."</em> In Nagoya Oikos, players work the same city grid together.
-                    </p>
-                    <div class="p-3 rounded-xl bg-indigo-950/50 border border-indigo-800/60 text-xs text-indigo-300 leading-relaxed">
-                        💡 <strong>The Synergy Harvest Rule:</strong> If Missionary A pioneers an unreached resident, Missionary B waters through prayer, and Missionary C shares the Gospel, <strong class="text-white">+50% bonus points</strong> are pooled and distributed to all co-laborers!
+
+                    <!-- AI Missionary Archetypes -->
+                    <div class="space-y-2 pt-1">
+                        <div class="p-3 rounded-xl bg-indigo-950/40 border border-indigo-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                            <div>
+                                <div class="font-bold text-white flex items-center gap-1.5">
+                                    <span>🎓</span>
+                                    <span>Sarah Jenkins (Chikusa-ku)</span>
+                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-indigo-900 text-indigo-300 border border-indigo-700">Campus Sower</span>
+                                </div>
+                                <p class="text-[11px] text-slate-300 mt-0.5">Focuses on student hubs near Nagoya University. Uses rapid 15-second testimonies and 3 Circles Gospel shares.</p>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-indigo-950/40 border border-indigo-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                            <div>
+                                <div class="font-bold text-white flex items-center gap-1.5">
+                                    <span>🍲</span>
+                                    <span>Marcus Silva (Minato-ku)</span>
+                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-900 text-amber-300 border border-amber-700">Mercy Catalyst</span>
+                                </div>
+                                <p class="text-[11px] text-slate-300 mt-0.5">Engages crisis needs, homeless populations, and port laborers. Melts hard ground through physical relief and healing prayer.</p>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-indigo-950/40 border border-indigo-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                            <div>
+                                <div class="font-bold text-white flex items-center gap-1.5">
+                                    <span>📜</span>
+                                    <span>Kenji Yamada (Meito-ku)</span>
+                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-emerald-900 text-emerald-300 border border-emerald-700">Discipleship Trainer</span>
+                                </div>
+                                <p class="text-[11px] text-slate-300 mt-0.5">Deeply trains Green believers with 411 and Commands of Christ, organizing multiple disciples into reproducing Church Circles.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-indigo-950/50 border border-indigo-800/60 text-xs text-indigo-300 leading-relaxed space-y-1">
+                        <div>💡 <strong>Collaborative Co-op Synergy Mechanics:</strong></div>
+                        <ul class="list-disc list-inside space-y-0.5 text-[11px] text-slate-300">
+                            <li><strong>Joint MAWL Prayer Walk:</strong> Partner 2-by-2 in a ward with a co-laborer to soften spiritual openness (+50% bonus) and earn +15 Co-op Synergy points.</li>
+                            <li><strong>Iron-on-Iron Sharpening:</strong> Meet for peer coaching to receive +2 bonus AP, +25 Co-op points, and contextual Four Fields advice.</li>
+                            <li><strong>Shared Harvest:</strong> Sowing, watering, and harvesting the same resident pools +50% bonus points to all participating co-laborers!</li>
+                        </ul>
                     </div>
                 </div>
 
@@ -907,7 +976,7 @@
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-900/80 text-emerald-300 border border-emerald-700">Incarnational Presence</span>
                         </h4>
                         <p class="text-xs text-slate-300 mt-0.5 max-w-2xl leading-relaxed">
-                            Every missionary needs a physical home base in the city. Living in your <strong>Home Ward</strong> grants effortless local access: <strong>0 AP transit penalty</strong>, <strong>+25% rapid follow-up trust</strong>, and enhanced prayer walk openness. Traveling across town adds <strong>+1 to +2 AP transit costs</strong>. You can relocate anytime by clicking <strong>"🏡 Move Here"</strong> in the Action Queue Planner!
+                            Every missionary needs a physical home base in the city. On your <strong>first visit</strong>, an interactive prompt guides you to choose your starting district, highlighting <strong>Pioneering Frontiers where 0 other co-laborers reside</strong> (Romans 15:20) to blanket the city. Living in your <strong>Home Ward</strong> grants effortless local access: <strong>0 AP transit penalty</strong>, <strong>+25% rapid follow-up trust</strong>, and enhanced prayer walk openness. Traveling across town adds <strong>+1 to +2 AP transit costs</strong>. You can view or change your home base anytime from the top navigation bar or the Action Queue Planner!
                         </p>
                     </div>
                 </div>
@@ -935,8 +1004,8 @@
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4 text-left text-xs">
                 <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">1</span>
-                    <strong class="text-white block font-semibold">Choose Home Base & Settle In</strong>
-                    <span class="text-slate-400 block leading-relaxed">Choose where to live among Nagoya's 16 wards. Being a local neighbor provides a <strong class="text-emerald-400">+25% trust & rapid follow-up advantage</strong> and 0 AP transit costs.</span>
+                    <strong class="text-white block font-semibold">Choose Home Base on Arrival</strong>
+                    <span class="text-slate-400 block leading-relaxed">On your first login, select your home base from the 16 wards. Accept the smart suggestion for an unreached <strong>Pioneering Frontier (0 Co-laborers)</strong> or pick any district to gain a <strong class="text-emerald-400">+25% trust & rapid follow-up advantage</strong> with 0 AP commute friction.</span>
                 </div>
 
                 <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
