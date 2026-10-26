@@ -83,25 +83,25 @@
                 </div>
             </a>
 
-            <nav class="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-300">
-                <a href="#story" class="hover:text-indigo-400 transition">The Story</a>
-                <a href="#four-fields" class="hover:text-emerald-400 transition">The Four Fields</a>
-                <a href="#toolbox" class="hover:text-cyan-400 transition">5 Levels Toolbox</a>
-                <a href="#rules" class="hover:text-amber-400 transition">Game Rules</a>
+            <nav class="hidden md:flex items-center gap-3 lg:gap-4 xl:gap-6 text-xs font-semibold text-slate-300">
+                <a href="#story" class="hover:text-indigo-400 transition"><span class="hidden xl:inline">The </span>Story</a>
+                <a href="#four-fields" class="hover:text-emerald-400 transition"><span class="hidden xl:inline">The </span>Four Fields</a>
+                <a href="#toolbox" class="hover:text-cyan-400 transition"><span class="hidden lg:inline">5 Levels </span>Toolbox</a>
+                <a href="#rules" class="hover:text-amber-400 transition"><span class="hidden xl:inline">Game </span>Rules</a>
                 <a href="#wards" class="hover:text-purple-400 transition">16 Wards</a>
                 <a href="#quickstart" class="hover:text-emerald-400 transition">Quick Start</a>
             </nav>
 
-            <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-2 lg:gap-2.5">
                 <!-- Theme Mode Toggle Button (Light/Dark) -->
                 <button 
                     type="button" 
                     onclick="window.__toggleTheme ? window.__toggleTheme() : null"
-                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 border-slate-300 dark:border-slate-700/80 text-amber-600 dark:text-amber-300 hover:text-amber-700 dark:hover:text-white"
+                    class="flex items-center gap-1.5 p-2 xl:px-3 xl:py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 border-slate-300 dark:border-slate-700/80 text-amber-600 dark:text-amber-300 hover:text-amber-700 dark:hover:text-white"
                     title="Switch Light/Dark Mode"
                 >
                     <span data-theme-icon>☀️</span>
-                    <span data-theme-label class="hidden sm:inline text-[11px]">Light</span>
+                    <span data-theme-label class="hidden xl:inline text-[11px]">Light</span>
                 </button>
 
                 <!-- Ambient Music Toggle Button with Hover Popover -->
@@ -109,8 +109,9 @@
                     <button 
                         type="button" 
                         @click="$store.audio?.toggle()" 
-                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none"
+                        class="flex items-center gap-1.5 p-2 xl:px-3 xl:py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none"
                         :class="$store.audio?.isPlaying ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 shadow-md shadow-indigo-500/20 ring-1 ring-indigo-500/40' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'"
+                        title="Japanese Background Music"
                     >
                         <span x-show="!$store.audio?.isPlaying">🔇</span>
                         <span x-show="$store.audio?.isPlaying" class="flex items-center gap-1">
@@ -121,7 +122,7 @@
                                 <span class="w-0.5 h-1.5 bg-indigo-400 rounded-full animate-bounce delay-150"></span>
                             </span>
                         </span>
-                        <span class="hidden sm:inline text-[11px]" x-text="$store.audio?.isPlaying ? 'Music ON' : 'Music OFF'"></span>
+                        <span class="hidden xl:inline text-[11px]" x-text="$store.audio?.isPlaying ? 'Music ON' : 'Music OFF'"></span>
                     </button>
 
                     <!-- Hover Popover: Song Title & Controls -->
@@ -158,17 +159,18 @@
                 @auth
                     <a 
                         href="{{ route('home') }}" 
-                        class="hidden sm:flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-white px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800"
+                        class="hidden sm:flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-white px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 truncate max-w-[120px]"
+                        title="{{ auth()->user()->name }}"
                     >
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span>{{ auth()->user()->name }}</span>
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+                        <span class="truncate">{{ auth()->user()->name }}</span>
                     </a>
                     <a 
                         href="{{ route('home') }}" 
-                        class="px-5 py-2.5 rounded-2xl text-xs font-bold bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-500 text-white shadow-xl shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] active:scale-[0.98] transition flex items-center gap-2 cursor-pointer"
+                        class="px-3.5 xl:px-5 py-2 xl:py-2.5 rounded-2xl text-xs font-bold bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-500 text-white shadow-xl shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] active:scale-[0.98] transition flex items-center gap-2 cursor-pointer shrink-0"
                     >
                         <span>⚡</span>
-                        <span>Continue Mission</span>
+                        <span class="hidden sm:inline"><span class="hidden xl:inline">Continue </span>Mission</span>
                     </a>
                 @else
                     <a 

@@ -1,93 +1,130 @@
 <div class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-200">
     <!-- Top Navigation Bar -->
     <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-md transition-colors duration-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-            <!-- Brand & Game Title with Official Logo -->
-            <a href="{{ route('welcome') }}" class="flex items-center gap-2.5 sm:gap-3 group cursor-pointer shrink-0" title="View Story, Lore & Game Rules">
+        <div class="max-w-7xl 2xl:max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+            <!-- Brand & Game Title (Clean, minimal, no subheaders) -->
+            <a href="{{ route('welcome') }}" class="flex items-center gap-2.5 group cursor-pointer shrink-0" title="Nagoya Oikos - Movement Simulation">
                 <img 
                     src="{{ asset('images/until-no-place-left-logo-small.png') }}" 
-                    alt="Nagoya Oikos: The Four Fields Logo" 
-                    class="w-10 h-10 sm:w-11 sm:h-11 object-contain rounded-2xl shadow-lg shadow-indigo-500/20 border border-indigo-500/40 group-hover:scale-105 group-hover:border-indigo-400 transition duration-200 shrink-0"
+                    alt="Nagoya Oikos Logo" 
+                    class="w-9 h-9 object-contain rounded-xl shadow-md shadow-indigo-500/20 border border-indigo-500/30 group-hover:scale-105 transition duration-200 shrink-0"
                 >
-                <div class="flex flex-col justify-center whitespace-nowrap min-w-0">
-                    <h1 class="text-xs sm:text-sm font-black text-slate-900 dark:text-white tracking-tight leading-none flex items-center gap-1.5 whitespace-nowrap">
-                        <span>Nagoya Oikos</span>
-                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-800 uppercase tracking-wider">Four Fields</span>
-                    </h1>
-                    <p class="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition whitespace-nowrap leading-none mt-1 hidden sm:block">
-                        <span>Multiplayer Movement Simulation</span>
-                        <span class="text-slate-400 dark:text-slate-600 mx-1 hidden xl:inline">•</span>
-                        <span class="hidden xl:inline text-slate-500">No Place Left</span>
-                    </p>
-                </div>
+                <span class="text-sm font-black text-slate-900 dark:text-white tracking-tight">
+                    Nagoya Oikos
+                </span>
             </a>
 
-            <!-- Main Tab Navigation -->
-            <nav class="hidden md:flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-950/80 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-semibold">
+            <!-- Main Tab Navigation (Core visible + More dropdown) -->
+            <nav class="hidden md:flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-950/80 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-semibold shrink-0">
+                <!-- Action HQ (Primary) -->
                 <button 
                     type="button" 
                     wire:click="setTab('planner')"
-                    class="px-4 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'planner' ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                    class="px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'planner' ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                    title="Action HQ - Daily Queue & Mission Planning"
                 >
                     <span>⚡</span>
                     <span>Action HQ</span>
                 </button>
+
+                <!-- Church Circles -->
                 <button 
                     type="button" 
                     wire:click="setTab('churches')"
-                    class="px-4 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'churches' ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                    class="px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'churches' ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                    title="Church Circles - Generational Church Planting"
                 >
                     <span>⛪</span>
-                    <span>Church Circles</span>
+                    <span>Circles</span>
                 </button>
-                <button 
-                    type="button" 
-                    wire:click="setTab('leaderboard')"
-                    class="px-4 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'leaderboard' ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
-                >
-                    <span>🏆</span>
-                    <span>Leaderboard & Co-op</span>
-                </button>
+
+                <!-- Nagoya Map -->
                 <button 
                     type="button" 
                     wire:click="setTab('map')"
-                    class="px-4 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'map' ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                    class="px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'map' ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                    title="Nagoya Map - Ward Strategic Intelligence"
                 >
                     <span>🗺️</span>
-                    <span>Nagoya Map</span>
+                    <span>Map</span>
                 </button>
-                <a 
-                    href="{{ route('welcome') }}"
-                    class="px-3.5 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-slate-200 dark:hover:bg-slate-900 border border-transparent hover:border-slate-300 dark:hover:border-slate-800"
-                    title="View Full Story, Biblical Framework & Game Rules"
-                >
-                    <span>📖</span>
-                    <span>Story & Rules</span>
-                </a>
+
+                <!-- More Dropdown (Leaderboard, Story & Rules) -->
+                <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                    <button 
+                        type="button" 
+                        @click="open = !open"
+                        class="px-2.5 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1 {{ in_array($currentTab, ['leaderboard']) ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                        title="More Views & Guides"
+                    >
+                        <span>⋯</span>
+                        <span>More</span>
+                        <svg class="w-3 h-3 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+
+                    <div 
+                        x-show="open" 
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="transform opacity-0 scale-95 -translate-y-1"
+                        x-transition:enter-end="transform opacity-100 scale-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave-start="transform opacity-100 scale-100 translate-y-0"
+                        x-transition:leave-end="transform opacity-0 scale-95 -translate-y-1"
+                        class="absolute left-0 mt-2 w-56 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl py-1.5 z-50 text-xs font-semibold"
+                        style="display: none;"
+                    >
+                        <button 
+                            type="button" 
+                            wire:click="setTab('leaderboard')" 
+                            @click="open = false"
+                            class="w-full px-3.5 py-2.5 flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white transition text-left cursor-pointer {{ $currentTab === 'leaderboard' ? 'bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 font-bold' : '' }}"
+                        >
+                            <span class="text-base">🏆</span>
+                            <div>
+                                <div class="leading-tight">Leaderboard & Co-op</div>
+                                <div class="text-[10px] text-slate-400 font-normal mt-0.5">Player scores & collaborative tiers</div>
+                            </div>
+                        </button>
+
+                        <a 
+                            href="{{ route('welcome') }}" 
+                            class="w-full px-3.5 py-2.5 flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition text-left cursor-pointer border-t border-slate-100 dark:border-slate-800/60"
+                        >
+                            <span class="text-base">📖</span>
+                            <div>
+                                <div class="leading-tight">Story & Rules</div>
+                                <div class="text-[10px] text-slate-400 font-normal mt-0.5">Four Fields, 5 Levels & manual</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
             </nav>
 
-            <!-- User Status, Music Switch & Notification Bell -->
-            <div class="flex items-center gap-2.5">
-                <!-- Day Progress & Digital Clock -->
+            <!-- User Controls, Clock & Profile Dropdown -->
+            <div class="flex items-center gap-2 sm:gap-2.5 shrink-0">
+                <!-- Month, Day & Digital Clock -->
                 <div 
-                    wire:key="dash-clock-{{ $user?->current_game_day }}-{{ $user?->days_processed_this_month }}-{{ $user?->days_played_today }}"
+                    wire:key="dash-clock-{{ $user?->current_game_month }}-{{ $user?->current_game_day }}-{{ $user?->days_processed_this_month }}-{{ $user?->days_played_today }}"
                     x-data="digitalClock({{ max(0, $user?->secondsUntilNextDailyTick ?? 600) }}, '{{ $user?->next_daily_tick_at?->toIso8601String() }}', {{ (!($user?->hasReachedDailyPlayLimit ?? false) && ($user?->days_processed_this_month ?? 0) < 30) ? 'true' : 'false' }})"
                     x-init="init()"
-                    class="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-950/80 border border-slate-800"
+                    class="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-950/80 border border-slate-800 shrink-0"
                 >
-                    <!-- Day & Cap badge -->
-                    <div class="text-right">
+                    <!-- Month & Current Day badge -->
+                    <div class="text-right whitespace-nowrap">
                         <div class="text-[10px] font-bold text-white flex items-center justify-end gap-1">
-                            <span>Day {{ $user?->current_game_day ?? 1 }}/30</span>
-                            <span class="text-[9px] {{ ($user?->days_played_today ?? 0) >= 30 ? 'text-amber-400 font-black' : 'text-slate-400' }}">({{ $user?->days_played_today ?? 0 }}/30d)</span>
+                            <span>Month {{ $user?->current_game_month ?? 1 }}</span>
+                            <span class="text-slate-500">•</span>
+                            <span>Day {{ $user?->current_game_day ?? 1 }}</span>
                         </div>
-                        <div class="text-[9px] text-slate-500 uppercase tracking-tighter">
-                            {{ ($user?->hasReachedDailyPlayLimit ?? false) ? 'Night Rest' : (($user?->days_processed_this_month ?? 0) >= 30 ? 'Month Done' : 'Next Tick') }}
+                        <div class="text-[9px] text-slate-400 uppercase tracking-tighter">
+                            {{ ($user?->hasReachedDailyPlayLimit ?? false) ? 'Night Rest' : (($user?->days_processed_this_month ?? 0) >= 30 ? 'Month Done' : 'Next Day In') }}
                         </div>
                     </div>
 
                     <!-- LED Display -->
-                    <div class="bg-black/95 border border-slate-800/90 rounded-lg px-2 py-0.5 shadow-[inset_0_1px_4px_rgba(0,0,0,0.8)]">
+                    <div class="bg-black/95 border border-slate-800/90 rounded-lg px-1.5 py-0.5 shadow-[inset_0_1px_4px_rgba(0,0,0,0.8)]">
                         @if($user?->hasReachedDailyPlayLimit ?? false)
                             <span class="font-mono text-xs font-black text-amber-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]">30:30</span>
                         @elseif(($user?->days_processed_this_month ?? 0) >= 30)
@@ -105,174 +142,245 @@
                             type="button" 
                             wire:click="advanceMonth"
                             wire:loading.attr="disabled"
-                            class="px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-sm hover:scale-[1.02]"
+                            class="px-2 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-sm hover:scale-[1.02]"
                             title="Advance to Month {{ ($user?->current_game_month ?? 1) + 1 }}"
                         >
                             <span wire:loading.remove wire:target="advanceMonth">🚀</span>
                             <span wire:loading wire:target="advanceMonth" class="w-2.5 h-2.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                            <span wire:loading.remove wire:target="advanceMonth" class="hidden xl:inline">Next Month</span>
                         </button>
-                    @else
+                    @endif
+                </div>
+
+                <!-- Quick Utility Toggles (Music, Theme, Notifications) -->
+                <div class="flex items-center gap-1 shrink-0">
+                    <!-- Ambient Music Toggle Button with Hover Popover -->
+                    <div class="relative group">
                         <button 
                             type="button" 
-                            wire:click="advanceDay(true)"
-                            wire:loading.attr="disabled"
-                            @disabled($user?->hasReachedDailyPlayLimit ?? false)
-                            class="px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer {{ ($user?->hasReachedDailyPlayLimit ?? false) ? 'bg-slate-900 text-slate-600 border border-slate-800/80 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-white shadow-sm hover:scale-[1.02]' }}"
-                            title="{{ ($user?->hasReachedDailyPlayLimit ?? false) ? 'Daily limit of 30 days reached. Next month starts tonight!' : 'Manually advance to next day' }}"
+                            @click="$store.audio?.toggle()" 
+                            class="flex items-center justify-center p-2 rounded-xl border text-xs font-bold transition cursor-pointer select-none"
+                            :class="$store.audio?.isPlaying ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 shadow-md shadow-indigo-500/20 ring-1 ring-indigo-500/40' : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
+                            title="Japanese Background Music (Sakura, Sukiyaki, etc.)"
                         >
-                            <span wire:loading.remove wire:target="advanceDay">⏭️</span>
-                            <span wire:loading wire:target="advanceDay" class="w-2.5 h-2.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                            <span wire:loading.remove wire:target="advanceDay" class="hidden xl:inline">Next Day</span>
+                            <span x-show="!$store.audio?.isPlaying">🔇</span>
+                            <span x-show="$store.audio?.isPlaying" class="flex items-center gap-1">
+                                <span class="text-xs">🎵</span>
+                                <span class="inline-flex gap-0.5 items-end h-3">
+                                    <span class="w-0.5 h-2 bg-indigo-400 rounded-full animate-bounce"></span>
+                                    <span class="w-0.5 h-3 bg-emerald-400 rounded-full animate-bounce delay-75"></span>
+                                    <span class="w-0.5 h-1.5 bg-indigo-400 rounded-full animate-bounce delay-150"></span>
+                                </span>
+                            </span>
                         </button>
-                    @endif
-                </div>
 
-                <!-- Theme Mode Toggle Button (Light/Dark) -->
-                <button 
-                    wire:ignore
-                    type="button" 
-                    onclick="window.__toggleTheme ? window.__toggleTheme() : null"
-                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-amber-600 dark:text-amber-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-amber-700 dark:hover:text-white shadow-sm"
-                    title="Switch Light/Dark Mode"
-                >
-                    <span data-theme-icon>☀️</span>
-                    <span data-theme-label class="hidden xl:inline text-[11px]">Light</span>
-                </button>
-
-                <!-- Ambient Music Toggle Button with Hover Popover -->
-                <div class="relative group">
-                    <button 
-                        type="button" 
-                        @click="$store.audio?.toggle()" 
-                        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none"
-                        :class="$store.audio?.isPlaying ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 shadow-md shadow-indigo-500/20 ring-1 ring-indigo-500/40' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'"
-                    >
-                        <span x-show="!$store.audio?.isPlaying">🔇</span>
-                        <span x-show="$store.audio?.isPlaying" class="flex items-center gap-1">
-                            <span class="text-xs">🎵</span>
-                            <span class="inline-flex gap-0.5 items-end h-3">
-                                <span class="w-0.5 h-2 bg-indigo-400 rounded-full animate-bounce"></span>
-                                <span class="w-0.5 h-3 bg-emerald-400 rounded-full animate-bounce delay-75"></span>
-                                <span class="w-0.5 h-1.5 bg-indigo-400 rounded-full animate-bounce delay-150"></span>
-                            </span>
-                        </span>
-                        <span class="hidden lg:inline text-[11px]" x-text="$store.audio?.isPlaying ? 'Music ON' : 'Music OFF'"></span>
-                    </button>
-
-                    <!-- Hover Popover: Song Title & Controls -->
-                    <div 
-                        class="absolute right-0 top-full mt-2 w-64 p-3.5 rounded-2xl bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-xl border border-indigo-500/30 shadow-2xl shadow-black/80 z-50 pointer-events-none opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 transition-all duration-200 origin-top-right space-y-2 text-left"
-                    >
-                        <div class="flex items-center justify-between gap-2 border-b border-slate-800 pb-2">
-                            <span class="text-[10px] font-black uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full" :class="$store.audio?.isPlaying ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'"></span>
-                                <span x-text="$store.audio?.isPlaying ? 'Now Playing' : 'Background Music'"></span>
-                            </span>
-                            <span class="text-[9px] font-semibold text-slate-300 px-1.5 py-0.5 rounded bg-slate-800/90 border border-slate-700/60" x-text="$store.audio?.isPlaying ? ($store.audio?.currentSongCategory || 'Traditional & Folk') : 'Paused'"></span>
-                        </div>
-
-                        <div x-show="$store.audio?.isPlaying" class="space-y-1">
-                            <div class="text-xs font-bold text-white leading-snug flex items-center gap-1.5">
-                                <span>🎵</span>
-                                <span x-text="$store.audio?.currentSongEnglish || 'Traditional Melody'"></span>
+                        <!-- Hover Popover: Song Title & Controls -->
+                        <div 
+                            class="absolute right-0 top-full mt-2 w-64 p-3.5 rounded-2xl bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-xl border border-indigo-500/30 shadow-2xl shadow-black/80 z-50 pointer-events-none opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 transition-all duration-200 origin-top-right space-y-2 text-left"
+                        >
+                            <div class="flex items-center justify-between gap-2 border-b border-slate-800 pb-2">
+                                <span class="text-[10px] font-black uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full" :class="$store.audio?.isPlaying ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'"></span>
+                                    <span x-text="$store.audio?.isPlaying ? 'Now Playing' : 'Background Music'"></span>
+                                </span>
+                                <span class="text-[9px] font-semibold text-slate-300 px-1.5 py-0.5 rounded bg-slate-800/90 border border-slate-700/60" x-text="$store.audio?.isPlaying ? ($store.audio?.currentSongCategory || 'Traditional & Folk') : 'Paused'"></span>
                             </div>
-                            <div class="text-[11px] text-indigo-300/90 font-medium pl-5" x-text="$store.audio?.currentSongJapanese || ''"></div>
-                            <div class="text-[10px] text-slate-400 pt-1 border-t border-slate-800/60 flex items-center gap-1">
-                                <span>💡</span>
-                                <span>Click to mute • Shuffles on next play</span>
-                            </div>
-                        </div>
 
-                        <div x-show="!$store.audio?.isPlaying" class="space-y-1">
-                            <div class="text-xs font-semibold text-slate-300">Music is muted</div>
-                            <div class="text-[10px] text-slate-400">Click to play famous Japanese melodies (Sakura, Sukiyaki, Furusato, etc.)</div>
+                            <div x-show="$store.audio?.isPlaying" class="space-y-1">
+                                <div class="text-xs font-bold text-white leading-snug flex items-center gap-1.5">
+                                    <span>🎵</span>
+                                    <span x-text="$store.audio?.currentSongEnglish || 'Traditional Melody'"></span>
+                                </div>
+                                <div class="text-[11px] text-indigo-300/90 font-medium pl-5" x-text="$store.audio?.currentSongJapanese || ''"></div>
+                                <div class="text-[10px] text-slate-400 pt-1 border-t border-slate-800/60 flex items-center gap-1">
+                                    <span>💡</span>
+                                    <span>Click to mute • Shuffles on next play</span>
+                                </div>
+                            </div>
+
+                            <div x-show="!$store.audio?.isPlaying" class="space-y-1">
+                                <div class="text-xs font-semibold text-slate-300">Music is muted</div>
+                                <div class="text-[10px] text-slate-400">Click to play famous Japanese melodies (Sakura, Sukiyaki, Furusato, etc.)</div>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Theme Mode Toggle Button (Light/Dark) -->
+                    <button 
+                        wire:ignore
+                        type="button" 
+                        onclick="window.__toggleTheme ? window.__toggleTheme() : null"
+                        class="flex items-center justify-center p-2 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-amber-600 dark:text-amber-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-amber-700 dark:hover:text-white shadow-sm"
+                        title="Switch Light/Dark Mode"
+                    >
+                        <span data-theme-icon>☀️</span>
+                    </button>
+
+                    <!-- Notification Bell -->
+                    <button 
+                        type="button"
+                        wire:click="openReportModal"
+                        class="relative p-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 border border-slate-300 dark:border-slate-700 transition cursor-pointer text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                        title="View Latest Monthly Movement Report"
+                    >
+                        <span class="text-sm">🔔</span>
+                        @if($unreadReportsCount > 0)
+                            <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-[10px] font-black text-white flex items-center justify-center animate-bounce">
+                                {{ $unreadReportsCount }}
+                            </span>
+                        @endif
+                    </button>
                 </div>
 
-                <!-- Notification Bell -->
-                <button 
-                    type="button"
-                    wire:click="openReportModal"
-                    class="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 transition cursor-pointer text-slate-300 hover:text-white"
-                    title="View Latest Monthly Movement Report"
-                >
-                    <span class="text-base">🔔</span>
-                    @if($unreadReportsCount > 0)
-                        <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-[10px] font-black text-white flex items-center justify-center animate-bounce">
-                            {{ $unreadReportsCount }}
-                        </span>
-                    @endif
-                </button>
-
-                <!-- Missionary Capability Profile Scorecard Pill -->
-                @if($user?->screening_passed)
+                <!-- Player & Missionary Profile Menu Dropdown -->
+                <div class="relative pl-1.5 border-l border-slate-200 dark:border-slate-800" x-data="{ open: false }" @click.outside="open = false">
                     <button 
                         type="button" 
-                        wire:click="openScreeningScorecard"
-                        class="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-indigo-50 dark:bg-indigo-950/80 border-indigo-300 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:border-indigo-500 shadow-sm"
-                        title="Missionary Capability Scorecard: {{ $user->screening_score }}% • {{ $user->screening_profile_title }} (Click to view breakdown or retake)"
+                        @click="open = !open"
+                        class="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-2xl border transition cursor-pointer select-none bg-slate-100 dark:bg-slate-800/80 border-slate-300 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 shadow-sm"
+                        title="Missionary Profile, Clearance & Account Settings"
                     >
-                        <span>🎯</span>
-                        <span class="text-[11px] font-bold">{{ $user->screening_profile_title ?: 'Field Cleared' }} ({{ $user->screening_score }}%)</span>
-                    </button>
-                @else
-                    <button 
-                        type="button" 
-                        wire:click="openOnboardingModal"
-                        class="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-amber-50 dark:bg-amber-950/80 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:border-amber-500 animate-pulse shadow-sm"
-                        title="Candidate Screening Required for Nagoya Deployment (Click to complete)"
-                    >
-                        <span>⚠️</span>
-                        <span class="text-[11px] font-bold">Candidate Screening Pending</span>
-                    </button>
-                @endif
-
-                <!-- Home Ward Pill -->
-                @if($user?->homeWard)
-                    <button 
-                        type="button" 
-                        wire:click="openOnboardingModal"
-                        class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-white shadow-sm"
-                        title="Your Embedded Residence: {{ $user->homeWard->name }} (Click to view or change)"
-                    >
-                        <span>🏡</span>
-                        <span class="text-[11px] font-bold">{{ $user->homeWard->name }}</span>
-                    </button>
-                @endif
-
-                <!-- Player Profile Pill -->
-                <div class="flex items-center gap-2 pl-2 border-l border-slate-300 dark:border-slate-800">
-                    <button 
-                        type="button" 
-                        wire:click="openEditNameModal"
-                        class="flex items-center gap-2 group cursor-pointer hover:opacity-90 text-left"
-                        title="Click to customize your missionary handle / player name"
-                    >
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white shadow-sm group-hover:ring-2 group-hover:ring-indigo-400 transition">
+                        <div class="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-[11px] font-bold text-white shadow-sm shrink-0">
                             {{ $user?->initials() ?? 'MC' }}
                         </div>
-                        <div class="hidden sm:block text-left text-xs">
-                            <div class="font-bold text-white leading-tight flex items-center gap-1">
-                                <span>{{ $user?->name ?? 'Player' }}</span>
-                                <span class="text-[10px] text-slate-500 group-hover:text-indigo-400">✏️</span>
+                        <div class="text-left text-xs whitespace-nowrap min-w-0">
+                            <div class="font-bold text-slate-800 dark:text-white leading-none truncate max-w-[85px]">
+                                {{ $user?->name ?? 'Player' }}
                             </div>
-                            <div class="text-[10px] text-emerald-400 font-semibold">{{ number_format($user?->compositeScore ?? 0) }} pts</div>
+                            <div class="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold leading-none mt-0.5">
+                                {{ number_format($user?->compositeScore ?? 0) }} pts
+                            </div>
                         </div>
+                        @if(!($user?->screening_passed))
+                            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" title="Screening Pending"></span>
+                        @endif
+                        <svg class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
                     </button>
 
-                    <!-- Logout Button -->
-                    <form action="{{ route('logout') }}" method="POST" class="inline">
-                        @csrf
-                        <button 
-                            type="submit" 
-                            class="p-1.5 rounded-xl bg-slate-800/80 hover:bg-rose-950/80 hover:text-rose-300 hover:border-rose-800/80 border border-slate-700/60 text-slate-400 text-xs transition cursor-pointer" 
-                            title="Sign Out of Mission"
-                        >
-                            <span class="text-xs">🚪</span>
-                        </button>
-                    </form>
+                    <!-- Dropdown Menu -->
+                    <div 
+                        x-show="open" 
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="transform opacity-0 scale-95 -translate-y-1"
+                        x-transition:enter-end="transform opacity-100 scale-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave-start="transform opacity-100 scale-100 translate-y-0"
+                        x-transition:leave-end="transform opacity-0 scale-95 -translate-y-1"
+                        class="absolute right-0 mt-2 w-72 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-50 text-xs"
+                        style="display: none;"
+                    >
+                        <!-- User Card / Handle Edit -->
+                        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/80 mb-2">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white shadow-sm shrink-0">
+                                        {{ $user?->initials() ?? 'MC' }}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="font-bold text-slate-900 dark:text-white leading-tight truncate">
+                                            {{ $user?->name ?? 'Player' }}
+                                        </div>
+                                        <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                                            {{ number_format($user?->compositeScore ?? 0) }} composite pts
+                                        </div>
+                                    </div>
+                                </div>
+                                <button 
+                                    type="button" 
+                                    wire:click="openEditNameModal"
+                                    @click="open = false"
+                                    class="px-2 py-1 rounded-lg text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800/80 transition cursor-pointer shrink-0"
+                                >
+                                    ✏️ Rename
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Missionary Capability Status -->
+                        <div class="mb-2">
+                            @if($user?->screening_passed)
+                                <button 
+                                    type="button" 
+                                    wire:click="openScreeningScorecard"
+                                    @click="open = false"
+                                    class="w-full p-2.5 rounded-xl text-left transition cursor-pointer bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800/80 group"
+                                >
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
+                                            <span>🎯</span>
+                                            <span>Capability Scorecard</span>
+                                        </span>
+                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-black bg-indigo-600 text-white">
+                                            {{ $user->screening_score }}%
+                                        </span>
+                                    </div>
+                                    <div class="font-bold text-slate-800 dark:text-slate-200 text-xs mt-1 leading-snug">
+                                        {{ $user->screening_profile_title ?: 'Field Cleared' }}
+                                    </div>
+                                    <div class="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium mt-0.5 group-hover:underline">
+                                        View scorecard & clearance →
+                                    </div>
+                                </button>
+                            @else
+                                <button 
+                                    type="button" 
+                                    wire:click="openOnboardingModal"
+                                    @click="open = false"
+                                    class="w-full p-2.5 rounded-xl text-left transition cursor-pointer bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 dark:hover:bg-amber-950/80 border border-amber-300 dark:border-amber-700/80 group animate-pulse"
+                                >
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1">
+                                            <span>⚠️</span>
+                                            <span>Screening Pending</span>
+                                        </span>
+                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-black bg-amber-600 text-white">Required</span>
+                                    </div>
+                                    <div class="text-[11px] text-amber-800 dark:text-amber-300 font-semibold mt-1">
+                                        Candidate questionnaire required for full deployment.
+                                    </div>
+                                    <div class="text-[10px] text-amber-700 dark:text-amber-400 font-bold mt-1 group-hover:underline">
+                                        Complete Screening Now →
+                                    </div>
+                                </button>
+                            @endif
+                        </div>
+
+                        <!-- Embedded Residence / Home Ward -->
+                        <div class="mb-2">
+                            <button 
+                                type="button" 
+                                wire:click="openOnboardingModal"
+                                @click="open = false"
+                                class="w-full p-2.5 rounded-xl text-left transition cursor-pointer bg-slate-50 dark:bg-slate-950/60 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800/80 group"
+                            >
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                                    <span>🏡</span>
+                                    <span>Embedded Residence</span>
+                                </div>
+                                <div class="font-bold text-slate-800 dark:text-slate-200 text-xs mt-0.5">
+                                    {{ $user?->homeWard?->name ?? 'No Ward Assigned' }}
+                                </div>
+                                <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                                    Click to view or change base →
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Divider & Sign Out -->
+                        <div class="pt-1 border-t border-slate-100 dark:border-slate-800/80">
+                            <form action="{{ route('logout') }}" method="POST" class="w-full">
+                                @csrf
+                                <button 
+                                    type="submit" 
+                                    class="w-full px-3 py-2 rounded-xl flex items-center justify-between text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer font-semibold"
+                                >
+                                    <span>Sign Out of Mission</span>
+                                    <span>🚪</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
