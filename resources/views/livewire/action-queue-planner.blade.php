@@ -1142,9 +1142,15 @@
                             class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition shrink-0 cursor-pointer flex items-center justify-center gap-1 {{ $filterEligibleOnly ? 'bg-indigo-600 text-white border border-indigo-400 shadow' : 'bg-slate-800 text-slate-300 hover:text-white border border-slate-700' }}"
                             title="Filter actions matching abilities"
                         >
-                            <span>{{ $filterEligibleOnly ? '✓' : '⚡' }}</span>
                             <span>{{ $filterEligibleOnly ? 'Eligible Only' : 'Filter by Ability' }}</span>
                         </button>
+                    </div>
+                @else
+                    <div class="mb-3 p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-800/60 text-[11px] text-indigo-300 flex items-center justify-between gap-2 shadow-inner">
+                        <div class="flex items-center gap-2">
+                            <span>💡</span>
+                            <span><strong>No resident selected:</strong> Pick a person in Step 2 to unlock 1-on-1 ministry actions (Casual Talk, 3 Circles, Discipleship, Mentoring), or choose a Ward Action below like <strong>Prayer Walk</strong> or <strong>Cultural Event</strong>.</span>
+                        </div>
                     </div>
                 @endif
 
