@@ -1,5 +1,5 @@
 // Nagoya Oikos Map Controller for Alpine.js & Leaflet
-window.nagoyaMap = function(config) {
+window.nagoyaMap = function (config) {
     return {
         map: null,
         geoJsonLayer: null,
@@ -54,7 +54,7 @@ window.nagoyaMap = function(config) {
             if (this.map) {
                 try {
                     this.map.remove();
-                } catch (e) {}
+                } catch (e) { }
                 this.map = null;
             }
 
@@ -343,8 +343,8 @@ window.nagoyaMap = function(config) {
                 this.housesLayer = L.layerGroup();
                 this.houses.forEach(house => {
                     const isPlayer = house.is_current_player;
-                    const bgGradient = isPlayer 
-                        ? 'linear-gradient(135deg, #10b981, #047857)' 
+                    const bgGradient = isPlayer
+                        ? 'linear-gradient(135deg, #10b981, #047857)'
                         : 'linear-gradient(135deg, #6366f1, #4338ca)';
                     const borderColor = isPlayer ? '#fef08a' : '#ffffff';
                     const shadowColor = isPlayer ? 'rgba(16, 185, 129, 0.75)' : 'rgba(99, 102, 241, 0.6)';
@@ -401,7 +401,7 @@ window.nagoyaMap = function(config) {
 };
 
 // Digital Countdown Clock Controller for 10-Minute Day Ticks
-window.digitalClock = function(initialSeconds, nextTickIso, canAutoTick) {
+window.digitalClock = function (initialSeconds, nextTickIso, canAutoTick) {
     return {
         secondsLeft: Math.max(0, initialSeconds || 600),
         nextTickTarget: nextTickIso ? new Date(nextTickIso).getTime() : (Date.now() + (initialSeconds || 600) * 1000),
@@ -451,41 +451,439 @@ window.digitalClock = function(initialSeconds, nextTickIso, canAutoTick) {
     };
 };
 
-// Procedural Uplifting Japanese Koto & Luminous Ambient Pad Soundscape (Web Audio API)
+// Procedural Japanese Koto & Ambient Soundscape (Web Audio API)
+// Features famous iconic Japanese melodies (specifically excluding the national anthem)
+const NOTE_FREQS = {
+    // Octave 2
+    'C2': 65.41, 'C#2': 69.30, 'Db2': 69.30, 'D2': 73.42, 'D#2': 77.78, 'Eb2': 77.78,
+    'E2': 82.41, 'F2': 87.31, 'F#2': 92.50, 'Gb2': 92.50, 'G2': 98.00, 'G#2': 103.83, 'Ab2': 103.83,
+    'A2': 110.00, 'A#2': 116.54, 'Bb2': 116.54, 'B2': 123.47,
+    // Octave 3
+    'C3': 130.81, 'C#3': 138.59, 'Db3': 138.59, 'D3': 146.83, 'D#3': 155.56, 'Eb3': 155.56,
+    'E3': 164.81, 'F3': 174.61, 'F#3': 185.00, 'Gb3': 185.00, 'G3': 196.00, 'G#3': 207.65, 'Ab3': 207.65,
+    'A3': 220.00, 'A#3': 233.08, 'Bb3': 233.08, 'B3': 246.94,
+    // Octave 4
+    'C4': 261.63, 'C#4': 277.18, 'Db4': 277.18, 'D4': 293.66, 'D#4': 311.13, 'Eb4': 311.13,
+    'E4': 329.63, 'F4': 349.23, 'F#4': 369.99, 'Gb4': 369.99, 'G4': 392.00, 'G#4': 415.30, 'Ab4': 415.30,
+    'A4': 440.00, 'A#4': 466.16, 'Bb4': 466.16, 'B4': 493.88,
+    // Octave 5
+    'C5': 523.25, 'C#5': 554.37, 'Db5': 554.37, 'D5': 587.33, 'D#5': 622.25, 'Eb5': 622.25,
+    'E5': 659.25, 'F5': 698.46, 'F#5': 739.99, 'Gb5': 739.99, 'G5': 783.99, 'G#5': 830.61, 'Ab5': 830.61,
+    'A5': 880.00, 'A#5': 932.33, 'Bb5': 932.33, 'B5': 987.77,
+    // Octave 6
+    'C6': 1046.50, 'C#6': 1108.73, 'Db6': 1108.73, 'D6': 1174.66, 'D#6': 1244.51, 'Eb6': 1244.51,
+    'E6': 1318.51, 'F6': 1396.91, 'F#6': 1479.98, 'Gb6': 1479.98, 'G6': 1567.98, 'G#6': 1661.22,
+    'Ab6': 1661.22, 'A6': 1760.00, 'A#6': 1864.66, 'Bb6': 1864.66, 'B6': 1975.53,
+    // Octave 7
+    'C7': 2093.00
+};
+
+// 17 Iconic Japanese Melodies: Traditional, Folk, Modern, and Cinematic classics (excluding the national anthem)
+const FAMOUS_JAPANESE_SONGS = [
+    // --- Traditional & Folk Melodies ---
+    {
+        id: 'sakura',
+        englishTitle: 'Sakura Sakura',
+        japaneseTitle: 'さくら さくら',
+        category: 'Traditional & Folk',
+        tempo: 72,
+        droneChord: ['A2', 'E3', 'A3', 'C4'],
+        melody: [
+            ['A4', 1], ['A4', 1], ['B4', 2],
+            ['A4', 1], ['A4', 1], ['B4', 2],
+            ['A4', 1], ['B4', 1], ['C5', 1], ['B4', 1],
+            ['A4', 1], ['B4', 0.5], ['A4', 0.5], ['F4', 2],
+            ['E4', 1], ['C4', 1], ['E4', 1], ['F4', 1],
+            ['E4', 1], ['E4', 0.5], ['C4', 0.5], ['B3', 2],
+            ['A4', 1], ['B4', 1], ['C5', 1], ['B4', 1],
+            ['A4', 1], ['B4', 1], ['C5', 2],
+            ['B4', 1], ['C5', 1], ['B4', 1], ['A4', 1],
+            ['F4', 1], ['E4', 1], ['E4', 2],
+            ['A4', 1], ['A4', 1], ['B4', 2],
+            ['A4', 1], ['A4', 1], ['B4', 2],
+            ['A4', 1], ['B4', 1], ['A4', 1], ['F4', 1],
+            ['E4', 3], [null, 1]
+        ]
+    },
+    {
+        id: 'haru-no-umi',
+        englishTitle: 'Haru no Umi (Spring Sea)',
+        japaneseTitle: '春の海',
+        category: 'Traditional & Folk',
+        tempo: 76,
+        droneChord: ['D3', 'A3', 'D4', 'F4'],
+        melody: [
+            ['D4', 1], ['F4', 1], ['A4', 2], ['G4', 1], ['F4', 1], ['D4', 2],
+            ['A4', 1], ['D5', 1.5], ['C5', 0.5], ['A4', 2], ['F4', 1], ['G4', 1], ['A4', 3], [null, 1],
+            ['D5', 1], ['F5', 1], ['E5', 1], ['D5', 1], ['C5', 1.5], ['A4', 0.5], ['G4', 2],
+            ['F4', 1], ['A4', 1], ['D5', 2], ['C5', 1], ['A4', 1], ['F4', 1.5], ['E4', 0.5], ['D4', 3], [null, 1],
+            ['A4', 0.5], ['D5', 0.5], ['E5', 1], ['F5', 2], ['E5', 1], ['D5', 1], ['B4', 2],
+            ['A4', 1], ['G4', 1], ['F4', 1.5], ['E4', 0.5], ['D4', 4], [null, 1]
+        ]
+    },
+    {
+        id: 'yuyake-koyake',
+        englishTitle: 'Yuyake Koyake (Evening Sunset)',
+        japaneseTitle: '夕焼け小焼け',
+        category: 'Traditional & Folk',
+        tempo: 82,
+        droneChord: ['C3', 'G3', 'C4', 'E4'],
+        melody: [
+            ['G4', 1], ['G4', 1], ['A4', 1], ['G4', 1], ['E4', 1], ['G4', 1], ['C4', 2],
+            ['D4', 1], ['E4', 1], ['G4', 1], ['A4', 1], ['G4', 3], [null, 1],
+            ['A4', 1], ['C5', 1], ['D5', 1], ['C5', 1], ['A4', 1], ['G4', 1], ['E4', 2],
+            ['G4', 1], ['A4', 1], ['E4', 1], ['D4', 1], ['C4', 3], [null, 1],
+            ['C5', 1], ['D5', 1], ['C5', 1], ['A4', 1], ['G4', 1], ['E4', 1], ['C4', 2],
+            ['D4', 1], ['E4', 1], ['G4', 1], ['A4', 1], ['G4', 3], [null, 1],
+            ['A4', 1], ['C5', 1], ['D5', 1], ['C5', 1], ['A4', 1], ['G4', 1], ['E4', 2],
+            ['G4', 1], ['A4', 1], ['D4', 1], ['E4', 1], ['C4', 3], [null, 1]
+        ]
+    },
+    {
+        id: 'akatombo',
+        englishTitle: 'Akatombo (Red Dragonfly)',
+        japaneseTitle: '赤とんぼ',
+        category: 'Traditional & Folk',
+        tempo: 72,
+        droneChord: ['F2', 'C3', 'F3', 'A3'],
+        melody: [
+            ['C4', 1.5], ['F4', 0.5], ['G4', 1], ['A4', 2], ['C5', 1],
+            ['D5', 1.5], ['C5', 0.5], ['A4', 1], ['G4', 3],
+            ['A4', 1.5], ['C5', 0.5], ['D5', 1], ['C5', 2], ['A4', 1],
+            ['G4', 1.5], ['F4', 0.5], ['D4', 1], ['C4', 3],
+            ['D4', 1.5], ['F4', 0.5], ['G4', 1], ['A4', 2], ['C5', 1],
+            ['D5', 1.5], ['C5', 0.5], ['A4', 1], ['G4', 3],
+            ['A4', 1.5], ['G4', 0.5], ['F4', 1], ['D4', 2], ['G4', 1],
+            ['F4', 3], [null, 1]
+        ]
+    },
+    {
+        id: 'furusato',
+        englishTitle: 'Furusato (Hometown)',
+        japaneseTitle: '故郷',
+        category: 'Traditional & Folk',
+        tempo: 84,
+        droneChord: ['G2', 'D3', 'G3', 'D4'],
+        melody: [
+            ['D4', 1], ['G4', 1], ['G4', 1],
+            ['G4', 1.5], ['A4', 0.5], ['B4', 1],
+            ['A4', 1], ['G4', 1], ['A4', 1],
+            ['D5', 2], [null, 1],
+            ['B4', 1], ['B4', 1], ['C5', 1],
+            ['D5', 2], ['E5', 1],
+            ['D5', 1], ['B4', 1], ['G4', 1],
+            ['A4', 2], [null, 1],
+            ['D5', 1], ['B4', 1], ['G4', 1],
+            ['A4', 1.5], ['B4', 0.5], ['C5', 1],
+            ['B4', 1], ['G4', 1], ['E4', 1],
+            ['D4', 2], [null, 1],
+            ['D4', 1], ['G4', 1], ['A4', 1],
+            ['B4', 2], ['C5', 1],
+            ['D5', 1], ['B4', 1], ['A4', 1],
+            ['G4', 2.5], [null, 0.5]
+        ]
+    },
+    {
+        id: 'kojo-no-tsuki',
+        englishTitle: 'Kojo no Tsuki (Moon over Ruined Castle)',
+        japaneseTitle: '荒城の月',
+        category: 'Traditional & Folk',
+        tempo: 68,
+        droneChord: ['D3', 'A3', 'D4', 'F4'],
+        melody: [
+            ['D4', 1], ['D4', 1], ['A4', 1.5], ['G4', 0.5], ['F4', 1], ['E4', 1], ['D4', 2],
+            ['F4', 1], ['G4', 1], ['A4', 1], ['C5', 1], ['D5', 2], ['A4', 2],
+            ['D5', 1], ['D5', 1], ['C5', 1], ['A4', 1], ['G4', 1.5], ['A4', 0.5], ['F4', 2],
+            ['E4', 1], ['D4', 1], ['F4', 1], ['E4', 1], ['D4', 3], [null, 1]
+        ]
+    },
+    {
+        id: 'takeda-lullaby',
+        englishTitle: 'Takeda Lullaby (Takeda no Komoriuta)',
+        japaneseTitle: '竹田の子守唄',
+        category: 'Traditional & Folk',
+        tempo: 72,
+        droneChord: ['D3', 'A3', 'D4', 'F4'],
+        melody: [
+            ['D4', 1], ['F4', 1], ['A4', 2], ['G4', 1], ['F4', 1], ['D4', 2],
+            ['F4', 1], ['G4', 1], ['A4', 2], ['D5', 1], ['C5', 1], ['A4', 2],
+            ['D5', 1], ['C5', 1], ['A4', 1], ['G4', 1], ['F4', 1], ['D4', 1], ['C4', 2],
+            ['D4', 1], ['F4', 1], ['G4', 1.5], ['F4', 0.5], ['D4', 3], [null, 1],
+            ['D4', 1], ['F4', 1], ['A4', 2], ['G4', 1], ['F4', 1], ['D4', 2],
+            ['F4', 1], ['G4', 1], ['A4', 2], ['D5', 1], ['C5', 1], ['A4', 2],
+            ['D5', 1], ['C5', 1], ['A4', 1], ['G4', 1], ['F4', 1], ['D4', 1], ['C4', 2],
+            ['D4', 1], ['F4', 1], ['G4', 1.5], ['F4', 0.5], ['D4', 3], [null, 1]
+        ]
+    },
+    {
+        id: 'edo-lullaby',
+        englishTitle: 'Edo Lullaby (Edo no Komoriuta)',
+        japaneseTitle: '江戸子守唄',
+        category: 'Traditional & Folk',
+        tempo: 70,
+        droneChord: ['D3', 'A3', 'D4', 'F4'],
+        melody: [
+            ['D4', 2], ['F4', 1], ['A4', 1], ['G4', 1], ['F4', 1], ['D4', 2],
+            ['F4', 1], ['G4', 1], ['A4', 2], ['A4', 2], [null, 1],
+            ['D5', 1], ['C5', 1], ['A4', 1], ['G4', 1], ['F4', 1], ['D4', 1], ['C4', 2],
+            ['D4', 1], ['F4', 1], ['G4', 1.5], ['F4', 0.5], ['D4', 3], [null, 1],
+            ['A4', 1], ['C5', 1], ['D5', 2], ['C5', 1], ['A4', 1], ['G4', 2],
+            ['F4', 1], ['G4', 1], ['A4', 2], ['F4', 1], ['E4', 1], ['D4', 2],
+            ['D4', 1], ['F4', 1], ['G4', 1], ['A4', 1], ['F4', 1], ['D4', 1], ['C4', 2],
+            ['D4', 1], ['F4', 1], ['G4', 1.5], ['F4', 0.5], ['D4', 3], [null, 1]
+        ]
+    },
+    {
+        id: 'zuizuizukkorobashi',
+        englishTitle: "Zuizuizukkorobashi (Children's Game Song)",
+        japaneseTitle: 'ずいずいずっころばし',
+        category: 'Traditional & Folk',
+        tempo: 110,
+        droneChord: ['D3', 'A3', 'D4', 'F4'],
+        melody: [
+            ['D4', 1], ['D4', 1], ['F4', 1], ['F4', 1], ['D4', 1], ['F4', 1], ['A4', 2],
+            ['G4', 1], ['G4', 1], ['F4', 1], ['D4', 1], ['F4', 1], ['G4', 1], ['A4', 2],
+            ['D5', 1], ['D5', 1], ['A4', 1], ['G4', 1], ['F4', 1], ['D4', 1], ['C4', 2],
+            ['D4', 1], ['F4', 1], ['G4', 1], ['F4', 1], ['D4', 2], [null, 1],
+            ['A4', 1], ['A4', 1], ['F4', 1], ['D4', 1], ['A4', 1], ['A4', 1], ['F4', 1], ['D4', 1],
+            ['D5', 1], ['C5', 1], ['A4', 1], ['G4', 1], ['F4', 1], ['D4', 1], ['C4', 2],
+            ['D4', 1], ['F4', 1], ['G4', 1], ['A4', 1], ['F4', 1], ['D4', 1], ['D4', 2],
+            ['A4', 1], ['A4', 1], ['F4', 1], ['D4', 1], ['D4', 3], [null, 1]
+        ]
+    },
+
+    // --- Modern & Cinematic Melodies ---
+    {
+        id: 'sukiyaki',
+        englishTitle: 'Sukiyaki (Ue o Muite Arukou)',
+        japaneseTitle: '上を向いて歩こう',
+        category: 'Modern & Cinematic',
+        tempo: 114,
+        droneChord: ['G2', 'D3', 'G3', 'B3'],
+        melody: [
+            // Verse 1
+            ['B4', 1.5], ['B4', 0.5], ['B4', 1], ['B4', 1], ['C5', 1], ['D5', 2],
+            ['B4', 1], ['B4', 1], ['B4', 1], ['A4', 1], ['G4', 2],
+            ['E4', 1], ['G4', 1], ['A4', 1], ['B4', 1], ['A4', 1], ['G4', 1], ['E4', 3], [null, 1],
+            ['B4', 1.5], ['B4', 0.5], ['B4', 1], ['B4', 1], ['C5', 1], ['D5', 2],
+            ['B4', 1], ['B4', 1], ['B4', 1], ['A4', 1], ['G4', 3], [null, 1],
+            // Chorus (Bridge)
+            ['D5', 1.5], ['D5', 0.5], ['D5', 1], ['D5', 1], ['E5', 1], ['D5', 1], ['B4', 2],
+            ['D5', 1.5], ['D5', 0.5], ['D5', 1], ['D5', 1], ['E5', 1], ['D5', 1], ['B4', 3], [null, 1],
+            // Chorus Return
+            ['B4', 1.5], ['B4', 0.5], ['B4', 1], ['B4', 1], ['C5', 1], ['D5', 2],
+            ['B4', 1], ['B4', 1], ['B4', 1], ['A4', 1], ['G4', 2],
+            ['A4', 1], ['B4', 1], ['A4', 1], ['G4', 1], ['E4', 2], ['D4', 2],
+            ['G4', 1], ['G4', 1], ['A4', 1], ['A4', 1], ['G4', 3], [null, 1]
+        ]
+    },
+    {
+        id: 'mr-lawrence',
+        englishTitle: 'Merry Christmas, Mr. Lawrence',
+        japaneseTitle: '戦場のメリークリスマス',
+        category: 'Modern & Cinematic',
+        tempo: 96,
+        droneChord: ['Eb3', 'Bb3', 'Eb4', 'G4'],
+        melody: [
+            // Theme Part A
+            ['D5', 1], ['E5', 1], ['G5', 1], ['A5', 1], ['E5', 2], ['D5', 2],
+            ['D5', 1], ['E5', 1], ['G5', 1], ['A5', 1], ['E5', 4],
+            ['D5', 1], ['E5', 1], ['G5', 1], ['A5', 1], ['B5', 1], ['A5', 1], ['G5', 1], ['E5', 1],
+            ['D5', 1], ['E5', 1], ['G5', 1], ['A5', 1], ['G5', 4],
+            // Theme Part B (Climax Refrain)
+            ['G5', 1], ['A5', 1], ['B5', 1], ['D6', 1], ['B5', 2], ['A5', 2],
+            ['G5', 1], ['A5', 1], ['B5', 1], ['D6', 1], ['E6', 4],
+            ['E6', 1], ['D6', 1], ['B5', 1], ['A5', 1], ['G5', 1], ['E5', 1], ['D5', 2],
+            ['D5', 1], ['E5', 1], ['G5', 1], ['A5', 1], ['G5', 4], [null, 1]
+        ]
+    },
+    {
+        id: 'summer',
+        englishTitle: 'Summer (Joe Hisaishi)',
+        japaneseTitle: 'Summer (菊次郎の夏)',
+        category: 'Modern & Cinematic',
+        tempo: 124,
+        droneChord: ['D3', 'A3', 'D4', 'F#4'],
+        melody: [
+            // Opening Theme Motif
+            ['A4', 0.5], ['D5', 0.5], ['F#5', 0.5], ['A5', 0.5], ['F#5', 1], ['D5', 1],
+            ['A4', 0.5], ['D5', 0.5], ['F#5', 0.5], ['A5', 0.5], ['F#5', 1], ['D5', 1],
+            ['G4', 0.5], ['B4', 0.5], ['D5', 0.5], ['G5', 0.5], ['E5', 2],
+            ['A4', 0.5], ['D5', 0.5], ['F#5', 0.5], ['A5', 0.5], ['F#5', 1], ['D5', 1],
+            // Main Chorus Theme
+            ['F#5', 1], ['E5', 1], ['D5', 1], ['A4', 1], ['B4', 1], ['D5', 1], ['E5', 2],
+            ['F#5', 1], ['E5', 1], ['D5', 1], ['A4', 1], ['B4', 1], ['D5', 1], ['D5', 2],
+            ['F#5', 1], ['E5', 1], ['D5', 1], ['A4', 1], ['B4', 1], ['D5', 1], ['E5', 1.5], ['F#5', 0.5],
+            ['E5', 1], ['D5', 1], ['B4', 1], ['A4', 1], ['D5', 3], [null, 1]
+        ]
+    },
+    {
+        id: 'always-with-me',
+        englishTitle: 'Always With Me (Spirited Away)',
+        japaneseTitle: 'いつも何度でも',
+        category: 'Modern & Cinematic',
+        tempo: 88,
+        droneChord: ['F2', 'C3', 'F3', 'A3'],
+        melody: [
+            // Verse 1
+            ['C4', 1], ['F4', 1], ['G4', 1], ['A4', 2], ['G4', 1],
+            ['F4', 1], ['E4', 1], ['F4', 1], ['G4', 3],
+            ['C4', 1], ['E4', 1], ['F4', 1], ['G4', 2], ['F4', 1],
+            ['E4', 1], ['D4', 1], ['E4', 1], ['F4', 3],
+            ['F4', 1], ['G4', 1], ['A4', 1], ['Bb4', 2], ['A4', 1],
+            ['G4', 1], ['F4', 1], ['G4', 1], ['A4', 3],
+            ['F4', 1], ['G4', 1], ['A4', 1], ['G4', 2], ['F4', 1],
+            ['E4', 1], ['D4', 1], ['E4', 1], ['F4', 3], [null, 1],
+            // Chorus
+            ['C5', 1.5], ['A4', 0.5], ['Bb4', 1], ['C5', 2], ['D5', 1],
+            ['C5', 1], ['Bb4', 1], ['A4', 1], ['G4', 3],
+            ['Bb4', 1.5], ['G4', 0.5], ['A4', 1], ['Bb4', 2], ['C5', 1],
+            ['A4', 1], ['G4', 1], ['F4', 1], ['E4', 2], ['G4', 1],
+            ['F4', 3], [null, 1]
+        ]
+    },
+    {
+        id: 'path-of-the-wind',
+        englishTitle: 'Path of the Wind (My Neighbor Totoro)',
+        japaneseTitle: '風の通り道',
+        category: 'Modern & Cinematic',
+        tempo: 84,
+        droneChord: ['E3', 'B3', 'E4', 'G4'],
+        melody: [
+            // Verse 1
+            ['E4', 1], ['G4', 1], ['A4', 1], ['B4', 2], ['A4', 1],
+            ['G4', 1], ['E4', 1], ['D4', 1], ['E4', 3],
+            ['E4', 1], ['G4', 1], ['A4', 1], ['B4', 2], ['D5', 1],
+            ['B4', 1], ['A4', 1], ['G4', 1], ['A4', 3], [null, 1],
+            ['E4', 1], ['G4', 1], ['A4', 1], ['B4', 2], ['A4', 1],
+            ['G4', 1], ['E4', 1], ['D4', 1], ['E4', 3],
+            ['D4', 1], ['E4', 1], ['G4', 1], ['A4', 2], ['B4', 1],
+            ['G4', 1], ['E4', 1], ['D4', 1], ['E4', 3], [null, 1],
+            // Chorus
+            ['B4', 1], ['D5', 1], ['E5', 1.5], ['D5', 0.5], ['B4', 1],
+            ['A4', 1], ['B4', 1], ['D5', 1], ['B4', 3],
+            ['G4', 1], ['A4', 1], ['B4', 1.5], ['A4', 0.5], ['G4', 1],
+            ['E4', 1], ['G4', 1], ['A4', 1], ['B4', 3], [null, 1],
+            ['B4', 1], ['D5', 1], ['E5', 1.5], ['D5', 0.5], ['B4', 1],
+            ['A4', 1], ['B4', 1], ['D5', 1], ['E5', 3],
+            ['D5', 1], ['B4', 1], ['A4', 1], ['G4', 1], ['E4', 1], ['D4', 1],
+            ['E4', 3], [null, 1]
+        ]
+    },
+    {
+        id: 'stay-with-me',
+        englishTitle: 'Mayonaka no Door (Stay With Me)',
+        japaneseTitle: '真夜中のドア〜Stay With Me',
+        category: 'Modern & Cinematic',
+        tempo: 108,
+        droneChord: ['F3', 'C4', 'Eb4', 'Ab4'],
+        melody: [
+            // Chorus ("Stay with me...")
+            ['Ab4', 2], ['Bb4', 1], ['C5', 2], ['Bb4', 1], ['Ab4', 2],
+            ['F4', 1], ['Ab4', 1], ['Bb4', 1], ['C5', 1], ['Eb5', 1], ['C5', 2], ['Bb4', 1],
+            ['Ab4', 1], ['Bb4', 1], ['C5', 2], ['Bb4', 1], ['Ab4', 1], ['F4', 3], [null, 1],
+            ['Ab4', 2], ['Bb4', 1], ['C5', 2], ['Bb4', 1], ['Ab4', 2],
+            ['C5', 1], ['Eb5', 1], ['F5', 2], ['Eb5', 1], ['C5', 1], ['Bb4', 1], ['Ab4', 3], [null, 1],
+            // Verse 1
+            ['F4', 1], ['Ab4', 1], ['Bb4', 1], ['C5', 1], ['C5', 1], ['Bb4', 1], ['Ab4', 1], ['F4', 2],
+            ['Ab4', 1], ['Bb4', 1], ['C5', 1], ['Eb5', 1], ['C5', 2], ['Bb4', 2],
+            ['F4', 1], ['Ab4', 1], ['Bb4', 1], ['C5', 1], ['C5', 1], ['Bb4', 1], ['Ab4', 1], ['F4', 2],
+            ['Ab4', 1], ['Bb4', 1], ['C5', 1], ['Eb5', 1], ['F5', 3], [null, 1]
+        ]
+    },
+    {
+        id: 'plastic-love',
+        englishTitle: 'Plastic Love',
+        japaneseTitle: 'プラスティック・ラヴ',
+        category: 'Modern & Cinematic',
+        tempo: 112,
+        droneChord: ['D3', 'A3', 'C4', 'F4'],
+        melody: [
+            // Verse 1
+            ['D4', 1], ['F4', 1], ['G4', 1], ['A4', 1], ['A4', 1], ['G4', 1], ['F4', 1], ['G4', 1], ['A4', 2],
+            ['F4', 1], ['G4', 1], ['A4', 1], ['D5', 1], ['C5', 1], ['A4', 1], ['G4', 1], ['F4', 1], ['G4', 2],
+            ['D4', 1], ['F4', 1], ['G4', 1], ['A4', 1], ['A4', 1], ['G4', 1], ['F4', 1], ['G4', 1], ['A4', 2],
+            ['F4', 1], ['G4', 1], ['A4', 1], ['C5', 1], ['D5', 2], ['C5', 1], ['A4', 1], ['G4', 3], [null, 1],
+            // Chorus
+            ['D5', 1], ['C5', 1], ['B4', 1], ['A4', 1], ['G4', 1], ['A4', 3],
+            ['D5', 1], ['C5', 1], ['B4', 1], ['A4', 1], ['G4', 1], ['C5', 3],
+            ['D5', 1], ['C5', 1], ['B4', 1], ['A4', 1], ['G4', 1], ['A4', 1], ['B4', 1], ['C5', 1],
+            ['D5', 3], [null, 1],
+            ['D5', 1], ['C5', 1], ['A4', 1], ['G4', 1], ['F4', 1], ['D4', 3], [null, 1]
+        ]
+    },
+    {
+        id: 'first-love',
+        englishTitle: 'First Love',
+        japaneseTitle: 'First Love',
+        category: 'Modern & Cinematic',
+        tempo: 80,
+        droneChord: ['G2', 'D3', 'G3', 'B3'],
+        melody: [
+            // Verse 1
+            ['G4', 1], ['G4', 0.5], ['A4', 0.5], ['B4', 1], ['B4', 1], ['A4', 1], ['G4', 1], ['E4', 2],
+            ['E4', 1], ['G4', 1], ['A4', 1], ['B4', 1], ['G4', 2], ['D4', 2],
+            ['E4', 1], ['G4', 1], ['A4', 1], ['B4', 1], ['A4', 2], ['G4', 2],
+            ['G4', 1], ['G4', 0.5], ['A4', 0.5], ['B4', 1], ['B4', 1], ['A4', 1], ['G4', 1], ['E4', 2],
+            ['E4', 1], ['G4', 1], ['A4', 1], ['C5', 1], ['B4', 1], ['A4', 1], ['G4', 2],
+            ['A4', 1], ['B4', 1], ['C5', 1], ['D5', 1], ['B4', 3], [null, 1],
+            // Chorus
+            ['E4', 1], ['G4', 1], ['A4', 1], ['C5', 1], ['B4', 1], ['A4', 1], ['G4', 2],
+            ['A4', 1], ['B4', 1], ['A4', 1], ['G4', 1], ['E4', 2], ['D4', 2],
+            ['E4', 1], ['G4', 1], ['A4', 1], ['C5', 1], ['B4', 1], ['A4', 1], ['G4', 1], ['E5', 1],
+            ['D5', 3], [null, 1],
+            ['E4', 1], ['G4', 1], ['A4', 1], ['C5', 1], ['B4', 1], ['A4', 1], ['G4', 2],
+            ['A4', 1], ['B4', 1], ['A4', 1], ['G4', 1], ['E4', 2], ['D4', 2],
+            ['E4', 1], ['G4', 1], ['A4', 1], ['C5', 1], ['B4', 1], ['A4', 1], ['G4', 2], ['G4', 2]
+        ]
+    }
+];
+
 class NagoyaSoundscape {
     constructor() {
         this.ctx = null;
         this.masterGain = null;
         this.droneOscs = [];
+        this.droneGains = [];
         this.timer = null;
         this.isPlaying = false;
-        // Bright & uplifting D Major / Yo Pentatonic scale (D, E, F#, A, B)
-        this.notes = [
-            146.83, // D3
-            185.00, // F#3
-            220.00, // A3
-            246.94, // B3
-            293.66, // D4
-            329.63, // E4
-            369.99, // F#4
-            440.00, // A4
-            493.88, // B4
-            587.33, // D5
-            659.25, // E5
-            739.99, // F#5
-            880.00, // A5
-            987.77, // B5
-            1174.66 // D6 (Sparkling chime)
-        ];
+        this.hasStartedBefore = false;
+        this.songs = [...FAMOUS_JAPANESE_SONGS];
+        this.currentSongIndex = 0;
+        this.currentNoteIndex = 0;
 
-        // Uplifting ascending phrases (arpeggios)
-        this.phrases = [
-            [293.66, 369.99, 440.00, 587.33], // D - F# - A - D (Sunrise triumph)
-            [220.00, 293.66, 369.99, 440.00], // A - D - F# - A (Warm harvest)
-            [369.99, 440.00, 493.88, 587.33], // F# - A - B - D (Joyful momentum)
-            [440.00, 587.33, 739.99, 880.00], // A - D - F# - A (High bell cascade)
-            [293.66, 440.00, 587.33, 739.99], // D - A - D - F# (Faithful horizon)
-        ];
+        // Randomize the song order immediately on load
+        this.shufflePlaylist();
+    }
+
+    shufflePlaylist(excludeSongId = null) {
+        const list = [...FAMOUS_JAPANESE_SONGS];
+        for (let i = list.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [list[i], list[j]] = [list[j], list[i]];
+        }
+        // Ensure the first song in new cycle doesn't repeat the last song
+        if (excludeSongId && list.length > 1 && list[0].id === excludeSongId) {
+            const swapIdx = 1 + Math.floor(Math.random() * (list.length - 1));
+            [list[0], list[swapIdx]] = [list[swapIdx], list[0]];
+        }
+        this.songs = list;
+        this.currentSongIndex = 0;
+        this.currentNoteIndex = 0;
+    }
+
+    pickDifferentSong() {
+        const currentSong = this.getCurrentSong();
+        const currentId = currentSong ? currentSong.id : null;
+        const candidates = this.songs.filter(s => s.id !== currentId);
+        if (candidates.length > 0) {
+            const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+            const idx = this.songs.findIndex(s => s.id === chosen.id);
+            this.currentSongIndex = idx !== -1 ? idx : 0;
+        } else {
+            this.currentSongIndex = (this.currentSongIndex + 1) % this.songs.length;
+        }
+        this.currentNoteIndex = 0;
     }
 
     init() {
@@ -496,22 +894,51 @@ class NagoyaSoundscape {
             this.masterGain = this.ctx.createGain();
             this.masterGain.gain.setValueAtTime(0.0001, this.ctx.currentTime);
             this.masterGain.connect(this.ctx.destination);
-
-            // Shimmering celestial echo delay
-            this.delay = this.ctx.createDelay();
-            this.delay.delayTime.value = 0.42;
-            this.feedback = this.ctx.createGain();
-            this.feedback.gain.value = 0.36;
-            this.delay.connect(this.feedback);
-            this.feedback.connect(this.delay);
-            this.delay.connect(this.masterGain);
         }
     }
 
-    startDrone() {
-        // Warm, luminous major chord pad: D3 (146.83), A3 (220.00), D4 (293.66), F#4 (369.99)
-        const chordFreqs = [146.83, 220.00, 293.66, 369.99];
+    getCurrentSong() {
+        return this.songs[this.currentSongIndex] || null;
+    }
+
+    notifySongChange() {
+        const song = this.getCurrentSong();
+        if (song) {
+            window.dispatchEvent(new CustomEvent('nagoya:song-changed', {
+                detail: {
+                    id: song.id,
+                    title: `${song.englishTitle} (${song.japaneseTitle})`,
+                    englishTitle: song.englishTitle,
+                    japaneseTitle: song.japaneseTitle,
+                    category: song.category || 'Japanese Classic'
+                }
+            }));
+        }
+    }
+
+    stopDrone() {
+        if (!this.ctx) return;
+        this.droneOscs.forEach((osc, idx) => {
+            try {
+                if (this.droneGains[idx]) {
+                    this.droneGains[idx].gain.linearRampToValueAtTime(0.0001, this.ctx.currentTime + 0.8);
+                }
+                setTimeout(() => {
+                    try { osc.stop(); } catch (e) { }
+                }, 900);
+            } catch (e) { }
+        });
         this.droneOscs = [];
+        this.droneGains = [];
+    }
+
+    setDroneChord(noteNames) {
+        if (!this.ctx) return;
+        this.stopDrone();
+
+        const chordFreqs = noteNames.map(name => NOTE_FREQS[name] || 220);
+        this.droneOscs = [];
+        this.droneGains = [];
 
         chordFreqs.forEach((freq, idx) => {
             const osc = this.ctx.createOscillator();
@@ -521,111 +948,136 @@ class NagoyaSoundscape {
             osc.type = 'sine';
             osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
 
-            // Gentle warm lowpass filter - lets warm harmonics through without mud
             filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(540 + idx * 120, this.ctx.currentTime);
+            filter.frequency.setValueAtTime(420 + idx * 110, this.ctx.currentTime);
 
-            // Soft atmospheric volume
-            gain.gain.setValueAtTime(0.035 / (idx * 0.4 + 1), this.ctx.currentTime);
+            const targetVol = 0.03 / (idx * 0.35 + 1);
+            gain.gain.setValueAtTime(0.0001, this.ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(targetVol, this.ctx.currentTime + 1.2);
 
             osc.connect(filter);
             filter.connect(gain);
             gain.connect(this.masterGain);
-            gain.connect(this.delay);
 
             osc.start();
             this.droneOscs.push(osc);
+            this.droneGains.push(gain);
         });
     }
 
-    pluckKotoNote(freq, velocity = 0.16) {
+    pluckKotoNote(freq, velocity = 0.17) {
         if (!this.ctx || !this.isPlaying) return;
 
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const harmonicOsc = this.ctx.createOscillator();
+        const pickOsc = this.ctx.createOscillator();
         const filter = this.ctx.createBiquadFilter();
         const noteGain = this.ctx.createGain();
+        const pickGain = this.ctx.createGain();
 
-        // Warm plucked string with gentle octave shimmer
+        // Warm plucked string
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, now);
 
         harmonicOsc.type = 'sine';
         harmonicOsc.frequency.setValueAtTime(freq * 2, now);
 
+        // Crisp acoustic pick transient attack
+        pickOsc.type = 'triangle';
+        pickOsc.frequency.setValueAtTime(freq * 3, now);
+        pickGain.gain.setValueAtTime(velocity * 0.35, now);
+        pickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+        pickOsc.connect(pickGain);
+        pickGain.connect(this.masterGain);
+
         filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(Math.min(freq * 3.5, 4500), now);
-        filter.frequency.exponentialRampToValueAtTime(Math.max(freq * 1.2, 300), now + 2.5);
+        filter.frequency.setValueAtTime(Math.min(freq * 3.8, 4800), now);
+        filter.frequency.exponentialRampToValueAtTime(Math.max(freq * 1.2, 320), now + 2.2);
 
         noteGain.gain.setValueAtTime(0.0001, now);
         noteGain.gain.linearRampToValueAtTime(velocity, now + 0.012);
-        noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.8);
+        noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.6);
 
         osc.connect(filter);
         harmonicOsc.connect(filter);
         filter.connect(noteGain);
         noteGain.connect(this.masterGain);
-        noteGain.connect(this.delay);
 
         osc.start(now);
         harmonicOsc.start(now);
-        osc.stop(now + 3.0);
-        harmonicOsc.stop(now + 3.0);
+        pickOsc.start(now);
+        osc.stop(now + 2.8);
+        harmonicOsc.stop(now + 2.8);
+        pickOsc.stop(now + 0.06);
     }
 
-    playPhrase(phraseNotes) {
-        if (!this.isPlaying) return;
-        phraseNotes.forEach((note, index) => {
-            setTimeout(() => {
-                if (this.isPlaying) {
-                    this.pluckKotoNote(note, 0.14 + (index === phraseNotes.length - 1 ? 0.04 : 0));
-                }
-            }, index * 240);
-        });
-    }
-
-    scheduleNextNote() {
+    playStep() {
         if (!this.isPlaying) return;
 
-        // 35% chance to play an uplifting ascending arpeggio phrase, otherwise melodic plucked note
-        if (Math.random() < 0.35) {
-            const phrase = this.phrases[Math.floor(Math.random() * this.phrases.length)];
-            this.playPhrase(phrase);
-            const delayMs = 2800 + Math.random() * 2000;
-            this.timer = setTimeout(() => this.scheduleNextNote(), delayMs);
-        } else {
-            const note = this.notes[Math.floor(Math.random() * this.notes.length)];
-            this.pluckKotoNote(note, 0.16);
+        const song = this.songs[this.currentSongIndex];
+        if (!song) return;
 
-            // Shimmering companion note accompaniment
-            if (Math.random() < 0.45) {
-                setTimeout(() => {
-                    if (this.isPlaying) {
-                        const companion = this.notes[Math.floor(Math.random() * this.notes.length)];
-                        this.pluckKotoNote(companion, 0.11);
-                    }
-                }, 280 + Math.random() * 300);
+        const noteInfo = song.melody[this.currentNoteIndex];
+        if (!noteInfo) {
+            // End of current song: cycle smoothly to next song in randomized order
+            const lastSongId = song.id;
+            this.currentSongIndex++;
+            if (this.currentSongIndex >= this.songs.length) {
+                this.shufflePlaylist(lastSongId);
+            } else {
+                this.currentNoteIndex = 0;
             }
 
-            const delayMs = 1500 + Math.random() * 2200;
-            this.timer = setTimeout(() => this.scheduleNextNote(), delayMs);
+            const nextSong = this.getCurrentSong();
+            this.setDroneChord(nextSong.droneChord);
+            this.notifySongChange();
+
+            // Interlude pause between songs (2.2s)
+            this.timer = setTimeout(() => {
+                this.playStep();
+            }, 2200);
+            return;
         }
+
+        const [noteName, beats] = noteInfo;
+        const beatMs = (60 / song.tempo) * 1000;
+        const durationMs = beats * beatMs;
+
+        if (noteName && NOTE_FREQS[noteName]) {
+            const freq = NOTE_FREQS[noteName];
+            this.pluckKotoNote(freq, 0.17);
+        }
+
+        this.currentNoteIndex++;
+        this.timer = setTimeout(() => {
+            this.playStep();
+        }, durationMs);
     }
 
-    start() {
+    start(forceNewSong = false) {
         this.init();
-        if (this.ctx.state === 'suspended') {
+        if (this.ctx && this.ctx.state === 'suspended') {
             this.ctx.resume();
         }
+
+        if (this.isPlaying) return;
+
+        // If resuming after a pause or explicitly requested, switch to a different song
+        if (this.hasStartedBefore || forceNewSong) {
+            this.pickDifferentSong();
+        }
+        this.hasStartedBefore = true;
 
         this.isPlaying = true;
         this.masterGain.gain.cancelScheduledValues(this.ctx.currentTime);
         this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, this.ctx.currentTime);
         this.masterGain.gain.linearRampToValueAtTime(0.32, this.ctx.currentTime + 1.2);
 
-        this.startDrone();
-        this.scheduleNextNote();
+        const currentSong = this.getCurrentSong();
+        this.setDroneChord(currentSong.droneChord);
+        this.notifySongChange();
+        this.playStep();
     }
 
     stop() {
@@ -637,14 +1089,9 @@ class NagoyaSoundscape {
         const now = this.ctx.currentTime;
         this.masterGain.gain.cancelScheduledValues(now);
         this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
-        this.masterGain.gain.linearRampToValueAtTime(0.0001, now + 1.0);
+        this.masterGain.gain.linearRampToValueAtTime(0.0001, now + 0.8);
 
-        setTimeout(() => {
-            this.droneOscs.forEach(osc => {
-                try { osc.stop(); } catch(e) {}
-            });
-            this.droneOscs = [];
-        }, 1100);
+        this.stopDrone();
     }
 }
 
@@ -652,42 +1099,76 @@ const nagoyaSoundscape = new NagoyaSoundscape();
 
 function setupAlpineAudioStore() {
     if (window.Alpine && !window.Alpine.store('audio')) {
+        const isMuted = localStorage.getItem('nagoya_music_enabled') === 'false';
+        const initialSong = nagoyaSoundscape.getCurrentSong();
+
         window.Alpine.store('audio', {
-            isPlaying: false,
+            // Music plays by default unless explicitly muted by user
+            isPlaying: !isMuted,
+            currentSongTitle: initialSong ? `${initialSong.englishTitle} (${initialSong.japaneseTitle})` : 'Sakura Sakura (さくら さくら)',
+            currentSongEnglish: initialSong ? initialSong.englishTitle : 'Sakura Sakura',
+            currentSongJapanese: initialSong ? initialSong.japaneseTitle : 'さくら さくら',
+            currentSongCategory: initialSong ? (initialSong.category || 'Traditional & Folk') : 'Traditional & Folk',
 
             init() {
-                const saved = localStorage.getItem('nagoya_music_enabled');
-                if (saved === 'true') {
-                    const autoStart = () => {
-                        if (!this.isPlaying && localStorage.getItem('nagoya_music_enabled') === 'true') {
-                            this.play();
+                if (localStorage.getItem('nagoya_music_enabled') !== 'false') {
+                    this.play(false);
+
+                    // Modern browsers require a user interaction to resume audio context if autoplay policy triggers
+                    const unlockAutoplay = () => {
+                        if (localStorage.getItem('nagoya_music_enabled') !== 'false') {
+                            if (!nagoyaSoundscape.isPlaying) {
+                                this.play(false);
+                            } else if (nagoyaSoundscape.ctx && nagoyaSoundscape.ctx.state === 'suspended') {
+                                nagoyaSoundscape.ctx.resume();
+                            }
                         }
-                        window.removeEventListener('click', autoStart);
-                        window.removeEventListener('keydown', autoStart);
+                        ['click', 'keydown', 'pointerdown', 'touchstart'].forEach(evt => {
+                            window.removeEventListener(evt, unlockAutoplay);
+                        });
                     };
-                    window.addEventListener('click', autoStart, { once: true });
-                    window.addEventListener('keydown', autoStart, { once: true });
+
+                    ['click', 'keydown', 'pointerdown', 'touchstart'].forEach(evt => {
+                        window.addEventListener(evt, unlockAutoplay, { passive: true, once: true });
+                    });
                 }
+
+                window.addEventListener('nagoya:song-changed', (e) => {
+                    if (e.detail) {
+                        this.currentSongTitle = e.detail.title;
+                        this.currentSongEnglish = e.detail.englishTitle;
+                        this.currentSongJapanese = e.detail.japaneseTitle;
+                        this.currentSongCategory = e.detail.category || 'Japanese Classic';
+                    }
+                });
             },
 
             toggle() {
                 if (this.isPlaying) {
                     this.pause();
                 } else {
-                    this.play();
+                    // Turn back on with a different song than was previously playing
+                    this.play(true);
                 }
             },
 
-            play() {
-                nagoyaSoundscape.start();
+            play(forceDifferent = false) {
                 this.isPlaying = true;
                 localStorage.setItem('nagoya_music_enabled', 'true');
+                nagoyaSoundscape.start(forceDifferent);
+                const song = nagoyaSoundscape.getCurrentSong();
+                if (song) {
+                    this.currentSongTitle = `${song.englishTitle} (${song.japaneseTitle})`;
+                    this.currentSongEnglish = song.englishTitle;
+                    this.currentSongJapanese = song.japaneseTitle;
+                    this.currentSongCategory = song.category || 'Japanese Classic';
+                }
             },
 
             pause() {
-                nagoyaSoundscape.stop();
                 this.isPlaying = false;
                 localStorage.setItem('nagoya_music_enabled', 'false');
+                nagoyaSoundscape.stop();
             }
         });
     }

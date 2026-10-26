@@ -140,25 +140,56 @@
                     <span data-theme-label class="hidden xl:inline text-[11px]">Light</span>
                 </button>
 
-                <!-- Ambient Music Toggle Button -->
-                <button 
-                    type="button" 
-                    @click="$store.audio?.toggle()" 
-                    class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none"
-                    :class="$store.audio?.isPlaying ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 shadow-md shadow-indigo-500/20 ring-1 ring-indigo-500/40' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'"
-                    :title="$store.audio?.isPlaying ? 'Turn Background Music OFF' : 'Turn Background Music ON (Uplifting Japanese Ambient)'"
-                >
-                    <span x-show="!$store.audio?.isPlaying">🔇</span>
-                    <span x-show="$store.audio?.isPlaying" class="flex items-center gap-1">
-                        <span class="text-xs">🎵</span>
-                        <span class="inline-flex gap-0.5 items-end h-3">
-                            <span class="w-0.5 h-2 bg-indigo-400 rounded-full animate-bounce"></span>
-                            <span class="w-0.5 h-3 bg-emerald-400 rounded-full animate-bounce delay-75"></span>
-                            <span class="w-0.5 h-1.5 bg-indigo-400 rounded-full animate-bounce delay-150"></span>
+                <!-- Ambient Music Toggle Button with Hover Popover -->
+                <div class="relative group">
+                    <button 
+                        type="button" 
+                        @click="$store.audio?.toggle()" 
+                        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none"
+                        :class="$store.audio?.isPlaying ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 shadow-md shadow-indigo-500/20 ring-1 ring-indigo-500/40' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'"
+                    >
+                        <span x-show="!$store.audio?.isPlaying">🔇</span>
+                        <span x-show="$store.audio?.isPlaying" class="flex items-center gap-1">
+                            <span class="text-xs">🎵</span>
+                            <span class="inline-flex gap-0.5 items-end h-3">
+                                <span class="w-0.5 h-2 bg-indigo-400 rounded-full animate-bounce"></span>
+                                <span class="w-0.5 h-3 bg-emerald-400 rounded-full animate-bounce delay-75"></span>
+                                <span class="w-0.5 h-1.5 bg-indigo-400 rounded-full animate-bounce delay-150"></span>
+                            </span>
                         </span>
-                    </span>
-                    <span class="hidden lg:inline text-[11px]" x-text="$store.audio?.isPlaying ? 'Music ON' : 'Music OFF'"></span>
-                </button>
+                        <span class="hidden lg:inline text-[11px]" x-text="$store.audio?.isPlaying ? 'Music ON' : 'Music OFF'"></span>
+                    </button>
+
+                    <!-- Hover Popover: Song Title & Controls -->
+                    <div 
+                        class="absolute right-0 top-full mt-2 w-64 p-3.5 rounded-2xl bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-xl border border-indigo-500/30 shadow-2xl shadow-black/80 z-50 pointer-events-none opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 transition-all duration-200 origin-top-right space-y-2 text-left"
+                    >
+                        <div class="flex items-center justify-between gap-2 border-b border-slate-800 pb-2">
+                            <span class="text-[10px] font-black uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full" :class="$store.audio?.isPlaying ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'"></span>
+                                <span x-text="$store.audio?.isPlaying ? 'Now Playing' : 'Background Music'"></span>
+                            </span>
+                            <span class="text-[9px] font-semibold text-slate-300 px-1.5 py-0.5 rounded bg-slate-800/90 border border-slate-700/60" x-text="$store.audio?.isPlaying ? ($store.audio?.currentSongCategory || 'Traditional & Folk') : 'Paused'"></span>
+                        </div>
+
+                        <div x-show="$store.audio?.isPlaying" class="space-y-1">
+                            <div class="text-xs font-bold text-white leading-snug flex items-center gap-1.5">
+                                <span>🎵</span>
+                                <span x-text="$store.audio?.currentSongEnglish || 'Traditional Melody'"></span>
+                            </div>
+                            <div class="text-[11px] text-indigo-300/90 font-medium pl-5" x-text="$store.audio?.currentSongJapanese || ''"></div>
+                            <div class="text-[10px] text-slate-400 pt-1 border-t border-slate-800/60 flex items-center gap-1">
+                                <span>💡</span>
+                                <span>Click to mute • Shuffles on next play</span>
+                            </div>
+                        </div>
+
+                        <div x-show="!$store.audio?.isPlaying" class="space-y-1">
+                            <div class="text-xs font-semibold text-slate-300">Music is muted</div>
+                            <div class="text-[10px] text-slate-400">Click to play famous Japanese melodies (Sakura, Sukiyaki, Furusato, etc.)</div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Notification Bell -->
                 <button 

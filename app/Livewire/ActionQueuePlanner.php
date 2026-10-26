@@ -22,7 +22,7 @@ class ActionQueuePlanner extends Component
 
     public ?int $selectedNpcId = null;
 
-    public string $selectedActionType = 'casual_talk';
+    public ?string $selectedActionType = null;
 
     public ?string $infoActionType = null;
 
@@ -68,6 +68,7 @@ class ActionQueuePlanner extends Component
     public function refreshPlayerState(): void
     {
         $this->boot();
+        $this->selectedActionType = null;
     }
 
     public function onHomeWardSelected(int $wardId): void
@@ -195,6 +196,7 @@ class ActionQueuePlanner extends Component
         $this->selectedActionType = $type;
         $this->showActionInfoModal = false;
         $this->infoActionType = null;
+        $this->dispatch('scroll-to-queue-box');
     }
 
     public function touchHeartbeat(): void
@@ -206,6 +208,7 @@ class ActionQueuePlanner extends Component
     {
         $this->selectedWardId = $wardId;
         $this->selectedNpcId = null;
+        $this->selectedActionType = null;
         $this->mobileStep = 2;
     }
 
@@ -217,29 +220,7 @@ class ActionQueuePlanner extends Component
     public function selectNpc(int $npcId): void
     {
         $this->selectedNpcId = $npcId;
-        $npc = Npc::find($npcId);
-        if ($npc) {
-            // Smartly select recommended action based on 5 Levels of Leadership & spiritual readiness
-            if ($npc->need_state !== NpcNeedState::None) {
-                $this->selectedActionType = $npc->need_state->recommendedAction()->value;
-            } elseif ($npc->status === ReceptivityStatus::Green || $npc->hasPrayedSalvation) {
-                if (! $npc->trained_411) {
-                    $this->selectedActionType = MinistryActionType::Train411->value;
-                } elseif (! $npc->is_baptized) {
-                    $this->selectedActionType = MinistryActionType::CommandsOfChrist->value;
-                } elseif ($npc->leadership_tier->level() === 1) {
-                    $this->selectedActionType = MinistryActionType::MentorTimothy->value;
-                } elseif ($npc->leadership_tier->level() === 2) {
-                    $this->selectedActionType = MinistryActionType::IronOnIron->value;
-                } else {
-                    $this->selectedActionType = MinistryActionType::SwarmTraining->value;
-                }
-            } elseif ($npc->status === ReceptivityStatus::Yellow) {
-                $this->selectedActionType = MinistryActionType::Share3Circles->value;
-            } else {
-                $this->selectedActionType = MinistryActionType::CasualTalk->value;
-            }
-        }
+        $this->selectedActionType = null;
         $this->mobileStep = 3;
     }
 
@@ -269,7 +250,25 @@ class ActionQueuePlanner extends Component
             return;
         }
 
-        $actionEnum = MinistryActionType::tryFrom($this->selectedActionType) ?? MinistryActionType::CasualTalk;
+        if (! $this->selectedActionType) {
+            $this->dispatch('notify', [
+                'type' => 'warning',
+                'message' => 'Please select an action to schedule.',
+            ]);
+
+            return;
+        }
+
+        $actionEnum = MinistryActionType::tryFrom($this->selectedActionType);
+        if (! $actionEnum) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Invalid action type selected.',
+            ]);
+
+            return;
+        }
+
         $baseApCost = $actionEnum->apCost();
         $targetWard = Ward::find($this->selectedWardId);
         $commuteApCost = $this->player->commuteApCostForWard($targetWard);
@@ -337,7 +336,10 @@ class ActionQueuePlanner extends Component
         ]);
 
         $this->notes = '';
+        $this->selectedActionType = null;
+        $this->mobileStep = 2;
         $this->dispatch('action-queued');
+        $this->dispatch('scroll-to-step-2');
         $commuteMsg = $commuteApCost > 0 ? " (includes +{$commuteApCost} AP transit)" : '';
         $this->dispatch('notify', [
             'type' => 'success',
@@ -406,6 +408,8 @@ class ActionQueuePlanner extends Component
 
         $this->player->refresh();
         $this->session->refresh();
+        $this->selectedActionType = null;
+        $this->notes = '';
 
         $this->dispatch('day-advanced');
         $this->dispatch('notify', [
@@ -438,6 +442,8 @@ class ActionQueuePlanner extends Component
         $result = $engine->resolveGameMonthForUser($this->player);
 
         $this->player->refresh();
+        $this->selectedActionType = null;
+        $this->notes = '';
 
         $this->dispatch('day-advanced');
         $this->dispatch('open-month-review');
@@ -490,6 +496,29 @@ class ActionQueuePlanner extends Component
             ? array_values(array_filter($allActionTypes, fn (MinistryActionType $action) => $action->isEligibleFor($selectedNpc)))
             : $allActionTypes;
 
+        $recommendedActionType = null;
+        if ($selectedNpc) {
+            if ($selectedNpc->need_state !== NpcNeedState::None) {
+                $recommendedActionType = $selectedNpc->need_state->recommendedAction()->value;
+            } elseif ($selectedNpc->status === ReceptivityStatus::Green || $selectedNpc->hasPrayedSalvation) {
+                if (! $selectedNpc->trained_411) {
+                    $recommendedActionType = MinistryActionType::Train411->value;
+                } elseif (! $selectedNpc->is_baptized) {
+                    $recommendedActionType = MinistryActionType::CommandsOfChrist->value;
+                } elseif ($selectedNpc->leadership_tier->level() === 1) {
+                    $recommendedActionType = MinistryActionType::MentorTimothy->value;
+                } elseif ($selectedNpc->leadership_tier->level() === 2) {
+                    $recommendedActionType = MinistryActionType::IronOnIron->value;
+                } else {
+                    $recommendedActionType = MinistryActionType::SwarmTraining->value;
+                }
+            } elseif ($selectedNpc->status === ReceptivityStatus::Yellow) {
+                $recommendedActionType = MinistryActionType::Share3Circles->value;
+            } else {
+                $recommendedActionType = MinistryActionType::CasualTalk->value;
+            }
+        }
+
         $infoActionEnum = $this->infoActionType ? MinistryActionType::tryFrom($this->infoActionType) : null;
 
         $commuteApCost = $this->player ? $this->player->commuteApCostForWard($selectedWard) : 0;
@@ -522,6 +551,7 @@ class ActionQueuePlanner extends Component
             'recentOutcomes' => $recentOutcomes,
             'actionTypes' => $actionTypes,
             'allActionTypes' => $allActionTypes,
+            'recommendedActionType' => $recommendedActionType,
             'infoActionEnum' => $infoActionEnum,
             'commuteApCost' => $commuteApCost,
             'commuteMinutes' => $commuteMinutes,

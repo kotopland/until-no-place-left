@@ -1,4 +1,45 @@
-<div class="space-y-6" wire:poll.60s="touchHeartbeat" x-data="{ mobileStep: @entangle('mobileStep') }">
+@php
+    $selectedActionEnum = $selectedActionType ? \App\Enums\MinistryActionType::tryFrom($selectedActionType) : null;
+    $selectedActionCost = $selectedActionEnum ? ($selectedActionEnum->apCost() + $commuteApCost) : 0;
+    $hasEnoughApForSelected = $selectedActionEnum && ($player?->action_points ?? 0) >= $selectedActionCost;
+    $remainingApAfterQueue = $selectedActionEnum ? max(0, ($player?->action_points ?? 0) - $selectedActionCost) : ($player?->action_points ?? 0);
+    $targetPersonLabel = $selectedNpc ? $selectedNpc->displayName : ($selectedWard?->name ? $selectedWard->name.' (Ward Action)' : 'Ward Action');
+@endphp
+
+<div class="space-y-6 pb-28 lg:pb-0" wire:poll.60s="touchHeartbeat" x-data="{ 
+    mobileStep: @entangle('mobileStep'),
+    scrollToQueue() {
+        this.$nextTick(() => {
+            setTimeout(() => {
+                const target = document.getElementById('queue-action-button') || document.getElementById('queue-action-button-placeholder') || document.getElementById('ready-to-queue-box');
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 60);
+        });
+    },
+    scrollToStep2() {
+        this.mobileStep = 2;
+        this.$nextTick(() => {
+            setTimeout(() => {
+                const breadcrumb = document.getElementById('step-2-breadcrumb');
+                const box = document.getElementById('step-2-box');
+                // Only select breadcrumb if it is actually rendered and visible (on desktop)
+                const isBreadcrumbVisible = breadcrumb && (breadcrumb.offsetParent !== null || breadcrumb.getBoundingClientRect().height > 0);
+                const target = isBreadcrumbVisible ? breadcrumb : (box || breadcrumb);
+                if (target) {
+                    const rect = target.getBoundingClientRect();
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const navBar = document.querySelector('header.sticky') || document.querySelector('header');
+                    const navHeight = navBar ? navBar.offsetHeight : 64;
+                    // Generous extra offset so Step 2 scrolls higher up, avoiding sticky header obstruction with ample breathing room
+                    const top = Math.max(0, rect.top + scrollTop - navHeight - 48);
+                    window.scrollTo({ top: top, behavior: 'smooth' });
+                }
+            }, 60);
+        });
+    }
+}" @scroll-to-queue-box.window="scrollToQueue()" @scroll-to-step-2.window="scrollToStep2()">
     <!-- Welcome Guide Banner with Official Logo -->
     <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-100 via-indigo-50/60 to-slate-100 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 border border-slate-200 dark:border-slate-800/80 p-4 shadow-sm dark:shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
@@ -199,21 +240,68 @@
 
             <span class="text-slate-600 text-xs">➔</span>
 
-            <!-- Step 3 Button: Action -->
+            <!-- Step 3 Button: Action & Queue -->
             <button 
                 type="button" 
                 @click="mobileStep = 3; $wire.setMobileStep(3)"
                 class="flex-1 py-2 px-1.5 rounded-xl text-center transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer"
                 :class="mobileStep === 3 ? 'bg-indigo-600 text-white shadow-md font-bold ring-1 ring-indigo-400' : 'bg-slate-800/60 text-slate-400 hover:text-white'"
             >
-                <span class="text-[9px] uppercase tracking-wider flex items-center gap-1 opacity-80">
+                <span class="text-[9px] uppercase tracking-wider flex items-center gap-1 opacity-90">
                     <span class="w-3.5 h-3.5 rounded-full bg-white/20 inline-flex items-center justify-center text-[8px] font-bold">3</span>
-                    <span>Action</span>
+                    <span>Queue</span>
                 </span>
                 <span class="text-xs font-bold truncate max-w-[95px] text-amber-300">
                     {{ $player->action_points ?? 12 }} AP left
                 </span>
             </button>
+        </div>
+    </div>
+
+    <!-- Desktop 3-Step Guided Workflow Bar (Visible on lg screens) -->
+    <div class="hidden lg:grid grid-cols-12 gap-5 mb-1">
+        <!-- Step 1: District -->
+        <div class="col-span-3 px-3.5 py-2.5 rounded-2xl bg-slate-900/70 border border-slate-800/90 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-indigo-600 text-white font-extrabold text-[11px] flex items-center justify-center shadow-sm">1</span>
+                <div>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold leading-none">Step 1</span>
+                    <span class="font-bold text-white leading-tight">Pick District</span>
+                </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-950 text-indigo-300 border border-slate-800 truncate max-w-[100px]">
+                {{ $selectedWard?->name ?? 'Select Ward' }}
+            </span>
+        </div>
+
+        <!-- Step 2: Seeker / Resident -->
+        <div id="step-2-breadcrumb" class="scroll-mt-28 col-span-4 px-3.5 py-2.5 rounded-2xl bg-slate-900/70 border border-slate-800/90 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-indigo-600 text-white font-extrabold text-[11px] flex items-center justify-center shadow-sm">2</span>
+                <div>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold leading-none">Step 2</span>
+                    <span class="font-bold text-white leading-tight">Pick Resident / Seeker</span>
+                </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-950 text-indigo-300 border border-slate-800 truncate max-w-[130px]">
+                {{ $selectedNpc?->displayName ?? 'Ward-wide Action' }}
+            </span>
+        </div>
+
+        <!-- Step 3: Action & Queue -->
+        <div class="col-span-5 px-3.5 py-2.5 rounded-2xl bg-slate-900/70 border border-slate-800/90 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-indigo-600 text-white font-extrabold text-[11px] flex items-center justify-center shadow-sm">3</span>
+                <div>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold leading-none">Step 3 • Action HQ</span>
+                    <span class="font-bold text-white leading-tight">Queue for Day {{ $player?->current_game_day ?? 1 }}</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-950 text-amber-300 border border-slate-800">
+                    ⚡ {{ $player?->action_points ?? 0 }} AP Available
+                </span>
+            </div>
         </div>
     </div>
 
@@ -297,7 +385,8 @@
 
         <!-- Column 2: Ward Residents / NPCs (lg:col-span-4) -->
         <div 
-            class="lg:col-span-4 bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 shadow-lg flex-col h-[560px] lg:h-[640px]"
+            id="step-2-box"
+            class="scroll-mt-28 lg:col-span-4 bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 shadow-lg flex-col h-[560px] lg:h-[640px]"
             :class="mobileStep === 2 ? 'flex' : 'hidden lg:flex'"
         >
             <div class="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-800">
@@ -645,9 +734,14 @@
                         @php
                             $isEligible = $action->isEligibleFor($selectedNpc);
                             $ineligibilityReason = $action->ineligibilityReason($selectedNpc);
+                            $isSelected = $selectedActionType === $action->value;
+                            $isRecommended = $selectedNpc && ($recommendedActionType === $action->value);
                         @endphp
                         <label 
-                            class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all relative {{ ! $isEligible ? 'opacity-60 bg-slate-900/40 border-slate-800/60 text-slate-400 cursor-not-allowed' : ($selectedActionType === $action->value ? 'bg-indigo-950/60 border-indigo-500 text-white shadow-md ring-1 ring-indigo-500/50 cursor-pointer' : 'bg-slate-800/40 border-slate-800 text-slate-300 hover:border-slate-700 cursor-pointer') }}"
+                            @if($isEligible)
+                                @click="scrollToQueue()"
+                            @endif
+                            class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all relative {{ ! $isEligible ? 'opacity-60 bg-slate-900/40 border-slate-800/60 text-slate-400 cursor-not-allowed' : ($isSelected ? 'bg-slate-800 border-2 border-emerald-400 text-white shadow-lg ring-2 ring-emerald-500/40 cursor-pointer' : 'bg-slate-800/40 border-slate-800 text-slate-300 hover:border-slate-700 cursor-pointer') }}"
                             title="{{ $isEligible ? $action->description() : 'Locked: '.$ineligibilityReason }}"
                         >
                             <input 
@@ -656,7 +750,7 @@
                                 value="{{ $action->value }}" 
                                 wire:model.live="selectedActionType"
                                 @disabled(! $isEligible)
-                                class="mt-1 text-indigo-500 focus:ring-indigo-500 disabled:opacity-40"
+                                class="mt-1 text-emerald-500 focus:ring-emerald-500 disabled:opacity-40"
                             >
                             <div class="min-w-0 flex-1">
                                 <div class="flex items-start justify-between gap-1.5">
@@ -670,17 +764,29 @@
                                             @endif
                                         </span>
                                     </span>
-                                    <div class="flex items-center gap-1 shrink-0">
+                                    <div class="flex items-center gap-1 shrink-0 flex-wrap justify-end">
+                                        @if($isSelected && $isEligible)
+                                            <span class="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-emerald-500 text-slate-950 shadow-sm flex items-center gap-0.5">
+                                                <span>✓</span>
+                                                <span>SELECTED</span>
+                                            </span>
+                                        @endif
+                                        @if($isRecommended && ! $isSelected)
+                                            <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-0.5" title="Recommended action for this person">
+                                                <span>💡</span>
+                                                <span>Recommended</span>
+                                            </span>
+                                        @endif
                                         @if(! $isEligible)
                                             <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-950/80 text-rose-300 border border-rose-800/60 flex items-center gap-0.5" title="{{ $ineligibilityReason }}">
                                                 <span>🔒</span>
                                                 <span>Locked</span>
                                             </span>
                                         @endif
-                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-900/90 text-amber-400 border border-slate-700/50 flex items-center gap-1">
+                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ $isSelected ? 'bg-slate-950 text-amber-300 border border-slate-700' : 'bg-slate-900/90 text-amber-400 border border-slate-700/50' }} flex items-center gap-1">
                                             <span>{{ $action->apCost() + $commuteApCost }} AP</span>
                                             @if($commuteApCost > 0)
-                                                <span class="text-[9px] text-amber-300 font-normal opacity-90" title="Includes +{{ $commuteApCost }} AP transit cost from your home base">(+{{ $commuteApCost }} commute)</span>
+                                                <span class="text-[9px] text-amber-300 font-normal opacity-90" title="Includes +{{ $commuteApCost }} AP transit cost from your home base">(+{{ $commuteApCost }})</span>
                                             @endif
                                         </span>
                                     </div>
@@ -739,36 +845,122 @@
                     </div>
                 @endif
 
-                <!-- Optional Notes -->
-                <div class="mb-3">
-                    <input 
-                        type="text" 
-                        wire:model="notes" 
-                        placeholder="Add prayer focus or personal notes (optional)..." 
-                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                    >
-                </div>
+                <!-- Step 3: READY TO QUEUE DAY X Box (Solid single color, clean section header, scrolls here on action click) -->
+                <div id="ready-to-queue-box" class="mt-4 p-4 rounded-2xl bg-slate-950 border border-slate-800 shadow-lg space-y-3">
+                    <!-- Section Header (Clean header, not styled like a button) -->
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                        <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                            <span>⚡</span>
+                            <span>Ready to Queue • Day {{ $player?->current_game_day ?? 1 }}</span>
+                        </h3>
+                        @if($selectedActionEnum)
+                            <span class="text-xs font-bold {{ $hasEnoughApForSelected ? 'text-amber-400' : 'text-rose-400' }}">
+                                Cost: {{ $selectedActionCost }} AP
+                                @if($commuteApCost > 0)
+                                    <span class="text-[10px] text-amber-300 font-normal">(+{{ $commuteApCost }} transit)</span>
+                                @endif
+                            </span>
+                        @else
+                            <span class="text-[10px] text-slate-500 font-medium">Step 3 of 3</span>
+                        @endif
+                    </div>
 
-                <!-- Queue Button -->
-                <button 
-                    type="button"
-                    wire:click="queueAction"
-                    class="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-500 hover:to-emerald-500 text-white shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
-                >
-                    <span>➕</span>
-                    <span>Queue for Day {{ $player?->current_game_day ?? 1 }} • Executes on Next Day</span>
-                </button>
+                    @if($selectedActionEnum)
+                        <!-- Selected Action Summary -->
+                        <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                            <div class="flex items-center justify-between gap-2 flex-wrap">
+                                <div class="flex items-center gap-2 truncate">
+                                    <span class="text-base">{{ $selectedActionEnum->icon() }}</span>
+                                    <span class="text-xs font-bold text-white truncate">{{ $selectedActionEnum->label() }}</span>
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-slate-300 shrink-0">
+                                        {{ $selectedActionEnum->fieldName() }}
+                                    </span>
+                                </div>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $hasEnoughApForSelected ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-rose-950 text-rose-300 border border-rose-800' }}">
+                                    {{ $hasEnoughApForSelected ? 'AP Available' : 'Low AP' }}
+                                </span>
+                            </div>
 
-                <!-- Mobile Quick Action: Choose another person in ward -->
-                <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs lg:hidden">
-                    <button 
-                        type="button"
-                        @click="mobileStep = 2; $wire.setMobileStep(2)"
-                        class="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer"
-                    >
-                        <span>👥</span>
-                        <span>Select Another Person in {{ $selectedWard?->name }}</span>
-                    </button>
+                            <div class="text-[11px] text-slate-300 mt-2 flex items-center gap-2 flex-wrap">
+                                <span>🎯 Target: <strong class="text-white">{{ $targetPersonLabel }}</strong></span>
+                                <span class="text-slate-600">•</span>
+                                <span class="font-bold {{ $hasEnoughApForSelected ? 'text-amber-400' : 'text-rose-400' }}">
+                                    ⚡ {{ $selectedActionCost }} AP
+                                    @if($commuteApCost > 0)
+                                        <span class="text-[10px] text-amber-300 font-normal">(+{{ $commuteApCost }} transit)</span>
+                                    @endif
+                                </span>
+                                <span class="text-slate-600">•</span>
+                                <span class="text-slate-400 text-[10px]">
+                                    Remaining: <strong class="text-slate-200">{{ $remainingApAfterQueue }} AP</strong>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Optional Notes -->
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-400 mb-1">
+                                Personal / Prayer Notes (Optional):
+                            </label>
+                            <input 
+                                type="text" 
+                                wire:model="notes" 
+                                placeholder="Add prayer focus or personal notes (optional)..." 
+                                class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                            >
+                        </div>
+
+                        <!-- Bottom Queue Button -->
+                        <button 
+                            id="queue-action-button"
+                            type="button"
+                            wire:click="queueAction"
+                            @click="scrollToStep2()"
+                            wire:loading.attr="disabled"
+                            @disabled(! $hasEnoughApForSelected)
+                            class="w-full py-3 px-4 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-[0.99] {{ $hasEnoughApForSelected ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950 ring-2 ring-emerald-400/50 hover:scale-[1.01]' : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60' }}"
+                        >
+                            <span wire:loading.remove wire:target="queueAction" class="flex items-center gap-1.5">
+                                <span class="text-sm">➕</span>
+                                <span>Queue for Day {{ $player?->current_game_day ?? 1 }} • {{ $selectedActionCost }} AP (Executes on Next Day)</span>
+                            </span>
+                            <span wire:loading wire:target="queueAction" class="flex items-center gap-1.5">
+                                <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                <span>Queueing Action for Day {{ $player?->current_game_day ?? 1 }}...</span>
+                            </span>
+                        </button>
+                    @else
+                        <!-- No Action Selected Prompt -->
+                        <div class="p-3.5 rounded-xl bg-slate-900/60 border border-dashed border-slate-800 text-center">
+                            <p class="text-xs text-slate-300 font-medium">
+                                No action selected yet
+                            </p>
+                            <p class="text-[11px] text-slate-400 mt-1">
+                                Click an action from the list above to schedule it for Day {{ $player?->current_game_day ?? 1 }}.
+                            </p>
+                        </div>
+
+                        <button 
+                            id="queue-action-button-placeholder"
+                            type="button" 
+                            disabled 
+                            class="w-full py-3 px-4 rounded-xl font-bold text-xs bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60"
+                        >
+                            Select an Action Above to Queue for Day {{ $player?->current_game_day ?? 1 }}
+                        </button>
+                    @endif
+
+                    <!-- Mobile Quick Action: Choose another person in ward -->
+                    <div class="pt-1 flex items-center justify-between text-xs lg:hidden">
+                        <button 
+                            type="button" 
+                            @click="mobileStep = 2; $wire.setMobileStep(2)"
+                            class="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer border border-slate-800"
+                        >
+                            <span>👥</span>
+                            <span>Select Another Person in {{ $selectedWard?->name }}</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -974,4 +1166,49 @@
             </div>
         </div>
     @endif
+
+    <!-- Mobile Sticky Bottom Confirmation Dock (Visible on mobile/tablet in Step 3 when an action is selected) -->
+    <div 
+        class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-slate-950 border-t border-slate-800 p-3 shadow-2xl"
+        x-show="mobileStep === 3 && @js($selectedActionEnum !== null)"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="translate-y-full opacity-0"
+        x-transition:enter-end="translate-y-0 opacity-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="translate-y-0 opacity-100"
+        x-transition:leave-end="translate-y-full opacity-0"
+    >
+        <div class="flex items-center justify-between gap-3 max-w-lg mx-auto">
+            <div class="min-w-0 flex-1">
+                <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                    Ready to Queue • Day {{ $player?->current_game_day ?? 1 }}
+                </div>
+                <div class="text-xs font-bold text-white truncate flex items-center gap-1 mt-0.5">
+                    <span>{{ $selectedActionEnum?->icon() ?? '⚡' }}</span>
+                    <span>{{ $selectedActionEnum?->label() ?? 'Selected Action' }}</span>
+                </div>
+                <div class="text-[11px] text-slate-300 truncate">
+                    For <strong class="text-indigo-300">{{ $selectedNpc ? $selectedNpc->displayName : ($selectedWard?->name ?? 'Ward') }}</strong> • <span class="font-bold {{ $hasEnoughApForSelected ? 'text-amber-400' : 'text-rose-400' }}">⚡ {{ $selectedActionCost }} AP</span>
+                </div>
+            </div>
+
+            <button 
+                type="button"
+                wire:click="queueAction"
+                @click="scrollToStep2()"
+                wire:loading.attr="disabled"
+                @disabled(! $hasEnoughApForSelected)
+                class="px-4 py-2.5 rounded-xl font-bold text-xs transition shadow-lg shrink-0 flex items-center justify-center gap-1.5 {{ $hasEnoughApForSelected ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950 active:scale-95' : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60' }}"
+            >
+                <span wire:loading.remove wire:target="queueAction" class="flex items-center gap-1">
+                    <span>➕</span>
+                    <span>Queue for Day {{ $player?->current_game_day ?? 1 }}</span>
+                </span>
+                <span wire:loading wire:target="queueAction" class="flex items-center gap-1">
+                    <span class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    <span>Queueing...</span>
+                </span>
+            </button>
+        </div>
+    </div>
 </div>

@@ -380,3 +380,66 @@ test('queueing share 3 circles for resident in home ward on day 2 schedules acti
     $user->refresh();
     expect($user->action_points)->toBe(10); // 12 - 2 AP
 });
+
+test('action queue planner renders prominent desktop and mobile queue call-to-action flows', function () {
+    $session = GameSession::create([
+        'name' => 'Nagoya Test Session',
+        'code' => 'nagoya-cta-test',
+        'current_game_month' => 1,
+        'current_game_day' => 3,
+        'is_active' => true,
+    ]);
+
+    $ward = Ward::create([
+        'name' => 'Chikusa-ku',
+        'name_ja' => '千種区',
+        'slug' => 'chikusa-ku',
+        'center_lat' => 35.16,
+        'center_lng' => 136.96,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'home_ward_id' => $ward->id,
+        'current_game_month' => 1,
+        'current_game_day' => 3,
+        'action_points' => 12,
+        'max_action_points' => 12,
+    ]);
+
+    $npc = Npc::create([
+        'game_session_id' => $session->id,
+        'ward_id' => $ward->id,
+        'name' => 'Kenji Sato',
+        'name_ja' => '佐藤 健二',
+        'role_archetype' => NpcRoleArchetype::Salaryman,
+        'need_state' => NpcNeedState::EmotionalCrisis,
+        'status' => ReceptivityStatus::Yellow,
+        'trust_level' => 40,
+        'lat' => 35.16,
+        'lng' => 136.96,
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test(ActionQueuePlanner::class)
+        ->assertSet('selectedActionType', null)
+        ->call('selectWard', $ward->id)
+        ->call('selectNpc', $npc->id)
+        ->assertSet('selectedActionType', null)
+        ->assertSee('Step 1')
+        ->assertSee('Step 2')
+        ->assertSee('Step 3')
+        ->assertSee('ready-to-queue-box')
+        ->assertSee('Ready to Queue • Day 3')
+        ->assertSee('No action selected yet')
+        ->assertSee('Select an Action Above to Queue for Day 3')
+        ->call('queueAction')
+        ->assertDispatched('notify', fn ($name, $params) => ($params['type'] ?? '') === 'warning' || str_contains(json_encode($params), 'Please select an action'))
+        ->set('selectedActionType', MinistryActionType::Share3Circles->value)
+        ->assertSee('Share 3 Circles Gospel Presentation')
+        ->assertSee('Queue for Day 3 • 2 AP')
+        ->call('queueAction')
+        ->assertDispatched('scroll-to-step-2')
+        ->assertSet('mobileStep', 2);
+});
