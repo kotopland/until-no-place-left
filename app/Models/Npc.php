@@ -7,6 +7,7 @@ use App\Enums\LeadershipTier;
 use App\Enums\NpcNeedState;
 use App\Enums\NpcRoleArchetype;
 use App\Enums\ReceptivityStatus;
+use App\Services\PersonAvatarService;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -41,6 +42,9 @@ use Illuminate\Support\Carbon;
  * @property float $lng
  * @property string|null $backstory
  * @property array<string, mixed>|null $spiritual_journal
+ * @property string $gender
+ * @property int $age
+ * @property string $nationality
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -50,6 +54,9 @@ use Illuminate\Support\Carbon;
     'ward_id',
     'name',
     'name_ja',
+    'gender',
+    'age',
+    'nationality',
     'role_archetype',
     'need_state',
     'status',
@@ -80,6 +87,15 @@ class Npc extends Model
         static::creating(function (Npc $npc): void {
             if (empty($npc->name_ja)) {
                 $npc->name_ja = $npc->name;
+            }
+            if (empty($npc->gender)) {
+                $npc->gender = 'male';
+            }
+            if (empty($npc->age)) {
+                $npc->age = 30;
+            }
+            if (empty($npc->nationality)) {
+                $npc->nationality = 'Japanese';
             }
             if (empty($npc->lat)) {
                 $npc->lat = 35.1700;
@@ -140,6 +156,73 @@ class Npc extends Model
     }
 
     /**
+     * PHP 8.4 Property Hook: Gender symbol
+     */
+    public string $genderIcon {
+        get => app(PersonAvatarService::class)->genderIcon($this->gender ?? 'male');
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Capitalized gender label
+     */
+    public string $genderLabel {
+        get => ucfirst(strtolower($this->gender ?? 'male'));
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Country flag emoji
+     */
+    public string $nationalityFlag {
+        get => app(PersonAvatarService::class)->flagEmoji($this->nationality ?? 'Japanese');
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Age bracket key
+     */
+    public string $ageGroup {
+        get => app(PersonAvatarService::class)->ageGroup($this->age ?? 30);
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Formatted age group label
+     */
+    public string $ageGroupLabel {
+        get => app(PersonAvatarService::class)->ageGroupLabel($this->age ?? 30);
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Full demographic summary badge string
+     */
+    public string $demographicSummary {
+        get => "{$this->nationalityFlag} {$this->nationality} • {$this->genderIcon} {$this->age} yrs ({$this->ageGroupLabel})";
+    }
+
+    /**
+     * Returns the demographic SVG avatar markup.
+     */
+    public function avatarSvg(int $pixelSize = 64, bool $includeBadges = false): string
+    {
+        return app(PersonAvatarService::class)->forPerson($this, $pixelSize, $includeBadges);
+    }
+
+    /**
+     * Returns the demographic base64 SVG data URI.
+     */
+    public function avatarDataUri(int $pixelSize = 64, bool $includeBadges = false): string
+    {
+        return app(PersonAvatarService::class)->generateDataUri(
+            $this->gender ?? 'male',
+            $this->age ?? 30,
+            $this->nationality ?? 'Japanese',
+            $this->role_archetype?->value,
+            $this->status?->value,
+            $pixelSize,
+            $includeBadges,
+            $this->name
+        );
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -147,6 +230,9 @@ class Npc extends Model
     protected function casts(): array
     {
         return [
+            'gender' => 'string',
+            'age' => 'integer',
+            'nationality' => 'string',
             'role_archetype' => NpcRoleArchetype::class,
             'need_state' => NpcNeedState::class,
             'status' => ReceptivityStatus::class,

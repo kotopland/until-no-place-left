@@ -441,30 +441,45 @@
             <!-- Tab 2: Acts 2 Church Circles Viewer & Generational Lineage -->
             <div class="space-y-6">
                 <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <span class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                            <span>⛪</span>
-                            <span>Field 4: The Harvested Field</span>
-                        </span>
-                        <h2 class="text-xl font-black text-white mt-0.5">Acts 2 Church Circles</h2>
-                        <p class="text-xs text-slate-400 mt-1">
-                            A healthy church practices all 11 core elements: Repentance/Belief, Baptism, Word, Communion, Prayer, Fellowship, Mercy/Giving, Worship, Local Leaders, and Discipleship.
+                    <div class="space-y-1.5 max-w-2xl">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <span>⛪</span>
+                                <span>Field 4: The Harvested Field</span>
+                            </span>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-950 text-indigo-300 border border-indigo-800 flex items-center gap-1 shadow-sm">
+                                <span>🌐</span>
+                                <span>City-Wide Scope • All 16 Wards</span>
+                            </span>
+                            @if($user?->homeWard)
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-800/90 text-slate-400 border border-slate-700">
+                                    Your Base: {{ $user->homeWard->name }}
+                                </span>
+                            @endif
+                        </div>
+                        <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+                            <span>Nagoya Acts 2 Church Circles</span>
+                        </h2>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            <strong class="text-slate-200">Nagoya-Wide Network:</strong> This view catalogs all multiplying house churches across every district in Greater Nagoya, not just your local residence in <span class="text-indigo-400 font-semibold">{{ $user?->homeWard?->name ?? 'your home ward' }}</span>. A healthy church practices all 11 core Acts 2 elements.
                         </p>
                     </div>
 
                     <!-- Church Selector Tabs -->
-                    <div class="flex items-center gap-2 overflow-x-auto max-w-full pb-1">
-                        @foreach($churches as $ch)
-                            <button 
-                                type="button"
-                                wire:click="selectChurch({{ $ch->id }})"
-                                class="px-3.5 py-2 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 {{ $activeChurchId === $ch->id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-800 text-slate-300 hover:bg-slate-700' }}"
-                            >
-                                <span>G{{ $ch->generation }}</span>
-                                <span class="truncate max-w-[140px]">{{ $ch->name }}</span>
-                            </button>
-                        @endforeach
-                    </div>
+                    @if(count($churches) > 0)
+                        <div class="flex items-center gap-2 overflow-x-auto max-w-full pb-1">
+                            @foreach($churches as $ch)
+                                <button 
+                                    type="button"
+                                    wire:click="selectChurch({{ $ch->id }})"
+                                    class="px-3.5 py-2 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 {{ $activeChurchId === $ch->id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-slate-800 text-slate-300 hover:bg-slate-700' }}"
+                                >
+                                    <span>G{{ $ch->generation }}</span>
+                                    <span class="truncate max-w-[140px]">{{ $ch->name }}</span>
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
 
                 @if($activeChurch)

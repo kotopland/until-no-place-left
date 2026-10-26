@@ -469,14 +469,19 @@
                         <div class="mt-2.5 pt-2 border-t border-slate-700/60 space-y-2">
                             @foreach($aiCoLaborersInWard as $aiCoLaborer)
                                 <div class="bg-indigo-950/40 border border-indigo-500/30 rounded-xl p-2.5 text-xs">
-                                    <div class="flex items-center justify-between gap-1.5 flex-wrap">
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="text-sm">🤝</span>
+                                    <div class="flex items-center justify-between gap-2 flex-wrap">
+                                        <div class="flex items-center gap-2">
+                                            <x-person-avatar :person="$aiCoLaborer" size="sm" :showBadges="true" class="shrink-0" />
                                             <div>
-                                                <span class="font-bold text-white">{{ $aiCoLaborer->name }}</span>
-                                                <span class="ml-1 px-1.5 py-0.2 rounded text-[9px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
-                                                    {{ $aiCoLaborer->archetypeBadgeLabel }}
-                                                </span>
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="font-bold text-white">{{ $aiCoLaborer->name }}</span>
+                                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                                                        {{ $aiCoLaborer->archetypeBadgeLabel }}
+                                                    </span>
+                                                </div>
+                                                <div class="text-[10px] text-slate-400 mt-0.5">
+                                                    {{ $aiCoLaborer->nationalityFlag }} {{ $aiCoLaborer->nationality }} • {{ $aiCoLaborer->genderIcon }} {{ $aiCoLaborer->age }}y
+                                                </div>
                                             </div>
                                         </div>
                                         <span class="text-[10px] text-indigo-300 font-medium">
@@ -512,15 +517,44 @@
                                                 <span class="text-[9px] {{ ($jointWalkStatus['walks_today'] ?? 0) >= 1 ? 'text-amber-400' : 'text-rose-400' }}">({{ ($jointWalkStatus['walks_today'] ?? 0) >= 1 ? '1/day cap' : '3/wk cap' }})</span>
                                             </button>
                                         @endif
-                                        <button 
-                                            type="button"
-                                            wire:click="conductIronOnIron({{ $aiCoLaborer->id }})"
-                                            class="px-2 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] transition cursor-pointer shadow flex items-center gap-1 active:scale-95"
-                                            title="Iron-on-Iron meeting with {{ $aiCoLaborer->name }} (+2 bonus AP, +25 Co-op score, and tactical missionary advice)"
-                                        >
-                                            <span>⚔️</span>
-                                            <span>Iron-on-Iron (+2 AP)</span>
-                                        </button>
+                                        @php
+                                            $isCoLaborerDoneToday = in_array($aiCoLaborer->id, $doneColaborerIdsToday ?? [], true);
+                                            $isIoICappedToday = ($totalIoIToday ?? 0) >= 3;
+                                        @endphp
+                                        @if(! $isCoLaborerDoneToday && ! $isIoICappedToday)
+                                            <button 
+                                                type="button"
+                                                wire:click="conductIronOnIron({{ $aiCoLaborer->id }})"
+                                                class="px-2 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] transition cursor-pointer shadow flex items-center gap-1 active:scale-95"
+                                                title="Iron-on-Iron meeting with {{ $aiCoLaborer->name }} (+2 bonus AP, +25 Co-op score, and tactical missionary advice). {{ $remainingIoIToday ?? 3 }}/3 sessions left today (max 1/person/day)."
+                                            >
+                                                <span>⚔️</span>
+                                                <span>Iron-on-Iron (+2 AP)</span>
+                                                <span class="text-[9px] text-indigo-200 opacity-90">({{ $remainingIoIToday ?? 3 }}/3 left)</span>
+                                            </button>
+                                        @elseif($isCoLaborerDoneToday)
+                                            <button 
+                                                type="button"
+                                                disabled
+                                                class="px-2 py-1 rounded-lg bg-slate-800 text-slate-400 font-bold text-[10px] cursor-not-allowed opacity-75 flex items-center gap-1 border border-slate-700/60"
+                                                title="You have already conducted Iron on Iron with {{ $aiCoLaborer->name }} today (max 1 per person per day)."
+                                            >
+                                                <span>⚔️</span>
+                                                <span>Iron-on-Iron (+2 AP)</span>
+                                                <span class="text-[9px] text-amber-400">(Done today)</span>
+                                            </button>
+                                        @else
+                                            <button 
+                                                type="button"
+                                                disabled
+                                                class="px-2 py-1 rounded-lg bg-slate-800 text-slate-400 font-bold text-[10px] cursor-not-allowed opacity-75 flex items-center gap-1 border border-slate-700/60"
+                                                title="Daily Iron on Iron limit reached: max 3 sessions allowed per day (3/3 used today)."
+                                            >
+                                                <span>⚔️</span>
+                                                <span>Iron-on-Iron (+2 AP)</span>
+                                                <span class="text-[9px] text-rose-400">(3/day cap)</span>
+                                            </button>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
@@ -552,75 +586,88 @@
                 </button>
             </div>
 
-            <div class="overflow-y-auto space-y-2 pr-1 flex-1 custom-scrollbar">
+            <div class="overflow-y-auto space-y-2.5 pr-1 flex-1 custom-scrollbar">
                 @forelse($npcs as $npc)
                     <div 
                         wire:click="selectNpc({{ $npc->id }})"
                         @click="mobileStep = 3"
                         class="p-3 rounded-xl border transition-all cursor-pointer {{ $selectedNpcId === $npc->id ? 'bg-indigo-950/40 border-indigo-500 shadow-md ring-1 ring-indigo-500/50' : 'bg-slate-800/40 border-slate-800 hover:border-slate-700' }}"
                     >
-                        <div class="flex items-start justify-between gap-2">
-                            <div>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-sm font-semibold text-white">{{ $npc->displayName }}</span>
-                                    @if($npc->is_person_of_peace)
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-950 text-amber-300 border border-amber-700 font-bold" title="Luke 10 Person of Peace">
-                                            PoP ⭐
-                                        </span>
-                                    @endif
-                                    @if($npc->hasPrayedSalvation)
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-700 font-bold" title="Prayed Sinner's Prayer">
-                                            ✝️ Saved
-                                        </span>
-                                    @endif
-                                    @if($npc->is_baptized)
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] bg-cyan-950 text-cyan-300 border border-cyan-700 font-bold" title="Baptized in Water">
-                                            🕊️ Baptized
-                                        </span>
-                                    @elseif(($npc->baptism_status?->value ?? '') === 'committed')
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] bg-blue-950 text-blue-300 border border-blue-700 font-bold" title="Committed to Baptism">
-                                            🌊 Committed
-                                        </span>
-                                    @elseif($npc->hasPrayedSalvation)
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-950 text-amber-300 border border-amber-700 font-bold" title="Counting Cost (Family Concerns)">
-                                            💭 Cost
-                                        </span>
-                                    @endif
-                                    @if($npc->leadership_tier->level() > 0)
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-bold border {{ $npc->leadership_tier->badgeClasses() }}" title="{{ $npc->leadership_tier->label() }}: {{ $npc->leadership_tier->coreFocus() }}">
-                                            {{ $npc->leadership_tier->levelCode() }} {{ $npc->leadership_tier->roleTitle() }}
-                                        </span>
-                                    @elseif($npc->trained_411)
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] bg-purple-950 text-purple-300 border border-purple-700 font-bold">
-                                            L1 Sower
-                                        </span>
-                                    @endif
+                        <div class="flex items-start gap-3">
+                            <!-- Demographic Avatar (Nationality, Gender, Age) -->
+                            <x-person-avatar :person="$npc" size="md" :showBadges="true" class="shrink-0" />
+
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="min-w-0">
+                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                            <span class="text-sm font-semibold text-white truncate">{{ $npc->displayName }}</span>
+                                            @if($npc->is_person_of_peace)
+                                                <span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-950 text-amber-300 border border-amber-700 font-bold" title="Luke 10 Person of Peace">
+                                                    PoP ⭐
+                                                </span>
+                                            @endif
+                                            @if($npc->hasPrayedSalvation)
+                                                <span class="px-1.5 py-0.2 rounded text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-700 font-bold" title="Prayed Sinner's Prayer">
+                                                    ✝️ Saved
+                                                </span>
+                                            @endif
+                                            @if($npc->is_baptized)
+                                                <span class="px-1.5 py-0.2 rounded text-[9px] bg-cyan-950 text-cyan-300 border border-cyan-700 font-bold" title="Baptized in Water">
+                                                    🕊️ Baptized
+                                                </span>
+                                            @elseif(($npc->baptism_status?->value ?? '') === 'committed')
+                                                <span class="px-1.5 py-0.2 rounded text-[9px] bg-blue-950 text-blue-300 border border-blue-700 font-bold" title="Committed to Baptism">
+                                                    🌊 Committed
+                                                </span>
+                                            @elseif($npc->hasPrayedSalvation)
+                                                <span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-950 text-amber-300 border border-amber-700 font-bold" title="Counting Cost (Family Concerns)">
+                                                    💭 Cost
+                                                </span>
+                                            @endif
+                                            @if($npc->leadership_tier->level() > 0)
+                                                <span class="px-1.5 py-0.2 rounded text-[9px] font-bold border {{ $npc->leadership_tier->badgeClasses() }}" title="{{ $npc->leadership_tier->label() }}: {{ $npc->leadership_tier->coreFocus() }}">
+                                                    {{ $npc->leadership_tier->levelCode() }} {{ $npc->leadership_tier->roleTitle() }}
+                                                </span>
+                                            @elseif($npc->trained_411)
+                                                <span class="px-1.5 py-0.2 rounded text-[9px] bg-purple-950 text-purple-300 border border-purple-700 font-bold">
+                                                    L1 Sower
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <div class="flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5 flex-wrap">
+                                            <span>{{ $npc->role_archetype->label() }}</span>
+                                            <span class="text-slate-600">•</span>
+                                            <span class="text-slate-300 font-medium" title="{{ $npc->nationality }}">{{ $npc->nationalityFlag }} {{ $npc->nationality }}</span>
+                                            <span class="text-slate-600">•</span>
+                                            <span class="text-slate-300">{{ $npc->genderIcon }} {{ $npc->age }} yrs</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Traffic Light Status -->
+                                    <span class="px-2 py-0.5 rounded text-[11px] font-semibold border shrink-0 {{ $npc->status->badgeClasses() }}">
+                                        {{ $npc->status->icon() }} {{ $npc->status->value }}
+                                    </span>
                                 </div>
-                                <div class="text-[11px] text-slate-400 mt-0.5">{{ $npc->role_archetype->label() }}</div>
-                            </div>
 
-                            <!-- Traffic Light Status -->
-                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold border {{ $npc->status->badgeClasses() }}">
-                                {{ $npc->status->icon() }} {{ $npc->status->value }}
-                            </span>
-                        </div>
+                                <!-- Need State Badge -->
+                                @if($npc->need_state !== \App\Enums\NpcNeedState::None)
+                                    <div class="mt-2 flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border {{ $npc->need_state->badgeClasses() }}">
+                                        <span>{{ $npc->need_state->icon() }}</span>
+                                        <span class="font-medium truncate">{{ $npc->need_state->label() }}</span>
+                                    </div>
+                                @endif
 
-                        <!-- Need State Badge -->
-                        @if($npc->need_state !== \App\Enums\NpcNeedState::None)
-                            <div class="mt-2 flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border {{ $npc->need_state->badgeClasses() }}">
-                                <span>{{ $npc->need_state->icon() }}</span>
-                                <span class="font-medium truncate">{{ $npc->need_state->label() }}</span>
-                            </div>
-                        @endif
-
-                        <!-- Trust Progress Bar -->
-                        <div class="mt-2.5">
-                            <div class="flex justify-between text-[10px] text-slate-400 mb-0.5">
-                                <span>Trust Level</span>
-                                <span class="font-medium text-slate-300">{{ $npc->trust_level }}%</span>
-                            </div>
-                            <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                                <div class="h-full bg-emerald-500 rounded-full transition-all" style="width: {{ $npc->trust_level }}%"></div>
+                                <!-- Trust Progress Bar -->
+                                <div class="mt-2.5">
+                                    <div class="flex justify-between text-[10px] text-slate-400 mb-0.5">
+                                        <span>Trust Level</span>
+                                        <span class="font-medium text-slate-300">{{ $npc->trust_level }}%</span>
+                                    </div>
+                                    <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                        <div class="h-full bg-emerald-500 rounded-full transition-all" style="width: {{ $npc->trust_level }}%"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -665,25 +712,31 @@
                         </button>
                     </div>
                     @if($selectedNpc)
-                        <div class="text-right">
-                            <div class="flex items-center justify-end gap-1.5">
-                                <span class="text-xs text-indigo-400 font-bold block">{{ $selectedNpc->displayName }}</span>
-                                @if($selectedNpc->leadership_tier->level() > 0)
-                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-bold border {{ $selectedNpc->leadership_tier->badgeClasses() }}">
-                                        {{ $selectedNpc->leadership_tier->levelCode() }}
-                                    </span>
-                                @endif
+                        <div class="flex items-center gap-2.5">
+                            <x-person-avatar :person="$selectedNpc" size="md" :showBadges="true" />
+                            <div class="text-right">
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <span class="text-xs text-indigo-400 font-bold block">{{ $selectedNpc->displayName }}</span>
+                                    @if($selectedNpc->leadership_tier->level() > 0)
+                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-bold border {{ $selectedNpc->leadership_tier->badgeClasses() }}">
+                                            {{ $selectedNpc->leadership_tier->levelCode() }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <div class="text-[10px] text-slate-300">
+                                    <span>{{ $selectedNpc->nationalityFlag }} {{ $selectedNpc->nationality }}</span> • <span>{{ $selectedNpc->genderIcon }} {{ $selectedNpc->age }}y</span>
+                                </div>
+                                <div class="text-[10px] text-slate-400">
+                                    {{ $selectedNpc->leadership_tier->roleTitle() }}
+                                </div>
+                                <button 
+                                    type="button" 
+                                    @click="mobileStep = 2; $wire.setMobileStep(2)" 
+                                    class="text-[10px] text-slate-400 hover:text-indigo-300 underline lg:hidden"
+                                >
+                                    Change
+                                </button>
                             </div>
-                            <div class="text-[10px] text-slate-400">
-                                {{ $selectedNpc->leadership_tier->roleTitle() }}
-                            </div>
-                            <button 
-                                type="button" 
-                                @click="mobileStep = 2; $wire.setMobileStep(2)" 
-                                class="text-[10px] text-slate-400 hover:text-indigo-300 underline lg:hidden"
-                            >
-                                Change
-                            </button>
                         </div>
                     @else
                         <div class="text-right">
@@ -734,6 +787,15 @@
                         @php
                             $isEligible = $action->isEligibleFor($selectedNpc);
                             $ineligibilityReason = $action->ineligibilityReason($selectedNpc);
+                            if ($action === \App\Enums\MinistryActionType::IronOnIron && $isEligible) {
+                                if (($totalIoIToday ?? 0) >= 3) {
+                                    $isEligible = false;
+                                    $ineligibilityReason = 'Daily Iron on Iron limit reached: max 3 sessions allowed per day (3/3 used today).';
+                                } elseif ($selectedNpc && in_array($selectedNpc->id, $doneNpcIdsToday ?? [], true)) {
+                                    $isEligible = false;
+                                    $ineligibilityReason = 'You have already scheduled Iron on Iron with '.$selectedNpc->displayName.' today (max 1 per person per day).';
+                                }
+                            }
                             $isSelected = $selectedActionType === $action->value;
                             $isRecommended = $selectedNpc && ($recommendedActionType === $action->value);
                         @endphp
@@ -882,7 +944,12 @@
                             </div>
 
                             <div class="text-[11px] text-slate-300 mt-2 flex items-center gap-2 flex-wrap">
-                                <span>🎯 Target: <strong class="text-white">{{ $targetPersonLabel }}</strong></span>
+                                <span class="flex items-center gap-1.5">
+                                    @if($selectedNpc)
+                                        <x-person-avatar :person="$selectedNpc" size="xs" :showBadges="false" class="shrink-0" />
+                                    @endif
+                                    <span>🎯 Target: <strong class="text-white">{{ $targetPersonLabel }}</strong></span>
+                                </span>
                                 <span class="text-slate-600">•</span>
                                 <span class="font-bold {{ $hasEnoughApForSelected ? 'text-amber-400' : 'text-rose-400' }}">
                                     ⚡ {{ $selectedActionCost }} AP
@@ -984,13 +1051,20 @@
                     <div class="overflow-y-auto space-y-2 max-h-44 pr-1 custom-scrollbar">
                         @forelse($queuedActions as $queued)
                             <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs">
-                                <div class="min-w-0 pr-2">
-                                    <div class="font-semibold text-white flex items-center gap-1.5">
-                                        <span>{{ $queued->actionTitle }}</span>
-                                        <span class="text-[10px] font-bold text-amber-400">({{ $queued->ap_cost }} AP)</span>
-                                    </div>
-                                    <div class="text-[11px] text-slate-400 mt-0.5 truncate">
-                                        {{ $queued->ward->name }} • {{ $queued->targetNpc?->name ?? 'Ward-wide platform event' }}
+                                <div class="flex items-center gap-2.5 min-w-0 pr-2">
+                                    @if($queued->targetNpc)
+                                        <x-person-avatar :person="$queued->targetNpc" size="xs" :showBadges="true" class="shrink-0" />
+                                    @else
+                                        <span class="w-7 h-7 rounded-lg bg-slate-800/90 border border-slate-700/60 flex items-center justify-center text-sm shrink-0">🏛️</span>
+                                    @endif
+                                    <div class="min-w-0">
+                                        <div class="font-semibold text-white flex items-center gap-1.5">
+                                            <span>{{ $queued->actionTitle }}</span>
+                                            <span class="text-[10px] font-bold text-amber-400">({{ $queued->ap_cost }} AP)</span>
+                                        </div>
+                                        <div class="text-[11px] text-slate-400 mt-0.5 truncate">
+                                            {{ $queued->ward->name }} • {{ $queued->targetNpc?->name ?? 'Ward-wide platform event' }}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1187,8 +1261,11 @@
                     <span>{{ $selectedActionEnum?->icon() ?? '⚡' }}</span>
                     <span>{{ $selectedActionEnum?->label() ?? 'Selected Action' }}</span>
                 </div>
-                <div class="text-[11px] text-slate-300 truncate">
-                    For <strong class="text-indigo-300">{{ $selectedNpc ? $selectedNpc->displayName : ($selectedWard?->name ?? 'Ward') }}</strong> • <span class="font-bold {{ $hasEnoughApForSelected ? 'text-amber-400' : 'text-rose-400' }}">⚡ {{ $selectedActionCost }} AP</span>
+                <div class="text-[11px] text-slate-300 truncate flex items-center gap-1.5 mt-0.5">
+                    @if($selectedNpc)
+                        <x-person-avatar :person="$selectedNpc" size="xs" :showBadges="false" class="shrink-0" />
+                    @endif
+                    <span>For <strong class="text-indigo-300">{{ $selectedNpc ? $selectedNpc->displayName : ($selectedWard?->name ?? 'Ward') }}</strong> • <span class="font-bold {{ $hasEnoughApForSelected ? 'text-amber-400' : 'text-rose-400' }}">⚡ {{ $selectedActionCost }} AP</span></span>
                 </div>
             </div>
 

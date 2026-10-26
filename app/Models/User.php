@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Services\PersonAvatarService;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -50,6 +51,9 @@ use Illuminate\Support\Str;
 #[Table('users')]
 #[Fillable([
     'name',
+    'gender',
+    'age',
+    'nationality',
     'email',
     'password',
     'current_game_session_id',
@@ -224,6 +228,9 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
+            'gender' => 'string',
+            'age' => 'integer',
+            'nationality' => 'string',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'action_points' => 'integer',
@@ -283,6 +290,35 @@ class User extends Authenticatable
             'discipleship_trainer' => '📖 Discipleship Trainer',
             default => 'Missionary Disciple',
         };
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Gender symbol
+     */
+    public string $genderIcon {
+        get => app(PersonAvatarService::class)->genderIcon($this->gender ?? 'male');
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Country flag emoji
+     */
+    public string $nationalityFlag {
+        get => app(PersonAvatarService::class)->flagEmoji($this->nationality ?? 'Japanese');
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Formatted age group label
+     */
+    public string $ageGroupLabel {
+        get => app(PersonAvatarService::class)->ageGroupLabel($this->age ?? 30);
+    }
+
+    /**
+     * Returns the demographic SVG avatar markup.
+     */
+    public function avatarSvg(int $pixelSize = 64, bool $includeBadges = false): string
+    {
+        return app(PersonAvatarService::class)->forPerson($this, $pixelSize, $includeBadges);
     }
 
     /**

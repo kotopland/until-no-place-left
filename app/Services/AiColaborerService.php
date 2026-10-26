@@ -8,11 +8,13 @@ use App\DTOs\ActionResolutionOutcome;
 use App\Enums\LeadershipTier;
 use App\Enums\MinistryActionType;
 use App\Enums\NpcNeedState;
+use App\Enums\QueuedActionStatus;
 use App\Enums\ReceptivityStatus;
 use App\Models\Church;
 use App\Models\GameSession;
 use App\Models\Npc;
 use App\Models\PrayerWalk;
+use App\Models\QueuedMonthlyAction;
 use App\Models\User;
 use App\Models\Ward;
 use Illuminate\Support\Collection;
@@ -42,6 +44,9 @@ class AiColaborerService
             ['email' => 'sarah.jenkins@nagoyaharvest.jp'],
             [
                 'name' => 'Sarah Jenkins',
+                'gender' => 'female',
+                'age' => 27,
+                'nationality' => 'American',
                 'password' => Hash::make('password123'),
                 'current_game_session_id' => $session->id,
                 'home_ward_id' => $chikusa?->id,
@@ -64,6 +69,9 @@ class AiColaborerService
             'colaborer_archetype' => 'campus_sower',
             'current_game_session_id' => $session->id,
             'home_ward_id' => $chikusa?->id,
+            'gender' => 'female',
+            'age' => 27,
+            'nationality' => 'American',
         ]);
 
         // 2. Marcus Silva: Mercy Catalyst (Field 1 Entry & Healing)
@@ -71,6 +79,9 @@ class AiColaborerService
             ['email' => 'marcus.silva@nagoyaharvest.jp'],
             [
                 'name' => 'Marcus Silva',
+                'gender' => 'male',
+                'age' => 35,
+                'nationality' => 'Brazilian',
                 'password' => Hash::make('password123'),
                 'current_game_session_id' => $session->id,
                 'home_ward_id' => $minato?->id,
@@ -93,6 +104,9 @@ class AiColaborerService
             'colaborer_archetype' => 'mercy_catalyst',
             'current_game_session_id' => $session->id,
             'home_ward_id' => $minato?->id,
+            'gender' => 'male',
+            'age' => 35,
+            'nationality' => 'Brazilian',
         ]);
 
         // 3. Kenji Yamada: Discipleship Trainer (Field 3 & 4 Focus)
@@ -100,6 +114,9 @@ class AiColaborerService
             ['email' => 'kenji.yamada@nagoyaharvest.jp'],
             [
                 'name' => 'Kenji Yamada',
+                'gender' => 'male',
+                'age' => 42,
+                'nationality' => 'Japanese',
                 'password' => Hash::make('password123'),
                 'current_game_session_id' => $session->id,
                 'home_ward_id' => $meito?->id,
@@ -122,6 +139,9 @@ class AiColaborerService
             'colaborer_archetype' => 'discipleship_trainer',
             'current_game_session_id' => $session->id,
             'home_ward_id' => $meito?->id,
+            'gender' => 'male',
+            'age' => 42,
+            'nationality' => 'Japanese',
         ]);
 
         return collect([$sarah, $marcus, $kenji]);
@@ -446,13 +466,94 @@ class AiColaborerService
     }
 
     /**
+     * Get Iron-on-Iron availability and daily quota status for a player,
+     * optionally evaluating against a specific co-laborer or resident NPC.
+     *
+     * Limits:
+     * - Max 1 Iron on Iron per person per day.
+     * - Max 3 Iron on Iron total per day across all individuals.
+     *
+     * @return array{
+     *     allowed: bool,
+     *     reason: ?string,
+     *     total_today: int,
+     *     remaining_today: int,
+     *     done_with_target_today: bool
+     * }
+     */
+    public function getIronOnIronStatus(User $user, ?User $coLaborer = null, ?Npc $npc = null): array
+    {
+        $currentMonth = $user->current_game_month ?: 1;
+        $currentDay = $user->current_game_day ?: 1;
+
+        $todayActions = QueuedMonthlyAction::where('user_id', $user->id)
+            ->where('action_type', MinistryActionType::IronOnIron)
+            ->where('game_month', $currentMonth)
+            ->where('game_day', $currentDay)
+            ->whereIn('status', [QueuedActionStatus::Pending, QueuedActionStatus::Processed])
+            ->get();
+
+        $totalToday = $todayActions->count();
+        $remainingToday = max(0, 3 - $totalToday);
+
+        $doneWithTargetToday = false;
+        $targetName = 'this person';
+
+        if ($coLaborer !== null) {
+            $targetName = $coLaborer->name;
+            $doneWithTargetToday = $todayActions->contains(function (QueuedMonthlyAction $action) use ($coLaborer): bool {
+                return $action->notes !== null && str_contains($action->notes, "colaborer:{$coLaborer->id}");
+            });
+        } elseif ($npc !== null) {
+            $targetName = $npc->name;
+            $doneWithTargetToday = $todayActions->contains(function (QueuedMonthlyAction $action) use ($npc): bool {
+                return (int) $action->target_npc_id === (int) $npc->id;
+            });
+        }
+
+        if ($totalToday >= 3) {
+            return [
+                'allowed' => false,
+                'reason' => 'Daily Iron on Iron limit reached: max 3 sessions allowed per day (3/3 used today).',
+                'total_today' => $totalToday,
+                'remaining_today' => 0,
+                'done_with_target_today' => $doneWithTargetToday,
+            ];
+        }
+
+        if ($doneWithTargetToday) {
+            return [
+                'allowed' => false,
+                'reason' => "You have already conducted Iron on Iron with {$targetName} today (max 1 per person per day).",
+                'total_today' => $totalToday,
+                'remaining_today' => $remainingToday,
+                'done_with_target_today' => true,
+            ];
+        }
+
+        return [
+            'allowed' => true,
+            'reason' => null,
+            'total_today' => $totalToday,
+            'remaining_today' => $remainingToday,
+            'done_with_target_today' => false,
+        ];
+    }
+
+    /**
      * Iron-on-Iron sharpening meeting between human player and AI co-laborer.
      * Awards +25 Co-op Synergy Points, +2 bonus AP, and tactical coaching tip.
+     * Enforces limits: at most 1 session per person per day and at most 3 sessions total per day.
      *
      * @return array{narrative: string, bonus_ap: int, coop_points: int, coaching_tip: string}
      */
     public function conductIronOnIron(User $humanUser, User $aiColaborer): array
     {
+        $status = $this->getIronOnIronStatus($humanUser, $aiColaborer);
+        if (! $status['allowed']) {
+            throw new \DomainException($status['reason'] ?? 'Iron on Iron daily limit exceeded.');
+        }
+
         $humanUser->increment('coop_synergy_score', 25);
         $aiColaborer->increment('coop_synergy_score', 25);
         $humanUser->increment('action_points', 2);
@@ -465,8 +566,42 @@ class AiColaborerService
 
         $tip = $tips[$aiColaborer->colaborer_archetype] ?? "Co-laborer: 'Until no place is left in Nagoya, let us sharpen each other in prayer and bold sowing!'";
 
+        $narrative = "Met with {$aiColaborer->name} for an Iron-on-Iron coaching and generational mapping session. Sharpened Four Fields focus and exchanged tactical fruit.";
+
+        // Record the completed IoI action for daily rate limiting and outcome history
+        $session = $humanUser->currentGameSession ?? $aiColaborer->currentGameSession ?? GameSession::first() ?? GameSession::factory()->create();
+        $ward = $aiColaborer->homeWard ?? $humanUser->homeWard ?? Ward::where('game_session_id', $session->id)->first() ?? Ward::first();
+        if (! $ward) {
+            $ward = Ward::create([
+                'game_session_id' => $session->id,
+                'name' => 'Naka-ku',
+                'name_ja' => '中区',
+                'slug' => 'naka-ku',
+                'description' => 'Downtown Nagoya',
+                'description_ja' => '名古屋の中心地',
+                'population' => 90000,
+                'spiritual_openness' => 20,
+                'center_lat' => 35.1709,
+                'center_lng' => 136.9080,
+            ]);
+        }
+
+        QueuedMonthlyAction::create([
+            'game_session_id' => $session->id,
+            'user_id' => $humanUser->id,
+            'ward_id' => $ward->id,
+            'action_type' => MinistryActionType::IronOnIron,
+            'target_npc_id' => null,
+            'status' => QueuedActionStatus::Processed,
+            'game_month' => $humanUser->current_game_month ?: 1,
+            'game_day' => $humanUser->current_game_day ?: 1,
+            'ap_cost' => 0,
+            'notes' => "colaborer:{$aiColaborer->id}",
+            'outcome_notes' => $narrative,
+        ]);
+
         return [
-            'narrative' => "Met with {$aiColaborer->name} for an Iron-on-Iron coaching and generational mapping session. Sharpened Four Fields focus and exchanged tactical fruit.",
+            'narrative' => $narrative,
             'bonus_ap' => 2,
             'coop_points' => 25,
             'coaching_tip' => $tip,

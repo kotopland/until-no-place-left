@@ -163,6 +163,17 @@ class ActionQueuePlanner extends Component
         }
 
         $aiService = app(AiColaborerService::class);
+        $status = $aiService->getIronOnIronStatus($this->player, $coLaborer);
+
+        if (! $status['allowed']) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => "⚔️ {$status['reason']}",
+            ]);
+
+            return;
+        }
+
         $result = $aiService->conductIronOnIron($this->player, $coLaborer);
 
         $this->dispatch('notify', [
@@ -309,6 +320,20 @@ class ActionQueuePlanner extends Component
             ]);
 
             return;
+        }
+
+        // Enforce daily rate limits for Iron on Iron (max 1 per person per day, max 3 per day total)
+        if ($actionEnum === MinistryActionType::IronOnIron) {
+            $aiService = app(AiColaborerService::class);
+            $ioiStatus = $aiService->getIronOnIronStatus($this->player, null, $targetNpc);
+            if (! $ioiStatus['allowed']) {
+                $this->dispatch('notify', [
+                    'type' => 'error',
+                    'message' => "⚔️ {$ioiStatus['reason']}",
+                ]);
+
+                return;
+            }
         }
 
         // Deduct player AP (including transit commute surcharge)
@@ -542,6 +567,38 @@ class ActionQueuePlanner extends Component
             ? app(AiColaborerService::class)->getJointPrayerWalkStatus($this->player)
             : ['allowed' => true, 'reason' => null, 'walks_today' => 0, 'walks_this_week' => 0, 'remaining_this_week' => 3];
 
+        $todayIoIActions = $this->player
+            ? QueuedMonthlyAction::where('user_id', $this->player->id)
+                ->where('action_type', MinistryActionType::IronOnIron)
+                ->where('game_month', $targetMonth)
+                ->where('game_day', $this->player->current_game_day ?: 1)
+                ->whereIn('status', [QueuedActionStatus::Pending, QueuedActionStatus::Processed])
+                ->get()
+            : collect();
+
+        $totalIoIToday = $todayIoIActions->count();
+        $remainingIoIToday = max(0, 3 - $totalIoIToday);
+
+        $doneColaborerIdsToday = $todayIoIActions
+            ->filter(fn ($a) => $a->notes && str_contains($a->notes, 'colaborer:'))
+            ->map(function ($a) {
+                if (preg_match('/colaborer:(\d+)/', (string) $a->notes, $matches)) {
+                    return (int) $matches[1];
+                }
+
+                return null;
+            })
+            ->filter()
+            ->values()
+            ->all();
+
+        $doneNpcIdsToday = $todayIoIActions
+            ->pluck('target_npc_id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+
         return view('livewire.action-queue-planner', [
             'wards' => $wards,
             'selectedWard' => $selectedWard,
@@ -560,6 +617,10 @@ class ActionQueuePlanner extends Component
             'residentMissionariesByWard' => $residentMissionariesByWard,
             'aiCoLaborersInWard' => $aiCoLaborersInWard,
             'jointWalkStatus' => $jointWalkStatus,
+            'totalIoIToday' => $totalIoIToday,
+            'remainingIoIToday' => $remainingIoIToday,
+            'doneColaborerIdsToday' => $doneColaborerIdsToday,
+            'doneNpcIdsToday' => $doneNpcIdsToday,
         ]);
     }
 }

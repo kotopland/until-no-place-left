@@ -1492,12 +1492,12 @@ class FourFieldsEngine
     protected function spawnPersonOfPeaceResident(int $gameSessionId, Ward $ward, array $coord): Npc
     {
         $namesPool = [
-            ['name' => 'Satoshi Yamada', 'name_ja' => '山田 聡', 'role' => NpcRoleArchetype::Shopkeeper, 'need' => NpcNeedState::EmotionalCrisis],
-            ['name' => 'Yuka Shibata', 'name_ja' => '柴田 優香', 'role' => NpcRoleArchetype::InternationalExpat, 'need' => NpcNeedState::Lonely],
-            ['name' => 'Kazuo Kondo', 'name_ja' => '近藤 一男', 'role' => NpcRoleArchetype::ElderlyResident, 'need' => NpcNeedState::Lonely],
-            ['name' => 'Mari Ishikawa', 'name_ja' => '石川 まり', 'role' => NpcRoleArchetype::SingleParent, 'need' => NpcNeedState::EmotionalCrisis],
-            ['name' => 'Takumi Ogawa', 'name_ja' => '小川 拓海', 'role' => NpcRoleArchetype::UniversityStudent, 'need' => NpcNeedState::SeekingCommunity],
-            ['name' => 'Emi Suzuki', 'name_ja' => '鈴木 恵美', 'role' => NpcRoleArchetype::Salaryman, 'need' => NpcNeedState::EmotionalCrisis],
+            ['name' => 'Satoshi Yamada', 'name_ja' => '山田 聡', 'role' => NpcRoleArchetype::Shopkeeper, 'need' => NpcNeedState::EmotionalCrisis, 'gender' => 'male', 'age' => 44, 'nationality' => 'Japanese'],
+            ['name' => 'Yuka Shibata', 'name_ja' => '柴田 優香', 'role' => NpcRoleArchetype::InternationalExpat, 'need' => NpcNeedState::Lonely, 'gender' => 'female', 'age' => 29, 'nationality' => 'Japanese'],
+            ['name' => 'Kazuo Kondo', 'name_ja' => '近藤 一男', 'role' => NpcRoleArchetype::ElderlyResident, 'need' => NpcNeedState::Lonely, 'gender' => 'male', 'age' => 72, 'nationality' => 'Japanese'],
+            ['name' => 'Mari Ishikawa', 'name_ja' => '石川 まり', 'role' => NpcRoleArchetype::SingleParent, 'need' => NpcNeedState::EmotionalCrisis, 'gender' => 'female', 'age' => 36, 'nationality' => 'Japanese'],
+            ['name' => 'Takumi Ogawa', 'name_ja' => '小川 拓海', 'role' => NpcRoleArchetype::UniversityStudent, 'need' => NpcNeedState::SeekingCommunity, 'gender' => 'male', 'age' => 20, 'nationality' => 'Japanese'],
+            ['name' => 'Emi Suzuki', 'name_ja' => '鈴木 恵美', 'role' => NpcRoleArchetype::Salaryman, 'need' => NpcNeedState::EmotionalCrisis, 'gender' => 'female', 'age' => 28, 'nationality' => 'Japanese'],
         ];
 
         $existingCount = Npc::where('game_session_id', $gameSessionId)->count();
@@ -1508,6 +1508,9 @@ class FourFieldsEngine
             'ward_id' => $ward->id,
             'name' => $profile['name'],
             'name_ja' => $profile['name_ja'],
+            'gender' => $profile['gender'],
+            'age' => $profile['age'],
+            'nationality' => $profile['nationality'],
             'role_archetype' => $profile['role'],
             'need_state' => $profile['need'],
             'status' => ReceptivityStatus::Yellow,

@@ -697,7 +697,10 @@
                             <span class="font-bold text-amber-400">3 AP</span>
                         </li>
                         <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
-                            <span>⚔️ Iron-on-Iron Peer Coaching (L2 to L3)</span>
+                            <div>
+                                <span>⚔️ Iron-on-Iron Peer Coaching (L2 to L3)</span>
+                                <span class="text-[10px] text-slate-400 block font-normal">Max 1/person/day • Max 3 sessions total/day</span>
+                            </div>
                             <span class="font-bold text-amber-400">3 AP</span>
                         </li>
                         <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
@@ -710,7 +713,7 @@
                         </li>
                     </ul>
                     <div class="p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-800/60 text-[11px] text-indigo-300">
-                        ⚡ <em>Action HQ Flow:</em> Scheduling actions follows an intuitive 3-step path: (1) Pick District ➔ (2) Pick Resident ➔ (3) Choose an Action from the list. The planner smoothly scrolls down to the <strong>Ready to Queue for Day X</strong> box at the bottom where you can add personal prayer notes and queue the action with one click (or use the persistent confirmation dock on mobile devices).
+                        ⚡ <em>Action HQ Flow:</em> Scheduling actions follows an intuitive 3-step path: (1) Pick District ➔ (2) Pick Resident (featuring demographic avatars representing each person's nationality, gender, and age bracket) ➔ (3) Choose an Action from the list. The planner smoothly scrolls down to the <strong>Ready to Queue for Day X</strong> box at the bottom where you can add personal prayer notes and queue the action with one click (or use the persistent confirmation dock on mobile devices).
                     </div>
                 </div>
 
@@ -856,7 +859,7 @@
                         <div>💡 <strong>Collaborative Co-op Synergy Mechanics:</strong></div>
                         <ul class="list-disc list-inside space-y-0.5 text-[11px] text-slate-300">
                             <li><strong>Joint MAWL Prayer Walk:</strong> Partner 2-by-2 in a ward with a co-laborer to soften spiritual openness (+50% bonus) and earn +15 Co-op Synergy points. <em>(Limited to once per day and 3 times per week to maintain a balanced ministry rhythm).</em></li>
-                            <li><strong>Iron-on-Iron Sharpening:</strong> Meet for peer coaching to receive +2 bonus AP, +25 Co-op points, and contextual Four Fields advice.</li>
+                            <li><strong>Iron-on-Iron Sharpening:</strong> Meet for peer coaching to receive +2 bonus AP, +25 Co-op points, and contextual Four Fields advice. <em>(Daily cap: max 1 session per person per day and at most 3 sessions total per day).</em></li>
                             <li><strong>Shared Harvest:</strong> Sowing, watering, and harvesting the same resident pools +50% bonus points to all participating co-laborers!</li>
                         </ul>
                     </div>
