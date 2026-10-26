@@ -506,6 +506,8 @@
                 </span>
             </button>
         </div>
+    </div>
+
     @if($player?->is_burned_out)
         <div class="mb-5 p-5 rounded-3xl bg-rose-950/80 border border-rose-800 shadow-2xl space-y-3">
             <div class="flex items-center justify-between">
