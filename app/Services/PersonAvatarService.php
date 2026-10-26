@@ -193,51 +193,79 @@ class PersonAvatarService
         // Background Avatar Canvas with Ring
         $svg[] = "  <rect x=\"2\" y=\"2\" width=\"96\" height=\"96\" rx=\"24\" fill=\"url(#{$idPrefix}_bg)\" stroke=\"{$ringColor}\" stroke-width=\"2\" />";
 
-        // Back Hair (for females with longer hair or ponytail)
+        // Back Hair (for females with longer hair, ponytail, or classic bun)
         if ($isFemale) {
             if ($ageGroup === 'youth') {
-                // High bouncy ponytail behind head
-                $svg[] = "  <path d=\"M68 28 C85 20 88 45 74 52 C70 42 66 32 68 28 Z\" fill=\"url(#{$idPrefix}_hair)}\" />";
+                // High bouncy ponytail and cascading hair
+                $svg[] = "  <path d=\"M20 46 C16 66 20 86 30 92 L70 92 C80 86 84 66 80 46 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
+                $svg[] = "  <path d=\"M68 28 C85 20 88 45 74 52 C70 42 66 32 68 28 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
                 $svg[] = '  <circle cx="67" cy="30" r="3.5" fill="#f43f5e" />'; // Hair ribbon
             } elseif ($ageGroup === 'senior') {
-                // Elegant silver bun behind head
-                $svg[] = "  <circle cx=\"50\" cy=\"18\" r=\"11\" fill=\"url(#{$idPrefix}_hair)}\" />";
-                $svg[] = '  <path d="M44 18 Q50 14 56 18" stroke="#cbd5e1" stroke-width="1.5" fill="none" />';
+                // Classic silver bun with decorative hairpin
+                $svg[] = "  <path d=\"M22 45 C18 64 22 82 30 88 L70 88 C78 82 82 64 78 45 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
+                $svg[] = "  <circle cx=\"50\" cy=\"18\" r=\"12\" fill=\"url(#{$idPrefix}_hair)\" />";
+                $svg[] = '  <path d="M43 18 Q50 13 57 18" stroke="#cbd5e1" stroke-width="1.5" fill="none" />';
+                $svg[] = '  <path d="M40 22 L60 14" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" />';
             } else {
-                // Flowing hair behind shoulders
-                $svg[] = "  <path d=\"M22 45 C20 65 24 82 32 88 L68 88 C76 82 80 65 78 45 Z\" fill=\"url(#{$idPrefix}_hair)}\" />";
+                // Rich flowing hair behind shoulders
+                $svg[] = "  <path d=\"M18 42 C14 62 18 84 28 92 L72 92 C82 84 86 62 82 42 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
             }
         }
 
         // Torso / Shoulders & Attire
-        $svg[] = "  <path d=\"M16 98 C16 78 30 74 50 74 C70 74 84 78 84 98 Z\" fill=\"{$clothMain}\" filter=\"url(#{$idPrefix}_shadow)\" />";
+        if ($isFemale) {
+            // Elegant feminine shoulder taper
+            $svg[] = "  <path d=\"M20 98 C20 80 32 75 50 75 C68 75 80 80 80 98 Z\" fill=\"{$clothMain}\" filter=\"url(#{$idPrefix}_shadow)\" />";
+        } else {
+            // Structured masculine shoulders
+            $svg[] = "  <path d=\"M16 98 C16 78 30 74 50 74 C70 74 84 78 84 98 Z\" fill=\"{$clothMain}\" filter=\"url(#{$idPrefix}_shadow)\" />";
+        }
 
         // Collar & Accessories
         if (strtolower((string) $role) === 'salaryman') {
-            // White V-neck collar + tie
-            $svg[] = "  <path d=\"M42 74 L50 86 L58 74 Z\" fill=\"{$clothCollar}\" />";
-            $svg[] = '  <path d="M48 84 L52 84 L53 98 L47 98 Z" fill="#dc2626" />'; // Red corporate tie
+            if ($isFemale) {
+                // Elegant professional office blouse with pearl necklace
+                $svg[] = '  <!-- Pearl necklace and professional blouse -->';
+                $svg[] = '  <path d="M41 75 L50 87 L59 75 Z" fill="#fdf2f8" />';
+                $svg[] = "  <path d=\"M44 75 L50 82 L56 75 Z\" fill=\"{$clothCollar}\" />";
+                $svg[] = '  <path d="M43 78 Q50 85 57 78" stroke="#e2e8f0" stroke-width="1.2" fill="none" />';
+                $svg[] = '  <circle cx="50" cy="82" r="2.2" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.6" />';
+            } else {
+                // White V-neck collar + red corporate tie
+                $svg[] = "  <path d=\"M42 74 L50 86 L58 74 Z\" fill=\"{$clothCollar}\" />";
+                $svg[] = '  <path d="M48 84 L52 84 L53 98 L47 98 Z" fill="#dc2626" />';
+            }
         } elseif (strtolower((string) $role) === 'shopkeeper') {
             // Apron straps
             $svg[] = '  <path d="M34 74 L42 98 L46 98 L38 74 Z" fill="#115e59" />';
             $svg[] = '  <path d="M66 74 L58 98 L54 98 L62 74 Z" fill="#115e59" />';
+            if ($isFemale) {
+                $svg[] = '  <circle cx="50" cy="80" r="1.8" fill="#fef08a" />';
+            }
         } elseif ($ageGroup === 'senior') {
             // Warm cardigan buttoned collar
             $svg[] = "  <path d=\"M44 74 L50 84 L56 74 Z\" fill=\"{$clothCollar}\" />";
             $svg[] = '  <circle cx="50" cy="89" r="1.5" fill="#94a3b8" />';
             $svg[] = '  <circle cx="50" cy="95" r="1.5" fill="#94a3b8" />';
         } else {
-            // Casual round / V collar
-            $svg[] = "  <path d=\"M43 74 Q50 82 57 74 Z\" fill=\"{$clothCollar}\" />";
+            // Casual neckline
+            if ($isFemale) {
+                $svg[] = "  <path d=\"M42 74 Q50 83 58 74 Z\" fill=\"{$clothCollar}\" />";
+                $svg[] = '  <circle cx="50" cy="80" r="1.8" fill="#f43f5e" opacity="0.8" />';
+            } else {
+                $svg[] = "  <path d=\"M43 74 Q50 82 57 74 Z\" fill=\"{$clothCollar}\" />";
+            }
         }
 
         // Neck
-        $svg[] = "  <rect x=\"44\" y=\"58\" width=\"12\" height=\"18\" rx=\"3\" fill=\"{$skinShadow}\" />";
+        $neckWidth = $isFemale ? 10 : 12;
+        $neckX = $isFemale ? 45 : 44;
+        $svg[] = "  <rect x=\"{$neckX}\" y=\"58\" width=\"{$neckWidth}\" height=\"18\" rx=\"3\" fill=\"{$skinShadow}\" />";
 
         // Head Shape
         if ($isFemale) {
-            // Softer feminine chin
-            $svg[] = "  <path d=\"M31 40 C31 24 69 24 69 40 C69 58 58 68 50 68 C42 68 31 58 31 40 Z\" fill=\"url(#{$idPrefix}_skin)\" filter=\"url(#{$idPrefix}_shadow)\" />";
+            // Soft delicate feminine jawline & rounded chin
+            $svg[] = "  <path d=\"M31 38 C31 23 69 23 69 38 C69 56 58 66 50 66 C42 66 31 56 31 38 Z\" fill=\"url(#{$idPrefix}_skin)\" filter=\"url(#{$idPrefix}_shadow)\" />";
         } else {
             // Structured masculine chin
             $svg[] = "  <path d=\"M29 40 C29 24 71 24 71 40 C71 60 59 70 50 70 C41 70 29 60 29 40 Z\" fill=\"url(#{$idPrefix}_skin)\" filter=\"url(#{$idPrefix}_shadow)\" />";
@@ -247,10 +275,19 @@ class PersonAvatarService
         $svg[] = "  <circle cx=\"28\" cy=\"46\" r=\"4.5\" fill=\"url(#{$idPrefix}_skin)\" />";
         $svg[] = "  <circle cx=\"72\" cy=\"46\" r=\"4.5\" fill=\"url(#{$idPrefix}_skin)\" />";
 
+        // Pretty earrings for female avatars
+        if ($isFemale) {
+            $svg[] = '  <circle cx="28.5" cy="49.5" r="1.8" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.5" />';
+            $svg[] = '  <circle cx="71.5" cy="49.5" r="1.8" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.5" />';
+        }
+
         // Cheeks / Blush
-        if ($isFemale || $ageGroup === 'youth') {
-            $svg[] = '  <circle cx="37" cy="52" r="4" fill="#f43f5e" opacity="0.22" />';
-            $svg[] = '  <circle cx="63" cy="52" r="4" fill="#f43f5e" opacity="0.22" />';
+        if ($isFemale) {
+            $svg[] = '  <ellipse cx="36" cy="51" rx="4.5" ry="3" fill="#fb7185" opacity="0.30" />';
+            $svg[] = '  <ellipse cx="64" cy="51" rx="4.5" ry="3" fill="#fb7185" opacity="0.30" />';
+        } elseif ($ageGroup === 'youth') {
+            $svg[] = '  <circle cx="37" cy="52" r="3.5" fill="#f43f5e" opacity="0.20" />';
+            $svg[] = '  <circle cx="63" cy="52" r="3.5" fill="#f43f5e" opacity="0.20" />';
         }
 
         // Senior Expression Lines
@@ -265,34 +302,52 @@ class PersonAvatarService
         }
 
         // Eyes
-        $eyeY = $isFemale ? 45 : 46;
-        $svg[] = "  <ellipse cx=\"40\" cy=\"{$eyeY}\" rx=\"3.2\" ry=\"3.5\" fill=\"#0f172a\" />";
-        $svg[] = '  <circle cx="41.2" cy="'.($eyeY - 1.2).'" r="1.2" fill="#ffffff" />';
-        $svg[] = "  <ellipse cx=\"60\" cy=\"{$eyeY}\" rx=\"3.2\" ry=\"3.5\" fill=\"#0f172a\" />";
-        $svg[] = '  <circle cx="61.2" cy="'.($eyeY - 1.2).'" r="1.2" fill="#ffffff" />';
-
-        // Female Eyelashes
+        $eyeY = $isFemale ? 44.5 : 46;
         if ($isFemale) {
-            $svg[] = '  <path d="M36 43 Q40 40 44 43" stroke="#0f172a" stroke-width="1.5" fill="none" stroke-linecap="round" />';
-            $svg[] = '  <path d="M56 43 Q60 40 64 43" stroke="#0f172a" stroke-width="1.5" fill="none" stroke-linecap="round" />';
+            // Expressive bright eyes with dual specular catchlights
+            $svg[] = "  <ellipse cx=\"39.5\" cy=\"{$eyeY}\" rx=\"3.4\" ry=\"3.8\" fill=\"#0f172a\" />";
+            $svg[] = '  <circle cx="41" cy="'.($eyeY - 1.2).'" r="1.3" fill="#ffffff" />';
+            $svg[] = '  <circle cx="38.2" cy="'.($eyeY + 1.2).'" r="0.7" fill="#ffffff" opacity="0.8" />';
+
+            $svg[] = "  <ellipse cx=\"60.5\" cy=\"{$eyeY}\" rx=\"3.4\" ry=\"3.8\" fill=\"#0f172a\" />";
+            $svg[] = '  <circle cx="62" cy="'.($eyeY - 1.2).'" r="1.3" fill="#ffffff" />';
+            $svg[] = '  <circle cx="59.2" cy="'.($eyeY + 1.2).'" r="0.7" fill="#ffffff" opacity="0.8" />';
+
+            // Winged feminine eyelashes
+            $svg[] = '  <path d="M34.5 '.($eyeY - 2.5).' Q39.5 '.($eyeY - 5.5).' 44.5 '.($eyeY - 2.5).'" stroke="#0f172a" stroke-width="1.8" fill="none" stroke-linecap="round" />';
+            $svg[] = '  <path d="M35 '.($eyeY - 2.5).' L32.5 '.($eyeY - 4.2).'" stroke="#0f172a" stroke-width="1.5" stroke-linecap="round" />';
+
+            $svg[] = '  <path d="M55.5 '.($eyeY - 2.5).' Q60.5 '.($eyeY - 5.5).' 65.5 '.($eyeY - 2.5).'" stroke="#0f172a" stroke-width="1.8" fill="none" stroke-linecap="round" />';
+            $svg[] = '  <path d="M65 '.($eyeY - 2.5).' L67.5 '.($eyeY - 4.2).'" stroke="#0f172a" stroke-width="1.5" stroke-linecap="round" />';
+        } else {
+            $svg[] = "  <ellipse cx=\"40\" cy=\"{$eyeY}\" rx=\"3.2\" ry=\"3.5\" fill=\"#0f172a\" />";
+            $svg[] = '  <circle cx="41.2" cy="'.($eyeY - 1.2).'" r="1.2" fill="#ffffff" />';
+            $svg[] = "  <ellipse cx=\"60\" cy=\"{$eyeY}\" rx=\"3.2\" ry=\"3.5\" fill=\"#0f172a\" />";
+            $svg[] = '  <circle cx="61.2" cy="'.($eyeY - 1.2).'" r="1.2" fill="#ffffff" />';
         }
 
         // Eyebrows
         $browColor = ($ageGroup === 'senior') ? '#94a3b8' : (($ageGroup === 'mature') ? '#475569' : '#1e1b4b');
-        $browWidth = $isFemale ? '1.5' : '2.4';
-        $svg[] = "  <path d=\"M36 39 Q41 37 45 40\" stroke=\"{$browColor}\" stroke-width=\"{$browWidth}\" fill=\"none\" stroke-linecap=\"round\" />";
-        $svg[] = "  <path d=\"M64 39 Q59 37 55 40\" stroke=\"{$browColor}\" stroke-width=\"{$browWidth}\" fill=\"none\" stroke-linecap=\"round\" />";
+        $browWidth = $isFemale ? '1.4' : '2.4';
+        $browY = 39;
+        $svg[] = "  <path d=\"M36 {$browY} Q41 ".($browY - 2)." 45 {$browY}\" stroke=\"{$browColor}\" stroke-width=\"{$browWidth}\" fill=\"none\" stroke-linecap=\"round\" />";
+        $svg[] = "  <path d=\"M64 {$browY} Q59 ".($browY - 2)." 55 {$browY}\" stroke=\"{$browColor}\" stroke-width=\"{$browWidth}\" fill=\"none\" stroke-linecap=\"round\" />";
 
         // Nose
-        $svg[] = "  <path d=\"M50 46 L48.5 52 L51.5 52\" stroke=\"{$skinShadow}\" stroke-width=\"1.4\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\" />";
+        $noseWidth = $isFemale ? '1.1' : '1.4';
+        $svg[] = "  <path d=\"M50 46 L48.8 51.5 L51.2 51.5\" stroke=\"{$skinShadow}\" stroke-width=\"{$noseWidth}\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\" />";
 
         // Mouth (Pleasant warm smile)
-        $mouthColor = $isFemale ? '#e11d48' : '#991b1b';
-        $mouthWidth = $isFemale ? '2.2' : '1.8';
-        $svg[] = "  <path d=\"M44 58 Q50 63 56 58\" stroke=\"{$mouthColor}\" stroke-width=\"{$mouthWidth}\" fill=\"none\" stroke-linecap=\"round\" />";
+        if ($isFemale) {
+            // Elegant contoured lips with soft rose/coral gloss
+            $svg[] = '  <path d="M44 57.5 Q50 60 56 57.5 Q50 63.5 44 57.5 Z" fill="#fb7185" stroke="#e11d48" stroke-width="0.8" stroke-linejoin="round" />';
+            $svg[] = '  <path d="M47 59.2 Q50 61.2 53 59.2" stroke="#ffffff" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.6" />';
+        } else {
+            $svg[] = '  <path d="M44 58 Q50 63 56 58" stroke="#991b1b" stroke-width="1.8" fill="none" stroke-linecap="round" />';
+        }
 
-        // Glasses for Senior or IT lead (Hiroshi)
-        $hasGlasses = ($ageGroup === 'senior') || (strtolower((string) $role) === 'salaryman' && $age > 33);
+        // Glasses for Senior or male IT/salaryman
+        $hasGlasses = ($ageGroup === 'senior') || (! $isFemale && strtolower((string) $role) === 'salaryman' && $age > 33);
         if ($hasGlasses) {
             $glassesFrame = ($ageGroup === 'senior') ? '#d97706' : '#94a3b8'; // Gold or silver frame
             $svg[] = "  <circle cx=\"40\" cy=\"{$eyeY}\" r=\"6.5\" fill=\"none\" stroke=\"{$glassesFrame}\" stroke-width=\"1.4\" />";
@@ -308,18 +363,21 @@ class PersonAvatarService
         // Front Hair
         if ($isFemale) {
             if ($ageGroup === 'senior') {
-                // Soft wavy silver fringe
-                $svg[] = "  <path d=\"M29 36 C34 22 66 22 71 36 C64 28 56 26 50 30 C44 26 36 28 29 36 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
+                // Soft wavy silver fringe & side curls
+                $svg[] = "  <path d=\"M28 38 C34 22 66 22 72 38 C65 29 57 26 50 30 C43 26 35 29 28 38 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
+                $svg[] = "  <path d=\"M26 38 C24 46 25 54 28 58 C30 52 29 44 29 38 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
+                $svg[] = "  <path d=\"M74 38 C76 46 75 54 72 58 C70 52 71 44 71 38 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
             } elseif ($ageGroup === 'youth') {
-                // Trendy modern bangs & side locks
-                $svg[] = "  <path d=\"M28 42 C26 30 36 22 50 22 C64 22 74 30 72 42 C68 34 62 30 54 32 C48 30 42 32 36 34 C32 36 29 40 28 42 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
-                $svg[] = "  <path d=\"M28 40 L27 52 Q30 50 31 42 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
-                $svg[] = "  <path d=\"M72 40 L73 52 Q70 50 69 42 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
+                // Trendy modern bangs & long face-framing side locks
+                $svg[] = "  <path d=\"M27 42 C25 28 35 21 50 21 C65 21 75 28 73 42 C69 33 62 29 54 31 C48 29 42 31 36 33 C32 35 29 39 27 42 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
+                $svg[] = "  <path d=\"M26 38 C23 48 24 62 28 68 C31 62 30 48 30 38 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
+                $svg[] = "  <path d=\"M74 38 C77 48 76 62 72 68 C69 62 70 48 70 38 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
             } else {
-                // Shoulder-length stylish side parted bob
-                $svg[] = "  <path d=\"M28 42 C26 28 36 21 50 21 C64 21 74 28 72 42 C68 32 60 27 50 28 C40 27 32 32 28 42 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
-                $svg[] = "  <path d=\"M27 40 C25 48 26 60 30 64 C33 58 32 46 32 40 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
-                $svg[] = "  <path d=\"M73 40 C75 48 74 60 70 64 C67 58 68 46 68 40 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
+                // Shoulder-length stylish layered hair sweeping around face
+                $svg[] = "  <path d=\"M27 40 C25 26 35 20 50 20 C65 20 75 26 73 40 C68 30 59 26 49 27 C39 26 31 30 27 40 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
+                $svg[] = "  <path d=\"M25 36 C22 46 22 62 28 72 C31 65 30 48 29 36 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
+                $svg[] = "  <path d=\"M75 36 C78 46 78 62 72 72 C69 65 70 48 71 36 Z\" fill=\"url(#{$idPrefix}_hair)\" />";
+                $svg[] = "  <path d=\"M38 23 Q49 21 62 25\" stroke=\"{$hairHighlight}\" stroke-width=\"1.4\" fill=\"none\" opacity=\"0.6\" />";
             }
         } else {
             // Male hair

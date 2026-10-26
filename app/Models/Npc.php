@@ -89,7 +89,7 @@ class Npc extends Model
                 $npc->name_ja = $npc->name;
             }
             if (empty($npc->gender)) {
-                $npc->gender = 'male';
+                $npc->gender = static::inferGenderFromName((string) $npc->name, $npc->name_ja);
             }
             if (empty($npc->age)) {
                 $npc->age = 30;
@@ -104,6 +104,85 @@ class Npc extends Model
                 $npc->lng = 136.9066;
             }
         });
+    }
+
+    /**
+     * Infer gender from name and Japanese kanji/kana if not explicitly specified.
+     */
+    public static function inferGenderFromName(string $name, ?string $nameJa = null): string
+    {
+        $femaleExact = [
+            'tomoko', 'keiko', 'aoi', 'linh', 'yuki', 'sayaka', 'yuka', 'mari', 'emi',
+            'sakura', 'hanako', 'yoko', 'sachiko', 'yumiko', 'ryoko', 'kyoko', 'haruka',
+            'asuka', 'ayaka', 'erika', 'rika', 'nana', 'kana', 'rina', 'mina', 'chiyo',
+            'kayo', 'sanae', 'lisa', 'risa', 'sarah', 'maria', 'chloe', 'emily', 'grace',
+            'anna', 'jessica', 'hannah', 'rachel', 'naomi', 'hitomi', 'megumi', 'akari',
+            'hina', 'mei', 'yui', 'mio', 'rin', 'saki', 'riko', 'honoka',
+        ];
+
+        $maleExact = [
+            'kenji', 'hiroshi', 'masao', 'goro', 'carlos', 'kenichi', 'kazuo', 'takumi',
+            'satoshi', 'daisuke', 'taro', 'ichiro', 'jiro', 'shinji', 'ryo', 'sho',
+            'daiki', 'naoki', 'kenta', 'yuto', 'sota', 'haruto', 'kaito', 'tatsuya',
+            'shota', 'ryota', 'makoto', 'takeshi', 'osamu', 'david', 'john', 'michael',
+            'james', 'robert', 'william', 'joseph',
+        ];
+
+        $nameLower = strtolower(trim($name));
+        $tokens = preg_split('/[\s_-]+/', $nameLower) ?: [];
+
+        // 1. Check exact male given name matches first
+        foreach ($tokens as $token) {
+            if (in_array($token, $maleExact, true)) {
+                return 'male';
+            }
+        }
+
+        // 2. Check exact female given name matches
+        foreach ($tokens as $token) {
+            if (in_array($token, $femaleExact, true)) {
+                return 'female';
+            }
+        }
+        foreach ($femaleExact as $femaleName) {
+            if (str_contains($nameLower, $femaleName)) {
+                return 'female';
+            }
+        }
+
+        // 3. Kanji indicators
+        if (! empty($nameJa)) {
+            $maleKanji = ['健二', '浩', '正雄', '五郎', '健一', '一男', '拓海', '聡', '大輔', '太郎', '一郎', '二郎', '男', '雄', '夫', '介', '助', '輔', '太', '翔'];
+            foreach ($maleKanji as $k) {
+                if (str_contains($nameJa, $k)) {
+                    return 'male';
+                }
+            }
+
+            $femaleKanji = ['子', '美', '恵', '香', '菜', '奈', '華', '葵', '優香', '智子', 'さやか', 'まり', 'ゆき', 'えみ', 'リン'];
+            foreach ($femaleKanji as $k) {
+                if (str_contains($nameJa, $k)) {
+                    return 'female';
+                }
+            }
+        }
+
+        // 4. Given name suffix checks (exclude known Japanese surnames like Tanaka, Nonaka, etc.)
+        $surnames = [
+            'tanaka', 'yamamoto', 'suzuki', 'kondo', 'kobayashi', 'ito', 'kato', 'shibata',
+            'ishikawa', 'ogawa', 'yamada', 'sato', 'takahashi', 'watanabe', 'nakamura', 'yoshida',
+            'nonaka', 'yamanaka', 'otsuka', 'tezuka', 'matsuoka', 'mori', 'inoue', 'kimura',
+        ];
+
+        foreach ($tokens as $token) {
+            if (! in_array($token, $surnames, true) && strlen($token) >= 4) {
+                if (str_ends_with($token, 'ko') || str_ends_with($token, 'ka') || str_ends_with($token, 'mi') || str_ends_with($token, 'na') || str_ends_with($token, 'sa')) {
+                    return 'female';
+                }
+            }
+        }
+
+        return 'male';
     }
 
     /**

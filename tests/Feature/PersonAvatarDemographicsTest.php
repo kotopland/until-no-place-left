@@ -202,3 +202,77 @@ test('nagoya oikos seeder seeds accurate demographics for archetypal citizens', 
         ->and($keiko->age)->toBe(64)
         ->and($keiko->nationalityFlag)->toBe('🇯🇵');
 });
+
+test('npc model automatically infers female gender for japanese female names when gender is omitted', function () {
+    $session = GameSession::factory()->create();
+    $ward = Ward::create([
+        'game_session_id' => $session->id,
+        'name' => 'Naka-ku',
+        'name_ja' => '中区',
+        'slug' => 'naka-ku',
+        'latitude' => 35.1709,
+        'longitude' => 136.9080,
+        'population' => 90000,
+        'spiritual_openness' => 30,
+    ]);
+
+    // Omit gender for known Japanese female names
+    $tomoko = Npc::create([
+        'game_session_id' => $session->id,
+        'ward_id' => $ward->id,
+        'name' => 'Tomoko Tanaka',
+        'name_ja' => '田中 智子',
+    ]);
+    expect($tomoko->gender)->toBe('female');
+
+    $sayaka = Npc::create([
+        'game_session_id' => $session->id,
+        'ward_id' => $ward->id,
+        'name' => 'Sayaka Ito',
+        'name_ja' => '伊藤 さやか',
+    ]);
+    expect($sayaka->gender)->toBe('female');
+
+    $mari = Npc::create([
+        'game_session_id' => $session->id,
+        'ward_id' => $ward->id,
+        'name' => 'Mari Ishikawa',
+        'name_ja' => '石川 まり',
+    ]);
+    expect($mari->gender)->toBe('female');
+
+    $emi = Npc::create([
+        'game_session_id' => $session->id,
+        'ward_id' => $ward->id,
+        'name' => 'Emi Suzuki',
+        'name_ja' => '鈴木 恵美',
+    ]);
+    expect($emi->gender)->toBe('female');
+
+    // Male names should still infer male
+    $kenji = Npc::create([
+        'game_session_id' => $session->id,
+        'ward_id' => $ward->id,
+        'name' => 'Kenji Tanaka',
+        'name_ja' => '田中 健二',
+    ]);
+    expect($kenji->gender)->toBe('male');
+});
+
+test('female avatars have feminine styling and office ladies do not wear male neckties', function () {
+    $service = app(PersonAvatarService::class);
+
+    // Female salaryman / office lady (Sayaka Ito)
+    $svgFemaleSalaryman = $service->generateSvg('female', 26, 'Japanese', 'salaryman', 'green', 64, true);
+
+    // Should NOT have male red necktie
+    expect($svgFemaleSalaryman)->not->toContain('#dc2626')
+        // Should have feminine touches: pearl necklace, earrings, lip gloss, eyelashes
+        ->and($svgFemaleSalaryman)->toContain('Pearl', '#fb7185')
+        ->and($svgFemaleSalaryman)->not->toContain('hair)}'); // No broken SVG URL syntax
+
+    // Male salaryman (Hiroshi Sato)
+    $svgMaleSalaryman = $service->generateSvg('male', 34, 'Japanese', 'salaryman', 'green', 64, true);
+    // Should have corporate red necktie
+    expect($svgMaleSalaryman)->toContain('#dc2626');
+});
