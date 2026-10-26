@@ -132,6 +132,16 @@ class ChurchGenerationMap extends Component
             return;
         }
 
+        if ($user->is_burned_out) {
+            $monthsLeft = $user->burnoutMonthsRemaining($user->current_game_month);
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => "🚨 BURNOUT LEAVE: You collapsed from severe ministry overwork without rest. You are on mandatory medical leave for {$monthsLeft} more month(s). Advance months to complete your sabbatical recovery.",
+            ]);
+
+            return;
+        }
+
         $leaderNpc = $church->leaderNpc ?? Npc::where('ward_id', $church->ward_id)->where('status', 'green')->first();
 
         if (! $leaderNpc) {
@@ -143,6 +153,35 @@ class ChurchGenerationMap extends Component
             return;
         }
 
+        // Enforce once-per-week coaching limit (minimum 7 days between sessions)
+        $eligibility = $church->coachingEligibility($user->current_game_month, $user->current_game_day);
+        if (! $eligibility['allowed']) {
+            $this->dispatch('notify', [
+                'type' => 'warning',
+                'message' => $eligibility['reason'],
+            ]);
+
+            return;
+        }
+
+        $baseApCost = MinistryActionType::ChurchCircles->apCost();
+        $commuteApCost = $user->commuteApCostForWard($church->ward);
+        $totalApCost = $baseApCost + $commuteApCost;
+
+        $user->refresh();
+        if ($user->action_points < $totalApCost) {
+            $commuteMsg = $commuteApCost > 0 ? " ({$baseApCost} AP base + {$commuteApCost} AP transit commute)" : '';
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => "Insufficient Action Points! You need {$totalApCost} AP{$commuteMsg}, but have only {$user->action_points} AP remaining today.",
+            ]);
+
+            return;
+        }
+
+        $user->decrement('action_points', $totalApCost);
+        $user->refresh();
+
         QueuedMonthlyAction::create([
             'user_id' => $user->id,
             'ward_id' => $church->ward_id,
@@ -151,14 +190,15 @@ class ChurchGenerationMap extends Component
             'game_day' => $user->current_game_day,
             'action_type' => MinistryActionType::ChurchCircles,
             'target_npc_id' => $leaderNpc->id,
-            'ap_cost' => 2,
+            'ap_cost' => $totalApCost,
             'status' => 'pending',
             'notes' => "Coaching {$church->name} (Gen {$church->generation}) in 3/3rds health and Acts 2 functions",
         ]);
 
+        $commuteDetail = $commuteApCost > 0 ? " ({$totalApCost} AP with transit)" : " ({$totalApCost} AP)";
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => "Queued Church Circles coaching for {$church->name} on Day {$user->current_game_day}!",
+            'message' => "Queued Church Circles coaching for {$church->name} on Day {$user->current_game_day}!{$commuteDetail}",
         ]);
 
         $this->dispatch('action-queued');

@@ -425,13 +425,16 @@
                                             +
                                         </button>
                                     @else
+                                        @php
+                                            $coachingCheck = $church->coachingEligibility($user?->current_game_month ?? 1, $user?->current_game_day ?? 1);
+                                        @endphp
                                         <button 
                                             type="button" 
                                             wire:click.stop="queueCoachingForChurch({{ $church->id }})" 
-                                            class="w-6 h-6 rounded-lg bg-emerald-400 hover:bg-emerald-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-md transition cursor-pointer"
-                                            title="Queue 3/3rds Church Circles Coaching"
+                                            class="w-6 h-6 rounded-lg {{ $coachingCheck['allowed'] ? 'bg-emerald-400 hover:bg-emerald-500 text-slate-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700' }} font-black text-xs flex items-center justify-center shadow-md transition cursor-pointer"
+                                            title="{{ $coachingCheck['allowed'] ? 'Queue 3/3rds Church Circles Coaching (8 AP • once/week)' : $coachingCheck['reason'] }}"
                                         >
-                                            +
+                                            {{ $coachingCheck['allowed'] ? '+' : '⏳' }}
                                         </button>
                                     @endif
                                 </div>
@@ -617,14 +620,23 @@
                 <!-- Drawer Action Footer -->
                 <div class="p-4 bg-slate-950 border-t border-slate-800 flex flex-col gap-2">
                     @if(! $selectedChurch->is_dissolved)
+                        @php
+                            $drawerCoaching = $selectedChurch->coachingEligibility($user?->current_game_month ?? 1, $user?->current_game_day ?? 1);
+                        @endphp
                         <button 
                             type="button" 
                             wire:click="queueCoachingForChurch({{ $selectedChurch->id }})" 
-                            class="w-full py-2 px-3 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-950 cursor-pointer"
+                            class="w-full py-2 px-3 rounded-xl text-xs font-bold {{ $drawerCoaching['allowed'] ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-950 cursor-pointer' : 'bg-slate-800 text-slate-400 border border-slate-700 cursor-not-allowed' }} transition flex items-center justify-center gap-1.5 shadow-lg"
+                            @if(! $drawerCoaching['allowed']) title="{{ $drawerCoaching['reason'] }}" @endif
                         >
-                            <span>⚡</span>
-                            <span>Queue 3/3rds Church Circles Coaching</span>
+                            <span>{{ $drawerCoaching['allowed'] ? '⚡' : '⏳' }}</span>
+                            <span>{{ $drawerCoaching['allowed'] ? 'Queue 3/3rds Church Circles Coaching (8 AP)' : 'Coached This Week (Next in '.$drawerCoaching['days_remaining'].'d)' }}</span>
                         </button>
+                        @if(! $drawerCoaching['allowed'])
+                            <p class="text-[10px] text-amber-400/90 text-center px-1 leading-tight">
+                                {{ $drawerCoaching['reason'] }}
+                            </p>
+                        @endif
                     @endif
 
                     <div class="flex items-center justify-between text-[11px] text-slate-400 px-1">

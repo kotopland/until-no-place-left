@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\ChurchElement;
 use App\Enums\MinistryActionType;
 use App\Enums\ReceptivityStatus;
+use App\Livewire\ActionQueuePlanner;
 use App\Livewire\ChurchGenerationMap;
 use App\Models\Church;
 use App\Models\GameSession;
@@ -294,4 +295,77 @@ test('church generation map can revitalize dissolved church via component action
     $this->g1Church->refresh();
     expect($this->g1Church->is_dissolved)->toBeFalse()
         ->and($this->g1Church->health_score)->toBe(50);
+});
+
+test('church generation map can queue church circles coaching with 8 ap deduction and once per week cooldown', function () {
+    $this->g1Church->update(['leader_npc_id' => $this->timothy->id]);
+    $initialAp = $this->user->action_points; // 10 AP
+
+    Livewire::actingAs($this->user)
+        ->test(ChurchGenerationMap::class)
+        ->call('queueCoachingForChurch', $this->g1Church->id)
+        ->assertDispatched('action-queued');
+
+    $this->user->refresh();
+    // 8 AP base cost deducted (leaving 2 AP - other work is hard to do)
+    expect($this->user->action_points)->toBe($initialAp - 8);
+
+    expect(QueuedMonthlyAction::where('user_id', $this->user->id)
+        ->where('action_type', MinistryActionType::ChurchCircles)
+        ->where('target_npc_id', $this->timothy->id)
+        ->count())->toBe(1);
+
+    // Attempting to queue again within 7 days (e.g. Day 3) is rejected by weekly cooldown
+    $this->user->update(['current_game_day' => 3, 'action_points' => 10]);
+    Livewire::actingAs($this->user)
+        ->test(ChurchGenerationMap::class)
+        ->call('queueCoachingForChurch', $this->g1Church->id)
+        ->assertDispatched('notify');
+
+    // Action count remains 1 and AP was not deducted
+    $this->user->refresh();
+    expect($this->user->action_points)->toBe(10)
+        ->and(QueuedMonthlyAction::where('user_id', $this->user->id)->where('action_type', MinistryActionType::ChurchCircles)->count())->toBe(1);
+
+    // After 7 days have passed (Day 8), coaching can be queued again!
+    $this->user->update(['current_game_day' => 8, 'action_points' => 10]);
+    Livewire::actingAs($this->user)
+        ->test(ChurchGenerationMap::class)
+        ->call('queueCoachingForChurch', $this->g1Church->id)
+        ->assertDispatched('action-queued');
+
+    $this->user->refresh();
+    expect($this->user->action_points)->toBe(2)
+        ->and(QueuedMonthlyAction::where('user_id', $this->user->id)->where('action_type', MinistryActionType::ChurchCircles)->count())->toBe(2);
+});
+
+test('action queue planner enforces 8 ap base cost and weekly limit on church circles', function () {
+    $this->g1Church->update(['leader_npc_id' => $this->timothy->id]);
+    $this->timothy->update(['status' => ReceptivityStatus::Green, 'trained_411' => true]);
+
+    $this->user->update(['action_points' => 10, 'current_game_day' => 1]);
+
+    Livewire::actingAs($this->user)
+        ->test(ActionQueuePlanner::class)
+        ->set('selectedWardId', $this->ward->id)
+        ->set('selectedNpcId', $this->timothy->id)
+        ->set('selectedActionType', MinistryActionType::ChurchCircles->value)
+        ->call('queueAction')
+        ->assertDispatched('action-queued');
+
+    $this->user->refresh();
+    expect($this->user->action_points)->toBe(2); // 10 - 8 = 2 AP remaining
+
+    // Attempting to schedule again on Day 3 via planner is blocked by weekly limit
+    $this->user->update(['current_game_day' => 3, 'action_points' => 10]);
+    Livewire::actingAs($this->user)
+        ->test(ActionQueuePlanner::class)
+        ->set('selectedWardId', $this->ward->id)
+        ->set('selectedNpcId', $this->timothy->id)
+        ->set('selectedActionType', MinistryActionType::ChurchCircles->value)
+        ->call('queueAction')
+        ->assertDispatched('notify');
+
+    $this->user->refresh();
+    expect($this->user->action_points)->toBe(10);
 });

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ChurchElement;
+use App\Enums\MinistryActionType;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -59,6 +60,8 @@ use Illuminate\Support\Carbon;
     'started_by_name',
     'last_attrition_month',
     'last_attrition_event',
+    'last_coached_game_month',
+    'last_coached_game_day',
     'lat',
     'lng',
     'founded_game_month',
@@ -144,6 +147,8 @@ class Church extends Model
             'is_dissolved' => 'boolean',
             'dissolved_game_month' => 'integer',
             'last_attrition_month' => 'integer',
+            'last_coached_game_month' => 'integer',
+            'last_coached_game_day' => 'integer',
             'lat' => 'float',
             'lng' => 'float',
             'founded_game_month' => 'integer',
@@ -345,5 +350,89 @@ class Church extends Model
             'elements_json' => $practiced,
             'last_attrition_event' => "Month {$gameMonth}: Revitalized through apostolic coaching!",
         ]);
+    }
+
+    /**
+     * Evaluates whether this church is eligible for Church Circles coaching on the given game date.
+     * Coaching is limited to once per week (minimum 7 days between coaching sessions).
+     *
+     * @return array{allowed: bool, reason: string|null, days_remaining: int}
+     */
+    public function coachingEligibility(int $currentMonth, int $currentDay): array
+    {
+        $currentTotalDay = (($currentMonth - 1) * 30) + $currentDay;
+
+        // 1. Check if there is already an action pending for this church/leader
+        $pendingActions = QueuedMonthlyAction::where('action_type', MinistryActionType::ChurchCircles)
+            ->where('status', 'pending')
+            ->where(function ($q) {
+                if ($this->leader_npc_id) {
+                    $q->where('target_npc_id', $this->leader_npc_id);
+                } else {
+                    $q->where('ward_id', $this->ward_id);
+                }
+            })
+            ->get();
+
+        foreach ($pendingActions as $action) {
+            $actionTotalDay = (($action->game_month - 1) * 30) + $action->game_day;
+            $dayDiff = abs($currentTotalDay - $actionTotalDay);
+            if ($dayDiff < 7) {
+                $daysWait = max(1, 7 - $dayDiff);
+
+                return [
+                    'allowed' => false,
+                    'reason' => "Church Circles coaching is already scheduled for {$this->name} on Day {$action->game_day} / Month {$action->game_month}. Church coaching requires extensive 8 AP preparation and is limited to once per week.",
+                    'days_remaining' => $daysWait,
+                ];
+            }
+        }
+
+        // 2. Check recorded last coached date on church model
+        if ($this->last_coached_game_month !== null && $this->last_coached_game_day !== null) {
+            $lastTotalDay = (($this->last_coached_game_month - 1) * 30) + $this->last_coached_game_day;
+            $diff = $currentTotalDay - $lastTotalDay;
+            if ($diff < 7 && $diff >= 0) {
+                $daysWait = 7 - $diff;
+
+                return [
+                    'allowed' => false,
+                    'reason' => "{$this->name} was coached on Day {$this->last_coached_game_day} / Month {$this->last_coached_game_month}. Church Circles coaching is limited to once per week (available in {$daysWait} day".($daysWait > 1 ? 's' : '').').',
+                    'days_remaining' => $daysWait,
+                ];
+            }
+        }
+
+        // 3. Check historical processed actions in QueuedMonthlyActions within the last 7 days
+        $recentProcessed = QueuedMonthlyAction::where('action_type', MinistryActionType::ChurchCircles)
+            ->where('status', 'processed')
+            ->where(function ($q) {
+                if ($this->leader_npc_id) {
+                    $q->where('target_npc_id', $this->leader_npc_id);
+                } else {
+                    $q->where('ward_id', $this->ward_id);
+                }
+            })
+            ->get();
+
+        foreach ($recentProcessed as $pastAction) {
+            $pastTotalDay = (($pastAction->game_month - 1) * 30) + $pastAction->game_day;
+            $diff = $currentTotalDay - $pastTotalDay;
+            if ($diff < 7 && $diff >= 0) {
+                $daysWait = 7 - $diff;
+
+                return [
+                    'allowed' => false,
+                    'reason' => "{$this->name} was coached on Day {$pastAction->game_day} / Month {$pastAction->game_month} ({$diff} day".($diff === 1 ? '' : 's').' ago). Church Circles coaching is limited to once per week (available in '.$daysWait.' day'.($daysWait > 1 ? 's' : '').').',
+                    'days_remaining' => $daysWait,
+                ];
+            }
+        }
+
+        return [
+            'allowed' => true,
+            'reason' => null,
+            'days_remaining' => 0,
+        ];
     }
 }

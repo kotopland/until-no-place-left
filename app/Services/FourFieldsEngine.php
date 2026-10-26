@@ -91,15 +91,66 @@ class FourFieldsEngine
 
                 $hasSabbath = $pendingActions->contains(fn ($a) => $a->action_type === MinistryActionType::SabbathRest);
                 $nextDay = min(30, $lockedUser->current_game_day + 1);
-                $newAp = $hasSabbath
-                    ? $lockedUser->max_action_points
-                    : min($lockedUser->max_action_points, $lockedUser->action_points + $lockedUser->daily_action_points);
+
+                $isBurnedOut = $lockedUser->is_burned_out;
+                $burnedOutUntilMonth = $lockedUser->burned_out_until_game_month;
+                $consecutiveExhaustion = $lockedUser->consecutive_exhaustion_days;
+                $fatiguePenalty = $lockedUser->fatigue_penalty_ap;
+                $burnoutCount = $lockedUser->burnout_count;
+
+                if ($isBurnedOut) {
+                    if ($burnedOutUntilMonth !== null && $lockedUser->current_game_month >= $burnedOutUntilMonth) {
+                        $isBurnedOut = false;
+                        $burnedOutUntilMonth = null;
+                        $consecutiveExhaustion = 0;
+                        $fatiguePenalty = 0;
+                        $newAp = $lockedUser->max_action_points;
+                    } else {
+                        $newAp = 0;
+                    }
+                } elseif ($hasSabbath) {
+                    // Observing Sabbath rest restores soul and body, resetting fatigue!
+                    $isBurnedOut = false;
+                    $burnedOutUntilMonth = null;
+                    $consecutiveExhaustion = 0;
+                    $fatiguePenalty = 0;
+                    $newAp = $lockedUser->max_action_points;
+                } else {
+                    // Check if player used up their AP today (remaining AP <= 1)
+                    if ($lockedUser->action_points <= 1) {
+                        $consecutiveExhaustion++;
+                        if ($consecutiveExhaustion >= 5) {
+                            // Sustained overwork leads to collapse into 3-month burnout
+                            $isBurnedOut = true;
+                            $burnedOutUntilMonth = $lockedUser->current_game_month + 3;
+                            $burnoutCount++;
+                            $fatiguePenalty = $lockedUser->daily_action_points;
+                            $newAp = 0;
+                        } else {
+                            // Progressive fatigue penalty: reduces available AP next days (-2, -4, -6 AP)
+                            $fatiguePenalty = ($consecutiveExhaustion - 1) * 2;
+                            $replenished = max(0, $lockedUser->daily_action_points - $fatiguePenalty);
+                            $effectiveMaxAp = max(2, $lockedUser->max_action_points - $fatiguePenalty);
+                            $newAp = min($effectiveMaxAp, $lockedUser->action_points + $replenished);
+                        }
+                    } else {
+                        // Moderated labor or left unspent AP: streak broken, fatigue clears!
+                        $consecutiveExhaustion = 0;
+                        $fatiguePenalty = 0;
+                        $newAp = min($lockedUser->max_action_points, $lockedUser->action_points + $lockedUser->daily_action_points);
+                    }
+                }
 
                 $userUpdates = [
                     'current_game_day' => $nextDay,
                     'last_daily_tick_at' => now(),
                     'next_daily_tick_at' => now()->addMinutes(10),
                     'action_points' => $newAp,
+                    'consecutive_exhaustion_days' => $consecutiveExhaustion,
+                    'fatigue_penalty_ap' => $fatiguePenalty,
+                    'is_burned_out' => $isBurnedOut,
+                    'burned_out_until_game_month' => $burnedOutUntilMonth,
+                    'burnout_count' => $burnoutCount,
                     'days_played_today' => $daysPlayedToday,
                     'days_processed_this_month' => $lockedUser->days_processed_this_month + 1,
                     'last_active_at' => now(),
@@ -220,15 +271,61 @@ class FourFieldsEngine
                 $userHasSabbath = $pendingActions->where('user_id', $user->id)
                     ->contains(fn ($a) => $a->action_type === MinistryActionType::SabbathRest);
                 $nextDay = min(30, $user->current_game_day + 1);
-                $newAp = $userHasSabbath
-                    ? $user->max_action_points
-                    : min($user->max_action_points, $user->action_points + $user->daily_action_points);
+
+                $isBurnedOut = $user->is_burned_out;
+                $burnedOutUntilMonth = $user->burned_out_until_game_month;
+                $consecutiveExhaustion = $user->consecutive_exhaustion_days;
+                $fatiguePenalty = $user->fatigue_penalty_ap;
+                $burnoutCount = $user->burnout_count;
+
+                if ($isBurnedOut) {
+                    if ($burnedOutUntilMonth !== null && $user->current_game_month >= $burnedOutUntilMonth) {
+                        $isBurnedOut = false;
+                        $burnedOutUntilMonth = null;
+                        $consecutiveExhaustion = 0;
+                        $fatiguePenalty = 0;
+                        $newAp = $user->max_action_points;
+                    } else {
+                        $newAp = 0;
+                    }
+                } elseif ($userHasSabbath) {
+                    $isBurnedOut = false;
+                    $burnedOutUntilMonth = null;
+                    $consecutiveExhaustion = 0;
+                    $fatiguePenalty = 0;
+                    $newAp = $user->max_action_points;
+                } else {
+                    if ($user->action_points <= 1) {
+                        $consecutiveExhaustion++;
+                        if ($consecutiveExhaustion >= 5) {
+                            $isBurnedOut = true;
+                            $burnedOutUntilMonth = $user->current_game_month + 3;
+                            $burnoutCount++;
+                            $fatiguePenalty = $user->daily_action_points;
+                            $newAp = 0;
+                        } else {
+                            $fatiguePenalty = ($consecutiveExhaustion - 1) * 2;
+                            $replenished = max(0, $user->daily_action_points - $fatiguePenalty);
+                            $effectiveMaxAp = max(2, $user->max_action_points - $fatiguePenalty);
+                            $newAp = min($effectiveMaxAp, $user->action_points + $replenished);
+                        }
+                    } else {
+                        $consecutiveExhaustion = 0;
+                        $fatiguePenalty = 0;
+                        $newAp = min($user->max_action_points, $user->action_points + $user->daily_action_points);
+                    }
+                }
 
                 $userUpdates = [
                     'current_game_day' => $nextDay,
                     'last_daily_tick_at' => now(),
                     'next_daily_tick_at' => now()->addMinutes(10),
                     'action_points' => $newAp,
+                    'consecutive_exhaustion_days' => $consecutiveExhaustion,
+                    'fatigue_penalty_ap' => $fatiguePenalty,
+                    'is_burned_out' => $isBurnedOut,
+                    'burned_out_until_game_month' => $burnedOutUntilMonth,
+                    'burnout_count' => $burnoutCount,
                     'days_played_today' => $daysPlayedToday,
                     'days_processed_this_month' => $user->days_processed_this_month + 1,
                     'last_active_at' => now(),
@@ -375,13 +472,41 @@ class FourFieldsEngine
                 }
 
                 $scoreGain = $playerScoreGains[$user->id] ?? 0;
+                $nextMonth = $user->current_game_month + 1;
+
+                $isBurnedOut = $user->is_burned_out;
+                $burnedOutUntilMonth = $user->burned_out_until_game_month;
+                $consecutiveExhaustion = $user->consecutive_exhaustion_days;
+                $fatiguePenalty = $user->fatigue_penalty_ap;
+
+                if ($isBurnedOut) {
+                    if ($burnedOutUntilMonth !== null && $nextMonth >= $burnedOutUntilMonth) {
+                        $isBurnedOut = false;
+                        $burnedOutUntilMonth = null;
+                        $consecutiveExhaustion = 0;
+                        $fatiguePenalty = 0;
+                        $actionPoints = $user->max_action_points;
+                        $autonomousHighlights[] = "🕊️ [BURNOUT HEALED] {$user->name} has completed 3 months of mandatory medical leave and is fully restored!";
+                    } else {
+                        $monthsLeft = max(1, ($burnedOutUntilMonth ?? $nextMonth) - $nextMonth);
+                        $actionPoints = 0;
+                        $autonomousHighlights[] = "⚠️ [BURNOUT SABBATICAL] {$user->name} is on mandatory burnout medical leave ({$monthsLeft} month(s) remaining).";
+                    }
+                } else {
+                    $actionPoints = $user->max_action_points;
+                }
+
                 $userUpdates = [
-                    'current_game_month' => $user->current_game_month + 1,
+                    'current_game_month' => $nextMonth,
                     'current_game_day' => 1,
                     'days_processed_this_month' => 0,
                     'last_monthly_tick_at' => now(),
-                    'action_points' => $user->max_action_points, // Refresh monthly AP bandwidth
-                    'days_played_today' => 0, // Reset daily play limit for new month/day
+                    'action_points' => $actionPoints,
+                    'is_burned_out' => $isBurnedOut,
+                    'burned_out_until_game_month' => $burnedOutUntilMonth,
+                    'consecutive_exhaustion_days' => $consecutiveExhaustion,
+                    'fatigue_penalty_ap' => $fatiguePenalty,
+                    'days_played_today' => 0,
                 ];
 
                 if ($scoreGain > 0) {
@@ -554,12 +679,41 @@ class FourFieldsEngine
 
             // 5. Advance user to next game month and reset day counters
             $user->increment('current_game_month');
+            $newMonth = $user->current_game_month;
+
+            $isBurnedOut = $user->is_burned_out;
+            $burnedOutUntilMonth = $user->burned_out_until_game_month;
+            $consecutiveExhaustion = $user->consecutive_exhaustion_days;
+            $fatiguePenalty = $user->fatigue_penalty_ap;
+
+            if ($isBurnedOut) {
+                if ($burnedOutUntilMonth !== null && $newMonth >= $burnedOutUntilMonth) {
+                    $isBurnedOut = false;
+                    $burnedOutUntilMonth = null;
+                    $consecutiveExhaustion = 0;
+                    $fatiguePenalty = 0;
+                    $actionPoints = $user->max_action_points;
+                    $autonomousHighlights[] = "🕊️ [BURNOUT HEALED] {$user->name} has completed 3 months of mandatory medical leave and is fully restored!";
+                } else {
+                    $monthsLeft = max(1, ($burnedOutUntilMonth ?? $newMonth) - $newMonth);
+                    $actionPoints = 0;
+                    $autonomousHighlights[] = "⚠️ [BURNOUT SABBATICAL] {$user->name} is on mandatory burnout medical leave ({$monthsLeft} month(s) remaining).";
+                }
+            } else {
+                $actionPoints = $user->max_action_points;
+            }
+
             $user->update([
                 'current_game_day' => 1,
                 'days_processed_this_month' => 0,
                 'last_monthly_tick_at' => now(),
                 'next_daily_tick_at' => now()->addMinutes(10),
-                'action_points' => $user->max_action_points,
+                'action_points' => $actionPoints,
+                'is_burned_out' => $isBurnedOut,
+                'burned_out_until_game_month' => $burnedOutUntilMonth,
+                'consecutive_exhaustion_days' => $consecutiveExhaustion,
+                'fatigue_penalty_ap' => $fatiguePenalty,
+                'days_played_today' => 0,
             ]);
 
             return new MonthResolutionResult(
@@ -1108,6 +1262,8 @@ class FourFieldsEngine
                         'baptized_count' => 3,
                         'is_dissolved' => false,
                         'started_by_name' => $user->name,
+                        'last_coached_game_month' => $gameMonth,
+                        'last_coached_game_day' => $action->game_day ?: 1,
                         'lat' => $npc->lat,
                         'lng' => $npc->lng,
                         'founded_game_month' => $gameMonth,
@@ -1116,6 +1272,10 @@ class FourFieldsEngine
                     $narrative = "Gathered believers with {$npc->name} to form an Acts 2 Church Circle using the 3/3rds pattern (Look Back, Look Up, Look Ahead). An autonomous simple church is now birthed in {$ward->name}!";
                 } elseif ($existingChurch->is_dissolved) {
                     $existingChurch->revitalize($gameMonth, $user);
+                    $existingChurch->update([
+                        'last_coached_game_month' => $gameMonth,
+                        'last_coached_game_day' => $action->game_day ?: 1,
+                    ]);
                     $npc->update(['church_id' => $existingChurch->id]);
                     $points += 20;
                     $narrative = "Revitalized {$existingChurch->name}! Gathered scattered believers back together in {$ward->name}, resolved past relational hurt/sickness obstacles, and restored the Acts 2 Church Circle!";
@@ -1123,7 +1283,11 @@ class FourFieldsEngine
                     $existingChurch->increment('health_score', min(25, 100 - $existingChurch->health_score));
                     $existingChurch->increment('attenders_count', 2);
                     $existingChurch->increment('believers_count', 1);
-                    $existingChurch->update(['is_healthy_church' => $existingChurch->health_score >= 50 && $existingChurch->hasAllCoreElements()]);
+                    $existingChurch->update([
+                        'is_healthy_church' => $existingChurch->health_score >= 50 && $existingChurch->hasAllCoreElements(),
+                        'last_coached_game_month' => $gameMonth,
+                        'last_coached_game_day' => $action->game_day ?: 1,
+                    ]);
                     $narrative = "Coached {$existingChurch->name} in the 3/3rds pattern. Church health strengthened to {$existingChurch->health_score}% with {$existingChurch->attenders_count} attenders and deeper mutual fellowship!";
                 }
 

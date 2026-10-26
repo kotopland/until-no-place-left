@@ -307,6 +307,16 @@ class ActionQueuePlanner extends Component
             return;
         }
 
+        if ($this->player->is_burned_out) {
+            $monthsLeft = $this->player->burnoutMonthsRemaining($this->player->current_game_month);
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => "🚨 BURNOUT LEAVE: You collapsed from severe ministry overwork without rest. You are on mandatory medical leave for {$monthsLeft} more month(s) (until Month {$this->player->burned_out_until_game_month}). Advance months to complete your sabbatical recovery.",
+            ]);
+
+            return;
+        }
+
         if ($this->isCurrentDayBlocked) {
             $rhythm = $this->activeWorkerRhythm;
             $this->dispatch('notify', [
@@ -392,6 +402,25 @@ class ActionQueuePlanner extends Component
             }
         }
 
+        // Enforce once-per-week rate limit for Church Circles coaching (minimum 7 days between sessions)
+        if ($actionEnum === MinistryActionType::ChurchCircles) {
+            $church = $targetNpc?->church
+                ?? Church::where('leader_npc_id', $targetNpc?->id)->first()
+                ?? Church::where('ward_id', $this->selectedWardId)->first();
+
+            if ($church) {
+                $eligibility = $church->coachingEligibility($this->player->current_game_month ?: 1, $this->player->current_game_day ?: 1);
+                if (! $eligibility['allowed']) {
+                    $this->dispatch('notify', [
+                        'type' => 'error',
+                        'message' => "⛪ {$eligibility['reason']}",
+                    ]);
+
+                    return;
+                }
+            }
+        }
+
         // Deduct player AP (including transit commute surcharge)
         $this->player->decrement('action_points', $totalApCost);
         $this->player->refresh();
@@ -441,6 +470,16 @@ class ActionQueuePlanner extends Component
             $this->dispatch('notify', [
                 'type' => 'error',
                 'message' => 'Unable to schedule activity: Player profile or game session not initialized.',
+            ]);
+
+            return;
+        }
+
+        if ($this->player->is_burned_out) {
+            $monthsLeft = $this->player->burnoutMonthsRemaining($this->player->current_game_month);
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => "🚨 BURNOUT LEAVE: You are on mandatory medical leave for {$monthsLeft} more month(s). Advance months to complete your sabbatical recovery.",
             ]);
 
             return;

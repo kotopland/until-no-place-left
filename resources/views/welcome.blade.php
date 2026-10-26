@@ -695,8 +695,11 @@
                             <span class="font-bold text-amber-400">3 AP</span>
                         </li>
                         <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
-                            <span>⛪ Form Acts 2 Church Circles</span>
-                            <span class="font-bold text-amber-400">3 AP</span>
+                            <div>
+                                <span>⛪ Form / Coach Acts 2 Church Circles</span>
+                                <span class="text-[10px] text-slate-400 block font-normal">Intensive preparation & 3/3rds leadership • Max once per week</span>
+                            </div>
+                            <span class="font-bold text-amber-400">8 AP</span>
                         </li>
                         <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
                             <span>🌱 Mentor Timothy Leader (L1 to L2)</span>
@@ -720,6 +723,21 @@
                     </ul>
                     <div class="p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-800/60 text-[11px] text-indigo-300">
                         ⚡ <em>Action HQ Flow:</em> Scheduling actions follows an intuitive 3-step path: (1) Pick District (with expanded scroll fields &amp; interactive scroll indicators) ➔ (2) Pick Resident (featuring demographic avatars representing each person's nationality, gender, age bracket, and interactive scroll prompts) ➔ (3) Choose an Action from the list. The planner smoothly scrolls down to the <strong>Ready to Queue for Day X</strong> box at the bottom where you can add personal prayer notes and queue the action with one click (or use the persistent confirmation dock on mobile devices).
+                    </div>
+                    <div class="p-2.5 rounded-xl bg-amber-950/40 border border-amber-800/60 text-[11px] text-amber-200 space-y-1">
+                        <div class="flex items-center gap-1.5 font-bold text-amber-300">
+                            <span>⚠️</span>
+                            <span>Overwork Fatigue &amp; 3-Month Burnout Sabbatical</span>
+                        </div>
+                        <p class="text-slate-300 leading-relaxed">
+                            Missionary zeal without rest leads to exhaustion. When you drain all your AP (<strong class="text-amber-300">&le; 1 AP remaining</strong>) day after day, <strong>overwork fatigue</strong> sets in and reduces available AP on subsequent days (-2 AP on day 2, -4 AP on day 3, -6 AP on day 4).
+                        </p>
+                        <p class="text-rose-300 leading-relaxed font-semibold">
+                            🚨 Draining all AP for 5 consecutive days triggers Severe Ministry Burnout: all field actions are blocked and you must take a mandatory 3-Month Sabbatical Leave before resuming!
+                        </p>
+                        <p class="text-emerald-300 leading-relaxed text-[10px]">
+                            💡 Schedule a <strong>Weekly Sabbath Rest</strong> or end the day with AP to spare to completely clear fatigue and restore full 12 AP.
+                        </p>
                     </div>
                 </div>
 
@@ -970,6 +988,12 @@
                                 Believers may leave a church due to <strong class="text-slate-200">relocation</strong> (job transfer "tenkin"), <strong class="text-slate-200">sickness/hospitalization</strong>, or <strong class="text-slate-200">interpersonal friction/offenses</strong>. This lowers attendance and health score. If health drops below 15% or attenders drop to 1 or 0, the church dissolves. Dissolved churches remain on the Gen Map with historical lineage records and can be <strong>revitalized</strong> through pastoral coaching.
                             </span>
                         </div>
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
+                            <span class="text-cyan-400 font-bold block mb-1">⚡ 3/3rds Coaching: 8 AP & Once-Per-Week Cadence</span>
+                            <span class="text-slate-400 leading-relaxed block">
+                                Initiating Church Circles coaching costs <strong class="text-cyan-300">8 AP</strong> because extensive spiritual preparation, pastoral care, and leading the 3/3rds gathering leaves little bandwidth for other tasks that day. In accordance with biblical gathering rhythms, coaching for any church circle is strictly <strong class="text-cyan-300">limited to once per week (minimum 7 days between sessions)</strong>.
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -1046,11 +1070,11 @@
                                 <h4 class="font-bold text-white text-xs">Weekly Sabbath Rest</h4>
                                 <span class="text-[10px] text-amber-400 block font-semibold">安息日・休息</span>
                                 <p class="text-[11px] text-slate-400 leading-relaxed">
-                                    A dedicated weekly day of rest, cessation from labor, and spiritual replenishment before God. Refreshes the missionary's heart and mind.
+                                    A dedicated weekly day of rest, cessation from labor, and spiritual replenishment before God. Refreshes the missionary's heart, completely resets overwork fatigue to 0, prevents burnout, and restores full 12 AP.
                                 </p>
                             </div>
                             <div class="pt-2 border-t border-slate-900 flex items-center justify-between text-[11px]">
-                                <span class="font-bold text-emerald-400">+25 Pts &amp; 100% AP</span>
+                                <span class="font-bold text-emerald-400">Resets Fatigue &amp; 100% AP</span>
                                 <span class="text-[10px] text-slate-500">Max 1 / week</span>
                             </div>
                         </div>

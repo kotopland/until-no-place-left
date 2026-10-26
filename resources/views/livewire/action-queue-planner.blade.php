@@ -107,6 +107,34 @@
                     </div>
                 </div>
 
+                <!-- Overwork Fatigue & Burnout Status Meter -->
+                <div class="border-l border-slate-200 dark:border-slate-800 pl-4 pr-2">
+                    <div class="flex items-center justify-between text-xs mb-1">
+                        <span class="text-slate-600 dark:text-slate-400 font-medium">Vitality:</span>
+                        <span class="font-bold ml-2 text-xs {{ $player?->is_burned_out ? 'text-rose-500' : (($player?->fatigue_penalty_ap ?? 0) > 0 ? 'text-amber-500' : 'text-emerald-500') }}">
+                            @if($player?->is_burned_out)
+                                🚨 Burnout ({{ $player?->burnoutMonthsRemaining($player?->current_game_month) }}m leave)
+                            @elseif(($player?->fatigue_penalty_ap ?? 0) > 0)
+                                ⚠️ -{{ $player->fatigue_penalty_ap }} AP Fatigue
+                            @elseif(($player?->consecutive_exhaustion_days ?? 0) > 0)
+                                ⚡ Overworked Today
+                            @else
+                                🕊️ Rested & Healthy
+                            @endif
+                        </span>
+                    </div>
+                    <div class="w-32 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                        @php
+                            $fatigueWidth = $player?->is_burned_out ? 100 : min(100, (($player?->consecutive_exhaustion_days ?? 0) / 5) * 100);
+                            $fatigueBarColor = $player?->is_burned_out ? 'bg-rose-500 animate-pulse' : (($player?->consecutive_exhaustion_days ?? 0) >= 3 ? 'bg-amber-500' : 'bg-emerald-500');
+                        @endphp
+                        <div class="h-full {{ $fatigueBarColor }} rounded-full transition-all duration-300" style="width: {{ $fatigueWidth }}%"></div>
+                    </div>
+                    <span class="text-[9px] text-slate-500 dark:text-slate-400 block mt-0.5 truncate max-w-[130px]">
+                        {{ $player?->is_burned_out ? 'Mandatory Sabbatical' : ($player?->consecutive_exhaustion_days ? $player->consecutive_exhaustion_days.'d overwork without rest' : 'Sabbath rhythm active') }}
+                    </span>
+                </div>
+
                 <!-- Daily Real-Life Play Cap (30 Days Max) -->
                 <div class="border-l border-slate-200 dark:border-slate-800 pl-4 pr-2">
                     <div class="flex items-center justify-between text-xs mb-1">
@@ -478,7 +506,27 @@
                 </span>
             </button>
         </div>
-    </div>
+    @if($player?->is_burned_out)
+        <div class="mb-5 p-5 rounded-3xl bg-rose-950/80 border border-rose-800 shadow-2xl space-y-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl animate-bounce">🚨</span>
+                    <div>
+                        <h3 class="text-sm md:text-base font-black text-rose-200">Severe Ministry Burnout — Mandatory 3-Month Sabbatical Leave</h3>
+                        <p class="text-xs text-rose-300/80">
+                            You worked to total exhaustion without observing weekly Sabbath rest, draining all your AP for 5 consecutive days.
+                        </p>
+                    </div>
+                </div>
+                <span class="px-3 py-1 rounded-xl text-xs font-black bg-rose-900 text-rose-100 border border-rose-600 shadow-md">
+                    {{ $player?->burnoutMonthsRemaining($player?->current_game_month) }} Month(s) Remaining
+                </span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+                All field ministry and training scheduling are suspended to allow physical, emotional, and spiritual recovery until <strong>Month {{ $player?->burned_out_until_game_month }}</strong>. You can advance game months to complete your mandatory sabbatical rest.
+            </p>
+        </div>
+    @endif
 
     <!-- Desktop 3-Step Guided Workflow Bar (Visible on lg screens) -->
     <div class="hidden lg:grid grid-cols-12 gap-5 mb-1">
@@ -1317,10 +1365,15 @@
                             wire:click="queueAction"
                             @click="scrollToStep2()"
                             wire:loading.attr="disabled"
-                            @disabled($isDayBlocked || ! $hasEnoughApForSelected)
-                            class="w-full py-3 px-4 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-[0.99] {{ ($hasEnoughApForSelected && ! $isDayBlocked) ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950 ring-2 ring-emerald-400/50 hover:scale-[1.01]' : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60' }}"
+                            @disabled($isDayBlocked || ! $hasEnoughApForSelected || ($player?->is_burned_out ?? false))
+                            class="w-full py-3 px-4 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-[0.99] {{ ($hasEnoughApForSelected && ! $isDayBlocked && ! ($player?->is_burned_out ?? false)) ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950 ring-2 ring-emerald-400/50 hover:scale-[1.01]' : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60' }}"
                         >
-                            @if($isDayBlocked)
+                            @if($player?->is_burned_out)
+                                <span class="flex items-center gap-1.5 text-rose-300">
+                                    <span>🚨</span>
+                                    <span>Mandatory Sabbatical: Burnout Recovery ({{ $player?->burnoutMonthsRemaining($player?->current_game_month) }}m left)</span>
+                                </span>
+                            @elseif($isDayBlocked)
                                 <span class="flex items-center gap-1.5 text-amber-300">
                                     <span>⛔</span>
                                     <span>Day {{ $player?->current_game_day ?? 1 }} Blocked by {{ $activeWorkerRhythm?->actionTitle ?? 'Worker Rhythm' }}</span>
@@ -1627,10 +1680,15 @@
                 wire:click="queueAction"
                 @click="scrollToStep2()"
                 wire:loading.attr="disabled"
-                @disabled($isDayBlocked || ! $hasEnoughApForSelected)
-                class="px-4 py-2.5 rounded-xl font-bold text-xs transition shadow-lg shrink-0 flex items-center justify-center gap-1.5 {{ ($hasEnoughApForSelected && ! $isDayBlocked) ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950 active:scale-95' : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60' }}"
+                @disabled($isDayBlocked || ! $hasEnoughApForSelected || ($player?->is_burned_out ?? false))
+                class="px-4 py-2.5 rounded-xl font-bold text-xs transition shadow-lg shrink-0 flex items-center justify-center gap-1.5 {{ ($hasEnoughApForSelected && ! $isDayBlocked && ! ($player?->is_burned_out ?? false)) ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950 active:scale-95' : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60' }}"
             >
-                @if($isDayBlocked)
+                @if($player?->is_burned_out)
+                    <span class="flex items-center gap-1 text-rose-300">
+                        <span>🚨</span>
+                        <span>Burnout Leave</span>
+                    </span>
+                @elseif($isDayBlocked)
                     <span class="flex items-center gap-1 text-amber-300">
                         <span>⛔</span>
                         <span>Time Blocked</span>

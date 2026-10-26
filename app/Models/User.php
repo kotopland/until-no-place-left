@@ -72,6 +72,11 @@ use Illuminate\Support\Str;
     'days_played_today',
     'last_played_real_date',
     'daily_action_points',
+    'consecutive_exhaustion_days',
+    'fatigue_penalty_ap',
+    'is_burned_out',
+    'burned_out_until_game_month',
+    'burnout_count',
     'current_game_month',
     'current_game_day',
     'days_processed_this_month',
@@ -124,6 +129,73 @@ class User extends Authenticatable
      */
     public bool $isExhausted {
         get => $this->action_points <= 0;
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Effective daily AP replenished taking into account overwork fatigue
+     */
+    public int $effectiveDailyActionPoints {
+        get => $this->is_burned_out ? 0 : max(2, $this->daily_action_points - $this->fatigue_penalty_ap);
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Human-friendly physical/spiritual fatigue status label
+     */
+    public string $fatigueStatusLabel {
+        get {
+            if ($this->is_burned_out) {
+                return 'Severe Burnout (Mandatory 3-Month Sabbatical Leave)';
+            }
+
+            return match ($this->consecutive_exhaustion_days) {
+                0 => 'Rested & Healthy',
+                1 => 'Fatigued from Today\'s Labors',
+                2 => 'Weary (-2 AP Tomorrow)',
+                3 => 'Heavily Strained (-4 AP Tomorrow)',
+                4 => 'Critical Exhaustion Danger (-6 AP Tomorrow, Burnout Imminent!)',
+                default => 'Overworked (Burnout Warning)',
+            };
+        }
+    }
+
+    /**
+     * Calculates remaining months of sabbatical leave required for burnout recovery.
+     */
+    public function burnoutMonthsRemaining(int $currentMonth): int
+    {
+        if (! $this->is_burned_out || $this->burned_out_until_game_month === null) {
+            return 0;
+        }
+
+        return max(0, $this->burned_out_until_game_month - $currentMonth);
+    }
+
+    /**
+     * Triggers severe ministry burnout due to sustained overwork without rest.
+     */
+    public function triggerBurnout(int $currentMonth): void
+    {
+        $this->update([
+            'is_burned_out' => true,
+            'burned_out_until_game_month' => $currentMonth + 3,
+            'burnout_count' => $this->burnout_count + 1,
+            'action_points' => 0,
+            'fatigue_penalty_ap' => $this->daily_action_points,
+        ]);
+    }
+
+    /**
+     * Completes 3-month sabbatical recovery from ministry burnout.
+     */
+    public function recoverFromBurnout(): void
+    {
+        $this->update([
+            'is_burned_out' => false,
+            'burned_out_until_game_month' => null,
+            'consecutive_exhaustion_days' => 0,
+            'fatigue_penalty_ap' => 0,
+            'action_points' => $this->max_action_points,
+        ]);
     }
 
     /**
@@ -244,6 +316,11 @@ class User extends Authenticatable
             'days_played_today' => 'integer',
             'last_played_real_date' => 'date',
             'daily_action_points' => 'integer',
+            'consecutive_exhaustion_days' => 'integer',
+            'fatigue_penalty_ap' => 'integer',
+            'is_burned_out' => 'boolean',
+            'burned_out_until_game_month' => 'integer',
+            'burnout_count' => 'integer',
             'current_game_month' => 'integer',
             'current_game_day' => 'integer',
             'days_processed_this_month' => 'integer',
