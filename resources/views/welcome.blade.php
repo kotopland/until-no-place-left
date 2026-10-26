@@ -713,7 +713,7 @@
                         </li>
                     </ul>
                     <div class="p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-800/60 text-[11px] text-indigo-300">
-                        ⚡ <em>Action HQ Flow:</em> Scheduling actions follows an intuitive 3-step path: (1) Pick District ➔ (2) Pick Resident (featuring demographic avatars representing each person's nationality, gender, and age bracket) ➔ (3) Choose an Action from the list. The planner smoothly scrolls down to the <strong>Ready to Queue for Day X</strong> box at the bottom where you can add personal prayer notes and queue the action with one click (or use the persistent confirmation dock on mobile devices).
+                        ⚡ <em>Action HQ Flow:</em> Scheduling actions follows an intuitive 3-step path: (1) Pick District (with expanded scroll fields &amp; interactive scroll indicators) ➔ (2) Pick Resident (featuring demographic avatars representing each person's nationality, gender, age bracket, and interactive scroll prompts) ➔ (3) Choose an Action from the list. The planner smoothly scrolls down to the <strong>Ready to Queue for Day X</strong> box at the bottom where you can add personal prayer notes and queue the action with one click (or use the persistent confirmation dock on mobile devices).
                     </div>
                 </div>
 
