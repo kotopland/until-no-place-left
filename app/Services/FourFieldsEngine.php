@@ -1237,8 +1237,30 @@ class FourFieldsEngine
 
                 $existingChurch = Church::where('leader_npc_id', $npc->id)->first();
                 if (! $existingChurch) {
-                    $churchGen = max(1, $npc->generation);
-                    $parentChurch = Church::where('game_session_id', $action->game_session_id)->where('is_dissolved', false)->orderBy('generation')->first();
+                    // Determine parent church:
+                    // 1. Check if the active player has an established church in this session
+                    $parentChurch = Church::where('game_session_id', $action->game_session_id)
+                        ->where('leader_user_id', $user->id)
+                        ->where('is_dissolved', false)
+                        ->first()
+                        ?? Church::where('game_session_id', $action->game_session_id)
+                            ->where('started_by_name', $user->name)
+                            ->where('generation', 1)
+                            ->where('is_dissolved', false)
+                            ->first();
+
+                    // 2. If the active player does not lead a church, check if the NPC has a discipler NPC with a church
+                    if (! $parentChurch && $npc->discipler_npc_id) {
+                        $parentChurch = Church::where('leader_npc_id', $npc->discipler_npc_id)
+                            ->where('is_dissolved', false)
+                            ->first();
+                    }
+
+                    // 3. Determine generation:
+                    // If a parent church is found, this is a daughter church (gen + 1).
+                    // If no parent church exists, this is the player's own pioneer Generation 1 (G1) church!
+                    $churchGen = $parentChurch ? ($parentChurch->generation + 1) : max(1, $npc->generation);
+
                     $newChurch = Church::create([
                         'game_session_id' => $action->game_session_id,
                         'ward_id' => $npc->ward_id,
@@ -1268,7 +1290,10 @@ class FourFieldsEngine
                         'lng' => $npc->lng,
                         'founded_game_month' => $gameMonth,
                     ]);
-                    $npc->update(['church_id' => $newChurch->id]);
+                    $npc->update([
+                        'church_id' => $newChurch->id,
+                        'discipler_user_id' => $user->id,
+                    ]);
                     $narrative = "Gathered believers with {$npc->name} to form an Acts 2 Church Circle using the 3/3rds pattern (Look Back, Look Up, Look Ahead). An autonomous simple church is now birthed in {$ward->name}!";
                 } elseif ($existingChurch->is_dissolved) {
                     $existingChurch->revitalize($gameMonth, $user);
@@ -1376,6 +1401,10 @@ class FourFieldsEngine
             'trust_level' => $newTrust,
             'status' => $newStatus,
         ];
+
+        if ($npc->discipler_user_id === null && ($newStatus === ReceptivityStatus::Green || $npc->prayed_salvation || $roleAssigned === ContributionRole::Discipler)) {
+            $npcUpdates['discipler_user_id'] = $user->id;
+        }
 
         if ($newStatus === ReceptivityStatus::Yellow && $prevStatus !== ReceptivityStatus::Yellow) {
             $npcUpdates['yellow_since_game_month'] = $gameMonth;
@@ -2064,12 +2093,15 @@ class FourFieldsEngine
                         'baptism_cost_months' => 0,
                         'generation' => $newGen,
                         'discipler_npc_id' => $believer->id,
+                        'discipler_user_id' => $believer->discipler_user_id,
                     ]);
 
                     $newBelieversCount++;
 
                     // Calculate generational points for original player
-                    $originalPlayer = $believer->disciplerUser ?? User::where('current_game_session_id', $session->id)->first();
+                    $originalPlayer = $believer->disciplerUser
+                        ?? $believer->disciplerNpc?->disciplerUser
+                        ?? User::where('current_game_session_id', $session->id)->first();
                     if ($originalPlayer) {
                         $genPoints = match ($newGen) {
                             1 => 10,
@@ -2094,11 +2126,31 @@ class FourFieldsEngine
 
             // When an equipped believer has at least 1 disciple or can lead a church (L2+), they birth an autonomous church!
             if (! $alreadyPlantedDaughter && ($believer->leadership_tier->canLeadChurch() || $disciplesCount >= 1)) {
-                $churchGen = max(2, $believer->generation + 1);
+                // Find parent church: first check discipler NPC, then discipler User
                 $parentChurch = Church::where('leader_npc_id', $believer->discipler_npc_id)
                     ->where('is_dissolved', false)
-                    ->first()
-                    ?? Church::where('game_session_id', $session->id)->where('is_dissolved', false)->orderBy('generation')->first();
+                    ->first();
+
+                if (! $parentChurch && $believer->discipler_user_id) {
+                    $parentChurch = Church::where('game_session_id', $session->id)
+                        ->where('leader_user_id', $believer->discipler_user_id)
+                        ->where('is_dissolved', false)
+                        ->first()
+                        ?? Church::where('game_session_id', $session->id)
+                            ->where('started_by_name', $believer->disciplerUser?->name)
+                            ->where('generation', 1)
+                            ->where('is_dissolved', false)
+                            ->first();
+                }
+
+                if (! $parentChurch) {
+                    $parentChurch = Church::where('game_session_id', $session->id)
+                        ->where('is_dissolved', false)
+                        ->orderBy('generation')
+                        ->first();
+                }
+
+                $churchGen = $parentChurch ? ($parentChurch->generation + 1) : max(2, $believer->generation + 1);
 
                 $attenders = rand(5, 8);
                 $believers = rand(3, 5);
@@ -2136,7 +2188,9 @@ class FourFieldsEngine
 
                 $newChurchesCount++;
 
-                $originalPlayer = $believer->disciplerUser ?? User::where('current_game_session_id', $session->id)->first();
+                $originalPlayer = $believer->disciplerUser
+                    ?? $believer->disciplerNpc?->disciplerUser
+                    ?? User::where('current_game_session_id', $session->id)->first();
                 if ($originalPlayer) {
                     $churchPts = match ($churchGen) {
                         2 => 250,
