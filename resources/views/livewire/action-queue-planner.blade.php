@@ -400,15 +400,29 @@
                                         </p>
                                     @endif
                                     <div class="mt-2 flex items-center gap-1.5 flex-wrap">
-                                        <button 
-                                            type="button"
-                                            wire:click="conductJointPrayerWalk({{ $aiCoLaborer->id }})"
-                                            class="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] transition cursor-pointer shadow flex items-center gap-1 active:scale-95"
-                                            title="Conduct a 2-by-2 joint prayer walk with {{ $aiCoLaborer->name }} (+15 Co-op score, +50% ward openness softening)"
-                                        >
-                                            <span>👣</span>
-                                            <span>Joint Prayer Walk (2 AP)</span>
-                                        </button>
+                                        @if($jointWalkStatus['allowed'] ?? true)
+                                            <button 
+                                                type="button"
+                                                wire:click="conductJointPrayerWalk({{ $aiCoLaborer->id }})"
+                                                class="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] transition cursor-pointer shadow flex items-center gap-1 active:scale-95"
+                                                title="Conduct a 2-by-2 joint prayer walk with {{ $aiCoLaborer->name }} (+15 Co-op score, +50% ward openness softening). {{ $jointWalkStatus['remaining_this_week'] ?? 3 }}/3 left this week (max 1/day)."
+                                            >
+                                                <span>👣</span>
+                                                <span>Joint Prayer Walk (2 AP)</span>
+                                                <span class="text-[9px] text-emerald-200 opacity-90">({{ $jointWalkStatus['remaining_this_week'] ?? 3 }}/3 left)</span>
+                                            </button>
+                                        @else
+                                            <button 
+                                                type="button"
+                                                disabled
+                                                class="px-2 py-1 rounded-lg bg-slate-800 text-slate-400 font-bold text-[10px] cursor-not-allowed opacity-75 flex items-center gap-1 border border-slate-700/60"
+                                                title="{{ $jointWalkStatus['reason'] ?? 'Joint Prayer Walk limit reached.' }}"
+                                            >
+                                                <span>👣</span>
+                                                <span>Joint Prayer Walk (2 AP)</span>
+                                                <span class="text-[9px] {{ ($jointWalkStatus['walks_today'] ?? 0) >= 1 ? 'text-amber-400' : 'text-rose-400' }}">({{ ($jointWalkStatus['walks_today'] ?? 0) >= 1 ? '1/day cap' : '3/wk cap' }})</span>
+                                            </button>
+                                        @endif
                                         <button 
                                             type="button"
                                             wire:click="conductIronOnIron({{ $aiCoLaborer->id }})"

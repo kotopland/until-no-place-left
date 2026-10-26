@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DTOs\ActionResolutionOutcome;
-use App\Enums\BaptismStatus;
+use App\Enums\LeadershipTier;
 use App\Enums\MinistryActionType;
 use App\Enums\NpcNeedState;
 use App\Enums\ReceptivityStatus;
 use App\Models\Church;
 use App\Models\GameSession;
 use App\Models\Npc;
+use App\Models\PrayerWalk;
 use App\Models\User;
 use App\Models\Ward;
 use Illuminate\Support\Collection;
@@ -304,7 +305,7 @@ class AiColaborerService
         $apprentice = Npc::where('ward_id', $homeWard->id)
             ->where('status', ReceptivityStatus::Green)
             ->where('trained_411', true)
-            ->where('leadership_tier', \App\Enums\LeadershipTier::Apprentice)
+            ->where('leadership_tier', LeadershipTier::Apprentice)
             ->first();
 
         if ($apprentice) {
@@ -326,18 +327,113 @@ class AiColaborerService
     }
 
     /**
+     * Check if user is eligible for Joint Prayer Walk (max 1 per day, max 3 per week).
+     *
+     * @return array{
+     *     allowed: bool,
+     *     reason: string|null,
+     *     walks_today: int,
+     *     walks_this_week: int,
+     *     remaining_this_week: int
+     * }
+     */
+    public function getJointPrayerWalkStatus(User $user): array
+    {
+        $currentMonth = $user->current_game_month ?: 1;
+        $currentDay = $user->current_game_day ?: 1;
+        $gameWeek = intdiv($currentDay - 1, 7) + 1;
+        $startDay = (($gameWeek - 1) * 7) + 1;
+        $endDay = min(30, $gameWeek * 7);
+
+        // Daily walks count (game day)
+        $walksToday = PrayerWalk::where('user_id', $user->id)
+            ->where('game_month', $currentMonth)
+            ->where('game_day', $currentDay)
+            ->where('route_name', 'like', 'Joint%')
+            ->count();
+
+        // Weekly walks count (game week)
+        $walksThisWeek = PrayerWalk::where('user_id', $user->id)
+            ->where('game_month', $currentMonth)
+            ->whereBetween('game_day', [$startDay, $endDay])
+            ->where('route_name', 'like', 'Joint%')
+            ->count();
+
+        $remainingThisWeek = max(0, 3 - $walksThisWeek);
+
+        if ($walksToday >= 1) {
+            return [
+                'allowed' => false,
+                'reason' => 'Joint Prayer Walk limit reached: only 1 walk is allowed per day. You can partner again tomorrow!',
+                'walks_today' => $walksToday,
+                'walks_this_week' => $walksThisWeek,
+                'remaining_this_week' => $remainingThisWeek,
+            ];
+        }
+
+        if ($walksThisWeek >= 3) {
+            return [
+                'allowed' => false,
+                'reason' => 'Joint Prayer Walk weekly limit reached: only 3 walks are allowed per week (3/3 used this week).',
+                'walks_today' => $walksToday,
+                'walks_this_week' => $walksThisWeek,
+                'remaining_this_week' => 0,
+            ];
+        }
+
+        return [
+            'allowed' => true,
+            'reason' => null,
+            'walks_today' => $walksToday,
+            'walks_this_week' => $walksThisWeek,
+            'remaining_this_week' => $remainingThisWeek,
+        ];
+    }
+
+    /**
      * Joint MAWL Prayer Walk with human player and AI co-laborer.
      * Grants +50% spiritual openness bonus and +15 Co-op Synergy Points.
+     * Enforces limits: 1 walk per day and at most 3 walks per week.
      */
     public function conductJointPrayerWalk(User $humanUser, User $aiColaborer, Ward $ward): ActionResolutionOutcome
     {
+        $status = $this->getJointPrayerWalkStatus($humanUser);
+        if (! $status['allowed']) {
+            throw new \DomainException($status['reason'] ?? 'Joint Prayer Walk limit exceeded.');
+        }
+
         $outcome = $this->engine->executeAction(
             user: $humanUser,
             ward: $ward,
             actionType: MinistryActionType::PrayerWalk,
             targetNpc: null,
-            gameMonth: $humanUser->current_game_month,
+            gameMonth: $humanUser->current_game_month ?: 1,
         );
+
+        // Tag the prayer walk record as a Joint Walk
+        $walk = PrayerWalk::where('user_id', $humanUser->id)
+            ->where('ward_id', $ward->id)
+            ->where('game_month', $humanUser->current_game_month ?: 1)
+            ->where('game_day', $humanUser->current_game_day ?: 1)
+            ->latest('id')
+            ->first();
+
+        if ($walk) {
+            $walk->update([
+                'route_name' => "Joint Prayer Walk with {$aiColaborer->name} — {$ward->name}",
+            ]);
+        } else {
+            PrayerWalk::create([
+                'game_session_id' => $humanUser->current_game_session_id ?? $ward->game_session_id,
+                'user_id' => $humanUser->id,
+                'ward_id' => $ward->id,
+                'game_month' => $humanUser->current_game_month ?: 1,
+                'game_day' => $humanUser->current_game_day ?: 1,
+                'route_name' => "Joint Prayer Walk with {$aiColaborer->name} — {$ward->name}",
+                'path_coords' => [[(float) ($ward->center_lat ?? $ward->latitude), (float) ($ward->center_lng ?? $ward->longitude)]],
+                'pop_discovered' => false,
+            ]);
+        }
 
         // Additional Co-op Synergy Points
         $humanUser->increment('coop_synergy_score', 15);

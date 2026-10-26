@@ -3,12 +3,15 @@
 namespace App\Livewire;
 
 use App\Enums\MinistryActionType;
+use App\Enums\NpcNeedState;
 use App\Enums\QueuedActionStatus;
+use App\Enums\ReceptivityStatus;
 use App\Models\GameSession;
 use App\Models\Npc;
 use App\Models\QueuedMonthlyAction;
 use App\Models\User;
 use App\Models\Ward;
+use App\Services\AiColaborerService;
 use App\Services\FourFieldsEngine;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
@@ -37,15 +40,22 @@ class ActionQueuePlanner extends Component
 
     /** @var array<string, string> */
     protected $listeners = [
-        'day-advanced' => '$refresh',
+        'day-advanced' => 'refreshPlayerState',
         'action-queued' => '$refresh',
         'home-ward-selected' => 'onHomeWardSelected',
     ];
 
+    public function boot(): void
+    {
+        $this->player = auth()->user() ?? $this->player ?? User::first();
+        $this->player?->refresh();
+        $this->session = $this->player?->currentGameSession ?? $this->session ?? GameSession::first();
+        $this->session?->refresh();
+    }
+
     public function mount(): void
     {
-        $this->player = auth()->user() ?? User::first();
-        $this->session = $this->player ? ($this->player->currentGameSession ?? GameSession::first()) : GameSession::first();
+        $this->boot();
 
         // Mark player active (online)
         $this->player?->touchActive();
@@ -55,10 +65,14 @@ class ActionQueuePlanner extends Component
         $this->selectedWardId = $defaultWard?->id;
     }
 
+    public function refreshPlayerState(): void
+    {
+        $this->boot();
+    }
+
     public function onHomeWardSelected(int $wardId): void
     {
-        $this->player = auth()->user() ?? User::first();
-        $this->player?->refresh();
+        $this->refreshPlayerState();
         $this->selectedWardId = $wardId;
     }
 
@@ -110,9 +124,21 @@ class ActionQueuePlanner extends Component
             return;
         }
 
+        $aiService = app(AiColaborerService::class);
+        $walkStatus = $aiService->getJointPrayerWalkStatus($this->player);
+
+        if (! $walkStatus['allowed']) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => "👣 {$walkStatus['reason']}",
+            ]);
+
+            return;
+        }
+
         $this->player->decrement('action_points', $requiredAp);
 
-        $aiService = app(\App\Services\AiColaborerService::class);
+        $aiService = app(AiColaborerService::class);
         $outcome = $aiService->conductJointPrayerWalk($this->player, $coLaborer, $ward);
 
         $this->dispatch('notify', [
@@ -135,7 +161,7 @@ class ActionQueuePlanner extends Component
             return;
         }
 
-        $aiService = app(\App\Services\AiColaborerService::class);
+        $aiService = app(AiColaborerService::class);
         $result = $aiService->conductIronOnIron($this->player, $coLaborer);
 
         $this->dispatch('notify', [
@@ -194,9 +220,9 @@ class ActionQueuePlanner extends Component
         $npc = Npc::find($npcId);
         if ($npc) {
             // Smartly select recommended action based on 5 Levels of Leadership & spiritual readiness
-            if ($npc->need_state !== \App\Enums\NpcNeedState::None) {
+            if ($npc->need_state !== NpcNeedState::None) {
                 $this->selectedActionType = $npc->need_state->recommendedAction()->value;
-            } elseif ($npc->status === \App\Enums\ReceptivityStatus::Green || $npc->hasPrayedSalvation) {
+            } elseif ($npc->status === ReceptivityStatus::Green || $npc->hasPrayedSalvation) {
                 if (! $npc->trained_411) {
                     $this->selectedActionType = MinistryActionType::Train411->value;
                 } elseif (! $npc->is_baptized) {
@@ -208,7 +234,7 @@ class ActionQueuePlanner extends Component
                 } else {
                     $this->selectedActionType = MinistryActionType::SwarmTraining->value;
                 }
-            } elseif ($npc->status === \App\Enums\ReceptivityStatus::Yellow) {
+            } elseif ($npc->status === ReceptivityStatus::Yellow) {
                 $this->selectedActionType = MinistryActionType::Share3Circles->value;
             } else {
                 $this->selectedActionType = MinistryActionType::CasualTalk->value;
@@ -231,6 +257,15 @@ class ActionQueuePlanner extends Component
     public function queueAction(): void
     {
         if (! $this->player || ! $this->session) {
+            $this->refreshPlayerState();
+        }
+
+        if (! $this->player || ! $this->session) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Unable to queue action: Player profile or game session not initialized.',
+            ]);
+
             return;
         }
 
@@ -279,6 +314,7 @@ class ActionQueuePlanner extends Component
 
         // Deduct player AP (including transit commute surcharge)
         $this->player->decrement('action_points', $totalApCost);
+        $this->player->refresh();
 
         // Queue action for the daily/monthly resolution tick (supports joint prayer walking with a resident)
         $targetNpcId = match ($actionEnum) {
@@ -294,8 +330,8 @@ class ActionQueuePlanner extends Component
             'target_npc_id' => $targetNpcId,
             'action_type' => $actionEnum,
             'status' => QueuedActionStatus::Pending,
-            'game_month' => $this->player->current_game_month,
-            'game_day' => $this->player->current_game_day,
+            'game_month' => $this->player->current_game_month ?: 1,
+            'game_day' => $this->player->current_game_day ?: 1,
             'ap_cost' => $totalApCost,
             'notes' => $this->notes,
         ]);
@@ -430,20 +466,20 @@ class ActionQueuePlanner extends Component
 
         $selectedNpc = $this->selectedNpcId ? Npc::with(['oikosConnections.relatedNpc', 'ward'])->find($this->selectedNpcId) : null;
 
-        $targetMonth = $this->player ? $this->player->current_game_month : 1;
+        $targetMonth = $this->player ? ($this->player->current_game_month ?: 1) : 1;
 
-        $queuedActions = QueuedMonthlyAction::where('game_session_id', $this->session?->id)
-            ->where('user_id', $this->player?->id)
+        $queuedActions = QueuedMonthlyAction::where('user_id', $this->player?->id)
             ->where('game_month', $targetMonth)
             ->where('status', QueuedActionStatus::Pending)
+            ->when($this->session?->id, fn ($q) => $q->where('game_session_id', $this->session->id))
             ->with(['targetNpc', 'ward'])
             ->latest()
             ->get();
 
-        $recentOutcomes = QueuedMonthlyAction::where('game_session_id', $this->session?->id)
-            ->where('user_id', $this->player?->id)
+        $recentOutcomes = QueuedMonthlyAction::where('user_id', $this->player?->id)
             ->where('status', QueuedActionStatus::Processed)
             ->whereNotNull('outcome_notes')
+            ->when($this->session?->id, fn ($q) => $q->where('game_session_id', $this->session->id))
             ->with(['targetNpc', 'ward'])
             ->latest('updated_at')
             ->take(5)
@@ -473,6 +509,10 @@ class ActionQueuePlanner extends Component
                 ->get()
             : collect();
 
+        $jointWalkStatus = $this->player
+            ? app(AiColaborerService::class)->getJointPrayerWalkStatus($this->player)
+            : ['allowed' => true, 'reason' => null, 'walks_today' => 0, 'walks_this_week' => 0, 'remaining_this_week' => 3];
+
         return view('livewire.action-queue-planner', [
             'wards' => $wards,
             'selectedWard' => $selectedWard,
@@ -489,6 +529,7 @@ class ActionQueuePlanner extends Component
             'isHomeWard' => $isHomeWard,
             'residentMissionariesByWard' => $residentMissionariesByWard,
             'aiCoLaborersInWard' => $aiCoLaborersInWard,
+            'jointWalkStatus' => $jointWalkStatus,
         ]);
     }
 }

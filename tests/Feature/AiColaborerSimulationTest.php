@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\ReceptivityStatus;
 use App\Livewire\ActionQueuePlanner;
 use App\Livewire\MultiplayerLeaderboard;
 use App\Models\GameSession;
@@ -9,7 +10,6 @@ use App\Models\Npc;
 use App\Models\User;
 use App\Models\Ward;
 use App\Services\AiColaborerService;
-use App\Services\FourFieldsEngine;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -108,7 +108,7 @@ test('simulateDailyTurn executes autonomous actions for AI co-laborers', functio
         'gender' => 'male',
         'age' => 21,
         'occupation' => 'University Student',
-        'status' => \App\Enums\ReceptivityStatus::Unreached,
+        'status' => ReceptivityStatus::Unreached,
         'trust_level' => 10,
     ]);
 
@@ -310,4 +310,128 @@ test('action queue planner allows joint prayer walk and iron-on-iron with AI co-
 
     $human->refresh();
     expect($human->coop_synergy_score)->toBeGreaterThan(0);
+
+    // Second joint prayer walk on the same day must be rejected by rate limit
+    $apBefore = $human->action_points;
+    Livewire::test(ActionQueuePlanner::class)
+        ->set('selectedWardId', $ward->id)
+        ->call('conductJointPrayerWalk', $sarah->id)
+        ->assertDispatched('notify', function ($name, $params): bool {
+            $data = $params[0] ?? $params;
+
+            return ($data['type'] ?? '') === 'error' && str_contains($data['message'] ?? '', 'only 1 walk is allowed per day');
+        });
+
+    $human->refresh();
+    expect($human->action_points)->toBe($apBefore);
+});
+
+test('joint prayer walk is restricted to once per day', function () {
+    $session = GameSession::create([
+        'name' => 'Nagoya Test Session',
+        'is_active' => true,
+    ]);
+
+    $ward = Ward::create([
+        'game_session_id' => $session->id,
+        'name' => 'Minato-ku',
+        'name_ja' => '港区',
+        'slug' => 'minato-ku',
+        'latitude' => 35.1000,
+        'longitude' => 136.8833,
+        'population' => 145000,
+        'spiritual_openness' => 20,
+    ]);
+
+    $human = User::factory()->create([
+        'name' => 'Human Pioneer',
+        'current_game_session_id' => $session->id,
+        'home_ward_id' => $ward->id,
+        'action_points' => 12,
+        'current_game_month' => 1,
+        'current_game_day' => 1,
+    ]);
+
+    $ai = User::factory()->create([
+        'name' => 'Marcus Silva',
+        'current_game_session_id' => $session->id,
+        'home_ward_id' => $ward->id,
+        'is_ai_colaborer' => true,
+        'colaborer_archetype' => 'mercy_catalyst',
+    ]);
+
+    $service = app(AiColaborerService::class);
+
+    // 1st walk on Day 1 succeeds
+    $service->conductJointPrayerWalk($human, $ai, $ward);
+
+    $status = $service->getJointPrayerWalkStatus($human);
+    expect($status['allowed'])->toBeFalse()
+        ->and($status['walks_today'])->toBe(1)
+        ->and($status['reason'])->toContain('only 1 walk is allowed per day');
+
+    // 2nd walk on same Day 1 is blocked by DomainException
+    expect(fn () => $service->conductJointPrayerWalk($human, $ai, $ward))
+        ->toThrow(DomainException::class, 'only 1 walk is allowed per day');
+});
+
+test('joint prayer walk is restricted to three times per week', function () {
+    $session = GameSession::create([
+        'name' => 'Nagoya Test Session',
+        'is_active' => true,
+    ]);
+
+    $ward = Ward::create([
+        'game_session_id' => $session->id,
+        'name' => 'Minato-ku',
+        'name_ja' => '港区',
+        'slug' => 'minato-ku',
+        'latitude' => 35.1000,
+        'longitude' => 136.8833,
+        'population' => 145000,
+        'spiritual_openness' => 20,
+    ]);
+
+    $human = User::factory()->create([
+        'name' => 'Human Pioneer',
+        'current_game_session_id' => $session->id,
+        'home_ward_id' => $ward->id,
+        'action_points' => 12,
+        'current_game_month' => 1,
+        'current_game_day' => 1, // Week 1 (Days 1-7)
+    ]);
+
+    $ai = User::factory()->create([
+        'name' => 'Marcus Silva',
+        'current_game_session_id' => $session->id,
+        'home_ward_id' => $ward->id,
+        'is_ai_colaborer' => true,
+        'colaborer_archetype' => 'mercy_catalyst',
+    ]);
+
+    $service = app(AiColaborerService::class);
+
+    // Walk 1 on Day 1
+    $service->conductJointPrayerWalk($human, $ai, $ward);
+
+    // Advance to Day 2: Walk 2
+    $human->update(['current_game_day' => 2, 'action_points' => 12]);
+    $service->conductJointPrayerWalk($human, $ai, $ward);
+
+    // Advance to Day 3: Walk 3 (reaches weekly limit 3/3)
+    $human->update(['current_game_day' => 3, 'action_points' => 12]);
+    $service->conductJointPrayerWalk($human, $ai, $ward);
+
+    // Advance to Day 4 (still Week 1)
+    $human->update(['current_game_day' => 4, 'action_points' => 12]);
+    $status = $service->getJointPrayerWalkStatus($human);
+
+    expect($status['allowed'])->toBeFalse()
+        ->and($status['walks_this_week'])->toBe(3)
+        ->and($status['remaining_this_week'])->toBe(0)
+        ->and($status['reason'])->toContain('only 3 walks are allowed per week');
+
+    // Attempting a 4th walk in the same week throws DomainException
+    expect(fn () => $service->conductJointPrayerWalk($human, $ai, $ward))
+        ->toThrow(DomainException::class, 'only 3 walks are allowed per week');
 });

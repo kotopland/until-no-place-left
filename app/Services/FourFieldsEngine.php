@@ -124,14 +124,16 @@ class FourFieldsEngine
             ->where('last_active_at', '>=', now()->subMinutes(15))
             ->get();
 
-        if ($force && $onlineUsers->isEmpty()) {
-            $onlineUsers = User::where('current_game_session_id', $session->id)->get();
-        }
+        if ($force) {
+            $eligibleUsers = $onlineUsers->isEmpty()
+                ? User::where('current_game_session_id', $session->id)->get()
+                : $onlineUsers;
+        } else {
+            $eligibleUsers = $onlineUsers->filter(fn (User $user) => ! $user->hasReachedDailyPlayLimit && $user->days_processed_this_month < 30);
 
-        $eligibleUsers = $onlineUsers->filter(fn (User $user) => ! $user->hasReachedDailyPlayLimit && $user->days_processed_this_month < 30);
-
-        if ($eligibleUsers->isEmpty()) {
-            return null;
+            if ($eligibleUsers->isEmpty()) {
+                return null;
+            }
         }
 
         return DB::transaction(function () use ($session, $eligibleUsers) {

@@ -321,3 +321,62 @@ test('nagoya map canvas renders 16 wards and layers', function () {
         ->assertSee('Heatmap')
         ->assertSee('G1–G4 Churches');
 });
+
+test('queueing share 3 circles for resident in home ward on day 2 schedules action into scheduled list and consumes 2 AP', function () {
+    $session = GameSession::create([
+        'name' => 'Nagoya Test Session',
+        'code' => 'nagoya-test-day-2',
+        'current_game_month' => 1,
+        'current_game_day' => 2,
+        'is_active' => true,
+    ]);
+
+    $ward = Ward::create([
+        'name' => 'Meito-ku',
+        'name_ja' => '名東区',
+        'slug' => 'meito-ku',
+        'center_lat' => 35.17,
+        'center_lng' => 137.00,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'home_ward_id' => $ward->id,
+        'current_game_month' => 1,
+        'current_game_day' => 2,
+        'action_points' => 12,
+        'max_action_points' => 12,
+        'daily_action_points' => 12,
+    ]);
+
+    $mari = Npc::create([
+        'game_session_id' => $session->id,
+        'ward_id' => $ward->id,
+        'name' => 'Mari Ishikawa',
+        'name_ja' => '石川 まり',
+        'role_archetype' => NpcRoleArchetype::SingleParent,
+        'need_state' => NpcNeedState::EmotionalCrisis,
+        'status' => ReceptivityStatus::Yellow,
+        'is_person_of_peace' => true,
+        'trust_level' => 52,
+        'lat' => 35.17,
+        'lng' => 137.00,
+    ]);
+
+    $this->actingAs($user);
+
+    $component = Livewire::test(ActionQueuePlanner::class)
+        ->call('selectWard', $ward->id)
+        ->assertSet('selectedWardId', $ward->id)
+        ->call('selectNpc', $mari->id)
+        ->assertSet('selectedNpcId', $mari->id)
+        ->set('selectedActionType', MinistryActionType::Share3Circles->value)
+        ->call('queueAction')
+        ->assertDispatched('notify', fn ($name, $params) => ($params['type'] ?? ($params[0]['type'] ?? '')) === 'success' || str_contains(json_encode($params), 'Successfully queued'))
+        ->assertSee('Scheduled for Day 2')
+        ->assertSee('Share 3 Circles Gospel Presentation')
+        ->assertSee('Meito-ku');
+
+    $user->refresh();
+    expect($user->action_points)->toBe(10); // 12 - 2 AP
+});

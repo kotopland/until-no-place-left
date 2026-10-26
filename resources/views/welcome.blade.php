@@ -607,8 +607,8 @@
                     </p>
                     <ul class="text-xs space-y-1.5 text-slate-300 max-h-80 overflow-y-auto pr-1">
                         <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
-                            <span>🚶 Prayer Walk (Solo or Joint MAWL)</span>
-                            <span class="font-bold text-emerald-400">1 AP</span>
+                            <span>🚶 Solo Prayer Walk (1 AP) / 👣 Joint Prayer Walk (2 AP, max 1/day & 3/wk)</span>
+                            <span class="font-bold text-emerald-400">1 – 2 AP</span>
                         </li>
                         <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
                             <span>💬 Casual Talk & Friendship</span>
@@ -755,7 +755,7 @@
                     </div>
 
                     <p class="text-xs text-slate-300 leading-relaxed">
-                        <em>"Paul planted, Apollos watered, but God gave the growth."</em> Nagoya Oikos supports two dedicated gameplay modes configured by administrators via the <code class="px-1.5 py-0.5 rounded bg-slate-800 text-indigo-300 font-mono text-[10px]">php artisan game:mode</code> command (players cannot alter the mode in-game, ensuring consistent competitive and cooperative fairness):
+                        <em>"Paul planted, Apollos watered, but God gave the growth."</em> Nagoya Oikos supports two dedicated gameplay modes configured by administrators via the <code class="px-1.5 py-0.5 rounded bg-slate-800 text-indigo-300 font-mono text-[10px]">php artisan game</code> operator command center (players cannot alter the mode in-game, ensuring consistent competitive and cooperative fairness):
                     </p>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -818,7 +818,7 @@
                     <div class="p-3 rounded-xl bg-indigo-950/50 border border-indigo-800/60 text-xs text-indigo-300 leading-relaxed space-y-1">
                         <div>💡 <strong>Collaborative Co-op Synergy Mechanics:</strong></div>
                         <ul class="list-disc list-inside space-y-0.5 text-[11px] text-slate-300">
-                            <li><strong>Joint MAWL Prayer Walk:</strong> Partner 2-by-2 in a ward with a co-laborer to soften spiritual openness (+50% bonus) and earn +15 Co-op Synergy points.</li>
+                            <li><strong>Joint MAWL Prayer Walk:</strong> Partner 2-by-2 in a ward with a co-laborer to soften spiritual openness (+50% bonus) and earn +15 Co-op Synergy points. <em>(Limited to once per day and 3 times per week to maintain a balanced ministry rhythm).</em></li>
                             <li><strong>Iron-on-Iron Sharpening:</strong> Meet for peer coaching to receive +2 bonus AP, +25 Co-op points, and contextual Four Fields advice.</li>
                             <li><strong>Shared Harvest:</strong> Sowing, watering, and harvesting the same resident pools +50% bonus points to all participating co-laborers!</li>
                         </ul>

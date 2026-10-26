@@ -15,7 +15,10 @@ use App\Models\Npc;
 use App\Models\OikosRelationship;
 use App\Models\User;
 use App\Models\Ward;
+use App\Services\AiColaborerService;
+use App\Services\NagoyaGeoJsonService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 
 class NagoyaOikosSeeder extends Seeder
@@ -29,15 +32,15 @@ class NagoyaOikosSeeder extends Seeder
         $repoFile = resource_path('data/nagoya-border.json');
         $storageFile = storage_path('app/nagoya-border.json');
 
-        if (\Illuminate\Support\Facades\File::exists($storageFile) && ! \Illuminate\Support\Facades\File::exists($repoFile)) {
-            \Illuminate\Support\Facades\File::ensureDirectoryExists(dirname($repoFile));
-            @\Illuminate\Support\Facades\File::copy($storageFile, $repoFile);
-        } elseif (\Illuminate\Support\Facades\File::exists($repoFile) && ! \Illuminate\Support\Facades\File::exists($storageFile)) {
-            \Illuminate\Support\Facades\File::ensureDirectoryExists(dirname($storageFile));
-            @\Illuminate\Support\Facades\File::copy($repoFile, $storageFile);
+        if (File::exists($storageFile) && ! File::exists($repoFile)) {
+            File::ensureDirectoryExists(dirname($repoFile));
+            @File::copy($storageFile, $repoFile);
+        } elseif (File::exists($repoFile) && ! File::exists($storageFile)) {
+            File::ensureDirectoryExists(dirname($storageFile));
+            @File::copy($repoFile, $storageFile);
         }
 
-        app(\App\Services\NagoyaGeoJsonService::class)->loadOrImportWardGeoJson($repoFile);
+        app(NagoyaGeoJsonService::class)->loadOrImportWardGeoJson($repoFile);
 
         // 1. Seed Nagoya's 16 Wards
         $wardsData = [
@@ -252,6 +255,7 @@ class NagoyaOikosSeeder extends Seeder
                 'home_ward_id' => null, // 100% Solo Pioneer: start unassigned to choose in onboarding!
                 'action_points' => 12,
                 'max_action_points' => 12,
+                'daily_action_points' => 12,
                 'total_generational_score' => 60,
                 'badges' => ['First Step', 'Prayer Walker'],
                 'notify_email' => true,
@@ -259,8 +263,16 @@ class NagoyaOikosSeeder extends Seeder
             ]
         );
 
+        $playerUpdates = [];
         if (! $player->current_game_session_id) {
-            $player->update(['current_game_session_id' => $session->id]);
+            $playerUpdates['current_game_session_id'] = $session->id;
+        }
+        if ($player->daily_action_points < 12) {
+            $playerUpdates['daily_action_points'] = 12;
+            $playerUpdates['max_action_points'] = 12;
+        }
+        if (! empty($playerUpdates)) {
+            $player->update($playerUpdates);
         }
 
         // 4. Seed Archetypal Nagoya NPCs
@@ -674,6 +686,6 @@ class NagoyaOikosSeeder extends Seeder
         );
 
         // 7. Seed/Ensure Automated Missionary Co-Laborers (for Team Co-op Mode)
-        app(\App\Services\AiColaborerService::class)->ensureAiColaborers($session);
+        app(AiColaborerService::class)->ensureAiColaborers($session);
     }
 }

@@ -240,21 +240,35 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
         <!-- Toast Notification Listener -->
         <div 
-            x-data="{ show: false, message: '', type: 'info' }"
-            x-on:notify.window="show = true; message = $event.detail.message; type = $event.detail.type; setTimeout(() => show = false, 4000)"
+            x-data="{ show: false, message: '', type: 'info', timer: null }"
+            x-on:notify.window="
+                let raw = Array.isArray($event.detail) ? ($event.detail[0] || {}) : ($event.detail || {});
+                if (typeof raw === 'string') { raw = { message: raw, type: 'info' }; }
+                message = raw.message || '';
+                type = raw.type || 'info';
+                show = true;
+                if (timer) clearTimeout(timer);
+                timer = setTimeout(() => { show = false; }, 4500);
+            "
             x-show="show"
-            x-transition
-            class="fixed bottom-5 right-5 z-50 p-4 rounded-2xl shadow-2xl border flex items-center gap-3 text-xs font-bold"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-3 scale-95"
+            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+            x-transition:leave-end="opacity-0 translate-y-3 scale-95"
+            class="fixed bottom-5 right-5 z-50 p-4 rounded-2xl shadow-2xl border flex items-center gap-3 text-xs font-bold max-w-md pointer-events-auto backdrop-blur-md"
             :class="{
-                'bg-emerald-950/90 text-emerald-300 border-emerald-700': type === 'success',
-                'bg-rose-950/90 text-rose-300 border-rose-700': type === 'error',
-                'bg-amber-950/90 text-amber-300 border-amber-700': type === 'warning',
-                'bg-indigo-950/90 text-indigo-300 border-indigo-700': type === 'info'
+                'bg-emerald-950/95 text-emerald-200 border-emerald-600 shadow-emerald-950/50': type === 'success',
+                'bg-rose-950/95 text-rose-200 border-rose-600 shadow-rose-950/50': type === 'error',
+                'bg-amber-950/95 text-amber-200 border-amber-600 shadow-amber-950/50': type === 'warning',
+                'bg-indigo-950/95 text-indigo-200 border-indigo-600 shadow-indigo-950/50': type === 'info'
             }"
             style="display: none;"
         >
-            <span x-text="type === 'success' ? '✅' : (type === 'error' ? '❌' : (type === 'warning' ? '⚠️' : 'ℹ️'))"></span>
-            <span x-text="message"></span>
+            <span class="text-base shrink-0" x-text="type === 'success' ? '✅' : (type === 'error' ? '❌' : (type === 'warning' ? '⚠️' : 'ℹ️'))"></span>
+            <span class="leading-snug" x-text="message"></span>
+            <button type="button" @click="show = false" class="ml-2 text-slate-400 hover:text-white text-xs opacity-70 hover:opacity-100 cursor-pointer">✕</button>
         </div>
 
         @if($currentTab === 'planner')
