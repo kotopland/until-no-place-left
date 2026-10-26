@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Livewire\ActionQueuePlanner;
 use App\Livewire\NagoyaMovementDashboard;
 use App\Models\GameSession;
 use App\Models\User;
@@ -224,7 +225,7 @@ test('action queue planner updates selected ward on home-ward-selected event', f
 
     $this->actingAs($user);
 
-    \Livewire\Livewire::test(\App\Livewire\ActionQueuePlanner::class)
+    Livewire::test(ActionQueuePlanner::class)
         ->assertSet('selectedWardId', $wardA->id)
         ->dispatch('home-ward-selected', wardId: $wardB->id)
         ->assertSet('selectedWardId', $wardB->id);
@@ -277,5 +278,3 @@ test('100% solo pioneer experience has zero other missionaries across all wards'
             return $missionariesByWard->isEmpty(); // Zero other missionaries stationed anywhere
         });
 });
-
-

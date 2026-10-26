@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -77,7 +78,7 @@ class Ward extends Model
             }
 
             if (empty($ward->slug) && ! empty($ward->name)) {
-                $ward->slug = \Illuminate\Support\Str::slug($ward->name);
+                $ward->slug = Str::slug($ward->name);
             }
         });
     }

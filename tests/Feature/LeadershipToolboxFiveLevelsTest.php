@@ -468,4 +468,3 @@ test('four fields engine executes joint prayer walk with selected resident (opti
     expect($prayerWalkRecord)->not->toBeNull()
         ->and($prayerWalkRecord->ward_id)->toBe($ward->id);
 });
-

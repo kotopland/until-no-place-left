@@ -206,6 +206,29 @@
                     @endif
                 </button>
 
+                <!-- Missionary Capability Profile Scorecard Pill -->
+                @if($user?->screening_passed)
+                    <button 
+                        type="button" 
+                        wire:click="openScreeningScorecard"
+                        class="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-indigo-50 dark:bg-indigo-950/80 border-indigo-300 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:border-indigo-500 shadow-sm"
+                        title="Missionary Capability Scorecard: {{ $user->screening_score }}% • {{ $user->screening_profile_title }} (Click to view breakdown or retake)"
+                    >
+                        <span>🎯</span>
+                        <span class="text-[11px] font-bold">{{ $user->screening_profile_title ?: 'Field Cleared' }} ({{ $user->screening_score }}%)</span>
+                    </button>
+                @else
+                    <button 
+                        type="button" 
+                        wire:click="openOnboardingModal"
+                        class="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-amber-50 dark:bg-amber-950/80 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:border-amber-500 animate-pulse shadow-sm"
+                        title="Candidate Screening Required for Nagoya Deployment (Click to complete)"
+                    >
+                        <span>⚠️</span>
+                        <span class="text-[11px] font-bold">Candidate Screening Pending</span>
+                    </button>
+                @endif
+
                 <!-- Home Ward Pill -->
                 @if($user?->homeWard)
                     <button 
@@ -449,191 +472,649 @@
         </div>
     @endif
 
-    <!-- Modal: Choose Starting Home Ward Onboarding Prompt -->
+    <!-- Modal: Missionary Candidate Screening & Home Ward Onboarding Flow -->
     @if($showOnboardingModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-md overflow-hidden animate-in fade-in duration-200">
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl max-w-3xl lg:max-w-4xl w-full shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden transition-colors duration-200">
-                <!-- Header (Pinned at Top) -->
-                <div class="shrink-0 px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-10">
-                    <div class="flex items-start justify-between gap-4">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1 flex-wrap">
-                                <span class="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-800 uppercase tracking-wider">
-                                    🗾 Nagoya Mission Field
-                                </span>
-                                <span class="text-[10px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                                    <span>✨</span>
-                                    <span>Until No Place Left</span>
-                                </span>
-                            </div>
-                            <h2 class="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                                Choose Your Starting Home Base
-                            </h2>
-                            <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 max-w-2xl leading-relaxed">
-                                Living in your <strong class="text-slate-900 dark:text-slate-200">Home Ward</strong> grants <strong class="text-emerald-600 dark:text-emerald-400">0 AP transit cost</strong> and a <strong class="text-emerald-600 dark:text-emerald-400">+25% trust bonus</strong> with neighbors. Choose where to establish your residence!
-                            </p>
-                        </div>
-
-                        @if($user?->home_ward_id)
-                            <button 
-                                type="button" 
-                                wire:click="closeOnboardingModal"
-                                class="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-                                title="Close"
-                            >
-                                ✕
-                            </button>
-                        @endif
-                    </div>
-                </div>
-
-                <!-- Body (Scrollable Content Area) -->
-                <div class="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4 space-y-4 text-slate-900 dark:text-slate-100">
-                    <!-- Recommended Pioneering Frontier Spotlight Banner (High Contrast & Theme Adaptive) -->
-                    @if($recommendedWard)
-                        <div class="p-3.5 sm:p-4 rounded-2xl bg-emerald-50 dark:bg-slate-800 border border-emerald-300 dark:border-emerald-500/50 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3.5 transition-colors">
-                            <div class="space-y-1">
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-600 text-white shadow-xs">
-                                        ✨ Recommended Pioneering Frontier
+                
+                {{-- STAGE 1: Candidate Screening Questionnaire --}}
+                @if($onboardingStage === 'screening')
+                    <!-- Screening Header -->
+                    <div class="shrink-0 px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-10">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                    <span class="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-800 uppercase tracking-wider">
+                                        📋 Candidate Qualification Gate
                                     </span>
-                                    <span class="text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
-                                        0 Co-laborers Stationed Here
+                                    <span class="text-[10px] sm:text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                        <span>🔒</span>
+                                        <span>Field Clearance Required Prior to Deployment</span>
                                     </span>
                                 </div>
-                                <h3 class="text-base sm:text-lg font-black tracking-tight text-slate-950 dark:text-white flex items-center gap-2">
-                                    <span>{{ $recommendedWard->name }}</span>
-                                    <span class="text-sm font-semibold text-slate-600 dark:text-slate-300">({{ $recommendedWard->name_ja }})</span>
-                                </h3>
-                                <p class="text-xs text-slate-700 dark:text-slate-200 leading-relaxed max-w-xl font-normal">
-                                    <strong class="text-emerald-800 dark:text-emerald-300 font-bold">{{ number_format($recommendedWard->spiritual_openness) }}% Spiritual Openness</strong> • High seeker readiness. In the spirit of Romans 15:20, settling where no other missionary lives accelerates citywide saturation!
+                                <h2 class="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                                    Missionary Candidate Capability Screening
+                                </h2>
+                                <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 max-w-2xl leading-relaxed">
+                                    Before stepping into Nagoya, evaluate your capability across <strong class="text-slate-900 dark:text-white">7 missionary dimensions</strong>: Cultural Connections, Calling, Language, Team Dynamics, Emotional Resilience, Dietary & Health, and Practical & Financial Exit.
                                 </p>
                             </div>
 
-                            <button 
-                                type="button" 
-                                wire:click="selectStartingWard({{ $recommendedWard->id }})"
-                                class="shrink-0 px-4 py-2.5 rounded-xl text-xs font-black transition cursor-pointer shadow-md {{ $selectedHomeWardId === $recommendedWard->id ? 'bg-emerald-600 text-white ring-2 ring-emerald-400 shadow-emerald-600/30' : 'bg-slate-900 dark:bg-emerald-600 text-white hover:bg-slate-800 dark:hover:bg-emerald-500' }}"
-                            >
-                                @if($selectedHomeWardId === $recommendedWard->id)
-                                    <span>✓ Recommended Choice Selected</span>
-                                @else
-                                    <span>Choose Recommended Base ➔</span>
-                                @endif
-                            </button>
+                            <div class="shrink-0 text-right">
+                                <span class="px-2.5 py-1 rounded-xl text-xs font-black {{ count($screeningAnswers) === count($screeningQuestions) ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700' }}">
+                                    {{ count($screeningAnswers) }} / {{ count($screeningQuestions) }} Answered
+                                </span>
+                            </div>
                         </div>
-                    @endif
 
-                    <!-- All 16 Nagoya Wards Grid -->
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                                All 16 Nagoya Districts (Click to Select):
-                            </h4>
-                            <span class="text-[11px] text-slate-500 dark:text-slate-400">
-                                <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ $pioneeringWards->count() }} Pioneering</span> (0 Co-laborers)
+                        <!-- Progress Bar -->
+                        <div class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 mt-3 overflow-hidden">
+                            <div 
+                                class="bg-gradient-to-r from-indigo-500 to-emerald-500 h-1.5 rounded-full transition-all duration-300"
+                                style="width: {{ count($screeningQuestions) > 0 ? (count($screeningAnswers) / count($screeningQuestions)) * 100 : 0 }}%"
+                            ></div>
+                        </div>
+                    </div>
+
+                    <!-- Screening Questions Body -->
+                    <div class="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4 space-y-6 text-slate-900 dark:text-slate-100">
+                        @foreach($screeningDimensions as $dimKey => $dim)
+                            @php
+                                $dimQuestions = collect($screeningQuestions)->where('dimension', $dimKey);
+                            @endphp
+                            <div class="space-y-4 p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80">
+                                <!-- Dimension Category Banner -->
+                                <div class="border-b border-slate-200 dark:border-slate-800/80 pb-2.5">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xl">{{ $dim['icon'] }}</span>
+                                        <div>
+                                            <h3 class="text-sm font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                                                <span>{{ $dim['name'] }}</span>
+                                                <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">({{ $dim['name_ja'] }})</span>
+                                            </h3>
+                                            <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
+                                                {{ $dim['description'] }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Questions in this Dimension -->
+                                <div class="space-y-4">
+                                    @foreach($dimQuestions as $qId => $q)
+                                        @php
+                                            $selectedChoice = $screeningAnswers[$qId] ?? null;
+                                        @endphp
+                                        <div class="p-3.5 rounded-xl bg-white dark:bg-slate-900 border {{ $selectedChoice ? 'border-indigo-300 dark:border-indigo-800 shadow-xs' : 'border-slate-200 dark:border-slate-800' }} space-y-2.5 transition">
+                                            <div class="space-y-1">
+                                                <div class="flex items-center justify-between gap-2">
+                                                    <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                                                        {{ $q['category_label'] }}
+                                                    </span>
+                                                    @if($selectedChoice)
+                                                        <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                                            <span>✓ Choice Selected</span>
+                                                        </span>
+                                                    @else
+                                                        <span class="text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                                                            Pending Choice
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white leading-snug">
+                                                    {{ $q['title'] }}
+                                                </h4>
+                                                <p class="text-[11px] text-slate-500 dark:text-slate-400 italic">
+                                                    💡 Context: {{ $q['scenario'] }}
+                                                </p>
+                                            </div>
+
+                                            <!-- Options (A, B, C) -->
+                                            <div class="space-y-2 pt-1">
+                                                @foreach($q['options'] as $option)
+                                                    @php
+                                                        $isSelected = ($selectedChoice === $option['key']);
+                                                    @endphp
+                                                    <button
+                                                        type="button"
+                                                        wire:click="recordScreeningAnswer('{{ $qId }}', '{{ $option['key'] }}')"
+                                                        class="w-full text-left p-3 rounded-xl border text-xs transition cursor-pointer flex items-start gap-3 {{ $isSelected ? 'bg-indigo-50 dark:bg-indigo-950/80 border-indigo-500 text-slate-900 dark:text-white ring-2 ring-indigo-500/30 shadow-xs font-medium' : 'bg-slate-50/50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-slate-700 hover:bg-slate-100/60 dark:hover:bg-slate-900/60' }}"
+                                                    >
+                                                        <span class="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-black transition {{ $isSelected ? 'bg-indigo-600 text-white' : 'border border-slate-400 dark:border-slate-600 text-slate-500 dark:text-slate-400' }}">
+                                                            {{ $option['key'] }}
+                                                        </span>
+                                                        <span class="leading-relaxed flex-1">
+                                                            {{ $option['text'] }}
+                                                        </span>
+                                                    </button>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <!-- Screening Footer -->
+                    <div class="shrink-0 px-4 sm:px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 z-10 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <div class="text-xs text-slate-600 dark:text-slate-400 text-center sm:text-left">
+                            <span>Passing criteria: <strong class="text-slate-900 dark:text-white">70%+ Overall</strong> with <strong class="text-slate-900 dark:text-white">≥ 40% in each dimension</strong>.</span>
+                            <span class="block text-[11px] {{ count($screeningAnswers) === count($screeningQuestions) ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-amber-600 dark:text-amber-400' }}">
+                                {{ count($screeningAnswers) === count($screeningQuestions) ? '✓ All '.count($screeningQuestions).' scenario questions answered and ready for evaluation!' : 'Please complete all questions before submitting.' }}
                             </span>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-                            @foreach($allWards as $ward)
-                                @php
-                                    $isSelected = ($selectedHomeWardId === $ward->id);
-                                    $coLaborers = $missionariesByWard[$ward->id] ?? collect();
-                                    $isPioneering = $coLaborers->isEmpty();
-                                @endphp
-                                <button
-                                    type="button"
-                                    wire:click="selectStartingWard({{ $ward->id }})"
-                                    class="p-2.5 sm:p-3 rounded-2xl border text-left transition cursor-pointer relative flex flex-col justify-between gap-2 {{ $isSelected ? 'bg-indigo-50 dark:bg-indigo-950/70 border-indigo-500 dark:border-indigo-400 shadow-md ring-2 ring-indigo-500/30' : 'bg-white dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/80' }}"
-                                >
-                                    <div>
-                                        <div class="flex items-center justify-between gap-1">
-                                            <span class="text-xs font-bold text-slate-900 dark:text-white leading-tight">
-                                                {{ $ward->name }}
+                        <button 
+                            type="button" 
+                            wire:click="submitScreening"
+                            wire:loading.attr="disabled"
+                            @disabled(count($screeningAnswers) < count($screeningQuestions))
+                            class="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg transition cursor-pointer flex items-center justify-center gap-2 {{ count($screeningAnswers) === count($screeningQuestions) ? 'bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-500 hover:to-emerald-500 shadow-indigo-600/30' : 'bg-slate-400 dark:bg-slate-800 text-slate-600 dark:text-slate-500 cursor-not-allowed' }}"
+                        >
+                            <span wire:loading.remove wire:target="submitScreening">Submit Capability Assessment ➔</span>
+                            <span wire:loading wire:target="submitScreening" class="flex items-center gap-1.5">
+                                <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                <span>Evaluating Candidate Readiness...</span>
+                            </span>
+                        </button>
+                    </div>
+
+                {{-- STAGE 2: Deployment Clearance Granted --}}
+                @elseif($onboardingStage === 'qualified_clearance')
+                    <!-- Clearance Header -->
+                    <div class="shrink-0 px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-10">
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                            <span class="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 uppercase tracking-wider">
+                                🎖️ Deployment Clearance Granted
+                            </span>
+                            <span class="text-[10px] sm:text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                                Candidate Approved for Nagoya Harvest Field
+                            </span>
+                        </div>
+                        <h2 class="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                            Congratulations! You Are Cleared for Deployment
+                        </h2>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 max-w-2xl leading-relaxed">
+                            You have demonstrated mature capability, cross-cultural humility, and gospel endurance. Your field credential has been officially recorded.
+                        </p>
+                    </div>
+
+                    <!-- Clearance Body -->
+                    <div class="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-5 space-y-5 text-slate-900 dark:text-slate-100">
+                        <!-- Score Card Banner -->
+                        <div class="p-5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-indigo-500/10 to-purple-500/10 border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div class="space-y-1 text-center sm:text-left">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                                    Overall Capability Score
+                                </span>
+                                <div class="text-3xl font-black text-slate-900 dark:text-white flex items-center justify-center sm:justify-start gap-2">
+                                    <span>{{ $screeningTotalScore }}%</span>
+                                    <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-600 text-white">READY FOR FIELD</span>
+                                </div>
+                                <p class="text-xs text-slate-600 dark:text-slate-300">
+                                    Profile Archetype: <strong class="text-indigo-600 dark:text-indigo-400 font-bold">{{ $screeningProfileTitle }}</strong>
+                                </p>
+                            </div>
+                            <div class="text-4xl sm:text-5xl">
+                                🗾✨
+                            </div>
+                        </div>
+
+                        <!-- 5 Dimension Breakdown Progress Bars -->
+                        <div class="space-y-3">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                                Capability Breakdown by Dimension:
+                            </h3>
+                            <div class="space-y-2.5">
+                                @foreach($screeningDimensions as $dimKey => $dim)
+                                    @php
+                                        $score = $screeningDimensionScores[$dimKey] ?? 0;
+                                    @endphp
+                                    <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 space-y-1.5">
+                                        <div class="flex items-center justify-between text-xs">
+                                            <span class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                                <span>{{ $dim['icon'] }}</span>
+                                                <span>{{ $dim['name'] }}</span>
                                             </span>
-                                            <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                                                {{ $ward->name_ja }}
+                                            <span class="font-black text-emerald-600 dark:text-emerald-400">
+                                                {{ $score }}%
                                             </span>
                                         </div>
-
-                                        <!-- Missionary Stationed Badge -->
-                                        <div class="mt-1.5">
-                                            @if($isPioneering)
-                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                                                    <span>✨</span>
-                                                    <span>Pioneering (0)</span>
-                                                </span>
-                                            @else
-                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 dark:bg-slate-800 text-amber-800 dark:text-slate-300 border border-amber-300 dark:border-slate-700" title="{{ $coLaborers->pluck('name')->join(', ') }}">
-                                                    <span>👥</span>
-                                                    <span>{{ $coLaborers->count() }} Co-laborer{{ $coLaborers->count() > 1 ? 's' : '' }}</span>
-                                                </span>
-                                            @endif
+                                        <div class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                                            <div 
+                                                class="h-2 rounded-full {{ $score >= 70 ? 'bg-emerald-500' : ($score >= 40 ? 'bg-amber-500' : 'bg-rose-500') }}"
+                                                style="width: {{ $score }}%"
+                                            ></div>
                                         </div>
                                     </div>
+                                @endforeach
+                            </div>
+                        </div>
 
-                                    <!-- Metrics & Select indicator -->
-                                    <div class="pt-1.5 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400">
-                                        <div class="flex items-center gap-2">
-                                            <span title="Spiritual Openness Index">
-                                                🌱 <strong class="text-slate-800 dark:text-slate-200">{{ number_format($ward->spiritual_openness) }}%</strong>
+                        <!-- Coaching Encouragement Note -->
+                        @if(!empty($screeningCoaching))
+                            <div class="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 space-y-2">
+                                <h4 class="text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
+                                    <span>🌱</span>
+                                    <span>Mentorship & Continuous Growth Notes</span>
+                                </h4>
+                                <ul class="text-xs text-slate-700 dark:text-slate-300 space-y-1.5 list-disc list-inside">
+                                    @foreach($screeningCoaching as $coachNote)
+                                        <li class="leading-relaxed">{{ $coachNote }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Clearance Footer -->
+                    <div class="shrink-0 px-4 sm:px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 z-10 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <div class="text-xs text-slate-600 dark:text-slate-400 text-center sm:text-left">
+                            <span>Next Step: Select your home district residence in Nagoya to gain <strong class="text-emerald-600 dark:text-emerald-400">+25% trust</strong> and <strong class="text-emerald-600 dark:text-emerald-400">0 AP commute</strong>.</span>
+                        </div>
+
+                        <button 
+                            type="button" 
+                            wire:click="proceedToWardSelection"
+                            class="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 shadow-emerald-600/30 transition cursor-pointer"
+                        >
+                            Proceed to Choose Starting Home Base ➔
+                        </button>
+                    </div>
+
+                {{-- STAGE 3: Gated Qualification / Coaching Feedback --}}
+                @elseif($onboardingStage === 'gated_coaching')
+                    <!-- Gated Header -->
+                    <div class="shrink-0 px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-10">
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                            <span class="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 uppercase tracking-wider">
+                                ⚠️ Clearance On Hold • Mentorship Required
+                            </span>
+                            <span class="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400">
+                                Candidate Qualification Gate
+                            </span>
+                        </div>
+                        <h2 class="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                            Missionary Candidate Readiness Debrief
+                        </h2>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 max-w-2xl leading-relaxed">
+                            Japan is a demanding cross-cultural harvest field. To protect candidates and neighborhood fruitfulness, candidates must reach <strong class="text-slate-900 dark:text-white">70%+ readiness</strong> and avoid critical red flags (≥ 40% in each dimension) before field deployment.
+                        </p>
+                    </div>
+
+                    <!-- Gated Body -->
+                    <div class="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-5 space-y-5 text-slate-900 dark:text-slate-100">
+                        <!-- Score Summary Banner -->
+                        <div class="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div class="space-y-1 text-center sm:text-left">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                                    Current Evaluation Score
+                                </span>
+                                <div class="text-2xl sm:text-3xl font-black text-amber-700 dark:text-amber-300 flex items-center justify-center sm:justify-start gap-2">
+                                    <span>{{ $screeningTotalScore }}%</span>
+                                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400">(Passing: 70%)</span>
+                                </div>
+                                <p class="text-xs text-slate-600 dark:text-slate-400">
+                                    Coaching required to address identified vulnerabilities before entering Nagoya.
+                                </p>
+                            </div>
+                            <div class="text-3xl sm:text-4xl">
+                                🛡️
+                            </div>
+                        </div>
+
+                        <!-- Critical Gaps / Coaching Notes -->
+                        <div class="space-y-3">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                                <span>⚠️</span>
+                                <span>Targeted Coaching Debrief by Dimension:</span>
+                            </h3>
+
+                            <div class="space-y-2.5">
+                                @foreach($screeningDimensions as $dimKey => $dim)
+                                    @php
+                                        $score = $screeningDimensionScores[$dimKey] ?? 0;
+                                        $coachNote = $screeningCoaching[$dimKey] ?? null;
+                                        $isDeficit = ($score < 70);
+                                    @endphp
+                                    <div class="p-3.5 rounded-xl border {{ $score < 40 ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800' : ($score < 70 ? 'bg-amber-50/50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/60' : 'bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800') }} space-y-2">
+                                        <div class="flex items-center justify-between text-xs">
+                                            <span class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                                <span>{{ $dim['icon'] }}</span>
+                                                <span>{{ $dim['name'] }}</span>
                                             </span>
-                                            <span title="Need & Brokenness Index">
-                                                ❤️ <strong class="text-slate-800 dark:text-slate-200">{{ number_format($ward->poverty_index) }}%</strong>
+                                            <span class="font-black {{ $score >= 70 ? 'text-emerald-600 dark:text-emerald-400' : ($score >= 40 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400') }}">
+                                                {{ $score }}%
                                             </span>
                                         </div>
-                                        @if($isSelected)
-                                            <span class="w-4 h-4 rounded-full bg-indigo-600 text-white font-black text-[10px] flex items-center justify-center">✓</span>
+
+                                        <div class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                            <div 
+                                                class="h-1.5 rounded-full {{ $score >= 70 ? 'bg-emerald-500' : ($score >= 40 ? 'bg-amber-500' : 'bg-rose-500') }}"
+                                                style="width: {{ $score }}%"
+                                            ></div>
+                                        </div>
+
+                                        @if($coachNote)
+                                            <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed pt-1 border-t border-slate-200/60 dark:border-slate-800/60">
+                                                <strong class="font-semibold text-slate-900 dark:text-white">Coaching Insight:</strong> {{ $coachNote }}
+                                            </p>
                                         @endif
                                     </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gated Footer -->
+                    <div class="shrink-0 px-4 sm:px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 z-10 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <div class="text-xs text-slate-600 dark:text-slate-400 text-center sm:text-left">
+                            <span>Reflect on these missionary principles and retake the assessment when ready.</span>
+                        </div>
+
+                        <button 
+                            type="button" 
+                            wire:click="retakeScreening"
+                            class="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-500 hover:to-indigo-500 shadow-indigo-600/30 transition cursor-pointer"
+                        >
+                            🔄 Review Insights & Retake Assessment
+                        </button>
+                    </div>
+
+                {{-- STAGE 4: Choose Starting Home Ward --}}
+                @else
+                    <!-- Header (Pinned at Top) -->
+                    <div class="shrink-0 px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-10">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                    <span class="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-800 uppercase tracking-wider">
+                                        🗾 Nagoya Mission Field
+                                    </span>
+                                    <span class="text-[10px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                        <span>✨</span>
+                                        <span>Until No Place Left</span>
+                                        <span class="text-slate-400 dark:text-slate-600 mx-1">•</span>
+                                        <span>Field Cleared: {{ $user?->screeningProfileBadge ?? 'Cleared' }}</span>
+                                    </span>
+                                </div>
+                                <h2 class="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                                    Choose Your Starting Home Base
+                                </h2>
+                                <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 max-w-2xl leading-relaxed">
+                                    Living in your <strong class="text-slate-900 dark:text-slate-200">Home Ward</strong> grants <strong class="text-emerald-600 dark:text-emerald-400">0 AP transit cost</strong> and a <strong class="text-emerald-600 dark:text-emerald-400">+25% trust bonus</strong> with neighbors. Choose where to establish your residence!
+                                </p>
+                            </div>
+
+                            @if($user?->home_ward_id)
+                                <button 
+                                    type="button" 
+                                    wire:click="closeOnboardingModal"
+                                    class="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                                    title="Close"
+                                >
+                                    ✕
                                 </button>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Body (Scrollable Content Area) -->
+                    <div class="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4 space-y-4 text-slate-900 dark:text-slate-100">
+                        <!-- Recommended Pioneering Frontier Spotlight Banner (High Contrast & Theme Adaptive) -->
+                        @if($recommendedWard)
+                            <div class="p-3.5 sm:p-4 rounded-2xl bg-emerald-50 dark:bg-slate-800 border border-emerald-300 dark:border-emerald-500/50 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3.5 transition-colors">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-600 text-white shadow-xs">
+                                            ✨ Recommended Pioneering Frontier
+                                        </span>
+                                        <span class="text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+                                            0 Co-laborers Stationed Here
+                                        </span>
+                                    </div>
+                                    <h3 class="text-base sm:text-lg font-black tracking-tight text-slate-950 dark:text-white flex items-center gap-2">
+                                        <span>{{ $recommendedWard->name }}</span>
+                                        <span class="text-sm font-semibold text-slate-600 dark:text-slate-300">({{ $recommendedWard->name_ja }})</span>
+                                    </h3>
+                                    <p class="text-xs text-slate-700 dark:text-slate-200 leading-relaxed max-w-xl font-normal">
+                                        <strong class="text-emerald-800 dark:text-emerald-300 font-bold">{{ number_format($recommendedWard->spiritual_openness) }}% Spiritual Openness</strong> • High seeker readiness. In the spirit of Romans 15:20, settling where no other missionary lives accelerates citywide saturation!
+                                    </p>
+                                </div>
+
+                                <button 
+                                    type="button" 
+                                    wire:click="selectStartingWard({{ $recommendedWard->id }})"
+                                    class="shrink-0 px-4 py-2.5 rounded-xl text-xs font-black transition cursor-pointer shadow-md {{ $selectedHomeWardId === $recommendedWard->id ? 'bg-emerald-600 text-white ring-2 ring-emerald-400 shadow-emerald-600/30' : 'bg-slate-900 dark:bg-emerald-600 text-white hover:bg-slate-800 dark:hover:bg-emerald-500' }}"
+                                >
+                                    @if($selectedHomeWardId === $recommendedWard->id)
+                                        <span>✓ Recommended Choice Selected</span>
+                                    @else
+                                        <span>Choose Recommended Base ➔</span>
+                                    @endif
+                                </button>
+                            </div>
+                        @endif
+
+                        <!-- All 16 Nagoya Wards Grid -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                                    All 16 Nagoya Districts (Click to Select):
+                                </h4>
+                                <span class="text-[11px] text-slate-500 dark:text-slate-400">
+                                    <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ $pioneeringWards->count() }} Pioneering</span> (0 Co-laborers)
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                                @foreach($allWards as $ward)
+                                    @php
+                                        $isSelected = ($selectedHomeWardId === $ward->id);
+                                        $coLaborers = $missionariesByWard[$ward->id] ?? collect();
+                                        $isPioneering = $coLaborers->isEmpty();
+                                    @endphp
+                                    <button
+                                        type="button"
+                                        wire:click="selectStartingWard({{ $ward->id }})"
+                                        class="p-2.5 sm:p-3 rounded-2xl border text-left transition cursor-pointer relative flex flex-col justify-between gap-2 {{ $isSelected ? 'bg-indigo-50 dark:bg-indigo-950/70 border-indigo-500 dark:border-indigo-400 shadow-md ring-2 ring-indigo-500/30' : 'bg-white dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/80' }}"
+                                    >
+                                        <div>
+                                            <div class="flex items-center justify-between gap-1">
+                                                <span class="text-xs font-bold text-slate-900 dark:text-white leading-tight">
+                                                    {{ $ward->name }}
+                                                </span>
+                                                <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                                                    {{ $ward->name_ja }}
+                                                </span>
+                                            </div>
+
+                                            <!-- Missionary Stationed Badge -->
+                                            <div class="mt-1.5">
+                                                @if($isPioneering)
+                                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                                                        <span>✨</span>
+                                                        <span>Pioneering (0)</span>
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 dark:bg-slate-800 text-amber-800 dark:text-slate-300 border border-amber-300 dark:border-slate-700" title="{{ $coLaborers->pluck('name')->join(', ') }}">
+                                                        <span>👥</span>
+                                                        <span>{{ $coLaborers->count() }} Co-laborer{{ $coLaborers->count() > 1 ? 's' : '' }}</span>
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <!-- Metrics & Select indicator -->
+                                        <div class="pt-1.5 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400">
+                                            <div class="flex items-center gap-2">
+                                                <span title="Spiritual Openness Index">
+                                                    🌱 <strong class="text-slate-800 dark:text-slate-200">{{ number_format($ward->spiritual_openness) }}%</strong>
+                                                </span>
+                                                <span title="Need & Brokenness Index">
+                                                    ❤️ <strong class="text-slate-800 dark:text-slate-200">{{ number_format($ward->poverty_index) }}%</strong>
+                                                </span>
+                                            </div>
+                                            @if($isSelected)
+                                                <span class="w-4 h-4 rounded-full bg-indigo-600 text-white font-black text-[10px] flex items-center justify-center">✓</span>
+                                            @endif
+                                        </div>
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Action Bar (Pinned at Bottom) -->
+                    @php
+                        $selectedWard = $allWards->firstWhere('id', $selectedHomeWardId);
+                    @endphp
+                    <div class="shrink-0 px-4 sm:px-6 py-3.5 sm:py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 z-10 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <div class="text-xs text-slate-600 dark:text-slate-400 text-center sm:text-left">
+                            @if($selectedWard)
+                                <span>Selected Home Base: <strong class="text-slate-900 dark:text-white font-bold">{{ $selectedWard->name }} ({{ $selectedWard->name_ja }})</strong></span>
+                                <span class="block text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                                    +25% Neighbor Trust Bonus & 0 AP Commute in {{ $selectedWard->name }}
+                                </span>
+                            @else
+                                <span class="text-amber-600 dark:text-amber-400 font-medium">Please pick a district above to establish your residence.</span>
+                            @endif
+                        </div>
+
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            @if($user?->home_ward_id)
+                                <button 
+                                    type="button" 
+                                    wire:click="closeOnboardingModal"
+                                    class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
+                                >
+                                    Keep Current Base
+                                </button>
+                            @endif
+
+                            <button 
+                                type="button" 
+                                wire:click="confirmStartingWard"
+                                wire:loading.attr="disabled"
+                                @disabled(! $selectedHomeWardId)
+                                class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg transition cursor-pointer flex items-center justify-center gap-2 {{ $selectedHomeWardId ? 'bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 shadow-indigo-600/30' : 'bg-slate-400 dark:bg-slate-800 text-slate-600 dark:text-slate-500 cursor-not-allowed' }}"
+                            >
+                                <span wire:loading.remove wire:target="confirmStartingWard">🏡 Establish Home Base & Begin Mission ➔</span>
+                                <span wire:loading wire:target="confirmStartingWard" class="flex items-center gap-1.5">
+                                    <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                    <span>Establishing Base...</span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
+
+    <!-- Standalone Modal: Missionary Capability Profile & Scorecard (Accessible Anytime) -->
+    @if($showScreeningScorecardModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-md overflow-hidden animate-in fade-in duration-200">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl max-w-2xl w-full shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[90vh] overflow-hidden transition-colors duration-200">
+                <!-- Scorecard Header -->
+                <div class="shrink-0 px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-10 flex items-start justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                            <span class="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-800 uppercase tracking-wider">
+                                🎯 Missionary Capability Profile
+                            </span>
+                            <span class="text-[10px] sm:text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                                Field Clearance Status: Verified
+                            </span>
+                        </div>
+                        <h2 class="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                            {{ $user?->name ?? 'Candidate' }}'s Capability Scorecard
+                        </h2>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                            Evaluated across 7 core dimensions for church planting in Nagoya, Japan.
+                        </p>
+                    </div>
+
+                    <button 
+                        type="button" 
+                        wire:click="closeScreeningScorecard"
+                        class="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                        title="Close Scorecard"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <!-- Scorecard Body -->
+                <div class="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4 space-y-4 text-slate-900 dark:text-slate-100">
+                    <div class="p-4 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-emerald-500/10 border border-indigo-500/30 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                                Certified Profile Archetype
+                            </span>
+                            <h3 class="text-lg font-black text-slate-900 dark:text-white">
+                                {{ $screeningProfileTitle ?: ($user?->screening_profile_title ?: 'Cross-Cultural Pioneer') }}
+                            </h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">
+                                Overall Score: <strong class="text-emerald-600 dark:text-emerald-400 font-bold">{{ $screeningTotalScore ?: ($user?->screening_score ?? 85) }}%</strong>
+                            </p>
+                        </div>
+                        <div class="text-3xl">
+                            🗾🎖️
+                        </div>
+                    </div>
+
+                    <!-- Dimension Meters -->
+                    <div class="space-y-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                            Dimension Mastery:
+                        </h4>
+
+                        <div class="space-y-2.5">
+                            @foreach($screeningDimensions as $dimKey => $dim)
+                                @php
+                                    $score = $screeningDimensionScores[$dimKey] ?? ($user?->screening_dimension_scores[$dimKey] ?? 80);
+                                @endphp
+                                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 space-y-1.5">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                            <span>{{ $dim['icon'] }}</span>
+                                            <span>{{ $dim['name'] }}</span>
+                                        </span>
+                                        <span class="font-black text-emerald-600 dark:text-emerald-400">
+                                            {{ $score }}%
+                                        </span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                                        <div 
+                                            class="h-2 rounded-full {{ $score >= 70 ? 'bg-emerald-500' : 'bg-amber-500' }}"
+                                            style="width: {{ $score }}%"
+                                        ></div>
+                                    </div>
+                                </div>
                             @endforeach
                         </div>
                     </div>
                 </div>
 
-                <!-- Footer Action Bar (Pinned at Bottom) -->
-                @php
-                    $selectedWard = $allWards->firstWhere('id', $selectedHomeWardId);
-                @endphp
-                <div class="shrink-0 px-4 sm:px-6 py-3.5 sm:py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 z-10 flex flex-col sm:flex-row items-center justify-between gap-3">
-                    <div class="text-xs text-slate-600 dark:text-slate-400 text-center sm:text-left">
-                        @if($selectedWard)
-                            <span>Selected Home Base: <strong class="text-slate-900 dark:text-white font-bold">{{ $selectedWard->name }} ({{ $selectedWard->name_ja }})</strong></span>
-                            <span class="block text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                                +25% Neighbor Trust Bonus & 0 AP Commute in {{ $selectedWard->name }}
-                            </span>
-                        @else
-                            <span class="text-amber-600 dark:text-amber-400 font-medium">Please pick a district above to establish your residence.</span>
-                        @endif
-                    </div>
+                <!-- Scorecard Footer -->
+                <div class="shrink-0 px-4 sm:px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 z-10 flex items-center justify-between gap-3">
+                    <button 
+                        type="button" 
+                        wire:click="closeScreeningScorecard"
+                        class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
+                    >
+                        Close
+                    </button>
 
-                    <div class="flex items-center gap-2 w-full sm:w-auto">
-                        @if($user?->home_ward_id)
-                            <button 
-                                type="button" 
-                                wire:click="closeOnboardingModal"
-                                class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
-                            >
-                                Keep Current Base
-                            </button>
-                        @endif
-
-                        <button 
-                            type="button" 
-                            wire:click="confirmStartingWard"
-                            wire:loading.attr="disabled"
-                            @disabled(! $selectedHomeWardId)
-                            class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg transition cursor-pointer flex items-center justify-center gap-2 {{ $selectedHomeWardId ? 'bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 shadow-indigo-600/30' : 'bg-slate-400 dark:bg-slate-800 text-slate-600 dark:text-slate-500 cursor-not-allowed' }}"
-                        >
-                            <span wire:loading.remove wire:target="confirmStartingWard">🏡 Establish Home Base & Begin Mission ➔</span>
-                            <span wire:loading wire:target="confirmStartingWard" class="flex items-center gap-1.5">
-                                <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                                <span>Establishing Base...</span>
-                            </span>
-                        </button>
-                    </div>
+                    <button 
+                        type="button" 
+                        wire:click="openOnboardingModal"
+                        class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition cursor-pointer shadow-sm"
+                    >
+                        🔄 Retake Screening Assessment
+                    </button>
                 </div>
             </div>
         </div>

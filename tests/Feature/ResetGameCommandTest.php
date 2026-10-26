@@ -214,4 +214,3 @@ test('game:reset with --coop flag enables AI co-laborers for team mode', functio
     $session->refresh();
     expect($session->isCoopMode)->toBeTrue();
 });
-

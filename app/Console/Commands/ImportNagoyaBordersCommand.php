@@ -46,7 +46,7 @@ class ImportNagoyaBordersCommand extends Command
         }
 
         if (! $source || ! file_exists($source)) {
-            $this->error("Source file not found. Please provide --source path to nagoya-border.json");
+            $this->error('Source file not found. Please provide --source path to nagoya-border.json');
 
             return self::FAILURE;
         }

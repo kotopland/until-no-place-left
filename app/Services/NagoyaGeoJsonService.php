@@ -145,7 +145,6 @@ class NagoyaGeoJsonService
     /**
      * Load existing GeoJSON or automatically import from source files with MLIT ward tags.
      *
-     * @param  string  $targetFile
      * @return array<string, mixed>|null
      */
     public function loadOrImportWardGeoJson(?string $targetFile = null): ?array
@@ -209,8 +208,6 @@ class NagoyaGeoJsonService
     /**
      * Import and normalize raw MLIT GeoJSON into standard ward features.
      *
-     * @param  string  $sourcePath
-     * @param  string|null  $destinationPath
      * @return array<string, mixed>|null
      */
     public function importFromSource(string $sourcePath, ?string $destinationPath = null): ?array

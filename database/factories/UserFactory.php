@@ -33,7 +33,25 @@ class UserFactory extends Factory
             'current_game_month' => 1,
             'current_game_day' => 1,
             'days_processed_this_month' => 0,
+            'screening_passed' => true,
+            'screening_score' => 85,
+            'screening_profile_title' => 'Cross-Cultural Ambassador',
         ];
+    }
+
+    /**
+     * Indicate that the user has not completed or passed the missionary candidate screening.
+     */
+    public function unscreened(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'screening_passed' => false,
+            'screening_completed_at' => null,
+            'screening_score' => null,
+            'screening_dimension_scores' => null,
+            'screening_profile_title' => null,
+            'screening_answers' => null,
+        ]);
     }
 
     /**

@@ -951,6 +951,74 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Mechanic 7: Missionary Candidate Capability Screening -->
+                <div class="p-6 rounded-3xl bg-slate-900/80 border border-indigo-500/40 shadow-xl space-y-4 md:col-span-2 lg:col-span-3">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">📋</span>
+                        <div>
+                            <h3 class="text-base font-bold text-white">Missionary Candidate Capability Screening</h3>
+                            <span class="text-xs text-indigo-400">7 Dimensions • Gated Field Clearance Prior to Deployment</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Cross-cultural pioneering in Japan requires deep spiritual, emotional, and cultural fortitude. Before establishing a home base, new players undergo a 14-question evaluation across <strong class="text-white">7 core missionary dimensions</strong>:
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-2.5 text-xs text-slate-300">
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                            <span class="flex items-center gap-1.5 font-bold text-white text-[11px]">
+                                <span>🍱</span>
+                                <span>Cultural & Food</span>
+                            </span>
+                            <p class="text-[11px] text-slate-400 leading-snug">Honoring host hospitality (natto, cuisine) & reading the air (wa).</p>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                            <span class="flex items-center gap-1.5 font-bold text-white text-[11px]">
+                                <span>🔥</span>
+                                <span>Calling & Ministry</span>
+                            </span>
+                            <p class="text-[11px] text-slate-400 leading-snug">Rom 15:20 apostolic vision & persistence through dry seasons.</p>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                            <span class="flex items-center gap-1.5 font-bold text-white text-[11px]">
+                                <span>🗣️</span>
+                                <span>Language Learning</span>
+                            </span>
+                            <p class="text-[11px] text-slate-400 leading-snug">Daily immersion & childlike humility to sound clumsy while learning.</p>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                            <span class="flex items-center gap-1.5 font-bold text-white text-[11px]">
+                                <span>🤝</span>
+                                <span>Team & Authority</span>
+                            </span>
+                            <p class="text-[11px] text-slate-400 leading-snug">Matt 18 peacemaking, honoring leadership & preserving team unity.</p>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                            <span class="flex items-center gap-1.5 font-bold text-white text-[11px]">
+                                <span>⚓</span>
+                                <span>Emotional Resilience</span>
+                            </span>
+                            <p class="text-[11px] text-slate-400 leading-snug">Abiding deeply in Christ, healthy Sabbath & conquering urban isolation.</p>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                            <span class="flex items-center gap-1.5 font-bold text-white text-[11px]">
+                                <span>🥗</span>
+                                <span>Dietary & Health</span>
+                            </span>
+                            <p class="text-[11px] text-slate-400 leading-snug">Food allergy communication, sleep rhythms & physical mobility stamina.</p>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                            <span class="flex items-center gap-1.5 font-bold text-white text-[11px]">
+                                <span>💼</span>
+                                <span>Practical & Exit</span>
+                            </span>
+                            <p class="text-[11px] text-slate-400 leading-snug">Financial reserves, emergency buffers & intentional MAWL exit criteria.</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-indigo-950/50 border border-indigo-800/60 text-xs text-indigo-300 leading-relaxed flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <span><strong>Qualification Gate:</strong> Candidates must score ≥ 70% overall with no critical gaps (≥ 40% in each dimension) to earn Nagoya Deployment Clearance. Candidates can review tailored coaching notes and retake the screening anytime.</span>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -1032,37 +1100,43 @@
                     <span>🚀</span>
                     <span>Quick-Start Walkthrough</span>
                 </span>
-                <h3 class="text-2xl sm:text-3xl font-black text-white">Your First 5 Steps in Nagoya</h3>
+                <h3 class="text-2xl sm:text-3xl font-black text-white">Your First 6 Steps in Nagoya</h3>
                 <p class="text-xs sm:text-sm text-slate-400">Follow this simple roadmap to establish your base and multiply indigenous churches.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 text-left text-xs">
-                <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3.5 text-left text-xs">
+                <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-indigo-500/50 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">1</span>
-                    <strong class="text-white block font-semibold">Choose Home Base on Arrival</strong>
-                    <span class="text-slate-400 block leading-relaxed">On your first login, select your home base from the 16 wards. Accept the smart suggestion for an unreached <strong>Pioneering Frontier (0 Co-laborers)</strong> or pick any district to gain a <strong class="text-emerald-400">+25% trust & rapid follow-up advantage</strong> with 0 AP commute friction.</span>
+                    <strong class="text-white block font-semibold">Candidate Screening Gate</strong>
+                    <span class="text-slate-400 block leading-relaxed">Complete the 14-question evaluation across <strong class="text-indigo-400">7 missionary dimensions</strong> (Food & Culture, Calling, Language, Authority, Resilience, Dietary/Health, Financial/Exit). Achieve ≥ 70% to gain <strong>Nagoya Deployment Clearance</strong>!</span>
                 </div>
 
-                <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+                <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">2</span>
-                    <strong class="text-white block font-semibold">Prayer Walk & Discern (Solo/MAWL)</strong>
+                    <strong class="text-white block font-semibold">Choose Home Base on Arrival</strong>
+                    <span class="text-slate-400 block leading-relaxed">Select your home base from the 16 wards. Accept the smart suggestion for an unreached <strong>Pioneering Frontier (0 Co-laborers)</strong> to gain <strong class="text-emerald-400">+25% trust & 0 AP commute</strong>.</span>
+                </div>
+
+                <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+                    <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">3</span>
+                    <strong class="text-white block font-semibold">Prayer Walk (Solo/MAWL)</strong>
                     <span class="text-slate-400 block leading-relaxed">Intercede on ward streets solo or conduct a <strong class="text-emerald-400">Joint MAWL Prayer Walk</strong> with a local resident to soften soil, discover Persons of Peace, and cover their Oikos.</span>
                 </div>
 
-                <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
-                    <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">3</span>
+                <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+                    <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">4</span>
                     <strong class="text-white block font-semibold">Build Relational Trust</strong>
                     <span class="text-slate-400 block leading-relaxed">Engage in Casual Talk, active listening to corporate burnout, and healing prayer. Elevate trust to 60%+ to open hearts to the Gospel.</span>
                 </div>
 
-                <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
-                    <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">4</span>
+                <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+                    <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">5</span>
                     <strong class="text-white block font-semibold">Proclaim & Harvest</strong>
                     <span class="text-slate-400 block leading-relaxed">Share your 15-second testimony and 3 Circles Gospel. Guide seekers through the Prayer of Salvation to become new reproducing believers.</span>
                 </div>
 
-                <div class="p-4 rounded-2xl bg-slate-950/80 border border-emerald-600 text-white space-y-2">
-                    <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-[11px]">5</span>
+                <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-emerald-600 text-white space-y-2">
+                    <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-[11px]">6</span>
                     <strong class="text-white block font-semibold">Multiply L1–L5 Movements</strong>
                     <span class="text-slate-400 block leading-relaxed">Equip with Commands of Christ & 411, form Acts 2 Church Circles, mentor Timothys (L2), sharpen peers via Iron-on-Iron (L3), and launch Swarms (L4/L5) to G4+ victory!</span>
                 </div>

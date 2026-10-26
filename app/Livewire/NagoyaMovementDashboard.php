@@ -10,6 +10,7 @@ use App\Models\MonthlyReport;
 use App\Models\User;
 use App\Models\Ward;
 use App\Services\FourFieldsEngine;
+use App\Services\MissionaryScreeningService;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -29,13 +30,52 @@ class NagoyaMovementDashboard extends Component
 
     public bool $showOnboardingModal = false;
 
+    public string $onboardingStage = 'screening'; // 'screening', 'gated_coaching', 'qualified_clearance', 'ward_selection'
+
+    /** @var array<string, string> */
+    public array $screeningAnswers = [];
+
+    /** @var array<string, string> */
+    public array $screeningCoaching = [];
+
+    /** @var array<string, int> */
+    public array $screeningDimensionScores = [];
+
+    public int $screeningTotalScore = 0;
+
+    public string $screeningProfileTitle = '';
+
+    /** @var array<string> */
+    public array $screeningCriticalGaps = [];
+
+    public bool $showScreeningScorecardModal = false;
+
     public ?int $selectedHomeWardId = null;
 
     public function mount(): void
     {
         $user = auth()->user();
-        if ($user && ! $user->home_ward_id) {
-            $this->showOnboardingModal = true;
+        if ($user) {
+            if ($user->screening_answers) {
+                $this->screeningAnswers = $user->screening_answers;
+            }
+            if ($user->screening_dimension_scores) {
+                $this->screeningDimensionScores = $user->screening_dimension_scores;
+            }
+            if ($user->screening_score !== null) {
+                $this->screeningTotalScore = (int) $user->screening_score;
+            }
+            if ($user->screening_profile_title) {
+                $this->screeningProfileTitle = $user->screening_profile_title;
+            }
+
+            if (! $user->screening_passed) {
+                $this->showOnboardingModal = true;
+                $this->onboardingStage = 'screening';
+            } elseif (! $user->home_ward_id) {
+                $this->showOnboardingModal = true;
+                $this->onboardingStage = 'ward_selection';
+            }
         }
     }
 
@@ -67,15 +107,123 @@ class NagoyaMovementDashboard extends Component
 
     public function openOnboardingModal(): void
     {
+        $user = auth()->user();
+        if ($user && ! $user->screening_passed) {
+            $this->onboardingStage = 'screening';
+        } else {
+            $this->onboardingStage = 'ward_selection';
+        }
         $this->showOnboardingModal = true;
     }
 
     public function closeOnboardingModal(): void
     {
         $user = auth()->user();
-        if ($user && $user->home_ward_id) {
+        if ($user && $user->screening_passed && $user->home_ward_id) {
             $this->showOnboardingModal = false;
         }
+    }
+
+    public function openScreeningScorecard(): void
+    {
+        $user = auth()->user();
+        if ($user) {
+            if ($user->screening_dimension_scores) {
+                $this->screeningDimensionScores = $user->screening_dimension_scores;
+            }
+            if ($user->screening_score !== null) {
+                $this->screeningTotalScore = (int) $user->screening_score;
+            }
+            if ($user->screening_profile_title) {
+                $this->screeningProfileTitle = $user->screening_profile_title;
+            }
+            if ($user->screening_answers) {
+                $this->screeningAnswers = $user->screening_answers;
+            }
+        }
+        $this->showScreeningScorecardModal = true;
+    }
+
+    public function closeScreeningScorecard(): void
+    {
+        $this->showScreeningScorecardModal = false;
+    }
+
+    public function recordScreeningAnswer(string $questionId, string $choiceKey): void
+    {
+        $this->screeningAnswers[$questionId] = $choiceKey;
+    }
+
+    public function submitScreening(): void
+    {
+        $user = auth()->user() ?? User::first();
+        $screeningService = app(MissionaryScreeningService::class);
+        $questions = $screeningService->getQuestions();
+
+        if (count($this->screeningAnswers) < count($questions)) {
+            $this->dispatch('notify', [
+                'type' => 'warning',
+                'message' => 'Please answer all '.count($questions).' scenario questions across the 7 dimensions before submitting.',
+            ]);
+
+            return;
+        }
+
+        $result = $screeningService->evaluate($this->screeningAnswers);
+
+        $this->screeningTotalScore = $result['total_score'];
+        $this->screeningDimensionScores = $result['dimension_scores'];
+        $this->screeningProfileTitle = $result['profile_title'];
+        $this->screeningCoaching = $result['coaching_feedback'];
+        $this->screeningCriticalGaps = $result['critical_gaps'];
+
+        if ($user) {
+            $user->update([
+                'screening_passed' => $result['passed'],
+                'screening_completed_at' => $result['passed'] ? now() : null,
+                'screening_score' => $result['total_score'],
+                'screening_dimension_scores' => $result['dimension_scores'],
+                'screening_profile_title' => $result['profile_title'],
+                'screening_answers' => $this->screeningAnswers,
+            ]);
+            $user->refresh();
+        }
+
+        if ($result['passed']) {
+            $this->onboardingStage = 'qualified_clearance';
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => "🎉 Deployment Clearance Granted! Score: {$result['total_score']}%. You are cleared for field service in Nagoya.",
+            ]);
+        } else {
+            $this->onboardingStage = 'gated_coaching';
+            $this->dispatch('notify', [
+                'type' => 'warning',
+                'message' => "Deployment Clearance On Hold: Score {$result['total_score']}%. Review mentoring coaching notes to build readiness.",
+            ]);
+        }
+    }
+
+    public function retakeScreening(): void
+    {
+        $this->screeningAnswers = [];
+        $this->onboardingStage = 'screening';
+    }
+
+    public function proceedToWardSelection(): void
+    {
+        $user = auth()->user() ?? User::first();
+        if (! $user?->screening_passed) {
+            $this->onboardingStage = 'screening';
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Gated Qualification: You must pass the Missionary Candidate Capability Screening before proceeding!',
+            ]);
+
+            return;
+        }
+
+        $this->onboardingStage = 'ward_selection';
     }
 
     public function selectStartingWard(int $wardId): void
@@ -87,6 +235,16 @@ class NagoyaMovementDashboard extends Component
     {
         $user = auth()->user() ?? User::first();
         if (! $user) {
+            return;
+        }
+
+        if (! $user->screening_passed) {
+            $this->onboardingStage = 'screening';
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Gated Qualification: You must pass the Missionary Candidate Capability Screening before establishing your home base ward!',
+            ]);
+
             return;
         }
 
@@ -269,6 +427,10 @@ class NagoyaMovementDashboard extends Component
             $this->selectedHomeWardId = $recommendedWard->id;
         }
 
+        $screeningService = app(MissionaryScreeningService::class);
+        $screeningQuestions = $screeningService->getQuestions();
+        $screeningDimensions = $screeningService->getDimensions();
+
         return view('livewire.nagoya-movement-dashboard', [
             'user' => $user,
             'session' => $session,
@@ -279,6 +441,8 @@ class NagoyaMovementDashboard extends Component
             'pioneeringWards' => $pioneeringWards,
             'recommendedWard' => $recommendedWard,
             'missionariesByWard' => $missionariesByWard,
+            'screeningQuestions' => $screeningQuestions,
+            'screeningDimensions' => $screeningDimensions,
         ]);
     }
 }

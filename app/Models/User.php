@@ -76,6 +76,12 @@ use Illuminate\Support\Str;
     'last_monthly_tick_at',
     'game_session_id',
     'movement_score',
+    'screening_passed',
+    'screening_completed_at',
+    'screening_score',
+    'screening_dimension_scores',
+    'screening_profile_title',
+    'screening_answers',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
@@ -238,7 +244,26 @@ class User extends Authenticatable
             'last_daily_tick_at' => 'datetime',
             'next_daily_tick_at' => 'datetime',
             'last_monthly_tick_at' => 'datetime',
+            'screening_passed' => 'boolean',
+            'screening_completed_at' => 'datetime',
+            'screening_score' => 'integer',
+            'screening_dimension_scores' => 'array',
+            'screening_answers' => 'array',
         ];
+    }
+
+    /**
+     * PHP 8.4 Property Hook: whether user has passed the missionary screening questionnaire
+     */
+    public bool $isScreeningPassed {
+        get => (bool) $this->screening_passed;
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Formatted screening profile badge title
+     */
+    public string $screeningProfileBadge {
+        get => $this->screening_profile_title ?: 'Missionary Disciple';
     }
 
     /**
