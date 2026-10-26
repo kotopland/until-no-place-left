@@ -6,29 +6,6 @@
     $targetPersonLabel = $selectedNpc ? $selectedNpc->displayName : ($selectedWard?->name ? $selectedWard->name.' (Ward Action)' : 'Ward Action');
 @endphp
 
-<style>
-    .custom-scrollbar {
-        scrollbar-width: thin;
-        scrollbar-color: rgba(99, 102, 241, 0.45) rgba(15, 23, 42, 0.4);
-        scroll-behavior: smooth;
-    }
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-        background: rgba(15, 23, 42, 0.35);
-        border-radius: 9999px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: rgba(99, 102, 241, 0.45);
-        border-radius: 9999px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: rgba(99, 102, 241, 0.75);
-    }
-</style>
 
 <div class="space-y-6 pb-28 lg:pb-0" wire:poll.60s="touchHeartbeat" x-data="{ 
     mobileStep: @entangle('mobileStep'),
@@ -378,6 +355,7 @@
                         @endphp
                         <button 
                             type="button"
+                            wire:key="ward-btn-{{ $ward->id }}"
                             wire:click="selectWard({{ $ward->id }})"
                             @click="mobileStep = 2"
                             class="w-full text-left px-3 py-2.5 rounded-xl text-xs transition-all flex items-center justify-between {{ $selectedWardId === $ward->id ? 'bg-indigo-600/30 text-white border border-indigo-500/60 shadow-sm' : 'bg-slate-800/40 text-slate-300 hover:bg-slate-800/70 border border-transparent' }}"
@@ -545,7 +523,7 @@
                     @if($aiCoLaborersInWard->isNotEmpty())
                         <div class="mt-2.5 pt-2 border-t border-slate-700/60 space-y-2">
                             @foreach($aiCoLaborersInWard as $aiCoLaborer)
-                                <div class="bg-indigo-950/40 border border-indigo-500/30 rounded-xl p-2.5 text-xs">
+                                <div wire:key="colaborer-{{ $aiCoLaborer->id }}" class="bg-indigo-950/40 border border-indigo-500/30 rounded-xl p-2.5 text-xs">
                                     <div class="flex items-center justify-between gap-2 flex-wrap">
                                         <div class="flex items-center gap-2">
                                             <x-person-avatar :person="$aiCoLaborer" size="sm" :showBadges="true" class="shrink-0" />
@@ -682,6 +660,7 @@
                 >
                     @forelse($npcs as $npc)
                         <div 
+                            wire:key="npc-card-{{ $npc->id }}"
                             wire:click="selectNpc({{ $npc->id }})"
                             @click="mobileStep = 3"
                             class="p-3 rounded-xl border transition-all cursor-pointer {{ $selectedNpcId === $npc->id ? 'bg-indigo-950/40 border-indigo-500 shadow-md ring-1 ring-indigo-500/50' : 'bg-slate-800/40 border-slate-800 hover:border-slate-700' }}"

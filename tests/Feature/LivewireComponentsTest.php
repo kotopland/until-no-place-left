@@ -446,3 +446,84 @@ test('action queue planner renders prominent desktop and mobile queue call-to-ac
         ->assertDispatched('scroll-to-step-2')
         ->assertSet('mobileStep', 2);
 });
+
+test('action queue planner updates selected ward and refreshes people list in step 2 when ward is clicked', function () {
+    $session = GameSession::create([
+        'name' => 'Nagoya Test Session',
+        'code' => 'nagoya-ward-switch',
+        'current_game_month' => 1,
+        'calendar_date' => '2026-04-01',
+        'next_tick_at' => now()->addHours(12),
+        'is_active' => true,
+    ]);
+
+    $wardA = Ward::create([
+        'name' => 'Naka',
+        'name_ja' => '中区',
+        'slug' => 'naka-test',
+        'population' => 90000,
+        'spiritual_openness' => 30,
+        'poverty_need_index' => 40,
+        'center_lat' => 35.17,
+        'center_lng' => 136.90,
+    ]);
+
+    $wardB = Ward::create([
+        'name' => 'Chikusa',
+        'name_ja' => '千種区',
+        'slug' => 'chikusa-test',
+        'population' => 165000,
+        'spiritual_openness' => 45,
+        'poverty_need_index' => 20,
+        'center_lat' => 35.16,
+        'center_lng' => 136.96,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'home_ward_id' => $wardA->id,
+        'current_game_month' => 1,
+        'current_game_day' => 1,
+        'action_points' => 12,
+        'max_action_points' => 12,
+    ]);
+
+    $npcA = Npc::create([
+        'game_session_id' => $session->id,
+        'ward_id' => $wardA->id,
+        'name' => 'Taro Naka',
+        'name_ja' => '中 太郎',
+        'role_archetype' => NpcRoleArchetype::Salaryman,
+        'need_state' => NpcNeedState::None,
+        'status' => ReceptivityStatus::Yellow,
+        'trust_level' => 20,
+        'lat' => 35.17,
+        'lng' => 136.90,
+    ]);
+
+    $npcB = Npc::create([
+        'game_session_id' => $session->id,
+        'ward_id' => $wardB->id,
+        'name' => 'Hanako Chikusa',
+        'name_ja' => '千種 花子',
+        'role_archetype' => NpcRoleArchetype::UniversityStudent,
+        'need_state' => NpcNeedState::None,
+        'status' => ReceptivityStatus::Green,
+        'trust_level' => 50,
+        'lat' => 35.16,
+        'lng' => 136.96,
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test(ActionQueuePlanner::class)
+        ->assertSet('selectedWardId', $wardA->id)
+        ->assertSee('Taro Naka')
+        ->assertDontSee('Hanako Chikusa')
+        ->call('selectWard', $wardB->id)
+        ->assertSet('selectedWardId', $wardB->id)
+        ->assertSet('mobileStep', 2)
+        ->assertSet('selectedNpcId', null)
+        ->assertSee('Hanako Chikusa')
+        ->assertDontSee('Taro Naka');
+});

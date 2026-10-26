@@ -76,15 +76,23 @@
     @livewireScripts
     <script>
         document.addEventListener('livewire:init', function () {
-            if (window.Livewire && typeof window.Livewire.hook === 'function') {
-                window.Livewire.hook('request', function ({ fail }) {
-                    fail(function ({ status, preventDefault }) {
-                        if (status === 419) {
-                            preventDefault();
-                            window.location.reload();
+            try {
+                if (window.Livewire && typeof window.Livewire.hook === 'function') {
+                    window.Livewire.hook('request', function (requestContext) {
+                        if (requestContext && typeof requestContext.fail === 'function') {
+                            requestContext.fail(function (failContext) {
+                                if (failContext && failContext.status === 419) {
+                                    if (typeof failContext.preventDefault === 'function') {
+                                        failContext.preventDefault();
+                                    }
+                                    window.location.reload();
+                                }
+                            });
                         }
                     });
-                });
+                }
+            } catch (e) {
+                console.warn('Livewire session handler setup:', e);
             }
         });
     </script>
