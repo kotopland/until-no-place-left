@@ -32,13 +32,14 @@ class ActionResolutionOutcome
         public private(set) string $pedagogicalTip,
         public private(set) bool $prayerAnswered = false,
         public private(set) bool $newOikosUnlocked = false,
+        public private(set) bool $isBaptismCompleted = false,
     ) {}
 
     /**
      * PHP 8.4 Property Hook: Whether this action unlocked a spiritual harvest or breakthrough
      */
     public bool $isMajorBreakthrough {
-        get => $this->statusChanged || $this->prayerAnswered || $this->coopPointsAwarded > 0;
+        get => $this->statusChanged || $this->prayerAnswered || $this->coopPointsAwarded > 0 || $this->isBaptismCompleted;
     }
 
     /**
@@ -57,5 +58,12 @@ class ActionResolutionOutcome
      */
     public string $outcome_notes {
         get => $this->narrativeOutcome;
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Alias for pedagogicalTip
+     */
+    public string $coachTip {
+        get => $this->pedagogicalTip;
     }
 }

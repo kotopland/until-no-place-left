@@ -23,6 +23,15 @@ use Illuminate\Support\Carbon;
  * @property array<string> $elements_json
  * @property bool $is_healthy_church
  * @property int $health_score
+ * @property int $attenders_count
+ * @property int $believers_count
+ * @property int $baptized_count
+ * @property bool $is_dissolved
+ * @property int|null $dissolved_game_month
+ * @property string|null $dissolution_reason
+ * @property string|null $started_by_name
+ * @property int|null $last_attrition_month
+ * @property string|null $last_attrition_event
  * @property float $lat
  * @property float $lng
  * @property int $founded_game_month
@@ -41,6 +50,15 @@ use Illuminate\Support\Carbon;
     'elements_json',
     'is_healthy_church',
     'health_score',
+    'attenders_count',
+    'believers_count',
+    'baptized_count',
+    'is_dissolved',
+    'dissolved_game_month',
+    'dissolution_reason',
+    'started_by_name',
+    'last_attrition_month',
+    'last_attrition_event',
     'lat',
     'lng',
     'founded_game_month',
@@ -54,6 +72,22 @@ class Church extends Model
      */
     public string $generationBadge {
         get => "G{$this->generation}";
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Whether church is currently active and gathering
+     */
+    public bool $isActive {
+        get => ! $this->is_dissolved;
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Human-friendly status label
+     */
+    public string $statusLabel {
+        get => $this->is_dissolved
+            ? 'Dissolved Group'
+            : ($this->is_healthy_church ? 'Healthy Acts 2 Church' : 'Developing Bible Study');
     }
 
     /**
@@ -71,10 +105,20 @@ class Church extends Model
     }
 
     /**
+     * PHP 8.4 Property Hook: Effective leader display name
+     */
+    public string $leaderDisplayName {
+        get => $this->leaderNpc?->displayName
+            ?? $this->leaderUser?->name
+            ?? $this->started_by_name
+            ?? 'Local Servant Leader';
+    }
+
+    /**
      * PHP 8.4 Property Hook: Map marker color based on generation
      */
     public string $generationColor {
-        get => match ($this->generation) {
+        get => $this->is_dissolved ? '#64748b' : match ($this->generation) {
             1 => '#3b82f6', // blue-500 (G1 Player-planted)
             2 => '#8b5cf6', // purple-500 (G2)
             3 => '#ec4899', // pink-500 (G3)
@@ -94,6 +138,12 @@ class Church extends Model
             'elements_json' => 'array',
             'is_healthy_church' => 'boolean',
             'health_score' => 'integer',
+            'attenders_count' => 'integer',
+            'believers_count' => 'integer',
+            'baptized_count' => 'integer',
+            'is_dissolved' => 'boolean',
+            'dissolved_game_month' => 'integer',
+            'last_attrition_month' => 'integer',
             'lat' => 'float',
             'lng' => 'float',
             'founded_game_month' => 'integer',
@@ -193,5 +243,107 @@ class Church extends Model
             $coreElements,
             fn (ChurchElement $elem) => $this->practicesElement($elem)
         );
+    }
+
+    /**
+     * Resident disciples/believers attending this church
+     *
+     * @return HasMany<Npc, $this>
+     */
+    public function members(): HasMany
+    {
+        return $this->hasMany(Npc::class, 'church_id');
+    }
+
+    /**
+     * Applies attrition (relocation, sickness, or interpersonal conflict) to this church.
+     * Decreases attendance, believers count, and health score.
+     * Dissolves the church if health score falls too low (<= 15) or attenders drops <= 1.
+     */
+    public function applyAttrition(
+        string $reason,
+        int $lostAttenders,
+        int $lostBelievers,
+        int $healthLoss,
+        int $gameMonth
+    ): bool {
+        if ($this->is_dissolved) {
+            return false;
+        }
+
+        $newAttenders = max(0, $this->attenders_count - $lostAttenders);
+        $newBelievers = max(0, min($newAttenders, $this->believers_count - $lostBelievers));
+        $newBaptized = max(0, min($newBelievers, $this->baptized_count));
+        $newHealth = max(0, $this->health_score - $healthLoss);
+        $isHealthy = $newHealth >= 50 && $this->hasAllCoreElements();
+
+        $eventSummary = "Month {$gameMonth}: {$reason} (-{$lostAttenders} attenders, -{$healthLoss}% health)";
+
+        // Dissolve church if attendance drops to critical minimum or health collapsed
+        if ($newHealth <= 15 || $newAttenders <= 1) {
+            $this->dissolve($reason, $gameMonth);
+
+            return true;
+        }
+
+        $this->update([
+            'attenders_count' => $newAttenders,
+            'believers_count' => $newBelievers,
+            'baptized_count' => $newBaptized,
+            'health_score' => $newHealth,
+            'is_healthy_church' => $isHealthy,
+            'last_attrition_month' => $gameMonth,
+            'last_attrition_event' => $eventSummary,
+        ]);
+
+        return false;
+    }
+
+    /**
+     * Dissolves this church gathering.
+     */
+    public function dissolve(string $reason, int $gameMonth): void
+    {
+        $this->update([
+            'is_dissolved' => true,
+            'dissolved_game_month' => $gameMonth,
+            'dissolution_reason' => $reason,
+            'health_score' => 0,
+            'is_healthy_church' => false,
+            'last_attrition_month' => $gameMonth,
+            'last_attrition_event' => "Month {$gameMonth}: Dissolved — {$reason}",
+        ]);
+
+        // Unlink resident NPC members
+        Npc::where('church_id', $this->id)->update(['church_id' => null]);
+    }
+
+    /**
+     * Revitalizes a struggling or dissolved church through pastoral coaching / restart.
+     */
+    public function revitalize(int $gameMonth, ?User $revitalizedBy = null): void
+    {
+        $practiced = $this->elements_json ?? [];
+        if (empty($practiced)) {
+            $practiced = [
+                ChurchElement::RepentanceBelief->value,
+                ChurchElement::Word->value,
+                ChurchElement::Prayer->value,
+                ChurchElement::Fellowship->value,
+            ];
+        }
+
+        $this->update([
+            'is_dissolved' => false,
+            'dissolved_game_month' => null,
+            'dissolution_reason' => null,
+            'health_score' => 50,
+            'is_healthy_church' => false,
+            'attenders_count' => max(4, $this->attenders_count + 3),
+            'believers_count' => max(2, $this->believers_count + 2),
+            'baptized_count' => max(1, $this->baptized_count + 1),
+            'elements_json' => $practiced,
+            'last_attrition_event' => "Month {$gameMonth}: Revitalized through apostolic coaching!",
+        ]);
     }
 }

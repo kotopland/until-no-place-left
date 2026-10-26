@@ -358,13 +358,13 @@
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800 uppercase">Field 2</span>
                             <span class="text-xl">🌾</span>
                         </div>
-                        <h4 class="text-base font-bold text-white">Seeded Field (Gospel Sowing)</h4>
+                        <h4 class="text-base font-bold text-white">Seeded Field (Gospel Sowing & Gradual Seeking)</h4>
                         <p class="text-xs text-slate-300 leading-relaxed">
-                            Proclaiming the Good News simply and reproducibly. Sharing your <strong class="text-emerald-300">15-Second Testimony</strong> (before, how Christ met me, life now) and the visual <strong class="text-emerald-300">3 Circles Gospel Presentation</strong>. Guiding seekers through the Prayer of Salvation.
+                            Proclaiming the Good News simply and reproducibly through the <strong class="text-emerald-300">15-Second Testimony</strong> and <strong class="text-emerald-300">3 Circles Gospel</strong>. While a person can move rapidly from <strong class="text-rose-400">Red</strong> to <strong class="text-amber-400">Yellow</strong> because they love the community and warmth, moving from <strong class="text-amber-400">Yellow</strong> to <strong class="text-emerald-400">Green</strong> (salvation) in Japan is a gradual, long-term journey typically taking <span class="text-amber-300 font-semibold">several months to several years</span>. Direct encounters with Scripture and patient prayer water the seed until genuine repentance takes root.
                         </p>
                     </div>
                     <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[11px] text-emerald-300">
-                        ⚡ Actions: 15-Sec Testimony, 3 Circles Gospel, Prayer of Salvation.
+                        ⚡ Actions: 15-Sec Testimony, 3 Circles Gospel, Prayer of Salvation (unlocked after gradual seeking).
                     </div>
                 </div>
 
@@ -375,13 +375,13 @@
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-400 border border-amber-800 uppercase">Field 3</span>
                             <span class="text-xl">🌿</span>
                         </div>
-                        <h4 class="text-base font-bold text-white">Growing Field (Discipleship)</h4>
+                        <h4 class="text-base font-bold text-white">Growing Field (Discipleship & 6mo-2yr Baptism)</h4>
                         <p class="text-xs text-slate-300 leading-relaxed">
-                            Grounding believers in immediate loving obedience through the <strong class="text-amber-300">Commands of Christ</strong> (with hand motions) and <strong class="text-amber-300">Sword Bible Studies</strong>. Equipping them with the <strong class="text-amber-300">411 Tool</strong> to share with their own Oikos and count the cost of baptism.
+                            Grounding believers in loving obedience through the <strong class="text-amber-300">Commands of Christ</strong> and <strong class="text-amber-300">Sword Bible Studies</strong>. Equipping them with <strong class="text-amber-300">411 Tool</strong> to map their Oikos. In Japan, water baptism is rarely a matter of days—it typically spans <span class="text-cyan-300 font-semibold">6 months to 2 years</span> (<span class="text-amber-400">Counting Cost</span> ➔ <span class="text-blue-400">Committed</span> ➔ <span class="text-cyan-400">Baptized</span>), as new disciples prayerfully navigate family obligations, ancestral rites (<em>butsudan</em>), and parental honor to win their households.
                         </p>
                     </div>
                     <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[11px] text-amber-300">
-                        ⚡ Actions: Commands of Christ, Sword Bible Study, Counting Cost & Baptism, 411 Discipleship.
+                        ⚡ Actions: Commands of Christ, Sword Bible Study, Count Cost & Baptism (6mo-2yr journey), 411 Discipleship.
                     </div>
                 </div>
 
@@ -392,13 +392,16 @@
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950 text-purple-400 border border-purple-800 uppercase">Field 4</span>
                             <span class="text-xl">⛪</span>
                         </div>
-                        <h4 class="text-base font-bold text-white">Harvested Field (Acts 2 Church Circles)</h4>
+                        <h4 class="text-base font-bold text-white">Harvested Field (Acts 2 Church Circles & Gen Map)</h4>
                         <p class="text-xs text-slate-300 leading-relaxed">
-                            Gathering baptized disciples into self-governing 3/3rds groups practicing the <strong class="text-purple-300">11 Acts 2 rhythms</strong>: Word, Prayer, Fellowship, Communion, Baptism, Giving, Worship, Local Leaders, and Multiplying Groups.
+                            Gathering baptized disciples into self-governing 3/3rds groups practicing the <strong class="text-purple-300">11 Acts 2 rhythms</strong>: Word, Prayer, Fellowship, Communion, Baptism, Giving, Worship, Local Leaders, and Multiplying Groups. Tracked across generations in the <strong class="text-amber-300">Visual Church Generation Map</strong>.
+                        </p>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            ⚠️ <strong>Real-World Attrition & Dissolution:</strong> From time to time, members leave a church because they <span class="text-amber-300">move</span> (job transfer/relocation), get <span class="text-rose-300">sick</span>, or face <span class="text-orange-300">interpersonal conflict</span>. This reduces church quality and attendance, and can occasionally dissolve struggling groups. Dissolved churches appear ghosted on the Gen Map and can be revitalized through pastoral coaching!
                         </p>
                     </div>
                     <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[11px] text-purple-300">
-                        ⚡ Actions: Acts 2 Church Circles (3/3rds: Look Back, Look Up, Look Ahead).
+                        ⚡ Actions: Acts 2 Church Circles (3/3rds: Look Back, Look Up, Look Ahead), Church Revitalization, & Generational Mapping.
                     </div>
                 </div>
 
@@ -681,7 +684,10 @@
                             <span class="font-bold text-amber-400">3 AP</span>
                         </li>
                         <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
-                            <span>🌊 Count Cost & Baptism</span>
+                            <div>
+                                <span>🌊 Count Cost & Baptism</span>
+                                <span class="text-[10px] text-slate-400 block font-normal">6mo to 2yr journey (Counting Cost ➔ Committed ➔ Water Baptism)</span>
+                            </div>
                             <span class="font-bold text-amber-400">3 AP</span>
                         </li>
                         <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
@@ -933,6 +939,40 @@
                     </ul>
                 </div>
 
+                <!-- Mechanic 5.5: Visual Church Generation Map (Gen Map) & Attrition Dynamics -->
+                <div class="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">🌳</span>
+                        <div>
+                            <h3 class="text-base font-bold text-white">Visual Church Generation Map (Gen Map)</h3>
+                            <span class="text-xs text-amber-400 font-semibold">Generational Lineage & Church Attrition / Dissolution</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        A core diagnostic tool in disciple-making movements to track how groups, believers, and churches reproduce across sequential generational tiers (Gen 1 Mother Churches → Gen 2 Daughter Churches → Gen 3 Granddaughter Groups → <strong>Gen 4+ Movement Milestone</strong>):
+                    </p>
+                    <div class="space-y-2 text-xs text-slate-300">
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
+                            <span class="text-emerald-400 font-bold block mb-1">⭕ Church Circles Standard</span>
+                            <span class="text-slate-400 leading-relaxed block">
+                                Groups are rendered as circles: <strong class="text-emerald-300">Solid lines</strong> represent established, healthy churches practicing essential Acts 2 functions; <strong class="text-amber-300">Dashed lines</strong> indicate developing Bible studies; <strong class="text-slate-500">Ghosted dashed circles</strong> represent dissolved churches.
+                            </span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
+                            <span class="text-purple-400 font-bold block mb-1">📊 Vital Metric Icons</span>
+                            <span class="text-slate-400 leading-relaxed block">
+                                Tracked around each circle: Total attenders (😊), baptized believers (💧), and committed believers (👑). Inside each circle, icons display active Acts 2 practices (Word, Prayer, Fellowship, Communion, Worship, Giving, Leaders, Discipleship).
+                            </span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
+                            <span class="text-rose-400 font-bold block mb-1">⚠️ Member Attrition, Quality Drop & Dissolution</span>
+                            <span class="text-slate-400 leading-relaxed block">
+                                Believers may leave a church due to <strong class="text-slate-200">relocation</strong> (job transfer "tenkin"), <strong class="text-slate-200">sickness/hospitalization</strong>, or <strong class="text-slate-200">interpersonal friction/offenses</strong>. This lowers attendance and health score. If health drops below 15% or attenders drop to 1 or 0, the church dissolves. Dissolved churches remain on the Gen Map with historical lineage records and can be <strong>revitalized</strong> through pastoral coaching.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Mechanic 6: Live Multiplayer Leaderboard -->
                 <div class="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 space-y-4">
                     <div class="flex items-center gap-3">
@@ -954,6 +994,108 @@
                             <span class="text-emerald-400 font-bold block">✨ Shared Victory Condition</span>
                             <span class="text-slate-400 text-[11px]">Win together when every ward has healthy, reproducing indigenous churches.</span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Mechanic: Worker Spiritual Rhythms & Movement Retreats -->
+                <div class="p-6 rounded-3xl bg-slate-900/80 border border-emerald-500/40 shadow-xl space-y-4 md:col-span-2 lg:col-span-3">
+                    <div class="flex items-center justify-between gap-3 flex-wrap">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">🕊️</span>
+                            <div>
+                                <h3 class="text-base font-bold text-white">Worker Spiritual Rhythms &amp; Movement Retreats</h3>
+                                <span class="text-xs text-emerald-400">Mentoring, Sabbath, Fasting &amp; NPL Mid-Level Strategy Conferences</span>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-950 text-emerald-300 border border-emerald-800">
+                            Time-Blocking Rest &amp; Strategy
+                        </span>
+                    </div>
+
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Missionary fruitfulness flows from abiding intimacy with Christ and strategic alignment. Accessible via the <strong>Spiritual Rhythms &amp; Retreats</strong> sub-menu in Action HQ or the top navigation <strong>More</strong> menu, workers can schedule dedicated spiritual rhythms and catalytic retreats. <strong>These activities award points and replenish spiritual health, but block time for all other field actions</strong> during their scheduled duration:
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                        <!-- Rhythm 1: Receive Mentoring -->
+                        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 flex flex-col justify-between">
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xl">🧭</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-950 text-indigo-300 border border-indigo-800">1 Day</span>
+                                </div>
+                                <h4 class="font-bold text-white text-xs">Receive Mentoring</h4>
+                                <span class="text-[10px] text-indigo-400 block font-semibold">メンターシップ受講</span>
+                                <p class="text-[11px] text-slate-400 leading-relaxed">
+                                    Receive pastoral and catalytic ministry coaching from an experienced movement practitioner. Debrief obstacles, refine vision, and receive prayer.
+                                </p>
+                            </div>
+                            <div class="pt-2 border-t border-slate-900 flex items-center justify-between text-[11px]">
+                                <span class="font-bold text-emerald-400">+30 Points</span>
+                                <span class="text-[10px] text-slate-500">Max 1 / week</span>
+                            </div>
+                        </div>
+
+                        <!-- Rhythm 2: Weekly Sabbath Rest -->
+                        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 flex flex-col justify-between">
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xl">🕯️</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800">1 Day</span>
+                                </div>
+                                <h4 class="font-bold text-white text-xs">Weekly Sabbath Rest</h4>
+                                <span class="text-[10px] text-amber-400 block font-semibold">安息日・休息</span>
+                                <p class="text-[11px] text-slate-400 leading-relaxed">
+                                    A dedicated weekly day of rest, cessation from labor, and spiritual replenishment before God. Refreshes the missionary's heart and mind.
+                                </p>
+                            </div>
+                            <div class="pt-2 border-t border-slate-900 flex items-center justify-between text-[11px]">
+                                <span class="font-bold text-emerald-400">+25 Pts &amp; 100% AP</span>
+                                <span class="text-[10px] text-slate-500">Max 1 / week</span>
+                            </div>
+                        </div>
+
+                        <!-- Rhythm 3: 4-Day Fasting Retreat -->
+                        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 flex flex-col justify-between">
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xl">⏳</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950 text-purple-300 border border-purple-800">4 Days</span>
+                                </div>
+                                <h4 class="font-bold text-white text-xs">4-Day Fasting Retreat</h4>
+                                <span class="text-[10px] text-purple-400 block font-semibold">4日間の断食リトリート</span>
+                                <p class="text-[11px] text-slate-400 leading-relaxed">
+                                    An extended 4-consecutive-day corporate prayer and fasting retreat with fellow missionaries to seek God for spiritual breakthrough across Nagoya.
+                                </p>
+                            </div>
+                            <div class="pt-2 border-t border-slate-900 flex items-center justify-between text-[11px]">
+                                <span class="font-bold text-emerald-400">+100 Pts (+25/day)</span>
+                                <span class="text-[10px] text-slate-500">Max 1 / month</span>
+                            </div>
+                        </div>
+
+                        <!-- Rhythm 4: 3-Day NPL Mid-Level Conference -->
+                        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 flex flex-col justify-between">
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xl">🏛️</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-950 text-blue-300 border border-blue-800">3 Days</span>
+                                </div>
+                                <h4 class="font-bold text-white text-xs">3-Day NPL Mid-Level</h4>
+                                <span class="text-[10px] text-blue-400 block font-semibold">3日間のNPL中級会議</span>
+                                <p class="text-[11px] text-slate-400 leading-relaxed">
+                                    A No Place Left (NPL) Mid-Level (or "Midlevel") conference is a problem-solving and strategy retreat for active movement practitioners rather than an introductory training session.
+                                </p>
+                            </div>
+                            <div class="pt-2 border-t border-slate-900 flex items-center justify-between text-[11px]">
+                                <span class="font-bold text-emerald-400">+75 Pts (+25/day)</span>
+                                <span class="text-[10px] text-slate-500">Max 1 / month</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-indigo-950/40 border border-indigo-800/60 text-xs text-indigo-300 leading-relaxed">
+                        ⏰ <em>Time-Blocking Mechanics:</em> When a worker schedules any of these rhythms from the dedicated top section in Action HQ, that day's calendar is locked. Standard field actions (Steps 1–3) cannot be queued for blocked days. Simply click <strong>Turn to Next Day</strong> to advance and resolve each day's spiritual gain and points.
                     </div>
                 </div>
 

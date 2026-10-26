@@ -702,7 +702,7 @@ class NagoyaOikosSeeder extends Seeder
 
         // 6. Seed Initial G1 3/3rds Group (Field 4 Church Circle)
         // Led by the player missionary coach; Daisuke Kato is an apprentice disciple who will plant G2!
-        Church::updateOrCreate(
+        $g1Church = Church::updateOrCreate(
             [
                 'game_session_id' => $session->id,
                 'name' => 'Meito Living Seed (G1)',
@@ -720,12 +720,23 @@ class NagoyaOikosSeeder extends Seeder
                     ChurchElement::Fellowship->value,
                 ],
                 'is_healthy_church' => false, // Still developing towards complete Acts 2 circle
-                'health_score' => 45,
+                'health_score' => 60,
+                'attenders_count' => 8,
+                'believers_count' => 5,
+                'baptized_count' => 4,
+                'is_dissolved' => false,
+                'started_by_name' => $player->name,
                 'lat' => 35.1675,
                 'lng' => 136.9990,
                 'founded_game_month' => 1,
             ]
         );
+
+        // Associate Green believers in Meito-ku with this initial G1 church
+        Npc::where('game_session_id', $session->id)
+            ->where('ward_id', $wards['meito-ku']->id)
+            ->where('status', ReceptivityStatus::Green)
+            ->update(['church_id' => $g1Church->id]);
 
         // 7. Seed/Ensure Automated Missionary Co-Laborers (for Team Co-op Mode)
         app(AiColaborerService::class)->ensureAiColaborers($session);

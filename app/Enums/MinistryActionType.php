@@ -33,6 +33,12 @@ enum MinistryActionType: string
     case IronOnIron = 'iron_on_iron';
     case SwarmTraining = 'swarm_training';
 
+    // Worker Spiritual Rhythms & Movement Retreats
+    case ReceiveMentoring = 'receive_mentoring';
+    case SabbathRest = 'sabbath_rest';
+    case FastingRetreat = 'fasting_retreat';
+    case MidLevelConference = 'midlevel_conference';
+
     /**
      * Display title of the action
      */
@@ -56,6 +62,10 @@ enum MinistryActionType: string
             self::MentorTimothy => 'Mentor Timothy Leader (Field 5 Multiplication)',
             self::IronOnIron => 'Generational Mapping & Iron on Iron (IoI)',
             self::SwarmTraining => 'Swarm Training & Movement Catalyzing',
+            self::ReceiveMentoring => 'Receive Mentoring from Movement Leader',
+            self::SabbathRest => 'Weekly Day of Rest (Sabbath)',
+            self::FastingRetreat => '4-Day Fasting Retreat with Fellow Missionaries',
+            self::MidLevelConference => '3-Day NPL Mid-Level Strategy Conference',
         };
     }
 
@@ -82,6 +92,10 @@ enum MinistryActionType: string
             self::MentorTimothy => 'テモテ育成（L2教会開拓者コーチング）',
             self::IronOnIron => '世代マップ作成＆アイアン・オン・アイアン（L3リーダー相互コーチング）',
             self::SwarmTraining => 'スウォーム集中訓練＆ムーブメント戦略会議（L4/L5地域拡大）',
+            self::ReceiveMentoring => 'メンターからの指導・コーチングを受ける',
+            self::SabbathRest => '週ごとの安息日（シャバット・休息と礼拝）',
+            self::FastingRetreat => '宣教師仲間との4日間断食祈祷リトリート',
+            self::MidLevelConference => '3日間 NPLミッドレベル戦略会議（実践者課題解決）',
         };
     }
 
@@ -98,6 +112,8 @@ enum MinistryActionType: string
             self::CommitToBaptism, self::CommandsOfChrist, self::SwordBibleStudy, self::Train411 => 3, // Field 3: Discipleship Growth
             self::ChurchCircles => 4,                       // Field 4: Healthy Church Formation
             self::MentorTimothy, self::IronOnIron, self::SwarmTraining => 5, // Field 5: Leadership Multiplication & Movement
+            self::ReceiveMentoring, self::MidLevelConference => 5,
+            self::SabbathRest, self::FastingRetreat => 1,
         };
     }
 
@@ -112,6 +128,10 @@ enum MinistryActionType: string
             self::MentorTimothy => 'Field 5: Leadership Multiplication (L1 -> L2)',
             self::IronOnIron => 'Field 5: Iron on Iron Peer Coaching (L2 -> L3)',
             self::SwarmTraining => 'Field 5: Regional Movement Catalyzing (L4/L5)',
+            self::ReceiveMentoring => 'Worker Rhythm: Movement Mentoring',
+            self::SabbathRest => 'Worker Rhythm: Weekly Sabbath Rest',
+            self::FastingRetreat => 'Worker Rhythm: 4-Day Fasting Retreat',
+            self::MidLevelConference => 'Worker Strategy: 3-Day NPL Mid-Level Conference',
             default => match ($this->field()) {
                 1 => 'Field 1: Entry / Friendship',
                 2 => 'Field 2: Gospel Presentation',
@@ -135,6 +155,10 @@ enum MinistryActionType: string
             self::CommitToBaptism, self::CommandsOfChrist, self::SwordBibleStudy, self::ChurchCircles => 'L2: Church Planter',
             self::MentorTimothy, self::IronOnIron => 'L3: Church Plant Multiplier',
             self::SwarmTraining => 'L4: Movement Trainer / L5: Strategy Coordinator',
+            self::ReceiveMentoring => 'Worker Care & Mentoring',
+            self::SabbathRest => 'Worker Care: Weekly Sabbath',
+            self::FastingRetreat => 'All Levels: Prayer & Fasting',
+            self::MidLevelConference => 'L4: Movement Trainer / L5: Strategy Coordinator',
         };
     }
 
@@ -160,6 +184,7 @@ enum MinistryActionType: string
             self::MentorTimothy => 3,
             self::IronOnIron => 3,
             self::SwarmTraining => 4,
+            self::ReceiveMentoring, self::SabbathRest, self::FastingRetreat, self::MidLevelConference => 0,
         };
     }
 
@@ -186,6 +211,10 @@ enum MinistryActionType: string
             self::MentorTimothy => 'Invest in an equipped L1 Seed Sower through intentional coaching so they become an L2 Church Planter planting autonomous daughter churches.',
             self::IronOnIron => 'Peer-to-peer coaching with generational mapping and 4 Fields diagnostics to celebrate fruit, remove bottlenecks, and cast 4th generation vision.',
             self::SwarmTraining => 'Mobilize catalytic training teams across the ward to model, assist, watch, and leave (MAWL), launching regional midlevel coaching and unreached engagement.',
+            self::ReceiveMentoring => 'Receive 1-on-1 personal mentoring, soul care, and Four Fields coaching from an experienced movement practitioner (Paul). Blocks time for field ministry on this day.',
+            self::SabbathRest => 'A dedicated weekly day of rest, worship, and abiding in Jesus Christ. Ceases field labors to restore soul and body, replenishing Action Points and preventing burnout in Japan. Blocks time for other actions on this day.',
+            self::FastingRetreat => 'A dedicated 4-day corporate prayer and fasting retreat with fellow missionary co-laborers in Japan. Intercedes deeply for spiritual breakthrough and strongholds across Nagoya. Blocks time for other actions for 4 consecutive days.',
+            self::MidLevelConference => 'A No Place Left (NPL) Mid-Level (or "Midlevel") conference is a problem-solving and strategy retreat for active movement practitioners rather than an introductory training session. Practitioners map generations, diagnose bottlenecks, and align on apostolic breakthrough. Blocks time for other actions for 3 consecutive days.',
         };
     }
 
@@ -212,6 +241,10 @@ enum MinistryActionType: string
             self::MentorTimothy => '👑',
             self::IronOnIron => '⚔️',
             self::SwarmTraining => '🐝',
+            self::ReceiveMentoring => '🛡️',
+            self::SabbathRest => '🕊️',
+            self::FastingRetreat => '🔥',
+            self::MidLevelConference => '🗺️',
         };
     }
 
@@ -221,7 +254,8 @@ enum MinistryActionType: string
     public function requiresTargetNpc(): bool
     {
         return match ($this) {
-            self::InternationalEvent, self::PrayerWalk => false,
+            self::InternationalEvent, self::PrayerWalk,
+            self::ReceiveMentoring, self::SabbathRest, self::FastingRetreat, self::MidLevelConference => false,
             default => true,
         };
     }
@@ -241,6 +275,9 @@ enum MinistryActionType: string
         $leaderLevel = $npc->leadership_tier->level();
 
         return match ($this) {
+            // Worker Spiritual Rhythms: Never applied to an NPC
+            self::ReceiveMentoring, self::SabbathRest, self::FastingRetreat, self::MidLevelConference => false,
+
             // Field 1 Entry & Platform: Open to anyone (Unreached, Red, Yellow, Green, Leaders)
             self::CasualTalk, self::DeepTalk, self::PrayerForHealing, self::MercyCareFoodBible,
             self::InternationalEvent => true,
@@ -288,6 +325,7 @@ enum MinistryActionType: string
         }
 
         return match ($this) {
+            self::ReceiveMentoring, self::SabbathRest, self::FastingRetreat, self::MidLevelConference => 'This is a worker spiritual rhythm/retreat and is not scheduled for residents.',
             self::PrayerWalk => 'To invite someone to prayer walk together, build initial acquaintance through Casual Talk first (requires trust 20+, Yellow seeker, Person of Peace, or believer).',
             self::PraySalvation => 'Resident has already prayed the prayer of salvation and received Jesus Christ.',
             self::CommitToBaptism => 'People who have not yet accepted Jesus cannot commit to baptism. Share the Gospel (Field 2) first.',
@@ -301,6 +339,43 @@ enum MinistryActionType: string
             self::IronOnIron => 'Iron on Iron peer coaching requires an active L2 Church Planter who has planted or is co-leading a church circle.',
             self::SwarmTraining => 'Requires an L3 Church Plant Multiplier or regional training team to coordinate swarm training.',
             default => 'Resident does not meet the 5 Levels of Leadership prerequisites for this tool.',
+        };
+    }
+
+    /**
+     * Whether this action represents a worker spiritual rhythm or movement retreat
+     */
+    public function isWorkerRhythm(): bool
+    {
+        return match ($this) {
+            self::ReceiveMentoring, self::SabbathRest, self::FastingRetreat, self::MidLevelConference => true,
+            default => false,
+        };
+    }
+
+    /**
+     * Duration in game days that this activity blocks
+     */
+    public function durationDays(): int
+    {
+        return match ($this) {
+            self::FastingRetreat => 4,
+            self::MidLevelConference => 3,
+            default => 1,
+        };
+    }
+
+    /**
+     * Total generational score points awarded upon completing this rhythm
+     */
+    public function rhythmPoints(): int
+    {
+        return match ($this) {
+            self::ReceiveMentoring => 30,
+            self::SabbathRest => 25,
+            self::FastingRetreat => 100,
+            self::MidLevelConference => 75,
+            default => 0,
         };
     }
 }

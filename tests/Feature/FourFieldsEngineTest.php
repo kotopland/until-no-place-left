@@ -114,6 +114,7 @@ test('co-op synergy distributes shared harvest points when multiple players wate
         'status' => ReceptivityStatus::Yellow,
         'trust_level' => 60,
         'is_person_of_peace' => true,
+        'seeking_months' => 4,
         'lat' => 35.15,
         'lng' => 136.90,
     ]);

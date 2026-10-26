@@ -198,6 +198,227 @@
         </div>
     </div>
 
+    <!-- Action HQ Mode / Sub-Menu Navigation Switcher -->
+    <div class="flex items-center justify-between gap-3 p-1.5 bg-slate-900/90 border border-slate-800 rounded-2xl mb-4 shadow-md">
+        <div class="flex items-center gap-1.5 flex-wrap">
+            <!-- Sub-tab 1: Field Actions (Steps 1, 2, 3) -->
+            <button 
+                type="button" 
+                wire:click="setHqSubView('planner')" 
+                class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer {{ $hqSubView === 'planner' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/80' }}"
+            >
+                <span>🎯</span>
+                <span>Field Actions (Steps 1–3)</span>
+            </button>
+
+            <!-- Sub-tab 2: Spiritual Rhythms & Movement Retreats -->
+            <button 
+                type="button" 
+                wire:click="setHqSubView('rhythms')" 
+                class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer {{ $hqSubView === 'rhythms' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/80' }}"
+            >
+                <span>🕊️</span>
+                <span>Spiritual Rhythms &amp; Retreats</span>
+                @if($isDayBlocked)
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1 animate-pulse">
+                        <span>⛔</span>
+                        <span>Active</span>
+                    </span>
+                @else
+                    <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-slate-800 text-slate-300">
+                        4 Rhythms
+                    </span>
+                @endif
+            </button>
+        </div>
+
+        @if($isDayBlocked)
+            <!-- Compact Active Retreat Indicator in Sub-Menu -->
+            <div class="hidden sm:flex items-center gap-2 px-3 py-1 rounded-xl bg-amber-950/60 border border-amber-800/60 text-xs text-amber-300">
+                <span>{{ $activeWorkerRhythm?->action_type?->icon() ?? '🕊️' }}</span>
+                <span class="font-bold truncate max-w-[200px]">Today: {{ $activeWorkerRhythm?->actionTitle ?? 'Worker Rhythm' }}</span>
+                @if($hqSubView === 'planner')
+                    <button 
+                        type="button" 
+                        wire:click="setHqSubView('rhythms')" 
+                        class="text-[11px] underline font-bold hover:text-white cursor-pointer ml-1"
+                    >
+                        Details →
+                    </button>
+                @endif
+            </div>
+        @endif
+    </div>
+
+    @if($hqSubView === 'rhythms')
+        <!-- Dedicated Sub-View: Worker Spiritual Rhythms & Movement Retreats -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl mb-4 transition-all space-y-4">
+            <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-slate-800/80">
+                <div class="flex items-center gap-2.5">
+                    <span class="text-2xl">🕊️</span>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-sm font-black text-white uppercase tracking-wider">
+                                Worker Spiritual Rhythms &amp; Strategy Retreats
+                            </h3>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-950/90 text-indigo-300 border border-indigo-700/60">
+                                Time-Blocking Rest &amp; Strategy
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-0.5">
+                            Gain points and spiritual renewal through mentoring, sabbath, fasting retreats, and NPL mid-level strategy conferences. These activities block time for all other actions.
+                        </p>
+                    </div>
+                </div>
+
+                <button 
+                    type="button" 
+                    wire:click="setHqSubView('planner')"
+                    class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-1.5 cursor-pointer shadow"
+                >
+                    <span>➔</span>
+                    <span>Back to Field Actions (Steps 1–3)</span>
+                </button>
+            </div>
+
+            <!-- Active Retreat Notice Banner if currently time-blocked -->
+            @if($isDayBlocked && $activeWorkerRhythm)
+                <div class="p-3.5 rounded-xl bg-gradient-to-r from-amber-950/40 via-indigo-950/40 to-slate-900 border border-amber-700/50 flex items-center justify-between gap-3 flex-wrap">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-2xl">{{ $activeWorkerRhythm->action_type->icon() }}</span>
+                        <div>
+                            <div class="text-xs font-bold text-white flex items-center gap-2">
+                                <span>Currently Active Today: {{ $activeWorkerRhythm->actionTitle }}</span>
+                                <span class="text-[10px] font-semibold text-emerald-400">+{{ $activeWorkerRhythm->action_type->rhythmPoints() }} pts upon day advance</span>
+                            </div>
+                            <p class="text-[11px] text-amber-200/90 mt-0.5">
+                                Day {{ $player?->current_game_day ?? 1 }} is reserved. All other field actions are blocked until this rhythm completes or is cancelled.
+                            </p>
+                        </div>
+                    </div>
+                    <button 
+                        type="button" 
+                        wire:click="cancelAction({{ $activeWorkerRhythm->id }})"
+                        class="px-3 py-1.5 rounded-lg text-xs font-bold text-rose-300 bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800 transition cursor-pointer"
+                        title="Cancel rhythm and unblock day"
+                    >
+                        Cancel Rhythm ✕
+                    </button>
+                </div>
+            @endif
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
+                @foreach($workerRhythmStatuses as $key => $status)
+                    @php
+                        $actionEnum = $status['actionType'];
+                    @endphp
+                    <div class="p-4 rounded-2xl border flex flex-col justify-between transition-all {{ $status['active'] ? 'bg-indigo-950/40 border-indigo-500/60 shadow-lg ring-1 ring-indigo-500/40' : 'bg-slate-950/60 border-slate-800 hover:border-slate-700' }}">
+                        <div>
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-2xl">{{ $actionEnum->icon() }}</span>
+                                    <div>
+                                        <h4 class="text-xs font-bold text-white leading-tight">
+                                            {{ $actionEnum->label() }}
+                                        </h4>
+                                        <span class="text-[10px] text-slate-400 block">
+                                            {{ $actionEnum->labelJa() }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 {{ $status['active'] ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-slate-900 text-slate-300 border border-slate-800' }}">
+                                    {{ $status['days'] }} {{ Str::plural('Day', $status['days']) }}
+                                </span>
+                            </div>
+
+                            <!-- Rewards & Duration Pills -->
+                            <div class="flex items-center gap-1.5 mt-2.5 flex-wrap">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/70 text-emerald-300 border border-emerald-800/60">
+                                    🏆 +{{ $status['points'] }} Points
+                                </span>
+                                @if($key === 'sabbath_rest')
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950/70 text-amber-300 border border-amber-800/60">
+                                        ⚡ 100% AP Reset
+                                    </span>
+                                @endif
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-900 text-slate-400 border border-slate-800">
+                                    {{ in_array($key, ['fasting_retreat', 'midlevel_conference']) ? 'Max 1/mo' : 'Max 1/wk' }}
+                                </span>
+                            </div>
+
+                            <p class="text-[11px] text-slate-300/90 mt-2.5 leading-relaxed">
+                                @if($key === 'midlevel_conference')
+                                    A problem-solving and strategy retreat for active movement practitioners rather than an introductory training session.
+                                @else
+                                    {{ $actionEnum->description() }}
+                                @endif
+                            </p>
+                        </div>
+
+                        <div class="mt-3.5 pt-2.5 border-t border-slate-800/80">
+                            @if($status['active'])
+                                <div class="w-full py-1.5 px-3 rounded-lg text-center text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800 flex items-center justify-center gap-1.5">
+                                    <span>✓</span>
+                                    <span>Scheduled for Today</span>
+                                </div>
+                            @elseif($status['eligible'])
+                                <button 
+                                    type="button" 
+                                    wire:click="scheduleWorkerRhythm('{{ $actionEnum->value }}')"
+                                    wire:loading.attr="disabled"
+                                    class="w-full py-2 px-3 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white shadow-md shadow-indigo-950 transition cursor-pointer flex items-center justify-center gap-1.5"
+                                >
+                                    <span wire:loading.remove wire:target="scheduleWorkerRhythm('{{ $actionEnum->value }}')">
+                                        <span>🗓️</span>
+                                        <span>Schedule (Day {{ $player?->current_game_day ?? 1 }}{{ $status['days'] > 1 ? '–' . min(30, ($player?->current_game_day ?? 1) + $status['days'] - 1) : '' }})</span>
+                                    </span>
+                                    <span wire:loading wire:target="scheduleWorkerRhythm('{{ $actionEnum->value }}')" class="flex items-center gap-1">
+                                        <span class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                        <span>Scheduling...</span>
+                                    </span>
+                                </button>
+                            @else
+                                <button 
+                                    type="button" 
+                                    disabled
+                                    class="w-full py-1.5 px-3 rounded-lg text-[11px] font-medium bg-slate-900 text-slate-500 border border-slate-800/80 cursor-not-allowed text-center truncate"
+                                    title="{{ $status['reason'] }}"
+                                >
+                                    {{ $status['reason'] ?? 'Unavailable' }}
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @else
+        <!-- Planner Sub-View: Field Actions (Steps 1, 2, 3) -->
+        @if($isDayBlocked && $activeWorkerRhythm)
+            <div class="mb-3 p-3 rounded-xl bg-gradient-to-r from-amber-950/40 via-indigo-950/20 to-slate-900 border border-amber-700/60 flex items-center justify-between gap-3 text-xs text-amber-300 flex-wrap">
+                <div class="flex items-center gap-2">
+                    <span class="text-base">{{ $activeWorkerRhythm->action_type?->icon() ?? '⛔' }}</span>
+                    <span><strong>Day {{ $player?->current_game_day ?? 1 }} is reserved for {{ $activeWorkerRhythm->actionTitle }}.</strong> Field actions cannot be scheduled today. Advance to the next day to resolve and gain points!</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button 
+                        type="button" 
+                        wire:click="setHqSubView('rhythms')"
+                        class="text-xs font-bold text-amber-200 hover:text-white px-2.5 py-1 rounded-lg bg-amber-900/60 hover:bg-amber-800 transition cursor-pointer"
+                    >
+                        View Rhythms ➔
+                    </button>
+                    <button 
+                        type="button" 
+                        wire:click="cancelAction({{ $activeWorkerRhythm->id }})"
+                        class="text-xs font-bold text-rose-300 hover:text-rose-200 px-2.5 py-1 rounded-lg bg-rose-950/60 hover:bg-rose-900 transition cursor-pointer"
+                    >
+                        Cancel Rhythm ✕
+                    </button>
+                </div>
+            </div>
+        @endif
+
     <!-- Mobile Step Funnel Navigation Bar (Visible only on mobile/tablet, hidden on lg screens) -->
     <div class="block lg:hidden bg-slate-900/90 border border-slate-800 rounded-2xl p-2 shadow-lg mb-2">
         <div class="flex items-center justify-between gap-1.5">
@@ -689,12 +910,12 @@
                                                         🕊️ Baptized
                                                     </span>
                                                 @elseif(($npc->baptism_status?->value ?? '') === 'committed')
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-blue-950 text-blue-300 border border-blue-700 font-bold" title="Committed to Baptism">
-                                                        🌊 Committed
+                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-blue-950 text-blue-300 border border-blue-700 font-bold" title="Committed to Baptism (Month {{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }} in 6mo-2yr journey)">
+                                                        🌊 Committed ({{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }}m)
                                                     </span>
                                                 @elseif($npc->hasPrayedSalvation)
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-950 text-amber-300 border border-amber-700 font-bold" title="Counting Cost (Family Concerns)">
-                                                        💭 Cost
+                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-950 text-amber-300 border border-amber-700 font-bold" title="Counting Cost / Family Consideration (Month {{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }} in 6mo-2yr journey)">
+                                                        💭 Cost ({{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }}m)
                                                     </span>
                                                 @endif
                                                 @if($npc->leadership_tier->level() > 0)
@@ -717,8 +938,11 @@
                                         </div>
 
                                         <!-- Traffic Light Status -->
-                                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold border shrink-0 {{ $npc->status->badgeClasses() }}">
+                                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold border shrink-0 {{ $npc->status->badgeClasses() }}" title="{{ $npc->status === \App\Enums\ReceptivityStatus::Yellow ? "Seeking for {$npc->seeking_months} of {$npc->target_seeking_months} months (gradual conversion journey in Japan)" : $npc->status->value }}">
                                             {{ $npc->status->icon() }} {{ $npc->status->value }}
+                                            @if($npc->status === \App\Enums\ReceptivityStatus::Yellow)
+                                                <span class="text-[9px] font-normal opacity-90">({{ $npc->seeking_months }}/{{ $npc->target_seeking_months }}m)</span>
+                                            @endif
                                         </span>
                                     </div>
 
@@ -1022,6 +1246,20 @@
                         @endif
                     </div>
 
+                    @if($isDayBlocked)
+                        <!-- Time Blocked Alert Banner for Step 3 -->
+                        <div class="p-3.5 rounded-xl bg-amber-950/40 border border-amber-800/60 text-xs text-amber-300 flex items-start gap-2.5">
+                            <span class="text-base shrink-0">⛔</span>
+                            <div>
+                                <div class="font-bold text-amber-200">Field Actions Time-Blocked for Day {{ $player?->current_game_day ?? 1 }}</div>
+                                <p class="text-[11px] text-amber-300/90 mt-0.5 leading-relaxed">
+                                    You are participating in <strong>{{ $activeWorkerRhythm?->actionTitle ?? 'a worker spiritual rhythm' }}</strong> today.
+                                    Worker rhythms consume your schedule for this day. Regular field actions cannot be queued. Advance the day to continue, or cancel the retreat in the Queued Actions list.
+                                </p>
+                            </div>
+                        </div>
+                    @endif
+
                     @if($selectedActionEnum)
                         <!-- Selected Action Summary -->
                         <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
@@ -1075,21 +1313,28 @@
                         <!-- Bottom Queue Button -->
                         <button 
                             id="queue-action-button"
-                            type="button"
+                            type="button" 
                             wire:click="queueAction"
                             @click="scrollToStep2()"
                             wire:loading.attr="disabled"
-                            @disabled(! $hasEnoughApForSelected)
-                            class="w-full py-3 px-4 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-[0.99] {{ $hasEnoughApForSelected ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950 ring-2 ring-emerald-400/50 hover:scale-[1.01]' : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60' }}"
+                            @disabled($isDayBlocked || ! $hasEnoughApForSelected)
+                            class="w-full py-3 px-4 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-[0.99] {{ ($hasEnoughApForSelected && ! $isDayBlocked) ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950 ring-2 ring-emerald-400/50 hover:scale-[1.01]' : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60' }}"
                         >
-                            <span wire:loading.remove wire:target="queueAction" class="flex items-center gap-1.5">
-                                <span class="text-sm">➕</span>
-                                <span>Queue for Day {{ $player?->current_game_day ?? 1 }} • {{ $selectedActionCost }} AP (Executes on Next Day)</span>
-                            </span>
-                            <span wire:loading wire:target="queueAction" class="flex items-center gap-1.5">
-                                <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                                <span>Queueing Action for Day {{ $player?->current_game_day ?? 1 }}...</span>
-                            </span>
+                            @if($isDayBlocked)
+                                <span class="flex items-center gap-1.5 text-amber-300">
+                                    <span>⛔</span>
+                                    <span>Day {{ $player?->current_game_day ?? 1 }} Blocked by {{ $activeWorkerRhythm?->actionTitle ?? 'Worker Rhythm' }}</span>
+                                </span>
+                            @else
+                                <span wire:loading.remove wire:target="queueAction" class="flex items-center gap-1.5">
+                                    <span class="text-sm">➕</span>
+                                    <span>Queue for Day {{ $player?->current_game_day ?? 1 }} • {{ $selectedActionCost }} AP (Executes on Next Day)</span>
+                                </span>
+                                <span wire:loading wire:target="queueAction" class="flex items-center gap-1.5">
+                                    <span class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                    <span>Queueing Action for Day {{ $player?->current_game_day ?? 1 }}...</span>
+                                </span>
+                            @endif
                         </button>
                     @else
                         <!-- No Action Selected Prompt -->
@@ -1147,7 +1392,11 @@
                         @forelse($queuedActions as $queued)
                             <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs">
                                 <div class="flex items-center gap-2.5 min-w-0 pr-2">
-                                    @if($queued->targetNpc)
+                                    @if($queued->action_type?->isWorkerRhythm())
+                                        <span class="w-7 h-7 rounded-lg bg-indigo-950/90 border border-indigo-700/60 flex items-center justify-center text-sm shrink-0">
+                                            {{ $queued->action_type->icon() }}
+                                        </span>
+                                    @elseif($queued->targetNpc)
                                         <x-person-avatar :person="$queued->targetNpc" size="xs" :showBadges="true" class="shrink-0" />
                                     @else
                                         <span class="w-7 h-7 rounded-lg bg-slate-800/90 border border-slate-700/60 flex items-center justify-center text-sm shrink-0">🏛️</span>
@@ -1155,10 +1404,18 @@
                                     <div class="min-w-0">
                                         <div class="font-semibold text-white flex items-center gap-1.5">
                                             <span>{{ $queued->actionTitle }}</span>
-                                            <span class="text-[10px] font-bold text-amber-400">({{ $queued->ap_cost }} AP)</span>
+                                            @if($queued->action_type?->isWorkerRhythm())
+                                                <span class="text-[10px] font-bold text-emerald-400">(Time Blocked • +{{ $queued->action_type->rhythmPoints() }} pts)</span>
+                                            @else
+                                                <span class="text-[10px] font-bold text-amber-400">({{ $queued->ap_cost }} AP)</span>
+                                            @endif
                                         </div>
                                         <div class="text-[11px] text-slate-400 mt-0.5 truncate">
-                                            {{ $queued->ward->name }} • {{ $queued->targetNpc?->name ?? 'Ward-wide platform event' }}
+                                            @if($queued->action_type?->isWorkerRhythm())
+                                                Worker Rhythm • Spiritual Rest / Strategy
+                                            @else
+                                                {{ $queued->ward->name }} • {{ $queued->targetNpc?->name ?? 'Ward-wide platform event' }}
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -1167,9 +1424,9 @@
                                     type="button" 
                                     wire:click="cancelAction({{ $queued->id }})"
                                     class="text-rose-400 hover:text-rose-300 px-2 py-1 rounded bg-rose-950/50 border border-rose-900 text-[10px] shrink-0 transition cursor-pointer"
-                                    title="Cancel and refund AP"
+                                    title="{{ $queued->action_type?->isWorkerRhythm() ? 'Cancel rhythm and unblock day' : 'Cancel and refund AP' }}"
                                 >
-                                    Cancel ✕
+                                    {{ $queued->action_type?->isWorkerRhythm() ? 'Cancel Rhythm ✕' : 'Cancel ✕' }}
                                 </button>
                             </div>
                         @empty
@@ -1209,6 +1466,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     <!-- Modal: Action Information & Descriptive Text -->
     @if($showActionInfoModal && $infoActionEnum)
@@ -1339,7 +1597,7 @@
     <!-- Mobile Sticky Bottom Confirmation Dock (Visible on mobile/tablet in Step 3 when an action is selected) -->
     <div 
         class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-slate-950 border-t border-slate-800 p-3 shadow-2xl"
-        x-show="mobileStep === 3 && @js($selectedActionEnum !== null)"
+        x-show="@js($hqSubView === 'planner') && mobileStep === 3 && @js($selectedActionEnum !== null)"
         x-transition:enter="transition ease-out duration-200"
         x-transition:enter-start="translate-y-full opacity-0"
         x-transition:enter-end="translate-y-0 opacity-100"
@@ -1369,17 +1627,24 @@
                 wire:click="queueAction"
                 @click="scrollToStep2()"
                 wire:loading.attr="disabled"
-                @disabled(! $hasEnoughApForSelected)
-                class="px-4 py-2.5 rounded-xl font-bold text-xs transition shadow-lg shrink-0 flex items-center justify-center gap-1.5 {{ $hasEnoughApForSelected ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950 active:scale-95' : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60' }}"
+                @disabled($isDayBlocked || ! $hasEnoughApForSelected)
+                class="px-4 py-2.5 rounded-xl font-bold text-xs transition shadow-lg shrink-0 flex items-center justify-center gap-1.5 {{ ($hasEnoughApForSelected && ! $isDayBlocked) ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950 active:scale-95' : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60' }}"
             >
-                <span wire:loading.remove wire:target="queueAction" class="flex items-center gap-1">
-                    <span>➕</span>
-                    <span>Queue for Day {{ $player?->current_game_day ?? 1 }}</span>
-                </span>
-                <span wire:loading wire:target="queueAction" class="flex items-center gap-1">
-                    <span class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    <span>Queueing...</span>
-                </span>
+                @if($isDayBlocked)
+                    <span class="flex items-center gap-1 text-amber-300">
+                        <span>⛔</span>
+                        <span>Time Blocked</span>
+                    </span>
+                @else
+                    <span wire:loading.remove wire:target="queueAction" class="flex items-center gap-1">
+                        <span>➕</span>
+                        <span>Queue for Day {{ $player?->current_game_day ?? 1 }}</span>
+                    </span>
+                    <span wire:loading wire:target="queueAction" class="flex items-center gap-1">
+                        <span class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                        <span>Queueing...</span>
+                    </span>
+                @endif
             </button>
         </div>
     </div>

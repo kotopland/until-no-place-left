@@ -22,6 +22,8 @@ class NagoyaMovementDashboard extends Component
     #[Url(as: 'tab')]
     public string $currentTab = 'planner'; // 'planner', 'churches', 'leaderboard', 'map'
 
+    public string $circlesSubView = 'genmap'; // 'genmap' or 'inspector'
+
     public ?int $activeChurchId = null;
 
     public bool $showEditNameModal = false;
@@ -82,6 +84,17 @@ class NagoyaMovementDashboard extends Component
     public function setTab(string $tab): void
     {
         $this->currentTab = $tab;
+    }
+
+    public function setCirclesSubView(string $subView): void
+    {
+        $this->circlesSubView = in_array($subView, ['genmap', 'inspector'], true) ? $subView : 'genmap';
+    }
+
+    public function openSpiritualRhythms(): void
+    {
+        $this->currentTab = 'planner';
+        $this->dispatch('set-hq-subview', view: 'rhythms');
     }
 
     public function selectChurch(int $churchId): void

@@ -52,6 +52,7 @@ use Illuminate\Support\Carbon;
 #[Fillable([
     'game_session_id',
     'ward_id',
+    'church_id',
     'name',
     'name_ja',
     'gender',
@@ -62,10 +63,15 @@ use Illuminate\Support\Carbon;
     'status',
     'prayed_salvation',
     'trust_level',
+    'seeking_months',
+    'yellow_since_game_month',
+    'target_seeking_months',
     'is_person_of_peace',
     'is_baptized',
     'baptism_status',
     'baptism_cost_months',
+    'target_baptism_months',
+    'prayed_salvation_month',
     'prayed_salvation_at',
     'baptized_at',
     'trained_411',
@@ -102,6 +108,12 @@ class Npc extends Model
             }
             if (empty($npc->lng)) {
                 $npc->lng = 136.9066;
+            }
+            if (empty($npc->target_seeking_months)) {
+                $npc->target_seeking_months = ($npc->nationality === 'Japanese') ? 4 : 1;
+            }
+            if (empty($npc->target_baptism_months)) {
+                $npc->target_baptism_months = ($npc->nationality === 'Japanese') ? 6 : 2;
             }
         });
     }
@@ -235,6 +247,53 @@ class Npc extends Model
     }
 
     /**
+     * PHP 8.4 Property Hook: Progress percentage towards conversion (0-100%)
+     */
+    public int $seekingProgressPercent {
+        get => min(100, (int) round(($this->seeking_months / max(1, $this->target_seeking_months)) * 100));
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Progress percentage towards water baptism (0-100%)
+     */
+    public int $baptismCostProgressPercent {
+        get => min(100, (int) round(($this->baptism_cost_months / max(1, $this->target_baptism_months)) * 100));
+    }
+
+    /**
+     * Calculates effective months spent in the Yellow seeking stage up to the given game month.
+     */
+    public function effectiveSeekingMonths(int $currentGameMonth): int
+    {
+        $fromYellowMonth = $this->yellow_since_game_month !== null
+            ? max(0, $currentGameMonth - $this->yellow_since_game_month)
+            : 0;
+
+        return max($this->seeking_months, $fromYellowMonth);
+    }
+
+    /**
+     * Evaluates whether this seeker has completed the gradual multi-month seeking process to receive Christ.
+     */
+    public function isReadyForConversion(int $currentGameMonth): bool
+    {
+        $effectiveMonths = $this->effectiveSeekingMonths($currentGameMonth);
+        $requiredMonths = max(1, $this->target_seeking_months);
+
+        return $effectiveMonths >= $requiredMonths && ($this->trust_level >= 50 || $this->is_person_of_peace);
+    }
+
+    /**
+     * Evaluates whether this believer has completed the required 6 months to 2 years baptism journey.
+     */
+    public function isReadyForBaptism(): bool
+    {
+        $requiredMonths = max(1, $this->target_baptism_months);
+
+        return $this->baptism_cost_months >= $requiredMonths && $this->trust_level >= 65;
+    }
+
+    /**
      * PHP 8.4 Property Hook: Gender symbol
      */
     public string $genderIcon {
@@ -319,13 +378,19 @@ class Npc extends Model
             'prayed_salvation' => 'boolean',
             'leadership_tier' => LeadershipTier::class,
             'trust_level' => 'integer',
+            'seeking_months' => 'integer',
+            'yellow_since_game_month' => 'integer',
+            'target_seeking_months' => 'integer',
             'is_person_of_peace' => 'boolean',
             'is_baptized' => 'boolean',
             'baptism_cost_months' => 'integer',
+            'target_baptism_months' => 'integer',
+            'prayed_salvation_month' => 'integer',
             'prayed_salvation_at' => 'datetime',
             'baptized_at' => 'datetime',
             'trained_411' => 'boolean',
             'generation' => 'integer',
+            'church_id' => 'integer',
             'lat' => 'float',
             'lng' => 'float',
             'spiritual_journal' => 'array',
@@ -340,6 +405,16 @@ class Npc extends Model
     public function gameSession(): BelongsTo
     {
         return $this->belongsTo(GameSession::class);
+    }
+
+    /**
+     * Local Simple Church or 3/3rds gathering this resident attends
+     *
+     * @return BelongsTo<Church, $this>
+     */
+    public function church(): BelongsTo
+    {
+        return $this->belongsTo(Church::class);
     }
 
     /**

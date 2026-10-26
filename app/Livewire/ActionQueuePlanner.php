@@ -14,15 +14,25 @@ use App\Models\Ward;
 use App\Services\AiColaborerService;
 use App\Services\FourFieldsEngine;
 use Illuminate\Contracts\View\View;
+use Livewire\Attributes\On;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 class ActionQueuePlanner extends Component
 {
+    #[Url(as: 'view')]
+    public string $hqSubView = 'planner'; // 'planner' or 'rhythms'
+
     public ?int $selectedWardId = null;
 
     public ?int $selectedNpcId = null;
 
     public ?string $selectedActionType = null;
+
+    public ?string $selectedAction {
+        get => $this->selectedActionType;
+        set => $this->selectedActionType = $value;
+    }
 
     public ?string $infoActionType = null;
 
@@ -43,7 +53,14 @@ class ActionQueuePlanner extends Component
         'day-advanced' => 'refreshPlayerState',
         'action-queued' => '$refresh',
         'home-ward-selected' => 'onHomeWardSelected',
+        'set-hq-subview' => 'setHqSubView',
     ];
+
+    #[On('set-hq-subview')]
+    public function setHqSubView(string $view): void
+    {
+        $this->hqSubView = in_array($view, ['planner', 'rhythms'], true) ? $view : 'planner';
+    }
 
     public function boot(): void
     {
@@ -251,6 +268,30 @@ class ActionQueuePlanner extends Component
         $this->mobileStep = 3;
     }
 
+    public function getActiveWorkerRhythmProperty(): ?QueuedMonthlyAction
+    {
+        if (! $this->player) {
+            return null;
+        }
+
+        return QueuedMonthlyAction::where('user_id', $this->player->id)
+            ->where('game_month', $this->player->current_game_month)
+            ->where('game_day', $this->player->current_game_day)
+            ->where('status', QueuedActionStatus::Pending)
+            ->whereIn('action_type', [
+                MinistryActionType::ReceiveMentoring,
+                MinistryActionType::SabbathRest,
+                MinistryActionType::FastingRetreat,
+                MinistryActionType::MidLevelConference,
+            ])
+            ->first();
+    }
+
+    public function getIsCurrentDayBlockedProperty(): bool
+    {
+        return $this->activeWorkerRhythm !== null;
+    }
+
     public function queueAction(): void
     {
         if (! $this->player || ! $this->session) {
@@ -261,6 +302,16 @@ class ActionQueuePlanner extends Component
             $this->dispatch('notify', [
                 'type' => 'error',
                 'message' => 'Unable to queue action: Player profile or game session not initialized.',
+            ]);
+
+            return;
+        }
+
+        if ($this->isCurrentDayBlocked) {
+            $rhythm = $this->activeWorkerRhythm;
+            $this->dispatch('notify', [
+                'type' => 'warning',
+                'message' => "Time Blocked: You are participating in {$rhythm?->actionTitle} on Day {$this->player->current_game_day}. All other field actions are blocked during this activity.",
             ]);
 
             return;
@@ -377,6 +428,161 @@ class ActionQueuePlanner extends Component
         ]);
     }
 
+    /**
+     * Schedules a worker spiritual rhythm or retreat that blocks field time for its duration.
+     */
+    public function scheduleWorkerRhythm(string $rhythmType): void
+    {
+        if (! $this->player || ! $this->session) {
+            $this->refreshPlayerState();
+        }
+
+        if (! $this->player || ! $this->session) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Unable to schedule activity: Player profile or game session not initialized.',
+            ]);
+
+            return;
+        }
+
+        if ($rhythmType === 'mid_level_conference') {
+            $rhythmType = 'midlevel_conference';
+        }
+
+        $rhythmEnum = MinistryActionType::tryFrom($rhythmType);
+        if (! $rhythmEnum || ! $rhythmEnum->isWorkerRhythm()) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Invalid spiritual rhythm or retreat selected.',
+            ]);
+
+            return;
+        }
+
+        $currentDay = max($this->player->current_game_day ?? 1, $this->session->current_game_day ?? 1);
+        $currentMonth = $this->player->current_game_month ?? $this->session->current_game_month ?? 1;
+        $duration = $rhythmEnum->durationDays();
+        $endDay = $currentDay + $duration - 1;
+
+        if ($endDay > 30) {
+            $remaining = max(0, 30 - $currentDay + 1);
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => "Cannot schedule {$rhythmEnum->label()} ({$duration} days): Only {$remaining} day(s) remain in Month {$currentMonth}. Please wait for the next month cycle.",
+            ]);
+
+            return;
+        }
+
+        // Check if there are already pending actions on any day in this range
+        $existingActions = QueuedMonthlyAction::where('user_id', $this->player->id)
+            ->where('game_month', $currentMonth)
+            ->whereBetween('game_day', [$currentDay, $endDay])
+            ->where('status', QueuedActionStatus::Pending)
+            ->get();
+
+        if ($existingActions->isNotEmpty()) {
+            $this->dispatch('notify', [
+                'type' => 'warning',
+                'message' => "Time Conflict: You already have {$existingActions->count()} action(s) scheduled between Day {$currentDay} and Day {$endDay}. Please cancel them first before blocking this time.",
+            ]);
+
+            return;
+        }
+
+        // Enforce frequency constraints
+        if ($rhythmEnum === MinistryActionType::SabbathRest) {
+            $recentSabbath = QueuedMonthlyAction::where('user_id', $this->player->id)
+                ->where('game_month', $currentMonth)
+                ->where('action_type', MinistryActionType::SabbathRest)
+                ->where('game_day', '>=', max(1, $currentDay - 6))
+                ->exists();
+
+            if ($recentSabbath) {
+                $this->dispatch('notify', [
+                    'type' => 'error',
+                    'message' => 'Weekly Sabbath can only be taken once per 7-day period (minimum 6 days between Sabbaths).',
+                ]);
+
+                return;
+            }
+        } elseif ($rhythmEnum === MinistryActionType::ReceiveMentoring) {
+            $recentMentoring = QueuedMonthlyAction::where('user_id', $this->player->id)
+                ->where('game_month', $currentMonth)
+                ->where('action_type', MinistryActionType::ReceiveMentoring)
+                ->where('game_day', '>=', max(1, $currentDay - 6))
+                ->exists();
+
+            if ($recentMentoring) {
+                $this->dispatch('notify', [
+                    'type' => 'error',
+                    'message' => 'Movement mentoring can be scheduled at most once per week (minimum 6 days between sessions).',
+                ]);
+
+                return;
+            }
+        } elseif ($rhythmEnum === MinistryActionType::FastingRetreat) {
+            $hadFasting = QueuedMonthlyAction::where('user_id', $this->player->id)
+                ->where('game_month', $currentMonth)
+                ->where('action_type', MinistryActionType::FastingRetreat)
+                ->exists();
+
+            if ($hadFasting) {
+                $this->dispatch('notify', [
+                    'type' => 'error',
+                    'message' => "You have already completed or scheduled a 4-Day Fasting Retreat in Month {$currentMonth} (limit 1 per month).",
+                ]);
+
+                return;
+            }
+        } elseif ($rhythmEnum === MinistryActionType::MidLevelConference) {
+            $hadConference = QueuedMonthlyAction::where('user_id', $this->player->id)
+                ->where('game_month', $currentMonth)
+                ->where('action_type', MinistryActionType::MidLevelConference)
+                ->exists();
+
+            if ($hadConference) {
+                $this->dispatch('notify', [
+                    'type' => 'error',
+                    'message' => "You have already attended or scheduled an NPL Mid-Level Conference in Month {$currentMonth} (limit 1 per month).",
+                ]);
+
+                return;
+            }
+        }
+
+        // Schedule records for all days in the duration
+        $wardId = $this->player->home_ward_id ?? $this->selectedWardId ?? Ward::first()->id;
+
+        for ($day = $currentDay; $day <= $endDay; $day++) {
+            $dayIndex = $day - $currentDay + 1;
+            $note = $duration > 1
+                ? "{$rhythmEnum->label()} (Day {$dayIndex} of {$duration})"
+                : $rhythmEnum->label();
+
+            QueuedMonthlyAction::create([
+                'game_session_id' => $this->session->id,
+                'user_id' => $this->player->id,
+                'ward_id' => $wardId,
+                'target_npc_id' => null,
+                'action_type' => $rhythmEnum,
+                'status' => QueuedActionStatus::Pending,
+                'game_month' => $currentMonth,
+                'game_day' => $day,
+                'ap_cost' => 0,
+                'notes' => $note,
+            ]);
+        }
+
+        $this->dispatch('action-queued');
+        $rangeText = $duration > 1 ? "Days {$currentDay}–{$endDay}" : "Day {$currentDay}";
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => "Successfully committed to {$rhythmEnum->label()} for {$rangeText}! Time is now blocked for other field actions.",
+        ]);
+    }
+
     public function cancelAction(int $actionId): void
     {
         $action = QueuedMonthlyAction::where('id', $actionId)
@@ -385,14 +591,28 @@ class ActionQueuePlanner extends Component
             ->first();
 
         if ($action) {
-            // Refund AP
-            $this->player->increment('action_points', $action->ap_cost);
-            $action->delete();
+            if ($action->action_type->isWorkerRhythm()) {
+                // Cancel all related pending days of this rhythm in this month
+                $count = QueuedMonthlyAction::where('user_id', $this->player->id)
+                    ->where('game_month', $action->game_month)
+                    ->where('action_type', $action->action_type)
+                    ->where('status', QueuedActionStatus::Pending)
+                    ->delete();
 
-            $this->dispatch('notify', [
-                'type' => 'info',
-                'message' => "Action cancelled. {$action->ap_cost} AP refunded.",
-            ]);
+                $this->dispatch('notify', [
+                    'type' => 'info',
+                    'message' => "Cancelled {$action->action_type->label()} ({$count} day(s) unblocked).",
+                ]);
+            } else {
+                // Refund AP
+                $this->player->increment('action_points', $action->ap_cost);
+                $action->delete();
+
+                $this->dispatch('notify', [
+                    'type' => 'info',
+                    'message' => "Action cancelled. {$action->ap_cost} AP refunded.",
+                ]);
+            }
         }
     }
 
@@ -526,10 +746,14 @@ class ActionQueuePlanner extends Component
             ->take(5)
             ->get();
 
-        $allActionTypes = MinistryActionType::cases();
+        $allFieldActionTypes = array_values(array_filter(
+            MinistryActionType::cases(),
+            fn (MinistryActionType $action) => ! $action->isWorkerRhythm()
+        ));
+
         $actionTypes = ($this->filterEligibleOnly && $selectedNpc)
-            ? array_values(array_filter($allActionTypes, fn (MinistryActionType $action) => $action->isEligibleFor($selectedNpc)))
-            : $allActionTypes;
+            ? array_values(array_filter($allFieldActionTypes, fn (MinistryActionType $action) => $action->isEligibleFor($selectedNpc)))
+            : $allFieldActionTypes;
 
         $recommendedActionType = null;
         if ($selectedNpc) {
@@ -609,6 +833,91 @@ class ActionQueuePlanner extends Component
             ->values()
             ->all();
 
+        $currentDay = $this->player?->current_game_day ?? 1;
+        $currentMonth = $this->player?->current_game_month ?? 1;
+
+        // Active rhythm on current day
+        $activeWorkerRhythm = $this->activeWorkerRhythm;
+        $isDayBlocked = $this->isCurrentDayBlocked;
+
+        // Recent Sabbath & Mentoring constraints
+        $recentSabbath = $this->player
+            ? QueuedMonthlyAction::where('user_id', $this->player->id)
+                ->where('game_month', $currentMonth)
+                ->where('action_type', MinistryActionType::SabbathRest)
+                ->where('game_day', '>=', max(1, $currentDay - 6))
+                ->first()
+            : null;
+
+        $recentMentoring = $this->player
+            ? QueuedMonthlyAction::where('user_id', $this->player->id)
+                ->where('game_month', $currentMonth)
+                ->where('action_type', MinistryActionType::ReceiveMentoring)
+                ->where('game_day', '>=', max(1, $currentDay - 6))
+                ->first()
+            : null;
+
+        $hasFastingThisMonth = $this->player
+            ? QueuedMonthlyAction::where('user_id', $this->player->id)
+                ->where('game_month', $currentMonth)
+                ->where('action_type', MinistryActionType::FastingRetreat)
+                ->exists()
+            : false;
+
+        $hasMidLevelThisMonth = $this->player
+            ? QueuedMonthlyAction::where('user_id', $this->player->id)
+                ->where('game_month', $currentMonth)
+                ->where('action_type', MinistryActionType::MidLevelConference)
+                ->exists()
+            : false;
+
+        $workerRhythmStatuses = [
+            MinistryActionType::ReceiveMentoring->value => [
+                'actionType' => MinistryActionType::ReceiveMentoring,
+                'type' => MinistryActionType::ReceiveMentoring,
+                'days' => 1,
+                'duration' => 1,
+                'points' => 30,
+                'active' => $activeWorkerRhythm?->action_type === MinistryActionType::ReceiveMentoring,
+                'eligible' => ! $isDayBlocked && ! $recentMentoring,
+                'allowed' => ! $isDayBlocked && ! $recentMentoring,
+                'reason' => $isDayBlocked ? 'Worker is already on a retreat/activity today.' : ($recentMentoring ? 'Mentoring can only be scheduled once per 7-day period.' : null),
+            ],
+            MinistryActionType::SabbathRest->value => [
+                'actionType' => MinistryActionType::SabbathRest,
+                'type' => MinistryActionType::SabbathRest,
+                'days' => 1,
+                'duration' => 1,
+                'points' => 25,
+                'active' => $activeWorkerRhythm?->action_type === MinistryActionType::SabbathRest,
+                'eligible' => ! $isDayBlocked && ! $recentSabbath,
+                'allowed' => ! $isDayBlocked && ! $recentSabbath,
+                'reason' => $isDayBlocked ? 'Worker is already on a retreat/activity today.' : ($recentSabbath ? 'Weekly Sabbath can only be taken once per 7-day period.' : null),
+            ],
+            MinistryActionType::FastingRetreat->value => [
+                'actionType' => MinistryActionType::FastingRetreat,
+                'type' => MinistryActionType::FastingRetreat,
+                'days' => 4,
+                'duration' => 4,
+                'points' => 100,
+                'active' => $activeWorkerRhythm?->action_type === MinistryActionType::FastingRetreat,
+                'eligible' => ! $isDayBlocked && ! $hasFastingThisMonth && ($currentDay + 3 <= 30),
+                'allowed' => ! $isDayBlocked && ! $hasFastingThisMonth && ($currentDay + 3 <= 30),
+                'reason' => $isDayBlocked ? 'Worker is already on a retreat/activity today.' : ($hasFastingThisMonth ? '4-Day Fasting Retreat can only be joined once per month.' : ($currentDay + 3 > 30 ? 'Not enough days remaining in Month '.$currentMonth.' (requires 4 days).' : null)),
+            ],
+            MinistryActionType::MidLevelConference->value => [
+                'actionType' => MinistryActionType::MidLevelConference,
+                'type' => MinistryActionType::MidLevelConference,
+                'days' => 3,
+                'duration' => 3,
+                'points' => 75,
+                'active' => $activeWorkerRhythm?->action_type === MinistryActionType::MidLevelConference,
+                'eligible' => ! $isDayBlocked && ! $hasMidLevelThisMonth && ($currentDay + 2 <= 30),
+                'allowed' => ! $isDayBlocked && ! $hasMidLevelThisMonth && ($currentDay + 2 <= 30),
+                'reason' => $isDayBlocked ? 'Worker is already on a retreat/activity today.' : ($hasMidLevelThisMonth ? 'NPL Mid-Level Conference can only be joined once per month.' : ($currentDay + 2 > 30 ? 'Not enough days remaining in Month '.$currentMonth.' (requires 3 days).' : null)),
+            ],
+        ];
+
         return view('livewire.action-queue-planner', [
             'wards' => $wards,
             'selectedWard' => $selectedWard,
@@ -617,7 +926,7 @@ class ActionQueuePlanner extends Component
             'queuedActions' => $queuedActions,
             'recentOutcomes' => $recentOutcomes,
             'actionTypes' => $actionTypes,
-            'allActionTypes' => $allActionTypes,
+            'allActionTypes' => $allFieldActionTypes,
             'recommendedActionType' => $recommendedActionType,
             'infoActionEnum' => $infoActionEnum,
             'commuteApCost' => $commuteApCost,
@@ -631,6 +940,10 @@ class ActionQueuePlanner extends Component
             'remainingIoIToday' => $remainingIoIToday,
             'doneColaborerIdsToday' => $doneColaborerIdsToday,
             'doneNpcIdsToday' => $doneNpcIdsToday,
+            'workerRhythmStatuses' => $workerRhythmStatuses,
+            'activeWorkerRhythm' => $activeWorkerRhythm,
+            'isDayBlocked' => $isDayBlocked,
+            'hqSubView' => $this->hqSubView,
         ]);
     }
 }

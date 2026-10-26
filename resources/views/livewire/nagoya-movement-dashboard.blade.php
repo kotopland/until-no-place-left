@@ -27,15 +27,15 @@
                     <span>Action HQ</span>
                 </button>
 
-                <!-- Church Circles -->
+                <!-- Church Circles & Gen Map -->
                 <button 
                     type="button" 
                     wire:click="setTab('churches')"
                     class="px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'churches' ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
-                    title="Church Circles - Generational Church Planting"
+                    title="Church Circles & Visual Generation Map"
                 >
                     <span>⛪</span>
-                    <span>Circles</span>
+                    <span>Circles & Gen Map</span>
                 </button>
 
                 <!-- Nagoya Map -->
@@ -85,6 +85,19 @@
                             <div>
                                 <div class="leading-tight">Leaderboard & Co-op</div>
                                 <div class="text-[10px] text-slate-400 font-normal mt-0.5">Player scores & collaborative tiers</div>
+                            </div>
+                        </button>
+
+                        <button 
+                            type="button" 
+                            wire:click="openSpiritualRhythms" 
+                            @click="open = false"
+                            class="w-full px-3.5 py-2.5 flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition text-left cursor-pointer border-t border-slate-100 dark:border-slate-800/60"
+                        >
+                            <span class="text-base">🕊️</span>
+                            <div>
+                                <div class="leading-tight">Spiritual Rhythms &amp; Retreats</div>
+                                <div class="text-[10px] text-slate-400 font-normal mt-0.5">Mentoring, Sabbath, Fasting &amp; Mid-Level</div>
                             </div>
                         </button>
 
@@ -438,49 +451,79 @@
             <livewire:action-queue-planner />
 
         @elseif($currentTab === 'churches')
-            <!-- Tab 2: Acts 2 Church Circles Viewer & Generational Lineage -->
+            <!-- Tab 2: Acts 2 Church Circles & Visual Church Generation Map -->
             <div class="space-y-6">
-                <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div class="space-y-1.5 max-w-2xl">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                                <span>⛪</span>
-                                <span>Field 4: The Harvested Field</span>
-                            </span>
-                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-950 text-indigo-300 border border-indigo-800 flex items-center gap-1 shadow-sm">
-                                <span>🌐</span>
-                                <span>City-Wide Scope • All 16 Wards</span>
-                            </span>
-                            @if($user?->homeWard)
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-800/90 text-slate-400 border border-slate-700">
-                                    Your Base: {{ $user->homeWard->name }}
-                                </span>
-                            @endif
-                        </div>
-                        <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
-                            <span>Nagoya Acts 2 Church Circles</span>
-                        </h2>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            <strong class="text-slate-200">Nagoya-Wide Network:</strong> This view catalogs all multiplying house churches across every district in Greater Nagoya, not just your local residence in <span class="text-indigo-400 font-semibold">{{ $user?->homeWard?->name ?? 'your home ward' }}</span>. A healthy church practices all 11 core Acts 2 elements.
-                        </p>
+                <!-- Subview Mode Navigation Switcher -->
+                <div class="flex items-center justify-between gap-3 p-1.5 bg-slate-900/90 border border-slate-800 rounded-2xl">
+                    <div class="flex items-center gap-1.5">
+                        <button 
+                            type="button" 
+                            wire:click="setCirclesSubView('genmap')" 
+                            class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer {{ $circlesSubView === 'genmap' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/80' }}"
+                        >
+                            <span>🌳</span>
+                            <span>Visual Generation Map (Gen Map)</span>
+                        </button>
+                        <button 
+                            type="button" 
+                            wire:click="setCirclesSubView('inspector')" 
+                            class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer {{ $circlesSubView === 'inspector' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/80' }}"
+                        >
+                            <span>🔍</span>
+                            <span>Single Church Inspector (Acts 2)</span>
+                        </button>
                     </div>
 
-                    <!-- Church Selector Tabs -->
-                    @if(count($churches) > 0)
-                        <div class="flex items-center gap-2 overflow-x-auto max-w-full pb-1">
-                            @foreach($churches as $ch)
-                                <button 
-                                    type="button"
-                                    wire:click="selectChurch({{ $ch->id }})"
-                                    class="px-3.5 py-2 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 {{ $activeChurchId === $ch->id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-slate-800 text-slate-300 hover:bg-slate-700' }}"
-                                >
-                                    <span>G{{ $ch->generation }}</span>
-                                    <span class="truncate max-w-[140px]">{{ $ch->name }}</span>
-                                </button>
-                            @endforeach
-                        </div>
-                    @endif
+                    <span class="text-xs text-slate-400 hidden sm:inline-block pr-3">
+                        Field 4 • Simple Gathering Streams
+                    </span>
                 </div>
+
+                @if($circlesSubView === 'genmap')
+                    <!-- Visual Church Generation Map -->
+                    <livewire:church-generation-map :key="'church-gen-map-'.$session?->id" />
+                @else
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="space-y-1.5 max-w-2xl">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <span>⛪</span>
+                                    <span>Field 4: The Harvested Field</span>
+                                </span>
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-950 text-indigo-300 border border-indigo-800 flex items-center gap-1 shadow-sm">
+                                    <span>🌐</span>
+                                    <span>City-Wide Scope • All 16 Wards</span>
+                                </span>
+                                @if($user?->homeWard)
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-800/90 text-slate-400 border border-slate-700">
+                                        Your Base: {{ $user->homeWard->name }}
+                                    </span>
+                                @endif
+                            </div>
+                            <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+                                <span>Nagoya Acts 2 Church Circles</span>
+                            </h2>
+                            <p class="text-xs text-slate-400 leading-relaxed">
+                                <strong class="text-slate-200">Nagoya-Wide Network:</strong> This view catalogs all multiplying house churches across every district in Greater Nagoya, not just your local residence in <span class="text-indigo-400 font-semibold">{{ $user?->homeWard?->name ?? 'your home ward' }}</span>. A healthy church practices all 11 core Acts 2 elements.
+                            </p>
+                        </div>
+
+                        <!-- Church Selector Tabs -->
+                        @if(count($churches) > 0)
+                            <div class="flex items-center gap-2 overflow-x-auto max-w-full pb-1">
+                                @foreach($churches as $ch)
+                                    <button 
+                                        type="button"
+                                        wire:click="selectChurch({{ $ch->id }})"
+                                        class="px-3.5 py-2 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 {{ $activeChurchId === $ch->id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-slate-800 text-slate-300 hover:bg-slate-700' }}"
+                                    >
+                                        <span>G{{ $ch->generation }}</span>
+                                        <span class="truncate max-w-[140px]">{{ $ch->name }}</span>
+                                    </button>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
 
                 @if($activeChurch)
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -530,6 +573,7 @@
                             </div>
                         </div>
                     </div>
+                @endif
                 @endif
             </div>
 
