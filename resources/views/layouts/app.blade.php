@@ -74,5 +74,19 @@
     {{ $slot }}
 
     @livewireScripts
+    <script>
+        document.addEventListener('livewire:init', function () {
+            if (window.Livewire && typeof window.Livewire.hook === 'function') {
+                window.Livewire.hook('request', function ({ fail }) {
+                    fail(function ({ status, preventDefault }) {
+                        if (status === 419) {
+                            preventDefault();
+                            window.location.reload();
+                        }
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>
