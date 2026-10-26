@@ -269,3 +269,77 @@ test('autonomous multiplication allows 411 believers to witness to oikos and pla
     expect($newChurch)->not->toBeNull()
         ->and($newChurch->isAutonomous)->toBeTrue();
 });
+
+test('action resolution saves long narrative exceeding 255 chars in npc contribution notes', function () {
+    $engine = new FourFieldsEngine;
+
+    $session = GameSession::create([
+        'name' => 'Long Narrative Session',
+        'code' => 'long-narrative-test',
+        'current_game_month' => 1,
+    ]);
+
+    $homeWard = Ward::create([
+        'name' => 'Naka-ku',
+        'name_ja' => '中区',
+        'slug' => 'naka-ku',
+        'center_lat' => 35.17,
+        'center_lng' => 136.90,
+    ]);
+
+    $distantWard = Ward::create([
+        'name' => 'Minato-ku',
+        'name_ja' => '港区',
+        'slug' => 'minato-ku',
+        'center_lat' => 35.09,
+        'center_lng' => 136.88,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'home_ward_id' => $homeWard->id,
+        'action_points' => 12,
+    ]);
+
+    $npc = Npc::create([
+        'game_session_id' => $session->id,
+        'ward_id' => $distantWard->id,
+        'name' => 'Kenjiro Takahashi',
+        'name_ja' => '高橋 健二郎',
+        'status' => ReceptivityStatus::Yellow,
+        'trust_level' => 65,
+        'lat' => 35.09,
+        'lng' => 136.88,
+    ]);
+
+    $action = QueuedMonthlyAction::create([
+        'game_session_id' => $session->id,
+        'user_id' => $user->id,
+        'ward_id' => $distantWard->id,
+        'target_npc_id' => $npc->id,
+        'action_type' => MinistryActionType::Share3Circles,
+        'status' => QueuedActionStatus::Pending,
+        'game_month' => 1,
+        'game_day' => 1,
+        'ap_cost' => 2,
+    ]);
+
+    $outcome = $engine->resolveSingleAction($action, 1);
+
+    $contribution = NpcContribution::where('npc_id', $npc->id)
+        ->where('user_id', $user->id)
+        ->latest()
+        ->first();
+
+    expect($contribution)->not->toBeNull()
+        ->and(mb_strlen($contribution->notes))->toBeGreaterThan(150)
+        ->and($contribution->notes)->toBe($outcome->narrativeOutcome);
+
+    // Also test explicitly storing a note with length > 255 chars
+    $longText = str_repeat('Long gospel conversation and mentoring ripple across Nagoya. ', 10);
+    expect(strlen($longText))->toBeGreaterThan(255);
+
+    $contribution->update(['notes' => $longText]);
+    $contribution->refresh();
+    expect($contribution->notes)->toBe($longText);
+});
