@@ -58,8 +58,9 @@
     </script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-500 selection:text-white antialiased overflow-x-hidden transition-colors duration-200">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-500 selection:text-white antialiased overflow-x-hidden transition-colors duration-200" x-data>
 
     <!-- Top Glow / Ambient Background Gradient -->
     <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] bg-gradient-to-b from-indigo-900/20 via-emerald-900/10 to-transparent blur-3xl pointer-events-none -z-10"></div>
@@ -1101,5 +1102,6 @@
         <p class="text-[11px] text-slate-600">Romans 15:23 • Mark 4:26-29 • 2 Timothy 2:2 • Matthew 28:18-20</p>
     </footer>
 
+    @livewireScripts
 </body>
 </html>

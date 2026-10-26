@@ -79,6 +79,9 @@ test('welcome route renders full story and game rules page', function () {
     $response->assertSee('Daily Action Points (12 AP)');
     $response->assertSee('until-no-place-left-logo.jpeg');
     $response->assertSee('until-no-place-left-logo-small.png');
+    $response->assertSee('x-data', false);
+    $response->assertSee('$store.audio?.toggle()', false);
+    $response->assertSee('livewire.js', false);
 });
 
 test('action queue planner queues relational action and deducts AP', function () {
