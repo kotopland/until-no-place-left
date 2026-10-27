@@ -98,6 +98,10 @@ use Illuminate\Support\Str;
     'screening_dimension_scores',
     'screening_profile_title',
     'screening_answers',
+    'has_seen_host_intro',
+    'committed_to_language_training',
+    'language_training_enrolled_month',
+    'language_training_completed',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
@@ -139,10 +143,10 @@ class User extends Authenticatable
     }
 
     /**
-     * PHP 8.4 Property Hook: Effective weekly AP replenished taking into account overwork fatigue
+     * PHP 8.4 Property Hook: Effective weekly AP replenished taking into account overwork fatigue and language/cultural barrier handicap
      */
     public int $effectiveWeeklyActionPoints {
-        get => $this->is_burned_out ? 0 : max(2, ($this->weekly_action_points ?: $this->daily_action_points ?: 20) - $this->fatigue_penalty_ap);
+        get => $this->is_burned_out ? 0 : max(2, $this->availableFieldWeeklyAp - $this->fatigue_penalty_ap);
     }
 
     /**
@@ -150,6 +154,107 @@ class User extends Authenticatable
      */
     public int $effectiveDailyActionPoints {
         get => $this->effectiveWeeklyActionPoints;
+    }
+
+    /**
+     * PHP 8.4 Property Hook: whether language school & first-level training commitment is active (first 2 months)
+     */
+    public bool $isLanguageTrainingActive {
+        get => (bool) (
+            $this->committed_to_language_training
+            && ! $this->language_training_completed
+            && $this->language_training_enrolled_month !== null
+            && $this->current_game_month <= ($this->language_training_enrolled_month + 1)
+        );
+    }
+
+    /**
+     * PHP 8.4 Property Hook: remaining months of language school commitment (0 to 2)
+     */
+    public int $languageTrainingMonthsRemaining {
+        get {
+            if (! $this->isLanguageTrainingActive) {
+                return 0;
+            }
+            $enrolled = $this->language_training_enrolled_month ?? 1;
+            $monthInTraining = ($this->current_game_month - $enrolled) + 1;
+
+            return max(0, 3 - $monthInTraining);
+        }
+    }
+
+    /**
+     * PHP 8.4 Property Hook: current month number in training (Month 1 or Month 2 of 2)
+     */
+    public int $languageTrainingCurrentMonthNumber {
+        get {
+            if (! $this->isLanguageTrainingActive) {
+                return 0;
+            }
+            $enrolled = $this->language_training_enrolled_month ?? 1;
+
+            return min(2, max(1, ($this->current_game_month - $enrolled) + 1));
+        }
+    }
+
+    /**
+     * Dedicated Action Points for Japanese Language School (60% of base weekly AP)
+     */
+    public int $languageSchoolWeeklyAp {
+        get => $this->isLanguageTrainingActive
+            ? (int) round(($this->weekly_action_points ?: 20) * 0.60)
+            : 0;
+    }
+
+    /**
+     * Dedicated Action Points for First-Level NPL Training (10% of base weekly AP)
+     */
+    public int $firstLevelTrainingWeeklyAp {
+        get => $this->isLanguageTrainingActive
+            ? (int) round(($this->weekly_action_points ?: 20) * 0.10)
+            : 0;
+    }
+
+    /**
+     * Dedicated total training AP (70% of base weekly AP)
+     */
+    public int $totalTrainingWeeklyAp {
+        get => $this->languageSchoolWeeklyAp + $this->firstLevelTrainingWeeklyAp;
+    }
+
+    /**
+     * Effort friction penalty on weekly received AP when operating without foundational language & NPL training
+     */
+    public const int LANGUAGE_BARRIER_AP_PENALTY = 6;
+
+    /**
+     * PHP 8.4 Property Hook: whether player suffers the language and cultural friction handicap
+     * (active when missionary is neither in foundational training nor has graduated from it)
+     */
+    public bool $hasLanguageBarrierHandicap {
+        get => ! $this->committed_to_language_training && ! $this->language_training_completed;
+    }
+
+    /**
+     * Available weekly AP for general field actions:
+     * - 30% (~6 AP) during active 2-month foundation training (70% invested into language school & L1)
+     * - 14 AP (20 - 6 AP effort friction handicap) if operating independently without foundational training
+     * - 20 AP (100% full unhindered AP) after completing / graduating from foundational training
+     */
+    public int $availableFieldWeeklyAp {
+        get {
+            $base = $this->weekly_action_points ?: ($this->daily_action_points ?: 20);
+
+            if ($this->isLanguageTrainingActive) {
+                return (int) round($base * 0.30);
+            }
+
+            if ($this->hasLanguageBarrierHandicap) {
+                return max(4, $base - self::LANGUAGE_BARRIER_AP_PENALTY);
+            }
+
+            return $base;
+        }
     }
 
     /**
@@ -424,6 +529,10 @@ class User extends Authenticatable
             'screening_score' => 'integer',
             'screening_dimension_scores' => 'array',
             'screening_answers' => 'array',
+            'has_seen_host_intro' => 'boolean',
+            'committed_to_language_training' => 'boolean',
+            'language_training_enrolled_month' => 'integer',
+            'language_training_completed' => 'boolean',
         ];
     }
 

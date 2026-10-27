@@ -48,6 +48,9 @@ class UserFactory extends Factory
             'screening_passed' => true,
             'screening_score' => 85,
             'screening_profile_title' => 'Cross-Cultural Ambassador',
+            'has_seen_host_intro' => true,
+            'committed_to_language_training' => false,
+            'language_training_completed' => true,
         ];
     }
 
@@ -63,6 +66,24 @@ class UserFactory extends Factory
             'screening_dimension_scores' => null,
             'screening_profile_title' => null,
             'screening_answers' => null,
+        ]);
+    }
+
+    public function unintroduced(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'has_seen_host_intro' => false,
+            'committed_to_language_training' => false,
+            'language_training_completed' => false,
+        ]);
+    }
+
+    public function withLanguageBarrierHandicap(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'committed_to_language_training' => false,
+            'language_training_completed' => false,
+            'action_points' => 14,
         ]);
     }
 

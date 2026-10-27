@@ -13,6 +13,7 @@ use App\Services\FourFieldsEngine;
 use App\Services\MissionaryScreeningService;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -38,7 +39,7 @@ class NagoyaMovementDashboard extends Component
 
     public bool $showOnboardingModal = false;
 
-    public string $onboardingStage = 'screening'; // 'screening', 'gated_coaching', 'qualified_clearance', 'ward_selection'
+    public string $onboardingStage = 'screening'; // 'screening', 'gated_coaching', 'qualified_clearance', 'ward_selection', 'host_welcome'
 
     /** @var array<string, string> */
     public array $screeningAnswers = [];
@@ -86,6 +87,10 @@ class NagoyaMovementDashboard extends Component
             } elseif (! $user->home_ward_id) {
                 $this->showOnboardingModal = true;
                 $this->onboardingStage = 'ward_selection';
+            } elseif (! $user->has_seen_host_intro) {
+                $this->showOnboardingModal = true;
+                $this->onboardingStage = 'host_welcome';
+                $this->selectedHomeWardId = $user->home_ward_id;
             }
         }
     }
@@ -145,6 +150,9 @@ class NagoyaMovementDashboard extends Component
     {
         $user = auth()->user();
         if ($user && $user->screening_passed && $user->home_ward_id) {
+            if (! $user->has_seen_host_intro) {
+                $user->update(['has_seen_host_intro' => true]);
+            }
             $this->showOnboardingModal = false;
         }
     }
@@ -290,12 +298,82 @@ class NagoyaMovementDashboard extends Component
         $user->update(['home_ward_id' => $ward->id]);
         $user->refresh();
 
-        $this->showOnboardingModal = false;
         $this->dispatch('home-ward-selected', wardId: $ward->id);
         $this->dispatch('day-advanced');
+
+        if (! $user->has_seen_host_intro) {
+            // Transition to Game Host Orientation for new missionaries
+            $this->onboardingStage = 'host_welcome';
+            $this->showOnboardingModal = true;
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => "🏡 Base Established in {$ward->name}! Now receiving your Nagoya Field Orientation from the Game Host.",
+            ]);
+        } else {
+            $this->showOnboardingModal = false;
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => "🏡 Base Established in {$ward->name} ({$ward->name_ja})! Ready for ministry operations.",
+            ]);
+        }
+    }
+
+    #[On('open-host-welcome-modal')]
+    public function openHostWelcomeModal(): void
+    {
+        $user = auth()->user();
+        if ($user?->home_ward_id) {
+            $this->selectedHomeWardId = $user->home_ward_id;
+        }
+        $this->onboardingStage = 'host_welcome';
+        $this->showOnboardingModal = true;
+    }
+
+    public function chooseRecommendedLanguageStrategy(): void
+    {
+        $user = auth()->user();
+        if (! $user) {
+            return;
+        }
+
+        $ward = $user->homeWard ?? ($this->selectedHomeWardId ? Ward::find($this->selectedHomeWardId) : null);
+
+        $user->committed_to_language_training = true;
+        $user->language_training_completed = false;
+        $user->language_training_enrolled_month = $user->current_game_month ?: 1;
+        $user->has_seen_host_intro = true;
+        $user->action_points = $user->availableFieldWeeklyAp;
+        $user->save();
+
+        $this->showOnboardingModal = false;
+        $wardName = $ward?->name ?? 'Nagoya';
+
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => "🏡 Welcome to {$ward->name}! Your residence has been established as an embedded neighbor (+25% trust bonus and zero transit friction).",
+            'message' => "🗾 Strategy Confirmed: Enrolled in Japanese Language School (60% AP) & NPL First-Level Training (10% AP) in {$wardName}! Remaining 30% AP ({$user->action_points} AP) available for field actions.",
+        ]);
+    }
+
+    public function chooseIndependentStrategy(): void
+    {
+        $user = auth()->user();
+        if (! $user) {
+            return;
+        }
+
+        $ward = $user->homeWard ?? ($this->selectedHomeWardId ? Ward::find($this->selectedHomeWardId) : null);
+
+        $user->committed_to_language_training = false;
+        $user->has_seen_host_intro = true;
+        $user->action_points = $user->availableFieldWeeklyAp;
+        $user->save();
+
+        $this->showOnboardingModal = false;
+        $wardName = $ward?->name ?? 'Nagoya';
+
+        $this->dispatch('notify', [
+            'type' => 'warning',
+            'message' => "🗾 Independent Strategy Confirmed: Operating in {$wardName} with Language & Cultural Barrier Handicap ({$user->action_points} AP/week received due to -6 AP effort friction). You may commit to training at any time via Host Field Orientation.",
         ]);
     }
 

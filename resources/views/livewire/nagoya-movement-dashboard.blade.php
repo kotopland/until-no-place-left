@@ -343,6 +343,30 @@
                                     </div>
                                 </button>
                             @endif
+                        <!-- Game Host Field Orientation -->
+                        <div class="mb-2">
+                            <button 
+                                type="button" 
+                                wire:click="openHostWelcomeModal"
+                                @click="open = false"
+                                class="w-full p-2.5 rounded-xl text-left transition cursor-pointer bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800/80 group"
+                            >
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                        <span>🗾</span>
+                                        <span>Host Field Orientation</span>
+                                    </span>
+                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-bold {{ $user?->committed_to_language_training ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300' }}">
+                                        {{ $user?->committed_to_language_training ? ($user->isLanguageTrainingActive ? '70% AP Active' : 'Graduated') : 'Orientation' }}
+                                    </span>
+                                </div>
+                                <div class="font-bold text-slate-800 dark:text-slate-200 text-xs mt-1 leading-snug">
+                                    Nagoya &amp; {{ $user?->homeWard?->name ?? 'Ward' }} Briefing
+                                </div>
+                                <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium mt-0.5 group-hover:underline">
+                                    Language, group culture &amp; 70% AP strategy →
+                                </div>
+                            </button>
                         </div>
 
                         <!-- Embedded Residence / Home Ward -->
@@ -1026,7 +1050,7 @@
                     </div>
 
                 {{-- STAGE 4: Choose Starting Home Ward --}}
-                @else
+                @elseif($onboardingStage === 'ward_selection')
                     <!-- Header (Pinned at Top) -->
                     <div class="shrink-0 px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-10">
                         <div class="flex items-start justify-between gap-4">
@@ -1207,6 +1231,301 @@
                                 <span wire:loading wire:target="confirmStartingWard" class="flex items-center gap-1.5">
                                     <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                                     <span>Establishing Base...</span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                {{-- STAGE 5: Game Host Introduction: Welcome to Nagoya & Chosen Ward --}}
+                @elseif($onboardingStage === 'host_welcome')
+                    @php
+                        $activeWard = $selectedHomeWardId ? \App\Models\Ward::find($selectedHomeWardId) : ($user?->homeWard ?? \App\Models\Ward::first());
+                    @endphp
+
+                    <!-- Host Orientation Header -->
+                    <div class="shrink-0 px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-10 flex items-start justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <span class="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 uppercase tracking-wider flex items-center gap-1">
+                                    <span>🗾</span>
+                                    <span>Game Host Field Orientation</span>
+                                </span>
+                                <span class="text-[10px] sm:text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
+                                    <span>⛩️</span>
+                                    <span>Welcome to Nagoya • 名古屋へようこそ</span>
+                                </span>
+                            </div>
+                            <h2 class="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2 flex-wrap">
+                                <span>Welcome to Nagoya &amp; {{ $activeWard?->name ?? 'Your Chosen Ward' }}!</span>
+                                <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">({{ $activeWard?->name_ja ?? '居住区' }})</span>
+                            </h2>
+                            <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 max-w-2xl leading-relaxed">
+                                Vital apostolic orientation from your Nagoya movement host on Japanese culture, language reality, and foundational strategy.
+                            </p>
+                        </div>
+
+                        @if($user?->has_seen_host_intro)
+                            <button 
+                                type="button" 
+                                wire:click="closeOnboardingModal"
+                                class="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                                title="Close Orientation"
+                            >
+                                ✕
+                            </button>
+                        @endif
+                    </div>
+
+                    <!-- Host Orientation Body (Scrollable) -->
+                    <div class="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-5 space-y-5 text-slate-900 dark:text-slate-100">
+                        
+                        <!-- Host Greeting Banner with Host Avatar & Ward Specs -->
+                        <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-indigo-500/10 to-purple-500/10 border border-emerald-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-16 h-16 rounded-2xl overflow-hidden shrink-0 shadow-lg border-2 border-emerald-500/40 bg-white dark:bg-slate-800 flex items-center justify-center">
+                                    {!! app(\App\Services\PersonAvatarService::class)->generateSvg('male', 52, 'Japanese', 'elder', 'apostolic', 64, true, 'game-host-kenjiro') !!}
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs font-black text-slate-900 dark:text-white">Kenjiro Sato (佐藤 健次郎)</span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                                            Movement Host &amp; Field Director
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                                        "Peace to you, brother! As your movement host, I welcome you with open arms to the 2.3 million souls of Nagoya. You have chosen <strong class="text-emerald-600 dark:text-emerald-400">{{ $activeWard?->name }} ({{ $activeWard?->name_ja }})</strong> as your starting home base."
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Ward Summary Pill -->
+                            @if($activeWard)
+                                <div class="shrink-0 w-full md:w-auto p-3 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-center md:text-right space-y-0.5">
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Chosen Home Ward</span>
+                                    <div class="text-sm font-black text-slate-900 dark:text-white flex items-center justify-center md:justify-end gap-1.5">
+                                        <span>🏡</span>
+                                        <span>{{ $activeWard->name }}</span>
+                                    </div>
+                                    <div class="text-[11px] text-slate-500 dark:text-slate-400">
+                                        {{ number_format($activeWard->population) }} residents • Openness {{ $activeWard->spiritual_openness }}/100
+                                    </div>
+                                    <div class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                                        +25% Neighbor Trust • 0 AP Commute
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- 3 Core Orientation Pillars -->
+                        <div class="space-y-4">
+                            
+                            <!-- Pillar 1: Language Reality -->
+                            <div class="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-2xl">🗣️</span>
+                                    <div>
+                                        <h3 class="text-sm font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                                            <span>What to Expect: The Japanese Language Reality</span>
+                                            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">(言葉の壁と心への架け橋)</span>
+                                        </h3>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                                            Language is the highway to the heart
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="text-xs text-slate-700 dark:text-slate-300 space-y-2 leading-relaxed pt-1">
+                                    <p>
+                                        In Nagoya, English is only spoken by a tiny fraction of university students and returnees. If you rely on English or translation apps, you will remain insulated in an expat bubble and never reach ordinary Japanese families, company employees, or community elders.
+                                    </p>
+                                    <p>
+                                        Japanese is an intricate, high-context language where nuance, politeness (<strong class="text-slate-900 dark:text-white">keigo 敬語</strong>), and unspoken consensus (<strong class="text-slate-900 dark:text-white">kuuki o yomu 空気を読む</strong> — "reading the air") govern daily interaction. Expect a steep learning curve. The only way forward is the posture of a humble child (<strong class="text-slate-900 dark:text-white">kodomo no kokoro 子どもの心</strong>): embrace making 50 clumsy mistakes every day with a smile. The Japanese deeply respect anyone who demonstrates genuine humility to learn their language.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Pillar 2: Group Culture & Relational Trust -->
+                            <div class="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-2xl">⛩️</span>
+                                    <div>
+                                        <h3 class="text-sm font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                                            <span>Group Culture &amp; Relational-Based Decisions</span>
+                                            <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">(集団意識と信頼構築の法則)</span>
+                                        </h3>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                                            No Western Individualism • Deep Trust (Shinrai) Must Precede Decisions
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="text-xs text-slate-700 dark:text-slate-300 space-y-2 leading-relaxed pt-1">
+                                    <p>
+                                        Japan is fundamentally a <strong class="text-slate-900 dark:text-white">group culture (shūdan-ishiki 集団意識)</strong> where communal harmony (<strong class="text-slate-900 dark:text-white">wa 和</strong>) is supreme. Western-style individualism does not exist here. A person’s identity is interwoven with their household (<strong class="text-slate-900 dark:text-white">ie 家</strong>), workplace company, school alumni, and local neighborhood association (<strong class="text-slate-900 dark:text-white">chōnaikai 町内会</strong>).
+                                    </p>
+                                    <p>
+                                        Because identity is collective, <strong class="text-amber-600 dark:text-amber-400 font-bold">all major life decisions are relational-based</strong>. Japanese people will not make an impulsive spiritual decision in isolation. If an individual acts alone, they fear disrupting family peace or facing social exclusion (<strong class="text-slate-900 dark:text-white">murahachibu 村八分</strong>).
+                                    </p>
+                                    <p>
+                                        Therefore, <strong class="text-emerald-600 dark:text-emerald-400 font-bold">you must build deep, authentic trust (shinrai 信頼) before they will make any spiritual decisions</strong>. Rushing or pressuring someone for an immediate "decision" triggers intense awkwardness and social withdrawal (<strong class="text-slate-900 dark:text-white">enryo 遠慮</strong>). Be patient, share meals, listen attentively (<strong class="text-slate-900 dark:text-white">keichō 傾聴</strong>), and weave yourself into the fabric of your ward. When trust is firmly established, entire households (<strong class="text-slate-900 dark:text-white">oikos</strong>) can enter the Kingdom together.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Pillar 3: Recommended Strategy & 70% AP Allocation -->
+                            <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-indigo-50/80 to-emerald-50/80 dark:from-indigo-950/40 dark:to-emerald-950/40 border-2 border-indigo-300 dark:border-indigo-800 space-y-3">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-2xl">⚡</span>
+                                    <div>
+                                        <h3 class="text-sm font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                                            <span>The Best Strategy: First-Level NPL Training + Japanese Language School</span>
+                                            <span class="text-xs font-semibold text-emerald-600 dark:text-emerald-400">(最善の戦略基盤)</span>
+                                        </h3>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                                            Proven Movement Pathway: 70% AP Allocation in Months 1 &amp; 2
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="text-xs text-slate-700 dark:text-slate-300 space-y-2 leading-relaxed">
+                                    <p>
+                                        My strongest counsel as your game host is to establish a solid foundation immediately upon arrival. Do not attempt unguided pioneering alone. Instead, pursue this dual foundation:
+                                    </p>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                                        <div class="p-3 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-indigo-200 dark:border-indigo-800/80 space-y-1">
+                                            <div class="flex items-center justify-between">
+                                                <span class="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 text-xs">
+                                                    <span>1️⃣</span>
+                                                    <span>NPL First-Level Training</span>
+                                                </span>
+                                                <span class="text-[10px] font-black px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
+                                                    10% AP
+                                                </span>
+                                            </div>
+                                            <p class="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
+                                                Receive simple, reproducible training from seasoned No Place Left co-workers in Nagoya (L1: Seed Sower, 411 foundational tool: 4 questions, 1 sheet of paper, 1 hour; 15-second testimony; 3 Circles gospel).
+                                            </p>
+                                        </div>
+
+                                        <div class="p-3 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-emerald-200 dark:border-emerald-800/80 space-y-1">
+                                            <div class="flex items-center justify-between">
+                                                <span class="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 text-xs">
+                                                    <span>2️⃣</span>
+                                                    <span>Japanese Language School</span>
+                                                </span>
+                                                <span class="text-[10px] font-black px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400">
+                                                    60% AP
+                                                </span>
+                                            </div>
+                                            <p class="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
+                                                Right away commit to start Japanese language school (日本語学校). Intensive classroom study paired with street immersion gives you the linguistic tools and cultural standing to make multiplying disciples.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- The 70% AP Rule Callout Box -->
+                                    <div class="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-800 space-y-2 mt-2">
+                                        <div class="flex items-center justify-between text-xs">
+                                            <span class="font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                                                <span>⏱️</span>
+                                                <span>70% AP Bandwidth Investment Rule (First 2 Months):</span>
+                                            </span>
+                                            <span class="font-black text-emerald-600 dark:text-emerald-400 text-xs">
+                                                Months 1 &amp; 2
+                                            </span>
+                                        </div>
+                                        <div class="grid grid-cols-3 gap-2 text-center text-[11px]">
+                                            <div class="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800">
+                                                <div class="font-black text-indigo-600 dark:text-indigo-400 text-sm">60% AP</div>
+                                                <div class="text-[10px] text-slate-600 dark:text-slate-400">Language School ({{ (int) round(($user?->weekly_action_points ?? 20) * 0.60) }} AP/wk)</div>
+                                            </div>
+                                            <div class="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800">
+                                                <div class="font-black text-emerald-600 dark:text-emerald-400 text-sm">10% AP</div>
+                                                <div class="text-[10px] text-slate-600 dark:text-slate-400">First-Level NPL ({{ (int) round(($user?->weekly_action_points ?? 20) * 0.10) }} AP/wk)</div>
+                                            </div>
+                                            <div class="p-2 rounded-lg bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800">
+                                                <div class="font-black text-purple-600 dark:text-purple-400 text-sm">30% AP</div>
+                                                <div class="text-[10px] text-slate-600 dark:text-slate-400">Ward Ministry ({{ (int) round(($user?->weekly_action_points ?? 20) * 0.30) }} AP/wk)</div>
+                                            </div>
+                                        </div>
+                                        <p class="text-[11px] text-slate-600 dark:text-slate-400 italic">
+                                            💡 Choosing this strategy reserves 70% of your AP during Months 1 and 2. After Month 2, you graduate with permanent cultural trust bonuses, First-Level certification, and 100% of your AP bandwidth is restored!
+                                        </p>
+                                        <p class="text-[11px] text-amber-700 dark:text-amber-400 font-semibold pt-1 border-t border-slate-200 dark:border-slate-800">
+                                            ⚠️ <strong>Bypassing Strategy Handicap:</strong> If you proceed independently without foundational training, you will incur the <strong>Language &amp; Cultural Barrier Handicap</strong>, receiving only <strong>14 AP / week</strong> (-6 AP effort friction penalty) because every interaction requires extra energy without language tools.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Current Player Strategy Status (if already enrolled or handicapped) -->
+                        @if($user?->committed_to_language_training)
+                            <div class="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 flex items-center justify-between text-xs">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-lg">🎓</span>
+                                    <div>
+                                        <div class="font-bold text-slate-900 dark:text-white">
+                                            Currently Enrolled in Recommended Strategy
+                                        </div>
+                                        <div class="text-[11px] text-emerald-600 dark:text-emerald-400">
+                                            @if($user->isLanguageTrainingActive)
+                                                Month {{ $user->languageTrainingCurrentMonthNumber }} of 2 Active • {{ $user->languageTrainingMonthsRemaining }} month(s) remaining until full AP release
+                                            @else
+                                                Foundation Completed • 100% AP Released
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-600 text-white">
+                                    Active Commitment
+                                </span>
+                            </div>
+                        @elseif($user?->hasLanguageBarrierHandicap)
+                            <div class="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 flex items-center justify-between text-xs">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-lg">⚠️</span>
+                                    <div>
+                                        <div class="font-bold text-slate-900 dark:text-white">
+                                            Language &amp; Cultural Barrier Handicap Active
+                                        </div>
+                                        <div class="text-[11px] text-amber-600 dark:text-amber-400">
+                                            Receiving {{ $user->availableFieldWeeklyAp }} AP/week (-{{ \App\Models\User::LANGUAGE_BARRIER_AP_PENALTY }} AP effort friction). You can enroll below at any time to begin your 2-month foundation and remove this penalty!
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-600 text-white">
+                                    Handicap Active
+                                </span>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Host Orientation Footer: Strategic Choices -->
+                    <div class="shrink-0 px-4 sm:px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 z-10 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <div class="text-xs text-slate-600 dark:text-slate-400 text-center sm:text-left">
+                            <span>How would you like to begin your mission in <strong class="text-slate-900 dark:text-white">{{ $activeWard?->name ?? 'Nagoya' }}</strong>?</span>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                            <button 
+                                type="button" 
+                                wire:click="chooseIndependentStrategy"
+                                wire:loading.attr="disabled"
+                                class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer flex items-center justify-center gap-1.5"
+                            >
+                                <span>Proceed Independently</span>
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-black bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400 border border-rose-300 dark:border-rose-800">14 AP • Handicap</span>
+                            </button>
+
+                            <button 
+                                type="button" 
+                                wire:click="chooseRecommendedLanguageStrategy"
+                                wire:loading.attr="disabled"
+                                class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 shadow-emerald-600/30 transition cursor-pointer flex items-center justify-center gap-2"
+                            >
+                                <span wire:loading.remove wire:target="chooseRecommendedLanguageStrategy">⭐ Commit to Language &amp; L1 Training (70% AP) ➔</span>
+                                <span wire:loading wire:target="chooseRecommendedLanguageStrategy" class="flex items-center gap-1.5">
+                                    <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                    <span>Enrolling...</span>
                                 </span>
                             </button>
                         </div>

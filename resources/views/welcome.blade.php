@@ -1021,6 +1021,73 @@
                     </div>
                 </div>
 
+                <!-- Mechanic 7: Game Host Orientation & The 70% AP Foundation Strategy -->
+                <div class="p-6 rounded-3xl bg-slate-900/80 border border-emerald-500/40 shadow-xl space-y-4 md:col-span-2 lg:col-span-3">
+                    <div class="flex items-center justify-between gap-3 flex-wrap border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">🗾</span>
+                            <div>
+                                <h3 class="text-base font-bold text-white">Game Host Orientation &amp; The 70% AP Foundation Strategy</h3>
+                                <span class="text-xs text-emerald-400">Japanese Group Culture, Relational Trust &amp; 2-Month Intensive Foundation</span>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-950 text-emerald-300 border border-emerald-800">
+                            Recommended Apostolic Path
+                        </span>
+                    </div>
+
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        When a new disciple maker enters Nagoya and establishes their home ward, the <strong>Movement Host</strong> delivers a vital apostolic field briefing outlining what to expect in Japanese society and the optimal strategy for enduring fruit:
+                    </p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                        <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+                            <strong class="text-indigo-400 block font-bold flex items-center gap-1.5">
+                                <span>🗣️</span>
+                                <span>Language Reality</span>
+                            </strong>
+                            <p class="text-slate-300 text-[11px] leading-relaxed">
+                                English reaches only a tiny fraction of society. Japanese is high-context (<em>kuuki o yomu</em> 空気を読む) and governed by polite honorifics (<em>keigo</em> 敬語). Humility to learn like a child (<em>kodomo no kokoro</em>) and make dozens of daily mistakes is the sole bridge to Japanese hearts.
+                            </p>
+                        </div>
+
+                        <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+                            <strong class="text-amber-400 block font-bold flex items-center gap-1.5">
+                                <span>⛩️</span>
+                                <span>Group Culture &amp; Relational Trust</span>
+                            </strong>
+                            <p class="text-slate-300 text-[11px] leading-relaxed">
+                                Japan is a group-oriented culture (<em>shūdan-ishiki</em> 集団意識) with no Western individualism. Identity is anchored in family (<em>ie</em>), workplace, and neighborhood. Decisions are processed communally; <strong>deep trust (<em>shinrai</em> 信頼) must precede any spiritual decisions</strong> to avoid social withdrawal (<em>enryo</em>).
+                            </p>
+                        </div>
+
+                        <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+                            <strong class="text-emerald-400 block font-bold flex items-center gap-1.5">
+                                <span>⚡</span>
+                                <span>70% AP Foundation (Months 1 &amp; 2)</span>
+                            </strong>
+                            <p class="text-slate-300 text-[11px] leading-relaxed">
+                                The host’s recommended strategy allocates <strong>70% of weekly Action Points</strong> during Months 1 and 2: <strong>60% in Japanese Language School</strong> and <strong>10% in NPL First-Level Co-worker Training</strong>, leaving 30% for local ward presence. After Month 2, candidates graduate with full 100% AP and permanent trust bonuses!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-2xl bg-rose-950/30 border border-rose-500/40 space-y-2 text-xs">
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <strong class="text-rose-400 font-bold flex items-center gap-1.5">
+                                <span>⚠️</span>
+                                <span>Independent Ministry Handicap: -6 AP / Week Effort Friction</span>
+                            </strong>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-900/60 text-rose-300 border border-rose-700">
+                                Language &amp; Cultural Barrier Penalty
+                            </span>
+                        </div>
+                        <p class="text-slate-300 text-[11px] leading-relaxed">
+                            If a player bypasses the recommended foundational strategy to operate independently, they incur the <strong>Language &amp; Cultural Barrier Handicap</strong>: their weekly received Action Points are reduced from 20 AP to <strong>14 AP / week</strong> (-6 AP penalty). Because everyday interactions, relational sifting, and evangelism require significantly more effort without linguistic proficiency and simple NPL tools, actions drain more bandwidth. Players can reopen <strong>Host Field Orientation</strong> from their user menu at any time to enroll in the 2-month foundation and remove this penalty upon graduation!
+                        </p>
+                    </div>
+                </div>
+
                 <!-- Mechanic: Worker Spiritual Rhythms & Movement Retreats -->
                 <div class="p-6 rounded-3xl bg-slate-900/80 border border-emerald-500/40 shadow-xl space-y-4 md:col-span-2 lg:col-span-3">
                     <div class="flex items-center justify-between gap-3 flex-wrap">
@@ -1284,8 +1351,8 @@
 
                 <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">2</span>
-                    <strong class="text-white block font-semibold">Choose Home Base on Arrival</strong>
-                    <span class="text-slate-400 block leading-relaxed">Select your home base from the 16 wards. Accept the smart suggestion for an unreached <strong>Pioneering Frontier (0 Co-laborers)</strong> to gain <strong class="text-emerald-400">+25% trust & 0 AP commute</strong>.</span>
+                    <strong class="text-white block font-semibold">Choose Home Base &amp; Host Orientation</strong>
+                    <span class="text-slate-400 block leading-relaxed">Select your home base from the 16 wards (+25% trust &amp; 0 AP commute). On arrival, your <strong>Movement Host</strong> delivers your orientation on Japanese group culture (no individualism, relational trust precedes decisions), language reality, and the recommended <strong>70% AP Foundation Strategy (10% NPL First-Level + 60% Language School)</strong> for Months 1 &amp; 2!</span>
                 </div>
 
                 <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">

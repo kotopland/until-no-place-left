@@ -217,6 +217,72 @@
                     </div>
                 </div>
             </div>
+
+            @if($player?->isLanguageTrainingActive)
+                <div class="w-full mt-3 p-3.5 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-emerald-500/10 border border-indigo-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">📚</span>
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-bold text-slate-900 dark:text-white">
+                                    Intensive Japanese Language School &amp; First-Level NPL Foundation
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800">
+                                    Month {{ $player->languageTrainingCurrentMonthNumber }} of 2 ({{ $player->languageTrainingMonthsRemaining }}m remaining)
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
+                                70% Bandwidth Dedicated: <strong class="text-indigo-600 dark:text-indigo-400">60% Japanese Language Studies ({{ $player->languageSchoolWeeklyAp }} AP)</strong> + <strong class="text-emerald-600 dark:text-emerald-400">10% First-Level NPL Training ({{ $player->firstLevelTrainingWeeklyAp }} AP)</strong>. 30% AP ({{ $player->action_points }} AP) available for field actions.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="shrink-0 flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                        <span>✨ Building Cultural Trust &amp; 411 Mastery</span>
+                    </div>
+                </div>
+            @elseif($player?->hasLanguageBarrierHandicap)
+                <div class="w-full mt-3 p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-amber-500/10 border border-amber-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">⚠️</span>
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-bold text-amber-700 dark:text-amber-300">
+                                    Language &amp; Cultural Barrier Handicap Active
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+                                    -{{ \App\Models\User::LANGUAGE_BARRIER_AP_PENALTY }} AP Effort Friction Penalty
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
+                                Operating without Japanese Language School &amp; First-Level NPL Foundation. Actions take extra effort and time, reducing weekly received AP to <strong class="text-amber-600 dark:text-amber-400">{{ $player->availableFieldWeeklyAp }} AP</strong> (instead of 20 AP).
+                            </p>
+                        </div>
+                    </div>
+                    <div class="shrink-0 flex items-center gap-2">
+                        <button 
+                            type="button" 
+                            wire:click="$dispatch('open-host-welcome-modal')" 
+                            class="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-sm transition cursor-pointer flex items-center gap-1.5"
+                        >
+                            <span>🗾</span>
+                            <span>Host Orientation</span>
+                        </button>
+                    </div>
+                </div>
+            @elseif($player?->language_training_completed)
+                <div class="w-full mt-3 p-3 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-xl">🎓</span>
+                        <div>
+                            <span class="font-bold text-emerald-700 dark:text-emerald-300">Language &amp; L1 Certified</span>
+                            <span class="text-[11px] text-slate-600 dark:text-slate-400 ml-1.5">• Full unhindered 100% AP restored (0 cultural barrier handicap).</span>
+                        </div>
+                    </div>
+                    <span class="text-[10px] font-black px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                        Foundation Complete
+                    </span>
+                </div>
+            @endif
         </div>
     </div>
 
