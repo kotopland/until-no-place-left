@@ -343,6 +343,8 @@
                                     </div>
                                 </button>
                             @endif
+                        </div>
+
                         <!-- Game Host Field Orientation -->
                         <div class="mb-2">
                             <button 
@@ -409,15 +411,136 @@
         </div>
 
         <!-- Mobile Tab Navigation Bar -->
-        <div class="flex md:hidden items-center justify-around px-2 py-2 border-t border-slate-200 dark:border-slate-800/80 text-[11px] font-semibold bg-white dark:bg-slate-950 transition-colors duration-200">
-            <button wire:click="setTab('planner')" class="px-2 py-1 rounded-lg {{ $currentTab === 'planner' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400' }}">⚡ HQ</button>
-            <button wire:click="setTab('churches')" class="px-2 py-1 rounded-lg {{ $currentTab === 'churches' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400' }}">⛪ Circles</button>
-            <button wire:click="setTab('leaderboard')" class="px-2 py-1 rounded-lg {{ $currentTab === 'leaderboard' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400' }}">🏆 Ladder</button>
-            <button wire:click="setTab('map')" class="px-2 py-1 rounded-lg {{ $currentTab === 'map' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400' }}">🗺️ Map</button>
-            <button type="button" @click="$store.audio?.toggle()" class="px-2 py-1 rounded-lg" :class="$store.audio?.isPlaying ? 'text-indigo-600 dark:text-indigo-300 font-bold' : 'text-slate-500 dark:text-slate-400'"><span x-text="$store.audio?.isPlaying ? '🎵 On' : '🔇 Off'"></span></button>
-            <button wire:ignore type="button" onclick="window.__toggleTheme ? window.__toggleTheme() : null" class="px-2 py-1 rounded-lg text-amber-500 dark:text-amber-400 font-bold" title="Toggle Light / Dark Mode"><span data-theme-icon>☀️</span></button>
-            <button wire:click="openEditNameModal" class="px-2 py-1 rounded-lg text-indigo-600 dark:text-indigo-400">👤 Name</button>
-            <a href="{{ route('welcome') }}" class="px-2 py-1 rounded-lg text-amber-600 dark:text-amber-400 font-bold">📖 Story</a>
+        <div 
+            x-data="{ mobileMoreOpen: false }"
+            @click.outside="mobileMoreOpen = false"
+            class="md:hidden border-t border-slate-200 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md relative z-30 transition-colors duration-200"
+        >
+            <div class="flex items-center justify-around px-2 py-2 text-xs font-semibold">
+                <button 
+                    type="button"
+                    wire:click="setTab('planner')" 
+                    class="px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 {{ $currentTab === 'planner' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                >
+                    <span>⚡</span>
+                    <span>HQ</span>
+                </button>
+
+                <button 
+                    type="button"
+                    wire:click="setTab('churches')" 
+                    class="px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 {{ $currentTab === 'churches' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                >
+                    <span>⛪</span>
+                    <span>Circles</span>
+                </button>
+
+                <button 
+                    type="button"
+                    wire:click="setTab('map')" 
+                    class="px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 {{ $currentTab === 'map' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                >
+                    <span>🗺️</span>
+                    <span>Map</span>
+                </button>
+
+                <button 
+                    type="button"
+                    wire:click="setTab('leaderboard')" 
+                    class="px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 {{ $currentTab === 'leaderboard' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                >
+                    <span>🏆</span>
+                    <span>Ladder</span>
+                </button>
+
+                <!-- More Submenu Button -->
+                <button 
+                    type="button" 
+                    @click="mobileMoreOpen = !mobileMoreOpen"
+                    class="px-3 py-1.5 rounded-xl transition flex items-center gap-1 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    :class="mobileMoreOpen ? 'bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white font-bold' : ''"
+                    title="More Features & Controls"
+                >
+                    <span>⋯</span>
+                    <span>More</span>
+                    <svg class="w-3 h-3 transition-transform duration-200" :class="mobileMoreOpen ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mobile 'More' Dropdown Submenu -->
+            <div 
+                x-show="mobileMoreOpen" 
+                x-transition:enter="transition ease-out duration-150"
+                x-transition:enter-start="opacity-0 -translate-y-2"
+                x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-100"
+                x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 -translate-y-2"
+                class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl p-3 space-y-2.5 text-xs font-semibold"
+                style="display: none;"
+            >
+                <div class="grid grid-cols-2 gap-2">
+                    <button 
+                        type="button" 
+                        wire:click="openSpiritualRhythms" 
+                        @click="mobileMoreOpen = false"
+                        class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 border border-slate-200 dark:border-slate-700/80 flex items-center gap-2.5 text-left transition cursor-pointer"
+                    >
+                        <span class="text-lg">🕊️</span>
+                        <div>
+                            <div class="font-bold text-slate-800 dark:text-white leading-tight">Spiritual Rhythms</div>
+                            <div class="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Sabbath, Retreats & Fasting</div>
+                        </div>
+                    </button>
+
+                    <a 
+                        href="{{ route('welcome') }}" 
+                        class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-amber-50 dark:hover:bg-amber-950/60 border border-slate-200 dark:border-slate-700/80 flex items-center gap-2.5 text-left transition cursor-pointer"
+                    >
+                        <span class="text-lg">📖</span>
+                        <div>
+                            <div class="font-bold text-slate-800 dark:text-white leading-tight">Story & Rules</div>
+                            <div class="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Four Fields Field Manual</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                    <!-- Music -->
+                    <button 
+                        type="button" 
+                        @click="$store.audio?.toggle()" 
+                        class="flex-1 py-2 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
+                    >
+                        <span x-text="$store.audio?.isPlaying ? '🎵 Music: Playing' : '🔇 Music: Muted'"></span>
+                    </button>
+
+                    <!-- Theme -->
+                    <button 
+                        wire:ignore
+                        type="button" 
+                        onclick="window.__toggleTheme ? window.__toggleTheme() : null"
+                        class="py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-amber-500 dark:text-amber-400 flex items-center gap-1.5 transition cursor-pointer"
+                        title="Toggle Light / Dark Mode"
+                    >
+                        <span data-theme-icon>☀️</span>
+                        <span data-theme-label>Theme</span>
+                    </button>
+
+                    <!-- Rename Profile -->
+                    <button 
+                        type="button" 
+                        wire:click="openEditNameModal" 
+                        @click="mobileMoreOpen = false"
+                        class="py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                        <span>👤</span>
+                        <span>Rename</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
 
