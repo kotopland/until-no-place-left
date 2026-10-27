@@ -69,17 +69,24 @@ use Illuminate\Support\Str;
     'notify_email',
     'notify_in_app',
     'last_active_at',
+    'weeks_played_today',
     'days_played_today',
     'last_played_real_date',
+    'weekly_action_points',
     'daily_action_points',
+    'consecutive_exhaustion_weeks',
     'consecutive_exhaustion_days',
     'fatigue_penalty_ap',
     'is_burned_out',
     'burned_out_until_game_month',
     'burnout_count',
     'current_game_month',
+    'current_game_week',
+    'weeks_processed_this_month',
     'current_game_day',
     'days_processed_this_month',
+    'last_weekly_tick_at',
+    'next_weekly_tick_at',
     'last_daily_tick_at',
     'next_daily_tick_at',
     'last_monthly_tick_at',
@@ -132,10 +139,17 @@ class User extends Authenticatable
     }
 
     /**
-     * PHP 8.4 Property Hook: Effective daily AP replenished taking into account overwork fatigue
+     * PHP 8.4 Property Hook: Effective weekly AP replenished taking into account overwork fatigue
+     */
+    public int $effectiveWeeklyActionPoints {
+        get => $this->is_burned_out ? 0 : max(2, ($this->weekly_action_points ?: $this->daily_action_points ?: 20) - $this->fatigue_penalty_ap);
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Effective daily AP (aliased to weekly)
      */
     public int $effectiveDailyActionPoints {
-        get => $this->is_burned_out ? 0 : max(2, $this->daily_action_points - $this->fatigue_penalty_ap);
+        get => $this->effectiveWeeklyActionPoints;
     }
 
     /**
@@ -147,12 +161,13 @@ class User extends Authenticatable
                 return 'Severe Burnout (Mandatory 3-Month Sabbatical Leave)';
             }
 
-            return match ($this->consecutive_exhaustion_days) {
+            $exhaustion = max($this->consecutive_exhaustion_weeks, $this->consecutive_exhaustion_days);
+
+            return match ($exhaustion) {
                 0 => 'Rested & Healthy',
-                1 => 'Fatigued from Today\'s Labors',
-                2 => 'Weary (-2 AP Tomorrow)',
-                3 => 'Heavily Strained (-4 AP Tomorrow)',
-                4 => 'Critical Exhaustion Danger (-6 AP Tomorrow, Burnout Imminent!)',
+                1 => 'Fatigued from This Week\'s Labors (-2 AP Next Week)',
+                2 => 'Weary & Strained (-4 AP Next Week)',
+                3 => 'Critical Exhaustion Danger (-6 AP Next Week, Burnout Imminent!)',
                 default => 'Overworked (Burnout Warning)',
             };
         }
@@ -180,7 +195,7 @@ class User extends Authenticatable
             'burned_out_until_game_month' => $currentMonth + 3,
             'burnout_count' => $this->burnout_count + 1,
             'action_points' => 0,
-            'fatigue_penalty_ap' => $this->daily_action_points,
+            'fatigue_penalty_ap' => $this->weekly_action_points ?: $this->daily_action_points ?: 20,
         ]);
     }
 
@@ -192,9 +207,10 @@ class User extends Authenticatable
         $this->update([
             'is_burned_out' => false,
             'burned_out_until_game_month' => null,
+            'consecutive_exhaustion_weeks' => 0,
             'consecutive_exhaustion_days' => 0,
             'fatigue_penalty_ap' => 0,
-            'action_points' => $this->max_action_points,
+            'action_points' => $this->max_action_points ?: 26,
         ]);
     }
 
@@ -206,38 +222,59 @@ class User extends Authenticatable
     }
 
     /**
-     * PHP 8.4 Property Hook: whether user has hit the 30-game-day play limit for this real-life day
+     * PHP 8.4 Property Hook: whether user has hit the 4-game-week play limit for this real-life day
      */
     public bool $hasReachedDailyPlayLimit {
-        get => $this->isPlayedToday() && $this->days_played_today >= 30;
+        get => $this->isPlayedToday() && ($this->weeks_played_today >= 4 || $this->days_played_today >= 30);
     }
 
     /**
-     * PHP 8.4 Property Hook: remaining playable game days available for this real-life day
+     * PHP 8.4 Property Hook: remaining playable game weeks available for this real-life day
+     */
+    public int $remainingPlayableWeeksToday {
+        get => $this->isPlayedToday() ? max(0, 4 - max($this->weeks_played_today, min(4, (int) ceil($this->days_played_today / 7)))) : 4;
+    }
+
+    /**
+     * PHP 8.4 Property Hook: remaining playable game days (aliased to weeks)
      */
     public int $remainingPlayableDaysToday {
-        get => $this->isPlayedToday() ? max(0, 30 - $this->days_played_today) : 30;
+        get => $this->remainingPlayableWeeksToday;
     }
 
     /**
-     * PHP 8.4 Property Hook: Human-friendly Day in Month label (e.g. Day 12/30 (Month 1))
+     * PHP 8.4 Property Hook: Human-friendly Week in Month label (e.g. Week 2/4 (Month 1))
+     */
+    public string $weekInMonthLabel {
+        get => "Week {$this->current_game_week}/4 (Month {$this->current_game_month})";
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Human-friendly Day in Month label (kept for backward compatibility)
      */
     public string $dayInMonthLabel {
-        get => "Day {$this->current_game_day}/30 (Month {$this->current_game_month})";
+        get => $this->weekInMonthLabel;
     }
 
     /**
-     * PHP 8.4 Property Hook: Remaining unplayed days in the player's current 30-day game month
+     * PHP 8.4 Property Hook: Remaining unplayed weeks in the player's current 4-week game month
+     */
+    public int $remainingWeeksInMonth {
+        get => max(0, 4 - max($this->weeks_processed_this_month, min(4, (int) ceil($this->days_processed_this_month / 7))));
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Remaining unplayed days in the player's current month (aliased to remaining weeks)
      */
     public int $remainingDaysInMonth {
-        get => max(0, 30 - $this->days_processed_this_month);
+        get => $this->remainingWeeksInMonth;
     }
 
     /**
-     * PHP 8.4 Property Hook: whether player has completed all 30 days of this game month
+     * PHP 8.4 Property Hook: whether player has completed all 4 weeks of this game month
      */
     public bool $hasCompletedMonth {
-        get => $this->days_processed_this_month >= 30;
+        get => $this->weeks_processed_this_month >= 4 || $this->days_processed_this_month >= 30;
     }
 
     /**
@@ -248,20 +285,67 @@ class User extends Authenticatable
     }
 
     /**
-     * PHP 8.4 Property Hook: whether the 10-minute daily tick is due for this user
+     * PHP 8.4 Property Hook: whether the 15-minute weekly tick is due for this user
      */
-    public bool $isDailyTickDue {
-        get => ($this->next_daily_tick_at === null || now()->greaterThanOrEqualTo($this->next_daily_tick_at))
-            && $this->days_processed_this_month < 30;
+    public bool $isWeeklyTickDue {
+        get {
+            if ($this->weeks_processed_this_month >= 4 && $this->days_processed_this_month >= 30) {
+                return false;
+            }
+
+            if ($this->next_weekly_tick_at !== null && now()->greaterThanOrEqualTo($this->next_weekly_tick_at)) {
+                return true;
+            }
+
+            if ($this->next_daily_tick_at !== null && now()->greaterThanOrEqualTo($this->next_daily_tick_at)) {
+                return true;
+            }
+
+            if ($this->currentGameSession?->isWeeklyTickDue) {
+                return true;
+            }
+
+            return $this->next_weekly_tick_at === null && $this->next_daily_tick_at === null;
+        }
     }
 
     /**
-     * PHP 8.4 Property Hook: Remaining seconds until next 10-minute online daily tick
+     * PHP 8.4 Property Hook: whether daily tick is due (aliased to weekly tick)
+     */
+    public bool $isDailyTickDue {
+        get => $this->isWeeklyTickDue;
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Remaining seconds until next 15-minute online weekly tick
+     */
+    public int $secondsUntilNextWeeklyTick {
+        get {
+            $weeklySecs = $this->next_weekly_tick_at ? max(0, (int) now()->diffInSeconds($this->next_weekly_tick_at, false)) : null;
+            $dailySecs = $this->next_daily_tick_at ? max(0, (int) now()->diffInSeconds($this->next_daily_tick_at, false)) : null;
+
+            $userSecs = null;
+            if ($weeklySecs !== null && $dailySecs !== null) {
+                $userSecs = min($weeklySecs, $dailySecs);
+            } else {
+                $userSecs = $weeklySecs ?? $dailySecs;
+            }
+
+            if ($this->currentGameSession) {
+                $sessionSecs = $this->currentGameSession->secondsUntilNextWeeklyTick;
+
+                return $userSecs !== null ? min($userSecs, $sessionSecs) : $sessionSecs;
+            }
+
+            return $userSecs ?? 0;
+        }
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Remaining seconds until next daily tick (aliased to weekly tick)
      */
     public int $secondsUntilNextDailyTick {
-        get => $this->next_daily_tick_at
-            ? max(0, (int) now()->diffInSeconds($this->next_daily_tick_at, false))
-            : 0;
+        get => $this->secondsUntilNextWeeklyTick;
     }
 
     /**
@@ -313,18 +397,25 @@ class User extends Authenticatable
             'notify_email' => 'boolean',
             'notify_in_app' => 'boolean',
             'last_active_at' => 'datetime',
+            'weeks_played_today' => 'integer',
             'days_played_today' => 'integer',
             'last_played_real_date' => 'date',
+            'weekly_action_points' => 'integer',
             'daily_action_points' => 'integer',
+            'consecutive_exhaustion_weeks' => 'integer',
             'consecutive_exhaustion_days' => 'integer',
             'fatigue_penalty_ap' => 'integer',
             'is_burned_out' => 'boolean',
             'burned_out_until_game_month' => 'integer',
             'burnout_count' => 'integer',
             'current_game_month' => 'integer',
+            'current_game_week' => 'integer',
+            'weeks_processed_this_month' => 'integer',
             'current_game_day' => 'integer',
             'days_processed_this_month' => 'integer',
             'is_ai_colaborer' => 'boolean',
+            'last_weekly_tick_at' => 'datetime',
+            'next_weekly_tick_at' => 'datetime',
             'last_daily_tick_at' => 'datetime',
             'next_daily_tick_at' => 'datetime',
             'last_monthly_tick_at' => 'datetime',

@@ -117,51 +117,37 @@
 
             <!-- User Controls, Clock & Profile Dropdown -->
             <div class="flex items-center gap-2 sm:gap-2.5 shrink-0">
-                <!-- Month, Day & Digital Clock -->
+                <!-- Month, Week & Digital Clock -->
                 <div 
-                    wire:key="dash-clock-{{ $user?->current_game_month }}-{{ $user?->current_game_day }}-{{ $user?->days_processed_this_month }}-{{ $user?->days_played_today }}"
-                    x-data="digitalClock({{ max(0, $user?->secondsUntilNextDailyTick ?? 600) }}, '{{ $user?->next_daily_tick_at?->toIso8601String() }}', {{ (!($user?->hasReachedDailyPlayLimit ?? false) && ($user?->days_processed_this_month ?? 0) < 30) ? 'true' : 'false' }})"
+                    wire:key="dash-clock-{{ $user?->current_game_month }}-{{ $user?->current_game_week }}-{{ $user?->weeks_processed_this_month }}-{{ $user?->weeks_played_today }}"
+                    x-data="digitalClock({{ max(0, $user?->secondsUntilNextWeeklyTick ?? 900) }}, '{{ $user?->next_weekly_tick_at?->toIso8601String() }}', {{ (!($user?->hasReachedDailyPlayLimit ?? false) && ($user?->weeks_processed_this_month ?? 0) < 4) ? 'true' : 'false' }})"
                     x-init="init()"
                     class="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-950/80 border border-slate-800 shrink-0"
                 >
-                    <!-- Month & Current Day badge -->
+                    <!-- Month & Current Week badge -->
                     <div class="text-right whitespace-nowrap">
                         <div class="text-[10px] font-bold text-white flex items-center justify-end gap-1">
                             <span>Month {{ $user?->current_game_month ?? 1 }}</span>
                             <span class="text-slate-500">•</span>
-                            <span>Day {{ $user?->current_game_day ?? 1 }}</span>
+                            <span>Week {{ $user?->current_game_week ?? 1 }}</span>
                         </div>
                         <div class="text-[9px] text-slate-400 uppercase tracking-tighter">
-                            {{ ($user?->hasReachedDailyPlayLimit ?? false) ? 'Night Rest' : (($user?->days_processed_this_month ?? 0) >= 30 ? 'Month Done' : 'Next Day In') }}
+                            {{ ($user?->hasReachedDailyPlayLimit ?? false) ? 'Night Rest' : (($user?->weeks_processed_this_month ?? 0) >= 4 ? 'At Midnight' : 'Next Week In') }}
                         </div>
                     </div>
 
                     <!-- LED Display -->
                     <div class="bg-black/95 border border-slate-800/90 rounded-lg px-1.5 py-0.5 shadow-[inset_0_1px_4px_rgba(0,0,0,0.8)]">
                         @if($user?->hasReachedDailyPlayLimit ?? false)
-                            <span class="font-mono text-xs font-black text-amber-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]">30:30</span>
-                        @elseif(($user?->days_processed_this_month ?? 0) >= 30)
-                            <span class="font-mono text-xs font-black text-indigo-400">MONTH</span>
+                            <span class="font-mono text-xs font-black text-amber-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)]">4:4</span>
+                        @elseif(($user?->weeks_processed_this_month ?? 0) >= 4)
+                            <span class="font-mono text-xs font-black text-indigo-400" title="Month completed! Server advances at midnight.">DONE</span>
                         @else
                             <span class="font-mono text-xs font-black text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.6)] flex items-center">
-                                <span class="tabular-nums" x-text="minutes">09</span><span class="animate-pulse">:</span><span class="tabular-nums" x-text="seconds">59</span>
+                                <span class="tabular-nums" x-text="minutes">14</span><span class="animate-pulse">:</span><span class="tabular-nums" x-text="seconds">59</span>
                             </span>
                         @endif
                     </div>
-
-                    <!-- Turn Advance Button -->
-                    @if(($user?->days_processed_this_month ?? 0) >= 30)
-                        <button 
-                            type="button" 
-                            wire:click="advanceMonth"
-                            wire:loading.attr="disabled"
-                            class="px-2 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-sm hover:scale-[1.02]"
-                            title="Advance to Month {{ ($user?->current_game_month ?? 1) + 1 }}"
-                        >
-                            <span wire:loading.remove wire:target="advanceMonth">🚀</span>
-                            <span wire:loading wire:target="advanceMonth" class="w-2.5 h-2.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                        </button>
-                    @endif
                 </div>
 
                 <!-- Quick Utility Toggles (Music, Theme, Notifications) -->

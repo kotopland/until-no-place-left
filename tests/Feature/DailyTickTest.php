@@ -53,8 +53,10 @@ test('daily tick processes game day, advances day counters, and replenishes AP w
         'name' => 'Active Session',
         'code' => 'active-1',
         'current_game_month' => 1,
-        'current_game_day' => 5,
-        'days_processed_this_month' => 4,
+        'current_game_week' => 2,
+        'current_game_day' => 2,
+        'weeks_processed_this_month' => 1,
+        'days_processed_this_month' => 1,
         'calendar_date' => '2026-04-01',
         'month_duration_minutes' => 720,
         'next_tick_at' => now()->addHours(12),
@@ -71,14 +73,18 @@ test('daily tick processes game day, advances day counters, and replenishes AP w
 
     $user = User::factory()->create([
         'current_game_session_id' => $session->id,
-        'current_game_day' => 5,
-        'days_processed_this_month' => 4,
+        'current_game_week' => 2,
+        'current_game_day' => 2,
+        'weeks_processed_this_month' => 1,
+        'days_processed_this_month' => 1,
         'last_active_at' => now()->subMinutes(2),
-        'days_played_today' => 4,
+        'weeks_played_today' => 1,
+        'days_played_today' => 1,
         'last_played_real_date' => now()->startOfDay(),
         'action_points' => 4,
-        'max_action_points' => 12,
-        'daily_action_points' => 2,
+        'max_action_points' => 26,
+        'weekly_action_points' => 20,
+        'daily_action_points' => 20,
     ]);
 
     $npc = Npc::create([
@@ -93,7 +99,7 @@ test('daily tick processes game day, advances day counters, and replenishes AP w
         'lng' => 136.90,
     ]);
 
-    // Action queued for day 5
+    // Action queued for week 2
     $action = QueuedMonthlyAction::create([
         'game_session_id' => $session->id,
         'user_id' => $user->id,
@@ -102,14 +108,15 @@ test('daily tick processes game day, advances day counters, and replenishes AP w
         'action_type' => MinistryActionType::CasualTalk,
         'status' => QueuedActionStatus::Pending,
         'game_month' => 1,
-        'game_day' => 5,
+        'game_week' => 2,
+        'game_day' => 2,
         'ap_cost' => 1,
     ]);
 
     $result = $engine->resolveDailyTick($session);
 
     expect($result)->not->toBeNull()
-        ->and($result->gameDay)->toBe(5)
+        ->and($result->gameDay)->toBe(2)
         ->and($result->actionsProcessed)->toBe(1)
         ->and($result->onlinePlayersCount)->toBe(1);
 
@@ -117,15 +124,15 @@ test('daily tick processes game day, advances day counters, and replenishes AP w
     $user->refresh();
     $action->refresh();
 
-    // Session advanced to Day 6
-    expect($session->current_game_day)->toBe(6)
-        ->and($session->days_processed_this_month)->toBe(5)
+    // Session advanced to Week 3
+    expect($session->current_game_week)->toBe(3)
+        ->and($session->weeks_processed_this_month)->toBe(2)
         ->and($session->last_daily_tick_at)->not->toBeNull()
         ->and($session->next_daily_tick_at)->not->toBeNull();
 
-    // Player incremented played today and received daily AP replenishment
-    expect($user->days_played_today)->toBe(5)
-        ->and($user->action_points)->toBe(6); // 4 + 2 daily AP
+    // Player incremented played today and received weekly AP replenishment (4 + 20 = 24 AP)
+    expect($user->weeks_played_today)->toBe(2)
+        ->and($user->action_points)->toBe(24);
 
     // Action marked processed
     expect($action->status)->toBe(QueuedActionStatus::Processed);
@@ -167,13 +174,13 @@ test('user cannot play more than 30 game days per real life day', function () {
 test('monthly tick batch processes remaining unplayed days in 30 day month and resets for next month', function () {
     $engine = new FourFieldsEngine;
 
-    // User played 10 days online during the day. 20 days remain unplayed.
+    // User played 1 week online during the day. 3 weeks remain unplayed.
     $session = GameSession::create([
         'name' => 'Monthly Batch Session',
         'code' => 'batch-1',
         'current_game_month' => 1,
-        'current_game_day' => 11,
-        'days_processed_this_month' => 10,
+        'current_game_week' => 2,
+        'weeks_processed_this_month' => 1,
         'calendar_date' => '2026-04-01',
         'month_duration_minutes' => 720,
         'next_tick_at' => now()->subMinutes(5), // overdue for monthly tick
@@ -190,9 +197,9 @@ test('monthly tick batch processes remaining unplayed days in 30 day month and r
 
     $user = User::factory()->create([
         'current_game_session_id' => $session->id,
-        'days_played_today' => 10,
+        'weeks_played_today' => 1,
         'action_points' => 2,
-        'max_action_points' => 12,
+        'max_action_points' => 26,
     ]);
 
     $npc = Npc::create([
@@ -207,7 +214,7 @@ test('monthly tick batch processes remaining unplayed days in 30 day month and r
         'lng' => 136.90,
     ]);
 
-    // An action that was queued for day 15 (unplayed during active hours)
+    // An action that was queued for week 3 (unplayed during active hours)
     $action = QueuedMonthlyAction::create([
         'game_session_id' => $session->id,
         'user_id' => $user->id,
@@ -216,11 +223,12 @@ test('monthly tick batch processes remaining unplayed days in 30 day month and r
         'action_type' => MinistryActionType::CasualTalk,
         'status' => QueuedActionStatus::Pending,
         'game_month' => 1,
-        'game_day' => 15,
+        'game_week' => 3,
+        'game_day' => 3,
         'ap_cost' => 1,
     ]);
 
-    expect($session->remainingDaysInMonth)->toBe(20);
+    expect($session->remainingWeeksInMonth)->toBe(3);
 
     // Run the once-a-day monthly tick
     $result = $engine->resolveGameMonth($session);
@@ -231,15 +239,15 @@ test('monthly tick batch processes remaining unplayed days in 30 day month and r
     $user->refresh();
     $action->refresh();
 
-    // Session progressed to Month 2, resetting Day to 1 and processed days to 0
+    // Session progressed to Month 2, resetting Week to 1 and processed weeks to 0
     expect($session->current_game_month)->toBe(2)
-        ->and($session->current_game_day)->toBe(1)
-        ->and($session->days_processed_this_month)->toBe(0)
+        ->and($session->current_game_week)->toBe(1)
+        ->and($session->weeks_processed_this_month)->toBe(0)
         ->and($session->last_monthly_tick_at)->not->toBeNull();
 
-    // User days played reset to 0, AP refreshed
-    expect($user->days_played_today)->toBe(0)
-        ->and($user->action_points)->toBe(12);
+    // User weeks played reset to 0, AP refreshed to 26
+    expect($user->weeks_played_today)->toBe(0)
+        ->and($user->action_points)->toBe(26);
 
     // Remaining action was processed in the batch
     expect($action->status)->toBe(QueuedActionStatus::Processed);
@@ -250,8 +258,8 @@ test('process daily tick command executes successfully via artisan', function ()
         'name' => 'Artisan Session',
         'code' => 'artisan-1',
         'current_game_month' => 1,
-        'current_game_day' => 1,
-        'days_processed_this_month' => 0,
+        'current_game_week' => 1,
+        'weeks_processed_this_month' => 0,
         'calendar_date' => '2026-04-01',
         'month_duration_minutes' => 720,
         'next_tick_at' => now()->addHours(12),
@@ -261,7 +269,7 @@ test('process daily tick command executes successfully via artisan', function ()
     User::factory()->create([
         'current_game_session_id' => $session->id,
         'last_active_at' => now()->subMinutes(1),
-        'days_played_today' => 0,
+        'weeks_played_today' => 0,
         'last_played_real_date' => now()->startOfDay(),
     ]);
 
@@ -270,6 +278,6 @@ test('process daily tick command executes successfully via artisan', function ()
     expect($exitCode)->toBe(0);
 
     $session->refresh();
-    expect($session->current_game_day)->toBe(2)
-        ->and($session->days_processed_this_month)->toBe(1);
+    expect($session->current_game_week)->toBe(2)
+        ->and($session->weeks_processed_this_month)->toBe(1);
 });

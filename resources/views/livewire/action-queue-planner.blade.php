@@ -81,26 +81,26 @@
                     </span>
                     <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 flex items-center gap-1">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></span>
-                        <span>Day {{ $player?->current_game_day ?? 1 }} / 30</span>
+                        <span>Week {{ $player?->current_game_week ?? 1 }} / 4</span>
                     </span>
                     @if($player?->isOnline)
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-800">
-                            🟢 Online (10m Ticks Active)
+                            🟢 Online (15m Ticks Active)
                         </span>
                     @endif
                 </div>
                 <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 font-medium leading-relaxed">
-                    Relational evangelization takes steady faithfulness. 1 Game Day processes every 10 min while online (max 30 days/day). Remaining days resolve at midnight!
+                    Relational evangelization takes steady faithfulness. 1 Game Week processes every 15 min while online (max 4 weeks/day). Daily month ticks resolve autonomous multiplication!
                 </p>
             </div>
 
-            <!-- AP Bandwidth Meter, Daily Limit & Digital Countdown Clock -->
+            <!-- AP Bandwidth Meter, Weekly Limit & Digital Countdown Clock -->
             <div class="flex flex-wrap items-center gap-4 bg-slate-100/90 dark:bg-slate-950/90 px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl">
                 <!-- Action Points Bandwidth -->
                 <div class="pr-2">
                     <div class="flex items-center justify-between text-xs mb-1">
-                        <span class="text-slate-600 dark:text-slate-400 font-medium">Bandwidth AP:</span>
-                        <span class="font-bold text-slate-900 dark:text-white ml-2">{{ $player?->action_points ?? 0 }} / {{ $player?->max_action_points ?? 12 }} AP</span>
+                        <span class="text-slate-600 dark:text-slate-400 font-medium">Weekly AP:</span>
+                        <span class="font-bold text-slate-900 dark:text-white ml-2">{{ $player?->action_points ?? 0 }} / {{ $player?->max_action_points ?? 26 }} AP</span>
                     </div>
                     <div class="w-28 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 rounded-full transition-all duration-300" style="width: {{ $player?->remainingBandwidthPercent ?? 0 }}%"></div>
@@ -116,65 +116,66 @@
                                 🚨 Burnout ({{ $player?->burnoutMonthsRemaining($player?->current_game_month) }}m leave)
                             @elseif(($player?->fatigue_penalty_ap ?? 0) > 0)
                                 ⚠️ -{{ $player->fatigue_penalty_ap }} AP Fatigue
-                            @elseif(($player?->consecutive_exhaustion_days ?? 0) > 0)
-                                ⚡ Overworked Today
+                            @elseif(($player?->consecutive_exhaustion_weeks ?? $player?->consecutive_exhaustion_days ?? 0) > 0)
+                                ⚡ Overworked (Wk {{ $player?->consecutive_exhaustion_weeks ?? $player?->consecutive_exhaustion_days }})
                             @else
-                                🕊️ Rested & Healthy
+                                🕊️ Rested &amp; Healthy
                             @endif
                         </span>
                     </div>
                     <div class="w-32 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                         @php
-                            $fatigueWidth = $player?->is_burned_out ? 100 : min(100, (($player?->consecutive_exhaustion_days ?? 0) / 5) * 100);
-                            $fatigueBarColor = $player?->is_burned_out ? 'bg-rose-500 animate-pulse' : (($player?->consecutive_exhaustion_days ?? 0) >= 3 ? 'bg-amber-500' : 'bg-emerald-500');
+                            $consecutiveWeeks = $player?->consecutive_exhaustion_weeks ?? $player?->consecutive_exhaustion_days ?? 0;
+                            $fatigueWidth = $player?->is_burned_out ? 100 : min(100, ($consecutiveWeeks / 4) * 100);
+                            $fatigueBarColor = $player?->is_burned_out ? 'bg-rose-500 animate-pulse' : ($consecutiveWeeks >= 2 ? 'bg-amber-500' : 'bg-emerald-500');
                         @endphp
                         <div class="h-full {{ $fatigueBarColor }} rounded-full transition-all duration-300" style="width: {{ $fatigueWidth }}%"></div>
                     </div>
                     <span class="text-[9px] text-slate-500 dark:text-slate-400 block mt-0.5 truncate max-w-[130px]">
-                        {{ $player?->is_burned_out ? 'Mandatory Sabbatical' : ($player?->consecutive_exhaustion_days ? $player->consecutive_exhaustion_days.'d overwork without rest' : 'Sabbath rhythm active') }}
+                        {{ $player?->is_burned_out ? 'Mandatory Sabbatical' : ($consecutiveWeeks ? $consecutiveWeeks.'w overwork without rest' : 'Sabbath rhythm active') }}
                     </span>
                 </div>
 
-                <!-- Daily Real-Life Play Cap (30 Days Max) -->
+                <!-- Daily Real-Life Play Cap (4 Weeks Max) -->
                 <div class="border-l border-slate-200 dark:border-slate-800 pl-4 pr-2">
                     <div class="flex items-center justify-between text-xs mb-1">
                         <span class="text-slate-600 dark:text-slate-400 font-medium">Played Today:</span>
-                        <span class="font-bold {{ ($player?->days_played_today ?? 0) >= 30 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-800 dark:text-slate-200' }} ml-2">
-                            {{ $player?->days_played_today ?? 0 }} / 30 Days
+                        <span class="font-bold {{ ($player?->weeks_played_today ?? 0) >= 4 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-800 dark:text-slate-200' }} ml-2">
+                            {{ $player?->weeks_played_today ?? 0 }} / 4 Weeks
                         </span>
                     </div>
                     <div class="w-28 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div class="h-full {{ ($player?->days_played_today ?? 0) >= 30 ? 'bg-amber-500 shadow-sm shadow-amber-400' : 'bg-cyan-500' }} rounded-full transition-all duration-300" style="width: {{ min(100, round((($player?->days_played_today ?? 0) / 30) * 100)) }}%"></div>
+                        <div class="h-full {{ ($player?->weeks_played_today ?? 0) >= 4 ? 'bg-amber-500 shadow-sm shadow-amber-400' : 'bg-cyan-500' }} rounded-full transition-all duration-300" style="width: {{ min(100, round((($player?->weeks_played_today ?? 0) / 4) * 100)) }}%"></div>
                     </div>
                     <span class="text-[9px] text-slate-500 dark:text-slate-400 block mt-0.5">New month every night</span>
                 </div>
 
-                <!-- Digital Clock Visualizer (10m Countdown) -->
+                <!-- Digital Clock Visualizer (15m Countdown) -->
                 <div 
-                    wire:key="digital-clock-{{ $player?->current_game_day }}-{{ $player?->days_processed_this_month }}-{{ $player?->days_played_today }}"
-                    x-data="digitalClock({{ max(0, $player?->secondsUntilNextDailyTick ?? 600) }}, '{{ $player?->next_daily_tick_at?->toIso8601String() }}', {{ (!($player?->hasReachedDailyPlayLimit ?? false) && ($player?->days_processed_this_month ?? 0) < 30) ? 'true' : 'false' }})"
+                    wire:key="digital-clock-{{ $player?->current_game_week }}-{{ $player?->weeks_processed_this_month }}-{{ $player?->weeks_played_today }}"
+                    x-data="digitalClock({{ max(0, $player?->secondsUntilNextWeeklyTick ?? 900) }}, '{{ $player?->next_weekly_tick_at?->toIso8601String() }}', {{ (!($player?->hasReachedDailyPlayLimit ?? false) && ($player?->weeks_processed_this_month ?? 0) < 4) ? 'true' : 'false' }})"
                     x-init="init()"
                     class="border-l border-slate-200 dark:border-slate-800 pl-4 flex items-center gap-3"
                 >
                     <div>
                         <div class="text-[9px] uppercase font-bold tracking-wider mb-1 flex items-center gap-1.5 {{ ($player?->hasReachedDailyPlayLimit ?? false) ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-400' }}">
                             <span class="w-1.5 h-1.5 rounded-full {{ ($player?->hasReachedDailyPlayLimit ?? false) ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse' }}"></span>
-                            <span>{{ ($player?->hasReachedDailyPlayLimit ?? false) ? 'Night Rest • 30d Cap' : (($player?->days_processed_this_month ?? 0) >= 30 ? 'Month Done' : 'Auto Day Tick') }}</span>
+                            <span>{{ ($player?->hasReachedDailyPlayLimit ?? false) ? 'Night Rest • 4w Cap' : (($player?->weeks_processed_this_month ?? 0) >= 4 ? 'Month Done' : 'Auto Week Tick (15m)') }}</span>
                         </div>
                         
                         <!-- Digital LED Clock Face -->
                         <div class="bg-black/95 border border-slate-800/90 rounded-xl px-2.5 py-1 flex items-center justify-center shadow-[inset_0_2px_6px_rgba(0,0,0,0.9)]">
                             @if($player?->hasReachedDailyPlayLimit ?? false)
                                 <div class="font-mono text-base font-black tracking-widest text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]">
-                                    <span>30</span><span class="font-bold">:</span><span>30</span>
+                                    <span>4</span><span class="font-bold">:</span><span>4</span>
                                 </div>
-                            @elseif(($player?->days_processed_this_month ?? 0) >= 30)
+                            @elseif(($player?->weeks_processed_this_month ?? 0) >= 4)
                                 <div class="font-mono text-base font-black tracking-widest text-indigo-400 drop-shadow-[0_0_6px_rgba(129,140,248,0.6)]">
                                     <span>MONTH</span>
                                 </div>
                             @else
                                 <div class="font-mono text-base font-black tracking-widest text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.7)] flex items-center">
-                                    <span class="tabular-nums" x-text="minutes">09</span>
+                                    <span class="tabular-nums" x-text="minutes">14</span>
                                     <span class="font-bold animate-pulse text-emerald-300">:</span>
                                     <span class="tabular-nums" x-text="seconds">59</span>
                                 </div>
@@ -184,40 +185,33 @@
 
                     <!-- Turn Advance / Month Advance Button -->
                     <div class="pt-3.5">
-                        @if(($player?->days_processed_this_month ?? 0) >= 30)
-                            <button 
-                                type="button" 
-                                wire:click="advanceMonth"
-                                wire:loading.attr="disabled"
-                                class="px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md cursor-pointer bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border border-indigo-400/40 shadow-indigo-950/40 hover:scale-[1.02] active:scale-[0.98]"
-                                title="Advance to Month {{ ($player?->current_game_month ?? 1) + 1 }}"
-                            >
-                                <span wire:loading.remove wire:target="advanceMonth">🚀</span>
-                                <span wire:loading wire:target="advanceMonth" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                                <span wire:loading.remove wire:target="advanceMonth">
-                                    Advance to Month {{ ($player?->current_game_month ?? 1) + 1 }}
-                                </span>
-                                <span wire:loading wire:target="advanceMonth">Advancing Month...</span>
-                            </button>
+                        @if(($player?->weeks_processed_this_month ?? 0) >= 4)
+                            <div class="px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 bg-slate-900/90 text-indigo-300 border border-indigo-500/30 shadow-lg" title="All 4 weeks completed for Month {{ $player?->current_game_month ?? 1 }}. The server will resolve this month tonight at midnight.">
+                                <span class="text-sm">🌙</span>
+                                <div>
+                                    <div class="leading-tight">Month {{ $player?->current_game_month ?? 1 }} Complete</div>
+                                    <div class="text-[10px] text-slate-400 font-medium">Server resolves at midnight</div>
+                                </div>
+                            </div>
                         @else
                             <button 
                                 type="button" 
-                                wire:click="advanceDay(true)"
+                                wire:click="advanceWeek(true)"
                                 wire:loading.attr="disabled"
                                 @disabled($player?->hasReachedDailyPlayLimit ?? false)
                                 class="px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md cursor-pointer {{ ($player?->hasReachedDailyPlayLimit ?? false) ? 'bg-slate-900 text-slate-500 border border-slate-800 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-white border border-emerald-400/40 shadow-emerald-950/40 hover:scale-[1.02] active:scale-[0.98]' }}"
-                                title="{{ ($player?->hasReachedDailyPlayLimit ?? false) ? 'Daily limit of 30 days reached. Next month starts tonight!' : 'Manually advance to the next game day tick now' }}"
+                                title="{{ ($player?->hasReachedDailyPlayLimit ?? false) ? 'Daily limit of 4 weeks reached. Next month starts tonight!' : 'Manually advance to the next game week tick now' }}"
                             >
-                                <span wire:loading.remove wire:target="advanceDay">⏭️</span>
-                                <span wire:loading wire:target="advanceDay" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                                <span wire:loading.remove wire:target="advanceDay">
+                                <span wire:loading.remove wire:target="advanceWeek,advanceDay">⏭️</span>
+                                <span wire:loading wire:target="advanceWeek,advanceDay" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                <span wire:loading.remove wire:target="advanceWeek,advanceDay">
                                     @if($player?->hasReachedDailyPlayLimit ?? false)
-                                        Daily Cap (30/30)
+                                        Daily Cap (4/4 Weeks)
                                     @else
-                                        Turn to Day {{ min(30, ($player?->current_game_day ?? 1) + 1) }}
+                                        Turn to Week {{ min(4, ($player?->current_game_week ?? 1) + 1) }}
                                     @endif
                                 </span>
-                                <span wire:loading wire:target="advanceDay">Advancing...</span>
+                                <span wire:loading wire:target="advanceWeek,advanceDay">Advancing...</span>
                             </button>
                         @endif
                     </div>
@@ -316,11 +310,11 @@
                         <span class="text-2xl">{{ $activeWorkerRhythm->action_type->icon() }}</span>
                         <div>
                             <div class="text-xs font-bold text-white flex items-center gap-2">
-                                <span>Currently Active Today: {{ $activeWorkerRhythm->actionTitle }}</span>
-                                <span class="text-[10px] font-semibold text-emerald-400">+{{ $activeWorkerRhythm->action_type->rhythmPoints() }} pts upon day advance</span>
+                                <span>Currently Active This Week: {{ $activeWorkerRhythm->actionTitle }}</span>
+                                <span class="text-[10px] font-semibold text-emerald-400">+{{ $activeWorkerRhythm->action_type->rhythmPoints() }} pts upon week advance</span>
                             </div>
                             <p class="text-[11px] text-amber-200/90 mt-0.5">
-                                Day {{ $player?->current_game_day ?? 1 }} is reserved. All other field actions are blocked until this rhythm completes or is cancelled.
+                                Week {{ $player?->current_game_week ?? 1 }} is reserved. All other field actions are blocked until this rhythm completes or is cancelled.
                             </p>
                         </div>
                     </div>
@@ -328,7 +322,7 @@
                         type="button" 
                         wire:click="cancelAction({{ $activeWorkerRhythm->id }})"
                         class="px-3 py-1.5 rounded-lg text-xs font-bold text-rose-300 bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800 transition cursor-pointer"
-                        title="Cancel rhythm and unblock day"
+                        title="Cancel rhythm and unblock week"
                     >
                         Cancel Rhythm ✕
                     </button>
@@ -355,7 +349,7 @@
                                     </div>
                                 </div>
                                 <span class="px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 {{ $status['active'] ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-slate-900 text-slate-300 border border-slate-800' }}">
-                                    {{ $status['days'] }} {{ Str::plural('Day', $status['days']) }}
+                                    1 Week
                                 </span>
                             </div>
 
@@ -387,7 +381,7 @@
                             @if($status['active'])
                                 <div class="w-full py-1.5 px-3 rounded-lg text-center text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800 flex items-center justify-center gap-1.5">
                                     <span>✓</span>
-                                    <span>Scheduled for Today</span>
+                                    <span>Scheduled for This Week</span>
                                 </div>
                             @elseif($status['eligible'])
                                 <button 
@@ -398,7 +392,7 @@
                                 >
                                     <span wire:loading.remove wire:target="scheduleWorkerRhythm('{{ $actionEnum->value }}')">
                                         <span>🗓️</span>
-                                        <span>Schedule (Day {{ $player?->current_game_day ?? 1 }}{{ $status['days'] > 1 ? '–' . min(30, ($player?->current_game_day ?? 1) + $status['days'] - 1) : '' }})</span>
+                                        <span>Schedule (Week {{ $player?->current_game_week ?? 1 }})</span>
                                     </span>
                                     <span wire:loading wire:target="scheduleWorkerRhythm('{{ $actionEnum->value }}')" class="flex items-center gap-1">
                                         <span class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
@@ -426,7 +420,7 @@
             <div class="mb-3 p-3 rounded-xl bg-gradient-to-r from-amber-950/40 via-indigo-950/20 to-slate-900 border border-amber-700/60 flex items-center justify-between gap-3 text-xs text-amber-300 flex-wrap">
                 <div class="flex items-center gap-2">
                     <span class="text-base">{{ $activeWorkerRhythm->action_type?->icon() ?? '⛔' }}</span>
-                    <span><strong>Day {{ $player?->current_game_day ?? 1 }} is reserved for {{ $activeWorkerRhythm->actionTitle }}.</strong> Field actions cannot be scheduled today. Advance to the next day to resolve and gain points!</span>
+                    <span><strong>Week {{ $player?->current_game_week ?? 1 }} is reserved for {{ $activeWorkerRhythm->actionTitle }}.</strong> Field actions cannot be scheduled this week. Advance to the next week to resolve and gain points!</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button 
@@ -566,7 +560,7 @@
                 <span class="w-5 h-5 rounded-full bg-indigo-600 text-white font-extrabold text-[11px] flex items-center justify-center shadow-sm">3</span>
                 <div>
                     <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold leading-none">Step 3 • Action HQ</span>
-                    <span class="font-bold text-white leading-tight">Queue for Day {{ $player?->current_game_day ?? 1 }}</span>
+                    <span class="font-bold text-white leading-tight">Queue for Week {{ $player?->current_game_week ?? 1 }}</span>
                 </div>
             </div>
             <div class="flex items-center gap-1.5">
@@ -1282,13 +1276,13 @@
                     </div>
                 @endif
 
-                <!-- Step 3: READY TO QUEUE DAY X Box (Solid single color, clean section header, scrolls here on action click) -->
+                <!-- Step 3: READY TO QUEUE WEEK X Box (Solid single color, clean section header, scrolls here on action click) -->
                 <div id="ready-to-queue-box" class="mt-4 p-4 rounded-2xl bg-slate-950 border border-slate-800 shadow-lg space-y-3">
                     <!-- Section Header (Clean header, not styled like a button) -->
                     <div class="flex items-center justify-between pb-2 border-b border-slate-800">
                         <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
                             <span>⚡</span>
-                            <span>Ready to Queue • Day {{ $player?->current_game_day ?? 1 }}</span>
+                            <span>Ready to Queue • Week {{ $player?->current_game_week ?? 1 }}</span>
                         </h3>
                         @if($selectedActionEnum)
                             <span class="text-xs font-bold {{ $hasEnoughApForSelected ? 'text-amber-400' : 'text-rose-400' }}">
@@ -1307,10 +1301,10 @@
                         <div class="p-3.5 rounded-xl bg-amber-950/40 border border-amber-800/60 text-xs text-amber-300 flex items-start gap-2.5">
                             <span class="text-base shrink-0">⛔</span>
                             <div>
-                                <div class="font-bold text-amber-200">Field Actions Time-Blocked for Day {{ $player?->current_game_day ?? 1 }}</div>
+                                <div class="font-bold text-amber-200">Field Actions Time-Blocked for Week {{ $player?->current_game_week ?? 1 }}</div>
                                 <p class="text-[11px] text-amber-300/90 mt-0.5 leading-relaxed">
-                                    You are participating in <strong>{{ $activeWorkerRhythm?->actionTitle ?? 'a worker spiritual rhythm' }}</strong> today.
-                                    Worker rhythms consume your schedule for this day. Regular field actions cannot be queued. Advance the day to continue, or cancel the retreat in the Queued Actions list.
+                                    You are participating in <strong>{{ $activeWorkerRhythm?->actionTitle ?? 'a worker spiritual rhythm' }}</strong> this week.
+                                    Worker rhythms consume your schedule for this week. Regular field actions cannot be queued. Advance the week to continue, or cancel the retreat in the Queued Actions list.
                                 </p>
                             </div>
                         </div>
@@ -1384,16 +1378,16 @@
                             @elseif($isDayBlocked)
                                 <span class="flex items-center gap-1.5 text-amber-300">
                                     <span>⛔</span>
-                                    <span>Day {{ $player?->current_game_day ?? 1 }} Blocked by {{ $activeWorkerRhythm?->actionTitle ?? 'Worker Rhythm' }}</span>
+                                    <span>Week {{ $player?->current_game_week ?? 1 }} Blocked by {{ $activeWorkerRhythm?->actionTitle ?? 'Worker Rhythm' }}</span>
                                 </span>
                             @else
                                 <span wire:loading.remove wire:target="queueAction" class="flex items-center gap-1.5">
                                     <span class="text-sm">➕</span>
-                                    <span>Queue for Day {{ $player?->current_game_day ?? 1 }} • {{ $selectedActionCost }} AP (Executes on Next Day)</span>
+                                    <span>Queue for Week {{ $player?->current_game_week ?? 1 }} • {{ $selectedActionCost }} AP (Executes on Next Week)</span>
                                 </span>
                                 <span wire:loading wire:target="queueAction" class="flex items-center gap-1.5">
                                     <span class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                                    <span>Queueing Action for Day {{ $player?->current_game_day ?? 1 }}...</span>
+                                    <span>Queueing Action for Week {{ $player?->current_game_week ?? 1 }}...</span>
                                 </span>
                             @endif
                         </button>
@@ -1404,7 +1398,7 @@
                                 No action selected yet
                             </p>
                             <p class="text-[11px] text-slate-400 mt-1">
-                                Click an action from the list above to schedule it for Day {{ $player?->current_game_day ?? 1 }}.
+                                Click an action from the list above to schedule it for Week {{ $player?->current_game_week ?? 1 }}.
                             </p>
                         </div>
 
@@ -1414,7 +1408,7 @@
                             disabled 
                             class="w-full py-3 px-4 rounded-xl font-bold text-xs bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60"
                         >
-                            Select an Action Above to Queue for Day {{ $player?->current_game_day ?? 1 }}
+                            Select an Action Above to Queue for Week {{ $player?->current_game_week ?? 1 }}
                         </button>
                     @endif
 
@@ -1440,9 +1434,9 @@
                         <div>
                             <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
                                 <span>📋</span>
-                                <span>Scheduled for Day {{ $player?->current_game_day ?? 1 }}</span>
+                                <span>Scheduled for Week {{ $player?->current_game_week ?? 1 }}</span>
                             </h3>
-                            <p class="text-[10px] text-slate-400">Executes immediately when turning to Day {{ min(30, ($player?->current_game_day ?? 1) + 1) }}</p>
+                            <p class="text-[10px] text-slate-400">Executes immediately when turning to Week {{ min(4, ($player?->current_game_week ?? 1) + 1) }}</p>
                         </div>
                         <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 font-semibold">
                             {{ $queuedActions->count() }} Pending
@@ -1485,26 +1479,26 @@
                                     type="button" 
                                     wire:click="cancelAction({{ $queued->id }})"
                                     class="text-rose-400 hover:text-rose-300 px-2 py-1 rounded bg-rose-950/50 border border-rose-900 text-[10px] shrink-0 transition cursor-pointer"
-                                    title="{{ $queued->action_type?->isWorkerRhythm() ? 'Cancel rhythm and unblock day' : 'Cancel and refund AP' }}"
+                                    title="{{ $queued->action_type?->isWorkerRhythm() ? 'Cancel rhythm and unblock week' : 'Cancel and refund AP' }}"
                                 >
                                     {{ $queued->action_type?->isWorkerRhythm() ? 'Cancel Rhythm ✕' : 'Cancel ✕' }}
                                 </button>
                             </div>
                         @empty
                             <div class="text-center py-4 text-slate-500 text-xs">
-                                No actions scheduled yet for Day {{ $player?->current_game_day ?? 1 }}.<br>Spend your AP bandwidth above, then advance the day to see developments!
+                                No actions scheduled yet for Week {{ $player?->current_game_week ?? 1 }}.<br>Spend your AP bandwidth above, then advance the week to see developments!
                             </div>
                         @endforelse
                     </div>
                 </div>
 
-                <!-- Recent Daily Developments Feed -->
+                <!-- Recent Weekly Developments Feed -->
                 @if($recentOutcomes->isNotEmpty())
                     <div class="pt-2 border-t border-slate-800/80">
                         <div class="flex items-center justify-between pb-1.5 mb-2">
                             <h4 class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                                 <span>🌱</span>
-                                <span>Recent Daily Developments</span>
+                                <span>Recent Weekly Developments</span>
                             </h4>
                             <span class="text-[10px] text-slate-500">Last {{ $recentOutcomes->count() }} outcomes</span>
                         </div>
@@ -1669,7 +1663,7 @@
         <div class="flex items-center justify-between gap-3 max-w-lg mx-auto">
             <div class="min-w-0 flex-1">
                 <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">
-                    Ready to Queue • Day {{ $player?->current_game_day ?? 1 }}
+                    Ready to Queue • Week {{ $player?->current_game_week ?? 1 }}
                 </div>
                 <div class="text-xs font-bold text-white truncate flex items-center gap-1 mt-0.5">
                     <span>{{ $selectedActionEnum?->icon() ?? '⚡' }}</span>
@@ -1704,7 +1698,7 @@
                 @else
                     <span wire:loading.remove wire:target="queueAction" class="flex items-center gap-1">
                         <span>➕</span>
-                        <span>Queue for Day {{ $player?->current_game_day ?? 1 }}</span>
+                        <span>Queue for Week {{ $player?->current_game_week ?? 1 }}</span>
                     </span>
                     <span wire:loading wire:target="queueAction" class="flex items-center gap-1">
                         <span class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>

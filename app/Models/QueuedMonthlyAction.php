@@ -36,6 +36,7 @@ use Illuminate\Support\Carbon;
     'ward_id',
     'status',
     'game_month',
+    'game_week',
     'game_day',
     'ap_cost',
     'notes',
@@ -70,6 +71,7 @@ class QueuedMonthlyAction extends Model
             'action_type' => MinistryActionType::class,
             'status' => QueuedActionStatus::class,
             'game_month' => 'integer',
+            'game_week' => 'integer',
             'game_day' => 'integer',
             'ap_cost' => 'integer',
         ];

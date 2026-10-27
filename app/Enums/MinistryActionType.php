@@ -366,6 +366,14 @@ enum MinistryActionType: string
     }
 
     /**
+     * Duration in game weeks that this activity blocks (1 week in the 4-week simulation system)
+     */
+    public function durationWeeks(): int
+    {
+        return 1;
+    }
+
+    /**
      * Total generational score points awarded upon completing this rhythm
      */
     public function rhythmPoints(): int

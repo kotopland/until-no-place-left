@@ -1,6 +1,5 @@
 <?php
 
-use App\Console\Commands\ProcessDailyTickCommand;
 use App\Console\Commands\ProcessGameMonthCommand;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -10,11 +9,13 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
+use App\Console\Commands\ProcessWeeklyTickCommand;
+
 /**
- * Schedule the Nagoya Oikos 10-minute online daily tick.
- * Evaluates every minute for sessions where 10-minute interval has elapsed and players are online.
+ * Schedule the Nagoya Oikos 15-minute online weekly tick.
+ * Evaluates every minute for sessions where 15-minute interval has elapsed and players are online.
  */
-Schedule::command(ProcessDailyTickCommand::class)
+Schedule::command(ProcessWeeklyTickCommand::class)
     ->everyMinute()
     ->withoutOverlapping()
     ->runInBackground();

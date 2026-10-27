@@ -233,14 +233,20 @@ class NagoyaOikosSeeder extends Seeder
             [
                 'name' => 'Nagoya Harvest 2026 (No Place Left)',
                 'current_game_month' => 1,
+                'current_game_week' => 1,
+                'weeks_processed_this_month' => 0,
+                'current_game_day' => 1,
+                'days_processed_this_month' => 0,
                 'calendar_date' => '2026-04-01',
                 'month_duration_minutes' => 720, // 12-hour turn cycle
                 'next_tick_at' => now()->addHours(12),
+                'next_weekly_tick_at' => now()->addMinutes(15),
+                'next_daily_tick_at' => now()->addMinutes(15),
                 'is_active' => true,
                 'settings' => [
                     'city' => 'Nagoya',
                     'target_generations' => 4,
-                    'ap_per_month' => 12,
+                    'ap_per_month' => 80,
                 ],
             ]
         );
@@ -256,9 +262,14 @@ class NagoyaOikosSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'current_game_session_id' => $session->id,
                 'home_ward_id' => null, // 100% Solo Pioneer: start unassigned to choose in onboarding!
-                'action_points' => 12,
-                'max_action_points' => 12,
-                'daily_action_points' => 12,
+                'current_game_month' => 1,
+                'current_game_week' => 1,
+                'weeks_processed_this_month' => 0,
+                'weeks_played_today' => 0,
+                'action_points' => 20,
+                'max_action_points' => 26,
+                'weekly_action_points' => 20,
+                'daily_action_points' => 20,
                 'total_generational_score' => 60,
                 'badges' => ['First Step', 'Prayer Walker'],
                 'notify_email' => true,
@@ -270,9 +281,11 @@ class NagoyaOikosSeeder extends Seeder
         if (! $player->current_game_session_id) {
             $playerUpdates['current_game_session_id'] = $session->id;
         }
-        if ($player->daily_action_points < 12) {
-            $playerUpdates['daily_action_points'] = 12;
-            $playerUpdates['max_action_points'] = 12;
+        if ($player->weekly_action_points < 20) {
+            $playerUpdates['weekly_action_points'] = 20;
+            $playerUpdates['daily_action_points'] = 20;
+            $playerUpdates['max_action_points'] = 26;
+            $playerUpdates['action_points'] = max(20, $player->action_points);
         }
         if (! empty($playerUpdates)) {
             $player->update($playerUpdates);

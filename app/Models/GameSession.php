@@ -33,11 +33,15 @@ use Illuminate\Support\Str;
     'name',
     'code',
     'current_game_month',
+    'current_game_week',
+    'weeks_processed_this_month',
     'current_game_day',
     'days_processed_this_month',
     'calendar_date',
     'month_duration_minutes',
     'next_tick_at',
+    'last_weekly_tick_at',
+    'next_weekly_tick_at',
     'last_daily_tick_at',
     'next_daily_tick_at',
     'last_monthly_tick_at',
@@ -74,34 +78,82 @@ class GameSession extends Model
     }
 
     /**
-     * PHP 8.4 Property Hook: Human-friendly Day in Month label (e.g., Day 12 / 30)
+     * PHP 8.4 Property Hook: Human-friendly Week in Month label (e.g., Week 2/4 (Month 1))
+     */
+    public string $weekInMonthLabel {
+        get => "Week {$this->current_game_week}/4 (Month {$this->current_game_month})";
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Human-friendly Day in Month label (kept for backward compatibility)
      */
     public string $dayInMonthLabel {
-        get => "Day {$this->current_game_day}/30 (Month {$this->current_game_month})";
+        get => $this->weekInMonthLabel;
     }
 
     /**
-     * PHP 8.4 Property Hook: Remaining unplayed days in the current 30-day game month
+     * PHP 8.4 Property Hook: Remaining unplayed weeks in the current 4-week game month
+     */
+    public int $remainingWeeksInMonth {
+        get => max(0, 4 - $this->weeks_processed_this_month);
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Remaining unplayed days (kept for backward compatibility)
      */
     public int $remainingDaysInMonth {
-        get => max(0, 30 - $this->days_processed_this_month);
+        get => $this->remainingWeeksInMonth;
     }
 
     /**
-     * PHP 8.4 Property Hook: whether the 10-minute daily tick is due and within the 30-day month limit
+     * PHP 8.4 Property Hook: whether the 15-minute weekly tick is due and within the 4-week month limit
+     */
+    public bool $isWeeklyTickDue {
+        get {
+            if ($this->weeks_processed_this_month >= 4 && $this->days_processed_this_month >= 30) {
+                return false;
+            }
+
+            if ($this->next_weekly_tick_at !== null && now()->greaterThanOrEqualTo($this->next_weekly_tick_at)) {
+                return true;
+            }
+
+            if ($this->next_daily_tick_at !== null && now()->greaterThanOrEqualTo($this->next_daily_tick_at)) {
+                return true;
+            }
+
+            return $this->next_weekly_tick_at === null && $this->next_daily_tick_at === null;
+        }
+    }
+
+    /**
+     * PHP 8.4 Property Hook: whether the daily tick is due (aliased to weekly tick)
      */
     public bool $isDailyTickDue {
-        get => ($this->next_daily_tick_at === null || now()->greaterThanOrEqualTo($this->next_daily_tick_at))
-            && $this->days_processed_this_month < 30;
+        get => $this->isWeeklyTickDue;
     }
 
     /**
-     * PHP 8.4 Property Hook: Remaining seconds until next 10-minute online daily tick
+     * PHP 8.4 Property Hook: Remaining seconds until next 15-minute online weekly tick
+     */
+    public int $secondsUntilNextWeeklyTick {
+        get {
+            $weeklySecs = $this->next_weekly_tick_at ? max(0, (int) now()->diffInSeconds($this->next_weekly_tick_at, false)) : null;
+            $dailySecs = $this->next_daily_tick_at ? max(0, (int) now()->diffInSeconds($this->next_daily_tick_at, false)) : null;
+
+            if ($weeklySecs !== null && $dailySecs !== null) {
+                return min($weeklySecs, $dailySecs);
+            }
+
+            return $weeklySecs ?? $dailySecs ?? 0;
+        }
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Remaining seconds until next daily tick (aliased to weekly tick)
      */
     public int $secondsUntilNextDailyTick {
-        get => $this->next_daily_tick_at
-            ? max(0, (int) now()->diffInSeconds($this->next_daily_tick_at, false))
-            : 0;
+        get => $this->secondsUntilNextWeeklyTick;
     }
 
     /**
@@ -166,11 +218,15 @@ class GameSession extends Model
     {
         return [
             'current_game_month' => 'integer',
+            'current_game_week' => 'integer',
+            'weeks_processed_this_month' => 'integer',
             'current_game_day' => 'integer',
             'days_processed_this_month' => 'integer',
             'calendar_date' => 'date',
             'month_duration_minutes' => 'integer',
             'next_tick_at' => 'datetime',
+            'last_weekly_tick_at' => 'datetime',
+            'next_weekly_tick_at' => 'datetime',
             'last_daily_tick_at' => 'datetime',
             'next_daily_tick_at' => 'datetime',
             'last_monthly_tick_at' => 'datetime',

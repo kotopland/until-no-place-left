@@ -5,6 +5,7 @@ namespace App\Services;
 use App\DTOs\ActionResolutionOutcome;
 use App\DTOs\DailyTickResolutionResult;
 use App\DTOs\MonthResolutionResult;
+use App\DTOs\WeeklyTickResolutionResult;
 use App\Enums\BaptismStatus;
 use App\Enums\ChurchElement;
 use App\Enums\ContributionRole;
@@ -30,14 +31,14 @@ use Illuminate\Support\Facades\DB;
 class FourFieldsEngine
 {
     /**
-     * Resolves a single 10-minute game day tick when participating players are online.
-     * Cap: Each player can play at most 30 game days per real-life day.
+     * Resolves a single 15-minute game week tick when participating players are online.
+     * Cap: Each player can play at most 4 game weeks per real-life day.
      */
-    public function resolveDailyTick(GameSession $session, ?User $specificUser = null, bool $force = false): ?DailyTickResolutionResult
+    public function resolveWeeklyTick(GameSession $session, ?User $specificUser = null, bool $force = false): ?WeeklyTickResolutionResult
     {
-        // 1. If a specific user turned the day, advance ONLY this user independently
+        // 1. If a specific user turned the week, advance ONLY this user independently
         if ($specificUser !== null) {
-            if ($specificUser->hasReachedDailyPlayLimit || $specificUser->days_processed_this_month >= 30) {
+            if ($specificUser->hasReachedDailyPlayLimit || $specificUser->weeks_processed_this_month >= 4 || $specificUser->days_processed_this_month >= 30) {
                 return null;
             }
 
@@ -49,17 +50,21 @@ class FourFieldsEngine
                     return null;
                 }
 
-                if ($lockedUser->hasReachedDailyPlayLimit || $lockedUser->days_processed_this_month >= 30) {
+                if ($lockedUser->hasReachedDailyPlayLimit || $lockedUser->weeks_processed_this_month >= 4 || $lockedUser->days_processed_this_month >= 30) {
                     return null;
                 }
 
                 $gameMonth = $lockedUser->current_game_month;
-                $currentDay = $lockedUser->current_game_day;
+                $currentWeek = $lockedUser->current_game_week ?: 1;
+                $currentDay = $lockedUser->current_game_day ?: $session->current_game_day ?: $currentWeek;
 
-                // Fetch pending actions queued for this user on or before this day in their current month
+                // Fetch pending actions queued for this user on or before this week in their current month
                 $pendingActions = QueuedMonthlyAction::where('user_id', $lockedUser->id)
                     ->where('game_month', $gameMonth)
-                    ->where('game_day', '<=', $currentDay)
+                    ->where(function ($q) use ($currentWeek) {
+                        $q->where('game_week', '<=', $currentWeek)
+                            ->orWhere('game_day', '<=', $currentWeek);
+                    })
                     ->where('status', QueuedActionStatus::Pending)
                     ->with(['user', 'targetNpc', 'ward'])
                     ->get();
@@ -87,16 +92,19 @@ class FourFieldsEngine
 
                 $today = now()->startOfDay();
                 $isNewRealDay = ! $lockedUser->isPlayedToday();
-                $daysPlayedToday = $isNewRealDay ? 1 : ($lockedUser->days_played_today + 1);
+                $weeksPlayedToday = $isNewRealDay ? 1 : ($lockedUser->weeks_played_today + 1);
 
                 $hasSabbath = $pendingActions->contains(fn ($a) => $a->action_type === MinistryActionType::SabbathRest);
-                $nextDay = min(30, $lockedUser->current_game_day + 1);
+                $nextWeek = min(4, $lockedUser->current_game_week + 1);
 
                 $isBurnedOut = $lockedUser->is_burned_out;
                 $burnedOutUntilMonth = $lockedUser->burned_out_until_game_month;
-                $consecutiveExhaustion = $lockedUser->consecutive_exhaustion_days;
+                $consecutiveExhaustion = max($lockedUser->consecutive_exhaustion_weeks, $lockedUser->consecutive_exhaustion_days);
                 $fatiguePenalty = $lockedUser->fatigue_penalty_ap;
                 $burnoutCount = $lockedUser->burnout_count;
+
+                $baseWeeklyAp = $lockedUser->weekly_action_points ?: ($lockedUser->daily_action_points ?: 20);
+                $maxAp = $lockedUser->max_action_points ?: 26;
 
                 if ($isBurnedOut) {
                     if ($burnedOutUntilMonth !== null && $lockedUser->current_game_month >= $burnedOutUntilMonth) {
@@ -104,55 +112,55 @@ class FourFieldsEngine
                         $burnedOutUntilMonth = null;
                         $consecutiveExhaustion = 0;
                         $fatiguePenalty = 0;
-                        $newAp = $lockedUser->max_action_points;
+                        $newAp = $maxAp;
                     } else {
                         $newAp = 0;
                     }
-                } elseif ($hasSabbath) {
-                    // Observing Sabbath rest restores soul and body, resetting fatigue!
+                } elseif ($hasSabbath || $lockedUser->action_points >= 3) {
+                    // Observing Sabbath rest or finishing week with healthy margin (>= 3 AP) clears exhaustion!
                     $isBurnedOut = false;
                     $burnedOutUntilMonth = null;
                     $consecutiveExhaustion = 0;
                     $fatiguePenalty = 0;
-                    $newAp = $lockedUser->max_action_points;
+                    $newAp = min($maxAp, $lockedUser->action_points + $baseWeeklyAp);
                 } else {
-                    // Check if player used up their AP today (remaining AP <= 1)
-                    if ($lockedUser->action_points <= 1) {
-                        $consecutiveExhaustion++;
-                        if ($consecutiveExhaustion >= 5) {
-                            // Sustained overwork leads to collapse into 3-month burnout
-                            $isBurnedOut = true;
-                            $burnedOutUntilMonth = $lockedUser->current_game_month + 3;
-                            $burnoutCount++;
-                            $fatiguePenalty = $lockedUser->daily_action_points;
-                            $newAp = 0;
-                        } else {
-                            // Progressive fatigue penalty: reduces available AP next days (-2, -4, -6 AP)
-                            $fatiguePenalty = ($consecutiveExhaustion - 1) * 2;
-                            $replenished = max(0, $lockedUser->daily_action_points - $fatiguePenalty);
-                            $effectiveMaxAp = max(2, $lockedUser->max_action_points - $fatiguePenalty);
-                            $newAp = min($effectiveMaxAp, $lockedUser->action_points + $replenished);
-                        }
+                    // Exhausted all weekly AP (remaining AP <= 1) without Sabbath:
+                    $consecutiveExhaustion++;
+                    if ($consecutiveExhaustion >= 4) {
+                        // 4 consecutive weeks of continuous overwork leads to collapse into 3-month burnout
+                        $isBurnedOut = true;
+                        $burnedOutUntilMonth = $lockedUser->current_game_month + 3;
+                        $burnoutCount++;
+                        $fatiguePenalty = $baseWeeklyAp;
+                        $newAp = 0;
                     } else {
-                        // Moderated labor or left unspent AP: streak broken, fatigue clears!
-                        $consecutiveExhaustion = 0;
-                        $fatiguePenalty = 0;
-                        $newAp = min($lockedUser->max_action_points, $lockedUser->action_points + $lockedUser->daily_action_points);
+                        // Progressive fatigue penalty: reduces available AP next weeks (-2, -4, -6 AP)
+                        $fatiguePenalty = ($consecutiveExhaustion - 1) * 2;
+                        $replenished = max(2, $baseWeeklyAp - $fatiguePenalty);
+                        $effectiveMaxAp = max(2, $maxAp - $fatiguePenalty);
+                        $newAp = min($effectiveMaxAp, $lockedUser->action_points + $replenished);
                     }
                 }
 
+                $newWeeksProcessed = $lockedUser->weeks_processed_this_month + 1;
                 $userUpdates = [
-                    'current_game_day' => $nextDay,
+                    'current_game_week' => $nextWeek,
+                    'current_game_day' => $nextWeek,
+                    'last_weekly_tick_at' => now(),
+                    'next_weekly_tick_at' => now()->addMinutes(15),
                     'last_daily_tick_at' => now(),
-                    'next_daily_tick_at' => now()->addMinutes(10),
+                    'next_daily_tick_at' => now()->addMinutes(15),
                     'action_points' => $newAp,
+                    'consecutive_exhaustion_weeks' => $consecutiveExhaustion,
                     'consecutive_exhaustion_days' => $consecutiveExhaustion,
                     'fatigue_penalty_ap' => $fatiguePenalty,
                     'is_burned_out' => $isBurnedOut,
                     'burned_out_until_game_month' => $burnedOutUntilMonth,
                     'burnout_count' => $burnoutCount,
-                    'days_played_today' => $daysPlayedToday,
-                    'days_processed_this_month' => $lockedUser->days_processed_this_month + 1,
+                    'weeks_played_today' => $weeksPlayedToday,
+                    'days_played_today' => $weeksPlayedToday,
+                    'weeks_processed_this_month' => $newWeeksProcessed,
+                    'days_processed_this_month' => $newWeeksProcessed,
                     'last_active_at' => now(),
                     'last_played_real_date' => $today,
                 ];
@@ -172,36 +180,41 @@ class FourFieldsEngine
 
                 // Update session state without modifying other players
                 $session->update([
-                    'current_game_day' => max($session->current_game_day, $nextDay),
-                    'days_processed_this_month' => max($session->days_processed_this_month, $lockedUser->days_processed_this_month),
+                    'current_game_week' => max($session->current_game_week, $nextWeek),
+                    'current_game_day' => max($session->current_game_day, $nextWeek),
+                    'weeks_processed_this_month' => max($session->weeks_processed_this_month, $newWeeksProcessed),
+                    'days_processed_this_month' => max($session->days_processed_this_month, $newWeeksProcessed),
+                    'last_weekly_tick_at' => now(),
+                    'next_weekly_tick_at' => now()->addMinutes(15),
                     'last_daily_tick_at' => now(),
-                    'next_daily_tick_at' => now()->addMinutes(10),
+                    'next_daily_tick_at' => now()->addMinutes(15),
                 ]);
 
                 // Simulate AI co-laborer turns if co-op mode is active
                 if ($session->isCoopMode) {
-                    app(AiColaborerService::class)->simulateDailyTurn($session, $nextDay);
+                    app(AiColaborerService::class)->simulateDailyTurn($session, $nextWeek);
                 }
 
-                return new DailyTickResolutionResult(
+                return new WeeklyTickResolutionResult(
                     gameSessionId: $session->id,
                     gameMonth: $gameMonth,
-                    gameDay: $currentDay,
+                    gameWeek: $currentWeek,
                     actionsProcessed: $actionsProcessed,
                     onlinePlayersCount: 1,
                     actionOutcomes: $outcomes,
                     playerScoreGains: [$lockedUser->id => $scoreGain],
                     onlineUserIds: [$lockedUser->id],
+                    gameDay: $currentDay,
                 );
             }, attempts: 3);
         }
 
         // 2. Global / automated tick across online players who are due
-        if (! $session->is_active || $session->days_processed_this_month >= 30) {
+        if (! $session->is_active || $session->weeks_processed_this_month >= 4 || $session->days_processed_this_month >= 30) {
             return null;
         }
 
-        // Identify online players (active within last 15 minutes) who have not reached the 30-day cap today
+        // Identify online players (active within last 15 minutes) who have not reached the 4-week cap today
         $onlineUsers = User::where('current_game_session_id', $session->id)
             ->whereNotNull('last_active_at')
             ->where('last_active_at', '>=', now()->subMinutes(15))
@@ -212,7 +225,7 @@ class FourFieldsEngine
                 ? User::where('current_game_session_id', $session->id)->get()
                 : $onlineUsers;
         } else {
-            $eligibleUsers = $onlineUsers->filter(fn (User $user) => ! $user->hasReachedDailyPlayLimit && $user->days_processed_this_month < 30);
+            $eligibleUsers = $onlineUsers->filter(fn (User $user) => ! $user->hasReachedDailyPlayLimit && $user->weeks_processed_this_month < 4);
 
             if ($eligibleUsers->isEmpty()) {
                 return null;
@@ -221,17 +234,21 @@ class FourFieldsEngine
 
         return DB::transaction(function () use ($session, $eligibleUsers) {
             $gameMonth = $session->current_game_month;
-            $currentDay = $session->current_game_day;
+            $currentWeek = $session->current_game_week ?: 1;
+            $currentDay = $session->current_game_day ?: $currentWeek;
 
             $lockedUsers = User::whereIn('id', $eligibleUsers->pluck('id'))
                 ->lockForUpdate()
                 ->get()
                 ->keyBy('id');
 
-            // Fetch pending actions queued for this day or earlier days in this month
+            // Fetch pending actions queued for this week or earlier weeks in this month
             $pendingActions = QueuedMonthlyAction::where('game_session_id', $session->id)
                 ->where('game_month', $gameMonth)
-                ->where('game_day', '<=', $currentDay)
+                ->where(function ($q) use ($currentWeek) {
+                    $q->where('game_week', '<=', $currentWeek)
+                        ->orWhere('game_day', '<=', $currentWeek);
+                })
                 ->where('status', QueuedActionStatus::Pending)
                 ->with(['user', 'targetNpc', 'ward'])
                 ->get();
@@ -260,23 +277,26 @@ class FourFieldsEngine
                 ]);
             }
 
-            // Award points and replenish daily AP for eligible active players
+            // Award points and replenish weekly AP for eligible active players
             $today = now()->startOfDay();
             foreach ($lockedUsers as $user) {
                 $scoreGain = $playerScoreGains[$user->id] ?? 0;
                 $coopGain = $playerCoopGains[$user->id] ?? 0;
                 $isNewRealDay = ! $user->isPlayedToday();
-                $daysPlayedToday = $isNewRealDay ? 1 : ($user->days_played_today + 1);
+                $weeksPlayedToday = $isNewRealDay ? 1 : ($user->weeks_played_today + 1);
 
                 $userHasSabbath = $pendingActions->where('user_id', $user->id)
                     ->contains(fn ($a) => $a->action_type === MinistryActionType::SabbathRest);
-                $nextDay = min(30, $user->current_game_day + 1);
+                $nextWeek = min(4, $user->current_game_week + 1);
 
                 $isBurnedOut = $user->is_burned_out;
                 $burnedOutUntilMonth = $user->burned_out_until_game_month;
-                $consecutiveExhaustion = $user->consecutive_exhaustion_days;
+                $consecutiveExhaustion = max($user->consecutive_exhaustion_weeks, $user->consecutive_exhaustion_days);
                 $fatiguePenalty = $user->fatigue_penalty_ap;
                 $burnoutCount = $user->burnout_count;
+
+                $baseWeeklyAp = $user->weekly_action_points ?: ($user->daily_action_points ?: 20);
+                $maxAp = $user->max_action_points ?: 26;
 
                 if ($isBurnedOut) {
                     if ($burnedOutUntilMonth !== null && $user->current_game_month >= $burnedOutUntilMonth) {
@@ -284,50 +304,56 @@ class FourFieldsEngine
                         $burnedOutUntilMonth = null;
                         $consecutiveExhaustion = 0;
                         $fatiguePenalty = 0;
-                        $newAp = $user->max_action_points;
+                        $newAp = $maxAp;
                     } else {
                         $newAp = 0;
                     }
-                } elseif ($userHasSabbath) {
+                } elseif ($userHasSabbath || $user->action_points >= 3) {
                     $isBurnedOut = false;
                     $burnedOutUntilMonth = null;
                     $consecutiveExhaustion = 0;
                     $fatiguePenalty = 0;
-                    $newAp = $user->max_action_points;
+                    $newAp = min($maxAp, $user->action_points + $baseWeeklyAp);
                 } else {
                     if ($user->action_points <= 1) {
                         $consecutiveExhaustion++;
-                        if ($consecutiveExhaustion >= 5) {
+                        if ($consecutiveExhaustion >= 4) {
                             $isBurnedOut = true;
                             $burnedOutUntilMonth = $user->current_game_month + 3;
                             $burnoutCount++;
-                            $fatiguePenalty = $user->daily_action_points;
+                            $fatiguePenalty = $baseWeeklyAp;
                             $newAp = 0;
                         } else {
                             $fatiguePenalty = ($consecutiveExhaustion - 1) * 2;
-                            $replenished = max(0, $user->daily_action_points - $fatiguePenalty);
-                            $effectiveMaxAp = max(2, $user->max_action_points - $fatiguePenalty);
+                            $replenished = max(2, $baseWeeklyAp - $fatiguePenalty);
+                            $effectiveMaxAp = max(2, $maxAp - $fatiguePenalty);
                             $newAp = min($effectiveMaxAp, $user->action_points + $replenished);
                         }
                     } else {
                         $consecutiveExhaustion = 0;
                         $fatiguePenalty = 0;
-                        $newAp = min($user->max_action_points, $user->action_points + $user->daily_action_points);
+                        $newAp = min($maxAp, $user->action_points + $baseWeeklyAp);
                     }
                 }
 
                 $userUpdates = [
-                    'current_game_day' => $nextDay,
+                    'current_game_week' => $nextWeek,
+                    'current_game_day' => $nextWeek,
+                    'last_weekly_tick_at' => now(),
+                    'next_weekly_tick_at' => now()->addMinutes(15),
                     'last_daily_tick_at' => now(),
-                    'next_daily_tick_at' => now()->addMinutes(10),
+                    'next_daily_tick_at' => now()->addMinutes(15),
                     'action_points' => $newAp,
+                    'consecutive_exhaustion_weeks' => $consecutiveExhaustion,
                     'consecutive_exhaustion_days' => $consecutiveExhaustion,
                     'fatigue_penalty_ap' => $fatiguePenalty,
                     'is_burned_out' => $isBurnedOut,
                     'burned_out_until_game_month' => $burnedOutUntilMonth,
                     'burnout_count' => $burnoutCount,
-                    'days_played_today' => $daysPlayedToday,
-                    'days_processed_this_month' => $user->days_processed_this_month + 1,
+                    'weeks_played_today' => $weeksPlayedToday,
+                    'days_played_today' => $weeksPlayedToday,
+                    'weeks_processed_this_month' => $user->weeks_processed_this_month + 1,
+                    'days_processed_this_month' => $user->weeks_processed_this_month + 1,
                     'last_active_at' => now(),
                     'last_played_real_date' => $today,
                 ];
@@ -342,31 +368,59 @@ class FourFieldsEngine
                 $user->update($userUpdates);
             }
 
-            // Advance session day counters
-            $nextDay = min(30, $session->current_game_day + 1);
-            $session->increment('days_processed_this_month');
+            // Advance session week counters
+            $nextWeek = min(4, $session->current_game_week + 1);
+            $nextDay = max($nextWeek, min(30, ($session->current_game_day ?: $currentWeek) + 1));
+            $session->increment('weeks_processed_this_month');
             $session->update([
+                'current_game_week' => $nextWeek,
                 'current_game_day' => $nextDay,
+                'days_processed_this_month' => $session->weeks_processed_this_month,
+                'last_weekly_tick_at' => now(),
+                'next_weekly_tick_at' => now()->addMinutes(15),
                 'last_daily_tick_at' => now(),
-                'next_daily_tick_at' => now()->addMinutes(10),
+                'next_daily_tick_at' => now()->addMinutes(15),
             ]);
 
             // Simulate AI co-laborer turns if co-op mode is active
             if ($session->isCoopMode) {
-                app(AiColaborerService::class)->simulateDailyTurn($session, $nextDay);
+                app(AiColaborerService::class)->simulateDailyTurn($session, $nextWeek);
             }
 
-            return new DailyTickResolutionResult(
+            return new WeeklyTickResolutionResult(
                 gameSessionId: $session->id,
                 gameMonth: $gameMonth,
-                gameDay: $currentDay,
+                gameWeek: $currentWeek,
                 actionsProcessed: $actionsProcessed,
                 onlinePlayersCount: $lockedUsers->count(),
                 actionOutcomes: $outcomes,
                 playerScoreGains: $playerScoreGains,
                 onlineUserIds: $lockedUsers->keys()->all(),
+                gameDay: $currentDay,
             );
         }, attempts: 3);
+    }
+
+    /**
+     * Resolves a single tick (forwarding wrapper for weekly tick to preserve backward compatibility).
+     */
+    public function resolveDailyTick(GameSession $session, ?User $specificUser = null, bool $force = false): ?DailyTickResolutionResult
+    {
+        $result = $this->resolveWeeklyTick($session, $specificUser, $force);
+        if (! $result) {
+            return null;
+        }
+
+        return new DailyTickResolutionResult(
+            gameSessionId: $result->gameSessionId,
+            gameMonth: $result->gameMonth,
+            gameDay: $result->gameWeek,
+            actionsProcessed: $result->actionsProcessed,
+            onlinePlayersCount: $result->onlinePlayersCount,
+            actionOutcomes: $result->actionOutcomes,
+            playerScoreGains: $result->playerScoreGains,
+            onlineUserIds: $result->onlineUserIds,
+        );
     }
 
     /**
@@ -498,12 +552,18 @@ class FourFieldsEngine
 
                 $userUpdates = [
                     'current_game_month' => $nextMonth,
+                    'current_game_week' => 1,
+                    'weeks_processed_this_month' => 0,
+                    'weeks_played_today' => 0,
                     'current_game_day' => 1,
                     'days_processed_this_month' => 0,
                     'last_monthly_tick_at' => now(),
+                    'last_weekly_tick_at' => now(),
+                    'next_weekly_tick_at' => now()->addMinutes(15),
                     'action_points' => $actionPoints,
                     'is_burned_out' => $isBurnedOut,
                     'burned_out_until_game_month' => $burnedOutUntilMonth,
+                    'consecutive_exhaustion_weeks' => $consecutiveExhaustion,
                     'consecutive_exhaustion_days' => $consecutiveExhaustion,
                     'fatigue_penalty_ap' => $fatiguePenalty,
                     'days_played_today' => 0,
@@ -526,13 +586,17 @@ class FourFieldsEngine
                 ->where('is_baptized', false)
                 ->increment('baptism_cost_months');
 
-            // 6. Advance Game Session Calendar and reset daily tick counters
+            // 6. Advance Game Session Calendar and reset weekly tick counters
             $session->increment('current_game_month');
             $session->update([
+                'current_game_week' => 1,
+                'weeks_processed_this_month' => 0,
+                'last_weekly_tick_at' => now(),
+                'next_weekly_tick_at' => now()->addMinutes(15),
                 'current_game_day' => 1,
                 'days_processed_this_month' => 0,
                 'last_monthly_tick_at' => now(),
-                'next_daily_tick_at' => now()->addMinutes(10),
+                'next_daily_tick_at' => now()->addMinutes(15),
                 'calendar_date' => Carbon::parse($session->calendar_date)->addMonth(),
                 'next_tick_at' => now()->addMinutes($session->month_duration_minutes),
             ]);
@@ -704,13 +768,19 @@ class FourFieldsEngine
             }
 
             $user->update([
+                'current_game_week' => 1,
+                'weeks_processed_this_month' => 0,
+                'weeks_played_today' => 0,
+                'last_weekly_tick_at' => now(),
+                'next_weekly_tick_at' => now()->addMinutes(15),
                 'current_game_day' => 1,
                 'days_processed_this_month' => 0,
                 'last_monthly_tick_at' => now(),
-                'next_daily_tick_at' => now()->addMinutes(10),
+                'next_daily_tick_at' => now()->addMinutes(15),
                 'action_points' => $actionPoints,
                 'is_burned_out' => $isBurnedOut,
                 'burned_out_until_game_month' => $burnedOutUntilMonth,
+                'consecutive_exhaustion_weeks' => $consecutiveExhaustion,
                 'consecutive_exhaustion_days' => $consecutiveExhaustion,
                 'fatigue_penalty_ap' => $fatiguePenalty,
                 'days_played_today' => 0,
@@ -1236,6 +1306,8 @@ class FourFieldsEngine
                 }
 
                 $existingChurch = Church::where('leader_npc_id', $npc->id)->first();
+                $coachedWeek = $action->game_week ?: ($action->game_day > 4 ? min(4, (int) ceil($action->game_day / 7)) : ($action->game_day ?: 1));
+
                 if (! $existingChurch) {
                     // Determine parent church:
                     // 1. Check if the active player has an established church in this session
@@ -1285,6 +1357,7 @@ class FourFieldsEngine
                         'is_dissolved' => false,
                         'started_by_name' => $user->name,
                         'last_coached_game_month' => $gameMonth,
+                        'last_coached_game_week' => $coachedWeek,
                         'last_coached_game_day' => $action->game_day ?: 1,
                         'lat' => $npc->lat,
                         'lng' => $npc->lng,
@@ -1299,6 +1372,7 @@ class FourFieldsEngine
                     $existingChurch->revitalize($gameMonth, $user);
                     $existingChurch->update([
                         'last_coached_game_month' => $gameMonth,
+                        'last_coached_game_week' => $coachedWeek,
                         'last_coached_game_day' => $action->game_day ?: 1,
                     ]);
                     $npc->update(['church_id' => $existingChurch->id]);
@@ -1311,6 +1385,7 @@ class FourFieldsEngine
                     $existingChurch->update([
                         'is_healthy_church' => $existingChurch->health_score >= 50 && $existingChurch->hasAllCoreElements(),
                         'last_coached_game_month' => $gameMonth,
+                        'last_coached_game_week' => $coachedWeek,
                         'last_coached_game_day' => $action->game_day ?: 1,
                     ]);
                     $narrative = "Coached {$existingChurch->name} in the 3/3rds pattern. Church health strengthened to {$existingChurch->health_score}% with {$existingChurch->attenders_count} attenders and deeper mutual fellowship!";
@@ -1841,8 +1916,8 @@ class FourFieldsEngine
     protected function resolveFastingRetreat(QueuedMonthlyAction $action, int $gameMonth): ActionResolutionOutcome
     {
         $user = $action->user;
-        $points = 25;
-        $dayLabel = $action->notes ?: '4-Day Fasting Retreat with Fellow Missionaries';
+        $points = 100;
+        $dayLabel = $action->notes ?: '1-Week Fasting Retreat with Fellow Missionaries';
 
         return new ActionResolutionOutcome(
             actionId: $action->id,
@@ -1865,13 +1940,13 @@ class FourFieldsEngine
     }
 
     /**
-     * Resolves a day of the 3-day NPL Mid-Level Strategy Conference.
+     * Resolves the 1-week NPL Mid-Level Strategy Conference.
      */
     protected function resolveMidLevelConference(QueuedMonthlyAction $action, int $gameMonth): ActionResolutionOutcome
     {
         $user = $action->user;
-        $points = 25;
-        $dayLabel = $action->notes ?: '3-Day NPL Mid-Level Strategy Conference';
+        $points = 75;
+        $dayLabel = $action->notes ?: '1-Week NPL Mid-Level Strategy Conference';
 
         return new ActionResolutionOutcome(
             actionId: $action->id,
@@ -2299,7 +2374,7 @@ class FourFieldsEngine
                     ]);
                 } elseif ($causeKey === 'sickness') {
                     $member->update([
-                        'need_state' => NpcNeedState::SicknessHospitalization,
+                        'need_state' => NpcNeedState::SickNeedsHealing,
                     ]);
                 } elseif ($causeKey === 'issues') {
                     $member->decrement('trust_level', min($member->trust_level, 15));

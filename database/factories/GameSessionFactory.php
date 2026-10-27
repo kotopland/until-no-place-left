@@ -24,16 +24,20 @@ class GameSessionFactory extends Factory
             'name' => 'Nagoya Movement '.fake()->city(),
             'code' => 'session-'.Str::lower(fake()->unique()->lexify('??????')),
             'current_game_month' => 1,
+            'current_game_week' => 1,
+            'weeks_processed_this_month' => 0,
             'current_game_day' => 1,
             'days_processed_this_month' => 0,
             'calendar_date' => '2026-04-01',
             'month_duration_minutes' => 720,
-            'next_tick_at' => now()->addMinutes(10),
+            'next_tick_at' => now()->addMinutes(15),
+            'next_weekly_tick_at' => now()->addMinutes(15),
+            'next_daily_tick_at' => now()->addMinutes(15),
             'is_active' => true,
             'settings' => [
                 'city' => 'Nagoya',
                 'target_generations' => 4,
-                'ap_per_month' => 12,
+                'ap_per_month' => 80,
             ],
         ];
     }

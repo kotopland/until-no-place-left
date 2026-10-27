@@ -53,9 +53,10 @@ class AiColaborerService
                 'is_ai_colaborer' => true,
                 'colaborer_archetype' => 'campus_sower',
                 'ai_strategy_notes' => 'Campus sower near Nagoya University. Focuses on prayer walking, 15-second testimonies, and 3 Circles with university students.',
-                'action_points' => 12,
-                'max_action_points' => 12,
-                'daily_action_points' => 12,
+                'action_points' => 20,
+                'max_action_points' => 26,
+                'weekly_action_points' => 20,
+                'daily_action_points' => 20,
                 'total_generational_score' => 90,
                 'coop_synergy_score' => 20,
                 'badges' => ['Campus Sower', 'Fast Starter'],
@@ -88,9 +89,10 @@ class AiColaborerService
                 'is_ai_colaborer' => true,
                 'colaborer_archetype' => 'mercy_catalyst',
                 'ai_strategy_notes' => 'Mercy catalyst working among homeless, industrial laborers, and international families. Breaks hard ground through prayer for healing and practical aid.',
-                'action_points' => 12,
-                'max_action_points' => 12,
-                'daily_action_points' => 12,
+                'action_points' => 20,
+                'max_action_points' => 26,
+                'weekly_action_points' => 20,
+                'daily_action_points' => 20,
                 'total_generational_score' => 75,
                 'coop_synergy_score' => 25,
                 'badges' => ['Mercy Catalyst', 'Healer'],
@@ -107,6 +109,9 @@ class AiColaborerService
             'gender' => 'male',
             'age' => 35,
             'nationality' => 'Brazilian',
+            'weekly_action_points' => 20,
+            'daily_action_points' => 20,
+            'max_action_points' => 26,
         ]);
 
         // 3. Kenji Yamada: Discipleship Trainer (Field 3 & 4 Focus)
@@ -123,9 +128,10 @@ class AiColaborerService
                 'is_ai_colaborer' => true,
                 'colaborer_archetype' => 'discipleship_trainer',
                 'ai_strategy_notes' => 'Discipleship trainer equipping new believers with 411 and gathering them into Acts 2 church circles.',
-                'action_points' => 12,
-                'max_action_points' => 12,
-                'daily_action_points' => 12,
+                'action_points' => 20,
+                'max_action_points' => 26,
+                'weekly_action_points' => 20,
+                'daily_action_points' => 20,
                 'total_generational_score' => 110,
                 'coop_synergy_score' => 40,
                 'badges' => ['Oikos Pioneer', '411 Master'],
@@ -142,6 +148,9 @@ class AiColaborerService
             'gender' => 'male',
             'age' => 42,
             'nationality' => 'Japanese',
+            'weekly_action_points' => 20,
+            'daily_action_points' => 20,
+            'max_action_points' => 26,
         ]);
 
         return collect([$sarah, $marcus, $kenji]);
@@ -165,7 +174,8 @@ class AiColaborerService
             $aiUser->refresh();
             $aiUser->update([
                 'current_game_day' => $gameDay,
-                'action_points' => max(4, $aiUser->action_points),
+                'current_game_week' => min(4, max(1, $gameDay)),
+                'action_points' => max(6, $aiUser->action_points),
             ]);
 
             $homeWard = $aiUser->homeWard ?? Ward::first();

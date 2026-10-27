@@ -85,7 +85,7 @@ test('worker can schedule weekly sabbath rest, gaining 25 points and resetting A
         ->and($this->user->action_points)->toBe(12);
 });
 
-test('worker can schedule 4-day fasting retreat which blocks 4 days and awards 100 points total', function () {
+test('worker can schedule 1-week fasting retreat which blocks 1 week and awards 100 points total', function () {
     Livewire::actingAs($this->user)
         ->test(ActionQueuePlanner::class)
         ->call('scheduleWorkerRhythm', MinistryActionType::FastingRetreat->value)
@@ -95,29 +95,27 @@ test('worker can schedule 4-day fasting retreat which blocks 4 days and awards 1
         ->where('action_type', MinistryActionType::FastingRetreat)
         ->count();
 
-    expect($queuedCount)->toBe(4);
+    expect($queuedCount)->toBe(1);
 
-    $days = QueuedMonthlyAction::where('user_id', $this->user->id)
-        ->pluck('game_day')
+    $weeks = QueuedMonthlyAction::where('user_id', $this->user->id)
+        ->pluck('game_week')
         ->sort()
         ->values()
         ->all();
 
-    expect($days)->toBe([1, 2, 3, 4]);
+    expect($weeks)->toBe([1]);
 
-    // Advance 4 days
+    // Advance 1 week
     $engine = app(FourFieldsEngine::class);
-    for ($day = 1; $day <= 4; $day++) {
-        $this->user->update(['current_game_day' => $day]);
-        $this->session->update(['current_game_day' => $day]);
-        $engine->resolveDailyTick($this->session, $this->user);
-    }
+    $this->user->update(['current_game_week' => 1, 'current_game_day' => 1]);
+    $this->session->update(['current_game_week' => 1, 'current_game_day' => 1]);
+    $engine->resolveWeeklyTick($this->session, $this->user);
 
     $this->user->refresh();
     expect($this->user->compositeScore)->toBe(100);
 });
 
-test('worker can schedule 3-day NPL mid-level conference which blocks 3 days and awards 75 points total', function () {
+test('worker can schedule 1-week NPL mid-level conference which blocks 1 week and awards 75 points total', function () {
     Livewire::actingAs($this->user)
         ->test(ActionQueuePlanner::class)
         ->call('scheduleWorkerRhythm', MinistryActionType::MidLevelConference->value)
@@ -127,22 +125,20 @@ test('worker can schedule 3-day NPL mid-level conference which blocks 3 days and
         ->where('action_type', MinistryActionType::MidLevelConference)
         ->count();
 
-    expect($queuedCount)->toBe(3);
+    expect($queuedCount)->toBe(1);
 
-    $days = QueuedMonthlyAction::where('user_id', $this->user->id)
-        ->pluck('game_day')
+    $weeks = QueuedMonthlyAction::where('user_id', $this->user->id)
+        ->pluck('game_week')
         ->sort()
         ->values()
         ->all();
 
-    expect($days)->toBe([1, 2, 3]);
+    expect($weeks)->toBe([1]);
 
     $engine = app(FourFieldsEngine::class);
-    for ($day = 1; $day <= 3; $day++) {
-        $this->user->update(['current_game_day' => $day]);
-        $this->session->update(['current_game_day' => $day]);
-        $engine->resolveDailyTick($this->session, $this->user);
-    }
+    $this->user->update(['current_game_week' => 1, 'current_game_day' => 1]);
+    $this->session->update(['current_game_week' => 1, 'current_game_day' => 1]);
+    $engine->resolveWeeklyTick($this->session, $this->user);
 
     $this->user->refresh();
     expect($this->user->compositeScore)->toBe(75);
@@ -220,9 +216,9 @@ test('enforces frequency limits and month boundary limits on worker rhythms', fu
 
     expect(QueuedMonthlyAction::where('user_id', $this->user->id)->count())->toBe(1);
 
-    // 2. Month boundary limit: cannot schedule 4-day fasting retreat on Day 28
-    $this->user->update(['current_game_day' => 28]);
-    $this->session->update(['current_game_day' => 28]);
+    // 2. Month boundary limit: cannot schedule fasting retreat once all 4 weeks completed
+    $this->user->update(['current_game_week' => 5, 'current_game_day' => 28]);
+    $this->session->update(['current_game_week' => 5, 'current_game_day' => 28]);
     QueuedMonthlyAction::query()->delete();
 
     Livewire::actingAs($this->user)

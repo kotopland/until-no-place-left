@@ -35,6 +35,7 @@ use Illuminate\Support\Carbon;
     'user_id',
     'ward_id',
     'game_month',
+    'game_week',
     'game_day',
     'route_name',
     'path_coords',
@@ -53,6 +54,9 @@ class PrayerWalk extends Model
     protected function casts(): array
     {
         return [
+            'game_month' => 'integer',
+            'game_week' => 'integer',
+            'game_day' => 'integer',
             'path_coords' => 'array',
             'pop_discovered' => 'boolean',
         ];

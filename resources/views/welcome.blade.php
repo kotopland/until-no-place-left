@@ -640,7 +640,7 @@
                         </div>
                     </div>
                     <p class="text-xs text-slate-300 leading-relaxed">
-                        Missionary energy and time are finite. Each day you receive <strong class="text-indigo-400">12 Action Points (AP)</strong>. Actions consume base AP, plus an additional <strong class="text-amber-400">+1 to +2 AP transit surcharge</strong> when commuting to distant wards from your Home Base:
+                        Missionary energy and time are finite. Each game week you receive <strong class="text-indigo-400">20 Action Points (AP)</strong> (cap of 26 AP, with 4 week ticks per month). Actions consume base AP, plus an additional <strong class="text-amber-400">+1 to +2 AP transit surcharge</strong> when commuting to distant wards from your Home Base:
                     </p>
                     <ul class="text-xs space-y-1.5 text-slate-300 max-h-80 overflow-y-auto pr-1">
                         <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
@@ -722,7 +722,7 @@
                         </li>
                     </ul>
                     <div class="p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-800/60 text-[11px] text-indigo-300">
-                        ⚡ <em>Action HQ Flow:</em> Scheduling actions follows an intuitive 3-step path: (1) Pick District (with expanded scroll fields &amp; interactive scroll indicators) ➔ (2) Pick Resident (featuring demographic avatars representing each person's nationality, gender, age bracket, and interactive scroll prompts) ➔ (3) Choose an Action from the list. The planner smoothly scrolls down to the <strong>Ready to Queue for Day X</strong> box at the bottom where you can add personal prayer notes and queue the action with one click (or use the persistent confirmation dock on mobile devices).
+                        ⚡ <em>Action HQ Flow:</em> Scheduling actions follows an intuitive 3-step path: (1) Pick District (with expanded scroll fields &amp; interactive scroll indicators) ➔ (2) Pick Resident (featuring demographic avatars representing each person's nationality, gender, age bracket, and interactive scroll prompts) ➔ (3) Choose an Action from the list. The planner smoothly scrolls down to the <strong>Ready to Queue for Week X</strong> box at the bottom where you can add personal prayer notes and queue the action with one click (or use the persistent confirmation dock on mobile devices).
                     </div>
                     <div class="p-2.5 rounded-xl bg-amber-950/40 border border-amber-800/60 text-[11px] text-amber-200 space-y-1">
                         <div class="flex items-center gap-1.5 font-bold text-amber-300">
@@ -730,13 +730,13 @@
                             <span>Overwork Fatigue &amp; 3-Month Burnout Sabbatical</span>
                         </div>
                         <p class="text-slate-300 leading-relaxed">
-                            Missionary zeal without rest leads to exhaustion. When you drain all your AP (<strong class="text-amber-300">&le; 1 AP remaining</strong>) day after day, <strong>overwork fatigue</strong> sets in and reduces available AP on subsequent days (-2 AP on day 2, -4 AP on day 3, -6 AP on day 4).
+                            Missionary zeal without rest leads to exhaustion. When you drain all your AP (<strong class="text-amber-300">&le; 1 AP remaining</strong>) week after week without taking rest, <strong>overwork fatigue</strong> sets in and reduces available AP on subsequent weeks (-2 AP on week 2, -4 AP on week 3, -6 AP on week 4).
                         </p>
                         <p class="text-rose-300 leading-relaxed font-semibold">
-                            🚨 Draining all AP for 5 consecutive days triggers Severe Ministry Burnout: all field actions are blocked and you must take a mandatory 3-Month Sabbatical Leave before resuming!
+                            🚨 Draining all AP for 4 consecutive weeks triggers Severe Ministry Burnout: all field actions are blocked and you must take a mandatory 3-Month Sabbatical Leave before resuming!
                         </p>
                         <p class="text-emerald-300 leading-relaxed text-[10px]">
-                            💡 Schedule a <strong>Weekly Sabbath Rest</strong> or end the day with AP to spare to completely clear fatigue and restore full 12 AP.
+                            💡 Schedule a <strong>Weekly Sabbath Rest</strong> or end the week with AP to spare (&ge; 3 AP) to completely clear fatigue and restore full 20 AP.
                         </p>
                     </div>
                 </div>
@@ -789,16 +789,16 @@
                     </div>
                     <div class="space-y-3 text-xs text-slate-300 leading-relaxed">
                         <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                            <strong class="text-white block font-semibold">⚡ Personal Daily Progression</strong>
-                            <span>Clicking <em>Next Day</em> advances <strong>only your</strong> game day and replenishes your 12 AP instantly. You progress at your own pace without waiting for or disrupting other players.</span>
+                            <strong class="text-white block font-semibold">⚡ Personal Weekly Progression &amp; 15-Min Ticks</strong>
+                            <span>Clicking <em>Turn to Week</em> advances <strong>only your</strong> game week and replenishes your 20 AP. When online, an automated countdown tick advances by 1 game week every 15 minutes (capped at 4 game weeks per real-life day).</span>
                         </div>
                         <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                            <strong class="text-white block font-semibold">📅 Self-Paced Month Advance & Review</strong>
-                            <span>Upon completing 30 game days in a month, manual month advancement unlocks. Review your rich <strong>Month in Review Digest</strong> celebrating answered prayers, church health, and coach insights.</span>
+                            <strong class="text-white block font-semibold">📅 Server-Controlled Midnight Month Tick</strong>
+                            <span>Players cannot manually advance to the next month. Once all 4 game weeks in a month are completed, the server automatically resolves the monthly cycle tonight at midnight (00:00).</span>
                         </div>
                         <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                            <strong class="text-white block font-semibold">🛡️ Automated Nightly Safeguards</strong>
-                            <span>A nightly automated tick advances inactive players, while active players who already advanced are safely guarded against double-advancement.</span>
+                            <strong class="text-white block font-semibold">📊 Month in Review Digest</strong>
+                            <span>When the midnight tick executes, autonomous church multiplications occur, bandwidth AP is reset for the new month, and you receive your rich <strong>Month in Review Digest</strong> celebrating answered prayers, church health, and coach insights.</span>
                         </div>
                     </div>
                 </div>

@@ -31,7 +31,7 @@ class GameCommand extends Command
      * The name and signature of the console command.
      */
     protected $signature = 'game
-                            {action? : Optional direct action (status, mode, advance-day, advance-month, reset, migrate-fresh, borders)}
+                            {action? : Optional direct action (status, mode, advance-week, advance-day, advance-month, reset, migrate-fresh, borders)}
                             {param? : Optional secondary parameter (e.g. "solo" or "coop" for mode)}
                             {--session= : Optional specific GameSession code (e.g. nagoya-2026)}
                             {--force : Bypass confirmation prompts where applicable}';
@@ -72,9 +72,9 @@ class GameCommand extends Command
                 options: [
                     'status' => '📊 View Detailed Session & Ward Saturation',
                     'mode' => '🎮 Configure Gameplay Mode (Solo Pioneer vs Team Co-op)',
-                    'advance-day' => '⏩ Advance 1 Game Day (Daily 10-Min Tick)',
+                    'advance-week' => '⏩ Advance 1 Game Week (Weekly 15-Min Tick)',
                     'advance-month' => '📅 Advance Game Month (Batch Resolve Month)',
-                    'reset' => '🔄 Reset Simulation Timeline (Month 1 Day 1)',
+                    'reset' => '🔄 Reset Simulation Timeline (Month 1 Week 1)',
                     'borders' => '🗾 Sync Authentic Nagoya 16-Ward GIS Boundaries',
                     'migrate-fresh' => '🚨 Production Fresh Migration & Seeding (Dangerous)',
                     'exit' => '🚪 Exit Operator Menu',
@@ -89,8 +89,9 @@ class GameCommand extends Command
                 case 'mode':
                     $this->configureMode($session, $aiService);
                     break;
+                case 'advance-week':
                 case 'advance-day':
-                    $this->advanceDay($session, $engine);
+                    $this->advanceWeek($session, $engine);
                     break;
                 case 'advance-month':
                     $this->advanceMonth($session, $engine);
@@ -128,7 +129,7 @@ class GameCommand extends Command
         return match ($action) {
             'status' => $this->showDetailedStatus($session),
             'mode' => $this->handleDirectMode($session, $aiService),
-            'advance-day' => $this->advanceDay($session, $engine),
+            'advance-week', 'advance-day' => $this->advanceWeek($session, $engine),
             'advance-month' => $this->advanceMonth($session, $engine),
             'reset' => $this->resetSimulation($session),
             'borders' => $this->syncBorders(),
@@ -276,32 +277,41 @@ class GameCommand extends Command
         return self::SUCCESS;
     }
 
-    protected function advanceDay(GameSession $session, FourFieldsEngine $engine): int
+    protected function advanceWeek(GameSession $session, FourFieldsEngine $engine): int
     {
+        $currentWeek = $session->current_game_week ?: 1;
         $confirmed = $this->option('force') || confirm(
-            label: "Advance session timeline by 1 Game Day (Day {$session->current_game_day} -> ".min(30, $session->current_game_day + 1).')?',
+            label: "Advance session timeline by 1 Game Week (Week {$currentWeek}/4 -> ".min(4, $currentWeek + 1).'/4)?',
             default: true,
         );
 
         if (! $confirmed) {
-            $this->components->info('Day advance cancelled.');
+            $this->components->info('Week advance cancelled.');
 
             return self::SUCCESS;
         }
 
-        $result = $engine->resolveDailyTick($session, force: true);
+        $result = $engine->resolveWeeklyTick($session, force: true);
 
         if ($result) {
-            $this->components->info("✅ Successfully processed Day {$result->gameDay} (Month {$result->gameMonth})!");
+            $label = $this->argument('action') === 'advance-day'
+                ? "Day {$result->gameDay} (Week {$result->gameWeek}/4, Month {$result->gameMonth})"
+                : "Week {$result->gameWeek}/4 (Month {$result->gameMonth})";
+            $this->components->info("✅ Successfully processed {$label}!");
             $this->components->twoColumnDetail('Actions Processed', (string) $result->actionsProcessed);
             $this->components->twoColumnDetail('Online Players Updated', (string) $result->onlinePlayersCount);
         } else {
-            $this->components->warn('Daily tick could not be processed (30-day month limit reached or session inactive).');
+            $this->components->warn('Weekly tick could not be processed (4-week month limit reached or session inactive).');
         }
 
         cache()->flush();
 
         return self::SUCCESS;
+    }
+
+    protected function advanceDay(GameSession $session, FourFieldsEngine $engine): int
+    {
+        return $this->advanceWeek($session, $engine);
     }
 
     protected function advanceMonth(GameSession $session, FourFieldsEngine $engine): int

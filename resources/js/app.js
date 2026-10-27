@@ -400,11 +400,11 @@ window.nagoyaMap = function (config) {
     };
 };
 
-// Digital Countdown Clock Controller for 10-Minute Day Ticks
+// Digital Countdown Clock Controller for 15-Minute Week Ticks
 window.digitalClock = function (initialSeconds, nextTickIso, canAutoTick) {
     return {
-        secondsLeft: Math.max(0, initialSeconds || 600),
-        nextTickTarget: nextTickIso ? new Date(nextTickIso).getTime() : (Date.now() + (initialSeconds || 600) * 1000),
+        secondsLeft: Math.max(0, initialSeconds || 900),
+        nextTickTarget: nextTickIso ? new Date(nextTickIso).getTime() : (Date.now() + (initialSeconds || 900) * 1000),
         canAutoTick: !!canAutoTick,
         timer: null,
 
@@ -428,10 +428,12 @@ window.digitalClock = function (initialSeconds, nextTickIso, canAutoTick) {
             if (!this.canAutoTick) return;
 
             if (this.secondsLeft <= 0) {
-                // Countdown reached 00:00! Trigger automatic day tick
-                this.secondsLeft = 600;
-                this.nextTickTarget = Date.now() + 600000;
-                if (this.$wire && typeof this.$wire.advanceDay === 'function') {
+                // Countdown reached 00:00! Trigger automatic week tick (15 minutes)
+                this.secondsLeft = 900;
+                this.nextTickTarget = Date.now() + 900000;
+                if (this.$wire && typeof this.$wire.advanceWeek === 'function') {
+                    this.$wire.advanceWeek(false);
+                } else if (this.$wire && typeof this.$wire.advanceDay === 'function') {
                     this.$wire.advanceDay(false);
                 }
             }

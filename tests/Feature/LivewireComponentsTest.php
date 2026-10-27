@@ -376,7 +376,7 @@ test('queueing share 3 circles for resident in home ward on day 2 schedules acti
         ->set('selectedActionType', MinistryActionType::Share3Circles->value)
         ->call('queueAction')
         ->assertDispatched('notify', fn ($name, $params) => ($params['type'] ?? ($params[0]['type'] ?? '')) === 'success' || str_contains(json_encode($params), 'Successfully queued'))
-        ->assertSee('Scheduled for Day 2')
+        ->assertSee('Scheduled for Week 1')
         ->assertSee('Share 3 Circles Gospel Presentation')
         ->assertSee('Meito-ku');
 
@@ -434,14 +434,14 @@ test('action queue planner renders prominent desktop and mobile queue call-to-ac
         ->assertSee('Step 2')
         ->assertSee('Step 3')
         ->assertSee('ready-to-queue-box')
-        ->assertSee('Ready to Queue • Day 3')
+        ->assertSee('Ready to Queue • Week 1')
         ->assertSee('No action selected yet')
-        ->assertSee('Select an Action Above to Queue for Day 3')
+        ->assertSee('Select an Action Above to Queue for Week 1')
         ->call('queueAction')
         ->assertDispatched('notify', fn ($name, $params) => ($params['type'] ?? '') === 'warning' || str_contains(json_encode($params), 'Please select an action'))
         ->set('selectedActionType', MinistryActionType::Share3Circles->value)
         ->assertSee('Share 3 Circles Gospel Presentation')
-        ->assertSee('Queue for Day 3 • 2 AP')
+        ->assertSee('Queue for Week 1 • 2 AP')
         ->call('queueAction')
         ->assertDispatched('scroll-to-step-2')
         ->assertSet('mobileStep', 2);

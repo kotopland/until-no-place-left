@@ -53,12 +53,13 @@ class ProcessDailyTickCommand extends Command
                 continue;
             }
 
-            $this->components->info("Processing Day {$session->current_game_day}/30 (Month {$session->current_game_month}) for session: {$session->name} [{$session->code}]...");
+            $currentWeek = $session->current_game_week ?: 1;
+            $this->components->info("Processing Week {$currentWeek}/4 (Day {$session->current_game_day}, Month {$session->current_game_month}) for session: {$session->name} [{$session->code}]...");
 
-            $result = $engine->resolveDailyTick($session, force: $force);
+            $result = $engine->resolveWeeklyTick($session, force: $force);
 
             if ($result) {
-                $this->components->twoColumnDetail('Status', '<fg=green;options=bold>DAY RESOLVED</>');
+                $this->components->twoColumnDetail('Status', '<fg=green;options=bold>WEEK/DAY RESOLVED</>');
                 $this->components->twoColumnDetail('Actions Processed', (string) $result->actionsProcessed);
                 $this->components->twoColumnDetail('Active Online Players', (string) $result->onlinePlayersCount);
                 $processedCount++;

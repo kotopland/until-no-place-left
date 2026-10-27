@@ -43,8 +43,9 @@ test('logged in player can manually advance day tick via action queue planner', 
         'days_played_today' => 0,
         'last_played_real_date' => now()->startOfDay(),
         'action_points' => 2,
-        'max_action_points' => 12,
-        'daily_action_points' => 2,
+        'max_action_points' => 26,
+        'weekly_action_points' => 20,
+        'daily_action_points' => 20,
     ]);
 
     Livewire::actingAs($user)
@@ -59,7 +60,7 @@ test('logged in player can manually advance day tick via action queue planner', 
     expect($session->current_game_day)->toBe(2)
         ->and($session->days_processed_this_month)->toBe(1)
         ->and($user->days_played_today)->toBe(1)
-        ->and($user->action_points)->toBe(4); // 2 + 2 replenished
+        ->and($user->action_points)->toBe(22); // 2 + 20 replenished
 });
 
 test('logged in player can manually advance day tick via nagoya movement dashboard', function () {
@@ -82,8 +83,9 @@ test('logged in player can manually advance day tick via nagoya movement dashboa
         'days_played_today' => 0,
         'last_played_real_date' => now()->startOfDay(),
         'action_points' => 5,
-        'max_action_points' => 12,
-        'daily_action_points' => 2,
+        'max_action_points' => 26,
+        'weekly_action_points' => 20,
+        'daily_action_points' => 20,
     ]);
 
     Livewire::actingAs($user)
@@ -98,7 +100,7 @@ test('logged in player can manually advance day tick via nagoya movement dashboa
     expect($session->current_game_day)->toBe(2)
         ->and($session->days_processed_this_month)->toBe(1)
         ->and($user->days_played_today)->toBe(1)
-        ->and($user->action_points)->toBe(7);
+        ->and($user->action_points)->toBe(25); // 5 + 20 replenished
 });
 
 test('auto day tick triggered after countdown passes successfully without manual notifications', function () {
@@ -106,7 +108,9 @@ test('auto day tick triggered after countdown passes successfully without manual
         'name' => 'Auto Tick Session',
         'code' => 'adv-3',
         'current_game_month' => 1,
+        'current_game_week' => 3,
         'current_game_day' => 3,
+        'weeks_processed_this_month' => 2,
         'days_processed_this_month' => 2,
         'calendar_date' => '2026-04-01',
         'month_duration_minutes' => 720,
@@ -117,14 +121,18 @@ test('auto day tick triggered after countdown passes successfully without manual
 
     $user = User::factory()->create([
         'current_game_session_id' => $session->id,
+        'current_game_week' => 3,
         'current_game_day' => 3,
+        'weeks_processed_this_month' => 2,
         'days_processed_this_month' => 2,
         'last_active_at' => now(),
+        'weeks_played_today' => 2,
         'days_played_today' => 2,
         'last_played_real_date' => now()->startOfDay(),
         'action_points' => 4,
-        'max_action_points' => 12,
-        'daily_action_points' => 2,
+        'max_action_points' => 26,
+        'weekly_action_points' => 20,
+        'daily_action_points' => 20,
     ]);
 
     Livewire::actingAs($user)
@@ -229,7 +237,7 @@ test('advanceDay stops when 30 days have been processed in the current game mont
         ->assertDispatched('notify', function (string $name, array $params) {
             $data = $params[0] ?? $params;
 
-            return ($data['type'] ?? '') === 'info' && str_contains($data['message'] ?? '', 'has completed all 30 days');
+            return ($data['type'] ?? '') === 'info' && (str_contains($data['message'] ?? '', 'has completed all 4 weeks') || str_contains($data['message'] ?? '', 'has completed all 30 days'));
         });
 
     $user->refresh();
@@ -260,8 +268,9 @@ test('manual day advance by one player does not change day or replenish AP for o
         'days_played_today' => 0,
         'last_active_at' => now(),
         'action_points' => 4,
-        'max_action_points' => 12,
-        'daily_action_points' => 2,
+        'max_action_points' => 26,
+        'weekly_action_points' => 20,
+        'daily_action_points' => 20,
     ]);
 
     $playerB = User::factory()->create([
@@ -273,8 +282,9 @@ test('manual day advance by one player does not change day or replenish AP for o
         'days_played_today' => 0,
         'last_active_at' => now()->subMinutes(2),
         'action_points' => 6,
-        'max_action_points' => 12,
-        'daily_action_points' => 2,
+        'max_action_points' => 26,
+        'weekly_action_points' => 20,
+        'daily_action_points' => 20,
     ]);
 
     // Player A advances their day manually
@@ -290,7 +300,7 @@ test('manual day advance by one player does not change day or replenish AP for o
     expect($playerA->current_game_day)->toBe(2)
         ->and($playerA->days_processed_this_month)->toBe(1)
         ->and($playerA->days_played_today)->toBe(1)
-        ->and($playerA->action_points)->toBe(6); // 4 + 2
+        ->and($playerA->action_points)->toBe(24); // 4 + 20
 
     // Player B is completely unchanged!
     expect($playerB->current_game_day)->toBe(1)
@@ -299,12 +309,14 @@ test('manual day advance by one player does not change day or replenish AP for o
         ->and($playerB->action_points)->toBe(6); // Still 6
 });
 
-test('player can manually advance to next month once 30 days have been completed', function () {
+test('player cannot manually advance to next month and receives server midnight notice', function () {
     $session = GameSession::create([
         'name' => 'Month Advance Session',
         'code' => 'adv-month',
         'current_game_month' => 1,
+        'current_game_week' => 4,
         'current_game_day' => 30,
+        'weeks_processed_this_month' => 4,
         'days_processed_this_month' => 30,
         'calendar_date' => '2026-04-01',
         'month_duration_minutes' => 720,
@@ -315,27 +327,30 @@ test('player can manually advance to next month once 30 days have been completed
     $user = User::factory()->create([
         'current_game_session_id' => $session->id,
         'current_game_month' => 1,
+        'current_game_week' => 4,
         'current_game_day' => 30,
+        'weeks_processed_this_month' => 4,
         'days_processed_this_month' => 30,
+        'weeks_played_today' => 4,
         'days_played_today' => 30,
         'last_active_at' => now(),
         'action_points' => 1,
-        'max_action_points' => 12,
+        'max_action_points' => 26,
     ]);
 
     Livewire::actingAs($user)
         ->test(ActionQueuePlanner::class)
         ->call('advanceMonth')
-        ->assertDispatched('open-month-review')
-        ->assertDispatched('notify');
+        ->assertNotDispatched('open-month-review')
+        ->assertDispatched('notify', fn ($name, $params) => ($params['type'] ?? $params[0]['type'] ?? null) === 'info'
+            && str_contains(($params['message'] ?? $params[0]['message'] ?? ''), 'midnight by the server tick')
+        );
 
     $user->refresh();
 
-    expect($user->current_game_month)->toBe(2)
-        ->and($user->current_game_day)->toBe(1)
-        ->and($user->days_processed_this_month)->toBe(0)
-        ->and($user->action_points)->toBe(12)
-        ->and($user->hasChangedMonthToday)->toBeTrue();
+    // Player month remains unchanged - only the server advances at midnight
+    expect($user->current_game_month)->toBe(1)
+        ->and($user->action_points)->toBe(1);
 });
 
 test('scheduled month advance skips players who have already changed their month today', function () {

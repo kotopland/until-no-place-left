@@ -97,13 +97,19 @@ class ResetGameCommand extends Command
                 // 5. Clear NPCs (dynamic multiplier disciples and previous state)
                 Npc::where('game_session_id', $session->id)->delete();
 
-                // 6. Reset session timeline to Month 1, Day 1
+                // 6. Reset session timeline to Month 1, Week 1
                 $session->update([
                     'current_game_month' => 1,
+                    'current_game_week' => 1,
+                    'weeks_processed_this_month' => 0,
                     'current_game_day' => 1,
+                    'days_processed_this_month' => 0,
                     'calendar_date' => '2026-04-01',
                     'month_duration_minutes' => 720,
-                    'next_tick_at' => now()->addMinutes(10),
+                    'next_tick_at' => now()->addMinutes(15),
+                    'next_weekly_tick_at' => now()->addMinutes(15),
+                    'next_daily_tick_at' => now()->addMinutes(15),
+                    'last_weekly_tick_at' => null,
                     'last_daily_tick_at' => null,
                     'is_active' => true,
                 ]);
@@ -126,19 +132,25 @@ class ResetGameCommand extends Command
 
                     $updates = [
                         'current_game_month' => 1,
+                        'current_game_week' => 1,
+                        'weeks_processed_this_month' => 0,
+                        'weeks_played_today' => 0,
                         'current_game_day' => 1,
                         'days_processed_this_month' => 0,
-                        'action_points' => 12,
-                        'max_action_points' => 12,
-                        'daily_action_points' => 12,
+                        'action_points' => 20,
+                        'max_action_points' => 26,
+                        'weekly_action_points' => 20,
+                        'daily_action_points' => 20,
                         'total_generational_score' => $isCoach ? 60 : 0,
                         'coop_synergy_score' => 0,
                         'days_played_today' => 0,
                         'last_played_real_date' => now()->toDateString(),
                         'last_active_at' => now(),
                         'last_monthly_tick_at' => null,
+                        'last_weekly_tick_at' => null,
                         'last_daily_tick_at' => null,
-                        'next_daily_tick_at' => now()->addMinutes(10),
+                        'next_weekly_tick_at' => now()->addMinutes(15),
+                        'next_daily_tick_at' => now()->addMinutes(15),
                     ];
 
                     if ($wipePlayers) {
