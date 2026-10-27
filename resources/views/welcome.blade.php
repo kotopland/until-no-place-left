@@ -1257,6 +1257,73 @@
                         <span><strong>Qualification Gate:</strong> Candidates must score ≥ 70% overall with no critical gaps (≥ 40% in each dimension) to earn Nagoya Deployment Clearance. Candidates can review tailored coaching notes and retake the screening anytime.</span>
                     </div>
                 </div>
+
+                <!-- Mechanic: Movement Breakthrough Celebrations -->
+                <div class="p-6 rounded-3xl bg-slate-900/80 border border-emerald-500/40 shadow-xl space-y-4 md:col-span-2 lg:col-span-3">
+                    <div class="flex items-center justify-between gap-3 flex-wrap border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl animate-bounce">🎉</span>
+                            <div>
+                                <h3 class="text-base font-bold text-white">Movement Breakthrough Celebrations</h3>
+                                <span class="text-xs text-emerald-400">Rejoicing Over New Believers, Baptisms, Groups &amp; Simple Church Plants</span>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-950 text-emerald-300 border border-emerald-800 flex items-center gap-1">
+                            <span>✨</span>
+                            <span>Kingdom Joy (Luke 15:7)</span>
+                        </span>
+                    </div>
+
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Whenever the Holy Spirit brings breakthrough in Nagoya, the entire movement celebrates! An animated <strong>Celebration Info Banner</strong> appears across the Movement Dashboard and Action HQ showcasing:
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                        <div class="p-3 rounded-2xl bg-slate-950 border border-emerald-800/50 space-y-1.5">
+                            <span class="font-bold text-emerald-400 flex items-center gap-1.5 text-xs">
+                                <span>🎉</span>
+                                <span>New Believer Saved</span>
+                            </span>
+                            <p class="text-[11px] text-slate-300 leading-snug">
+                                Celebrates when a Japanese seeker confesses the Sinner’s Prayer, giving their life to Christ after months of gradual trust-building.
+                            </p>
+                        </div>
+
+                        <div class="p-3 rounded-2xl bg-slate-950 border border-cyan-800/50 space-y-1.5">
+                            <span class="font-bold text-cyan-400 flex items-center gap-1.5 text-xs">
+                                <span>🌊</span>
+                                <span>Water Baptism Milestone</span>
+                            </span>
+                            <p class="text-[11px] text-slate-300 leading-snug">
+                                Honors courage when a believer publicly confesses Jesus in water after 6 months to 2 years of navigating ancestral and family relationships.
+                            </p>
+                        </div>
+
+                        <div class="p-3 rounded-2xl bg-slate-950 border border-amber-800/50 space-y-1.5">
+                            <span class="font-bold text-amber-400 flex items-center gap-1.5 text-xs">
+                                <span>📖</span>
+                                <span>Discovery Bible Study</span>
+                            </span>
+                            <p class="text-[11px] text-slate-300 leading-snug">
+                                Highlights when seekers and their household (Oikos) begin discovering God’s Word directly using the SWORD study pattern.
+                            </p>
+                        </div>
+
+                        <div class="p-3 rounded-2xl bg-slate-950 border border-indigo-800/50 space-y-1.5">
+                            <span class="font-bold text-indigo-400 flex items-center gap-1.5 text-xs">
+                                <span>⛪</span>
+                                <span>Simple Church Planted</span>
+                            </span>
+                            <p class="text-[11px] text-slate-300 leading-snug">
+                                Commemorates when disciples gather into an autonomous Acts 2 Simple Church practicing the 3/3rds pattern (Look Back, Up, Ahead).
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 leading-relaxed flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <span><strong>Breakthrough Intelligence:</strong> Every celebration banner includes the exact <strong>Nagoya Ward location</strong>, the <strong>people involved</strong> (new disciple &amp; discipler/co-worker), generation tier (G1 pioneer to G4+ stream), and biblical anchor. Players can click <em>"🙌 Rejoice! (ハレルヤ)"</em> to celebrate!</span>
+                    </div>
+                </div>
             </div>
         </section>
 

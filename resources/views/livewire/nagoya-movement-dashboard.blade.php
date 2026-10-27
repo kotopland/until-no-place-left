@@ -456,6 +456,17 @@
             <button type="button" @click="show = false" class="ml-2 text-slate-400 hover:text-white text-xs opacity-70 hover:opacity-100 cursor-pointer">✕</button>
         </div>
 
+        <!-- Movement Breakthrough Celebration Info Banner (Non-planner Tabs) -->
+        @if($currentTab !== 'planner' && isset($activeCelebration) && $activeCelebration)
+            <div class="mb-6">
+                <x-movement-celebration-banner 
+                    :celebration="$activeCelebration" 
+                    :totalCelebrations="$totalCelebrations ?? 1"
+                    :currentIndex="0"
+                />
+            </div>
+        @endif
+
         @if($currentTab === 'planner')
             <!-- Action Queue Planner -->
             <livewire:action-queue-planner />

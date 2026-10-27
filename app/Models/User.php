@@ -157,19 +157,19 @@ class User extends Authenticatable
     }
 
     /**
-     * PHP 8.4 Property Hook: whether language school & first-level training commitment is active (first 2 months)
+     * PHP 8.4 Property Hook: whether language school & first-level training commitment is active (first 4 months)
      */
     public bool $isLanguageTrainingActive {
         get => (bool) (
             $this->committed_to_language_training
             && ! $this->language_training_completed
             && $this->language_training_enrolled_month !== null
-            && $this->current_game_month <= ($this->language_training_enrolled_month + 1)
+            && $this->current_game_month <= ($this->language_training_enrolled_month + 3)
         );
     }
 
     /**
-     * PHP 8.4 Property Hook: remaining months of language school commitment (0 to 2)
+     * PHP 8.4 Property Hook: remaining months of language school commitment (0 to 4)
      */
     public int $languageTrainingMonthsRemaining {
         get {
@@ -179,12 +179,12 @@ class User extends Authenticatable
             $enrolled = $this->language_training_enrolled_month ?? 1;
             $monthInTraining = ($this->current_game_month - $enrolled) + 1;
 
-            return max(0, 3 - $monthInTraining);
+            return max(0, 5 - $monthInTraining);
         }
     }
 
     /**
-     * PHP 8.4 Property Hook: current month number in training (Month 1 or Month 2 of 2)
+     * PHP 8.4 Property Hook: current month number in training (Month 1, 2, 3, or 4 of 4)
      */
     public int $languageTrainingCurrentMonthNumber {
         get {
@@ -193,7 +193,7 @@ class User extends Authenticatable
             }
             $enrolled = $this->language_training_enrolled_month ?? 1;
 
-            return min(2, max(1, ($this->current_game_month - $enrolled) + 1));
+            return min(4, max(1, ($this->current_game_month - $enrolled) + 1));
         }
     }
 

@@ -41,6 +41,17 @@
         });
     }
 }" @scroll-to-queue-box.window="scrollToQueue()" @scroll-to-step-2.window="scrollToStep2()">
+    <!-- Movement Breakthrough Celebration Info Banner -->
+    @if(isset($activeCelebration) && $activeCelebration)
+        <div class="mb-4">
+            <x-movement-celebration-banner 
+                :celebration="$activeCelebration" 
+                :totalCelebrations="$totalCelebrations ?? 1"
+                :currentIndex="0"
+            />
+        </div>
+    @endif
+
     <!-- Welcome Guide Banner with Official Logo -->
     <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-100 via-indigo-50/60 to-slate-100 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 border border-slate-200 dark:border-slate-800/80 p-4 shadow-sm dark:shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
@@ -228,7 +239,7 @@
                                     Intensive Japanese Language School &amp; First-Level NPL Foundation
                                 </span>
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800">
-                                    Month {{ $player->languageTrainingCurrentMonthNumber }} of 2 ({{ $player->languageTrainingMonthsRemaining }}m remaining)
+                                    Month {{ $player->languageTrainingCurrentMonthNumber }} of 4 ({{ $player->languageTrainingMonthsRemaining }}m remaining)
                                 </span>
                             </div>
                             <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">

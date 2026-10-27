@@ -7,6 +7,7 @@ use App\Enums\NpcNeedState;
 use App\Enums\QueuedActionStatus;
 use App\Enums\ReceptivityStatus;
 use App\Models\GameSession;
+use App\Models\MovementCelebration;
 use App\Models\Npc;
 use App\Models\QueuedMonthlyAction;
 use App\Models\User;
@@ -763,12 +764,15 @@ class ActionQueuePlanner extends Component
         }
     }
 
-    /**
-     * Alias for advanceWeek for backward compatibility
-     */
     public function advanceDay(bool $isManual = true): void
     {
         $this->advanceWeek($isManual);
+    }
+
+    public function dismissCelebration(int $celebrationId): void
+    {
+        MovementCelebration::where('id', $celebrationId)->update(['is_dismissed' => true]);
+        $this->dispatch('celebration-dismissed');
     }
 
     /**
@@ -824,6 +828,11 @@ class ActionQueuePlanner extends Component
             ->with(['targetNpc', 'ward'])
             ->latest('updated_at')
             ->take(5)
+            ->get();
+
+        $activeCelebrations = MovementCelebration::where('game_session_id', $this->session?->id)
+            ->where('is_dismissed', false)
+            ->latest()
             ->get();
 
         $allFieldActionTypes = array_values(array_filter(
@@ -1035,6 +1044,8 @@ class ActionQueuePlanner extends Component
             'activeWorkerRhythm' => $activeWorkerRhythm,
             'isDayBlocked' => $isDayBlocked,
             'hqSubView' => $this->hqSubView,
+            'activeCelebration' => $activeCelebrations->first(),
+            'totalCelebrations' => $activeCelebrations->count(),
         ]);
     }
 }

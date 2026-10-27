@@ -7,6 +7,7 @@ namespace App\Livewire;
 use App\Models\Church;
 use App\Models\GameSession;
 use App\Models\MonthlyReport;
+use App\Models\MovementCelebration;
 use App\Models\User;
 use App\Models\Ward;
 use App\Services\FourFieldsEngine;
@@ -354,6 +355,12 @@ class NagoyaMovementDashboard extends Component
         ]);
     }
 
+    #[On('celebration-dismissed')]
+    public function dismissCelebration(int $celebrationId): void
+    {
+        MovementCelebration::where('id', $celebrationId)->update(['is_dismissed' => true]);
+    }
+
     public function chooseIndependentStrategy(): void
     {
         $user = auth()->user();
@@ -539,6 +546,11 @@ class NagoyaMovementDashboard extends Component
         $screeningQuestions = $screeningService->getQuestions();
         $screeningDimensions = $screeningService->getDimensions();
 
+        $activeCelebrations = MovementCelebration::where('game_session_id', $session?->id)
+            ->where('is_dismissed', false)
+            ->latest()
+            ->get();
+
         return view('livewire.nagoya-movement-dashboard', [
             'user' => $user,
             'session' => $session,
@@ -551,6 +563,8 @@ class NagoyaMovementDashboard extends Component
             'missionariesByWard' => $missionariesByWard,
             'screeningQuestions' => $screeningQuestions,
             'screeningDimensions' => $screeningDimensions,
+            'activeCelebration' => $activeCelebrations->first(),
+            'totalCelebrations' => $activeCelebrations->count(),
         ]);
     }
 }

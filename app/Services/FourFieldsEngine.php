@@ -18,6 +18,7 @@ use App\Enums\ReceptivityStatus;
 use App\Models\Church;
 use App\Models\GameSession;
 use App\Models\MonthlyReport;
+use App\Models\MovementCelebration;
 use App\Models\Npc;
 use App\Models\NpcContribution;
 use App\Models\OikosRelationship;
@@ -558,17 +559,18 @@ class FourFieldsEngine
                     }
                 } elseif ($user->committed_to_language_training && ! $user->language_training_completed) {
                     $enrolledMonth = $user->language_training_enrolled_month ?? 1;
-                    if ($nextMonth > ($enrolledMonth + 1)) {
+                    if ($nextMonth > ($enrolledMonth + 3)) {
                         $languageTrainingCompleted = true;
                         if (! in_array('Language & L1 Certified', $badges, true)) {
                             $badges[] = 'Language & L1 Certified';
                         }
                         $actionPoints = $user->max_action_points;
                         $scoreGain += 40;
-                        $autonomousHighlights[] = "🎓 [FOUNDATION GRADUATION] {$user->name} has completed 2 intensive months of Japanese Language School & First-Level NPL Training! Full weekly Action Points restored (+40 Generational Points, 'Language & L1 Certified' awarded).";
+                        $autonomousHighlights[] = "🎓 [FOUNDATION GRADUATION] {$user->name} has completed 4 intensive months of Japanese Language School & First-Level NPL Training! Full weekly Action Points restored (+40 Generational Points, 'Language & L1 Certified' awarded).";
                     } else {
                         $actionPoints = $user->availableFieldWeeklyAp;
-                        $autonomousHighlights[] = "📚 [LANGUAGE & L1 FOUNDATION] {$user->name} has advanced into Month 2 of Japanese Language School (60% AP) and First-Level NPL Training (10% AP). 30% AP available for field actions.";
+                        $currentTrainingMonth = ($nextMonth - $enrolledMonth) + 1;
+                        $autonomousHighlights[] = "📚 [LANGUAGE & L1 FOUNDATION] {$user->name} has advanced into Month {$currentTrainingMonth} of Japanese Language School (60% AP) and First-Level NPL Training (10% AP). 30% AP available for field actions.";
                     }
                 } else {
                     $actionPoints = $user->hasLanguageBarrierHandicap
@@ -795,17 +797,18 @@ class FourFieldsEngine
                 }
             } elseif ($user->committed_to_language_training && ! $user->language_training_completed) {
                 $enrolledMonth = $user->language_training_enrolled_month ?? 1;
-                if ($newMonth > ($enrolledMonth + 1)) {
+                if ($newMonth > ($enrolledMonth + 3)) {
                     $languageTrainingCompleted = true;
                     if (! in_array('Language & L1 Certified', $badges, true)) {
                         $badges[] = 'Language & L1 Certified';
                     }
                     $actionPoints = $user->max_action_points;
                     $totalScoreGain += 40;
-                    $autonomousHighlights[] = "🎓 [FOUNDATION GRADUATION] {$user->name} has completed 2 intensive months of Japanese Language School & First-Level NPL Training! Full weekly Action Points restored (+40 Generational Points, 'Language & L1 Certified' awarded).";
+                    $autonomousHighlights[] = "🎓 [FOUNDATION GRADUATION] {$user->name} has completed 4 intensive months of Japanese Language School & First-Level NPL Training! Full weekly Action Points restored (+40 Generational Points, 'Language & L1 Certified' awarded).";
                 } else {
                     $actionPoints = $user->availableFieldWeeklyAp;
-                    $autonomousHighlights[] = "📚 [LANGUAGE & L1 FOUNDATION] {$user->name} has advanced into Month 2 of Japanese Language School (60% AP) and First-Level NPL Training (10% AP). 30% AP available for field actions.";
+                    $currentTrainingMonth = ($newMonth - $enrolledMonth) + 1;
+                    $autonomousHighlights[] = "📚 [LANGUAGE & L1 FOUNDATION] {$user->name} has advanced into Month {$currentTrainingMonth} of Japanese Language School (60% AP) and First-Level NPL Training (10% AP). 30% AP available for field actions.";
                 }
             } else {
                 $actionPoints = $user->hasLanguageBarrierHandicap
@@ -1157,6 +1160,21 @@ class FourFieldsEngine
                     $points = 75;
                     $roleAssigned = ContributionRole::Harvester;
 
+                    MovementCelebration::recordSalvation(
+                        gameSessionId: $action->game_session_id,
+                        wardId: $ward->id,
+                        wardName: "{$ward->name} ({$ward->name_ja})",
+                        personName: "{$npc->name} ({$npc->name_ja})",
+                        personRole: $npc->role_archetype?->label() ?? 'Seeker',
+                        disciplerName: $user->name,
+                        details: "Hallelujah! After {$seekingMonths} months of sincere seeking, {$npc->name} prayed the Sinner's Prayer with genuine sincerity and tears, confessing their sins and receiving Jesus Christ as Lord and Savior!",
+                        generation: max(1, $npc->generation),
+                        gameMonth: $gameMonth,
+                        gameWeek: $action->game_week ?: 1,
+                        userId: $user->id,
+                        npcId: $npc->id,
+                    );
+
                     $narrative = "Hallelujah! After {$seekingMonths} months of sincere seeking, {$npc->name} prayed the Sinner's Prayer with genuine sincerity and tears, confessing their sins and receiving Jesus Christ as Lord and Savior! They have entered the Kingdom of God and are now prayerfully counting the cost of baptism.";
                     $coachTip = 'Salvation celebrated! In Japan, ancestral and family heritage makes baptism a deep step requiring 6 months to 2 years of cost-counting. Walk alongside them through this journey!';
                 } elseif ($prevStatus === ReceptivityStatus::Yellow || $prevTrust >= 40 || $npc->is_person_of_peace) {
@@ -1194,6 +1212,21 @@ class FourFieldsEngine
                         $points = 80;
                         $roleAssigned = ContributionRole::Discipler;
                         $isBaptismCompleted = true;
+
+                        MovementCelebration::recordBaptism(
+                            gameSessionId: $action->game_session_id,
+                            wardId: $ward->id,
+                            wardName: "{$ward->name} ({$ward->name_ja})",
+                            personName: "{$npc->name} ({$npc->name_ja})",
+                            personRole: $npc->role_archetype?->label() ?? 'New Believer',
+                            disciplerName: $user->name,
+                            details: "Glory to God! After {$npc->baptism_cost_months} months of faithful prayer, overcoming family obstacles, and counting the cost, {$npc->name} publicly confessed Christ and was baptized in water!",
+                            generation: max(1, $npc->generation),
+                            gameMonth: $gameMonth,
+                            gameWeek: $action->game_week ?: 1,
+                            userId: $user->id,
+                            npcId: $npc->id,
+                        );
 
                         $narrative = "Glory to God! After {$npc->baptism_cost_months} months of faithful prayer, overcoming family obstacles, and counting the cost, {$npc->name} publicly confessed Christ and was baptized in water! Local believers gathered to celebrate this courageous milestone in Nagoya!";
                         $coachTip = 'Matthew 28:19 fulfilled! In Japan, baptism usually takes 6 months to 2 years to prepare family relationships. Baptized disciples are ready to multiply!';
@@ -1251,6 +1284,22 @@ class FourFieldsEngine
                             ]);
                             $points += 35;
                             $isBaptismCompleted = true;
+
+                            MovementCelebration::recordBaptism(
+                                gameSessionId: $action->game_session_id,
+                                wardId: $ward->id,
+                                wardName: "{$ward->name} ({$ward->name_ja})",
+                                personName: "{$npc->name} ({$npc->name_ja})",
+                                personRole: $npc->role_archetype?->label() ?? 'Disciple',
+                                disciplerName: $user->name,
+                                details: "Discipled in the Commands of Christ! Having faithfully prepared their family over {$npc->baptism_cost_months} months, {$npc->name} was publicly baptized in water!",
+                                generation: max(1, $npc->generation),
+                                gameMonth: $gameMonth,
+                                gameWeek: $action->game_week ?: 1,
+                                userId: $user->id,
+                                npcId: $npc->id,
+                            );
+
                             $narrative = "Discipled {$npc->name} in the Commands of Christ! Having faithfully prepared their family over {$npc->baptism_cost_months} months, {$npc->name} was publicly baptized in water!";
                         } else {
                             $narrative = "Discipled {$npc->name} in the Commands of Christ! Convicted by Command 2 (Be Baptized), they reaffirmed their baptism commitment as they continue preparing their parents and family (Month {$npc->baptism_cost_months} of {$targetBaptismMonths}).";
@@ -1285,6 +1334,22 @@ class FourFieldsEngine
                             'baptism_cost_months' => 0,
                         ]);
                         $points += 40;
+
+                        MovementCelebration::recordSalvation(
+                            gameSessionId: $action->game_session_id,
+                            wardId: $ward->id,
+                            wardName: "{$ward->name} ({$ward->name_ja})",
+                            personName: "{$npc->name} ({$npc->name_ja})",
+                            personRole: $npc->role_archetype?->label() ?? 'Discovery Seeker',
+                            disciplerName: $user->name,
+                            details: "Facilitated a SWORD discovery Bible study with {$npc->name}. After {$seekingMonths} months of seeking, the Holy Spirit convicted them as they answered the 4 questions, and they joyfully gave their life to Christ!",
+                            generation: max(1, $npc->generation),
+                            gameMonth: $gameMonth,
+                            gameWeek: $action->game_week ?: 1,
+                            userId: $user->id,
+                            npcId: $npc->id,
+                        );
+
                         $narrative = "Facilitated a SWORD discovery Bible study with {$npc->name}. After {$seekingMonths} months of seeking, the Holy Spirit convicted them as they answered the 4 questions, and they joyfully gave their life to Christ!";
                         $coachTip = 'Field 2 to Field 3: A new believer born through direct encounter with Scripture! Begin walking with them through the 6-month to 2-year baptism journey.';
                     } else {
@@ -1324,6 +1389,22 @@ class FourFieldsEngine
                                 ]);
                                 $points += 40;
                                 $isBaptismCompleted = true;
+
+                                MovementCelebration::recordBaptism(
+                                    gameSessionId: $action->game_session_id,
+                                    wardId: $ward->id,
+                                    wardName: "{$ward->name} ({$ward->name_ja})",
+                                    personName: "{$npc->name} ({$npc->name_ja})",
+                                    personRole: $npc->role_archetype?->label() ?? 'L1 Seed Sower',
+                                    disciplerName: $user->name,
+                                    details: "Trained {$npc->name} in 411 Discipleship! Having completed {$npc->baptism_cost_months} months of family preparation, {$npc->name} was joyfully baptized in water during the 411 training gathering!",
+                                    generation: max(1, $npc->generation),
+                                    gameMonth: $gameMonth,
+                                    gameWeek: $action->game_week ?: 1,
+                                    userId: $user->id,
+                                    npcId: $npc->id,
+                                );
+
                                 $narrative = "Trained {$npc->name} in 411 Discipleship! Having completed {$npc->baptism_cost_months} months of family preparation, {$npc->name} was joyfully baptized in water during the 411 training gathering!";
                             } else {
                                 $narrative = "Trained {$npc->name} in 411 Discipleship! Convicted by Jesus' command to be baptized, they reaffirmed their commitment and continue preparing their family (Month {$npc->baptism_cost_months} of {$targetBaptismMonths}). They are now an active L1 Seed Sower!";
@@ -1415,6 +1496,23 @@ class FourFieldsEngine
                         'church_id' => $newChurch->id,
                         'discipler_user_id' => $user->id,
                     ]);
+
+                    MovementCelebration::recordChurchPlanted(
+                        gameSessionId: $action->game_session_id,
+                        wardId: $ward->id,
+                        wardName: "{$ward->name} ({$ward->name_ja})",
+                        churchName: $newChurch->name,
+                        leaderName: "{$npc->name} ({$npc->name_ja})",
+                        startedByName: $user->name,
+                        details: "Gathered believers with {$npc->name} to form an Acts 2 Church Circle using the 3/3rds pattern (Look Back, Look Up, Look Ahead). An autonomous simple church is now birthed in {$ward->name}!",
+                        generation: $churchGen,
+                        gameMonth: $gameMonth,
+                        gameWeek: $coachedWeek,
+                        userId: $user->id,
+                        npcId: $npc->id,
+                        churchId: $newChurch->id,
+                    );
+
                     $narrative = "Gathered believers with {$npc->name} to form an Acts 2 Church Circle using the 3/3rds pattern (Look Back, Look Up, Look Ahead). An autonomous simple church is now birthed in {$ward->name}!";
                 } elseif ($existingChurch->is_dissolved) {
                     $existingChurch->revitalize($gameMonth, $user);
@@ -2221,6 +2319,21 @@ class FourFieldsEngine
 
                     $newBelieversCount++;
 
+                    MovementCelebration::recordSalvation(
+                        gameSessionId: $session->id,
+                        wardId: $targetNpc->ward_id,
+                        wardName: "{$targetNpc->ward->name} ({$targetNpc->ward->name_ja})",
+                        personName: "{$targetNpc->name} ({$targetNpc->name_ja})",
+                        personRole: $targetNpc->role_archetype?->label() ?? 'Oikos Believer',
+                        disciplerName: "{$believer->name} (G{$believer->generation})",
+                        details: "🌱 [AUTONOMOUS MULTIPLICATION] {$believer->name} shared Christ with {$targetNpc->name} ({$unsavedTargetRel->relationship_type->label()}) in {$targetNpc->ward->name}! New G{$newGen} disciple born in Nagoya!",
+                        generation: $newGen,
+                        gameMonth: $gameMonth,
+                        gameWeek: 1,
+                        userId: $believer->discipler_user_id,
+                        npcId: $targetNpc->id,
+                    );
+
                     // Calculate generational points for original player
                     $originalPlayer = $believer->disciplerUser
                         ?? $believer->disciplerNpc?->disciplerUser
@@ -2310,6 +2423,22 @@ class FourFieldsEngine
                 $believer->update(['church_id' => $newChurch->id]);
 
                 $newChurchesCount++;
+
+                MovementCelebration::recordChurchPlanted(
+                    gameSessionId: $session->id,
+                    wardId: $newChurch->ward_id,
+                    wardName: "{$believer->ward->name} ({$believer->ward->name_ja})",
+                    churchName: $newChurch->name,
+                    leaderName: "{$believer->name} ({$believer->name_ja})",
+                    startedByName: "{$believer->name} (G{$believer->generation})",
+                    details: "🌱 [AUTONOMOUS DAUGHTER CHURCH] Equipped disciple {$believer->name} has birthed an autonomous G{$churchGen} simple church in {$believer->ward->name} with {$attenders} attenders and {$baptized} baptized believers!",
+                    generation: $churchGen,
+                    gameMonth: $gameMonth,
+                    gameWeek: 1,
+                    userId: $believer->discipler_user_id,
+                    npcId: $believer->id,
+                    churchId: $newChurch->id,
+                );
 
                 $originalPlayer = $believer->disciplerUser
                     ?? $believer->disciplerNpc?->disciplerUser
