@@ -184,8 +184,18 @@ enum MinistryActionType: string
             self::MentorTimothy => 3,
             self::IronOnIron => 3,
             self::SwarmTraining => 4,
-            self::ReceiveMentoring, self::SabbathRest, self::FastingRetreat, self::MidLevelConference => 0,
+            self::SabbathRest => 4,
+            self::ReceiveMentoring => 3,
+            self::FastingRetreat, self::MidLevelConference => 0,
         };
+    }
+
+    /**
+     * Base AP cost alias
+     */
+    public function baseApCost(): int
+    {
+        return $this->apCost();
     }
 
     /**
@@ -211,10 +221,10 @@ enum MinistryActionType: string
             self::MentorTimothy => 'Invest in an equipped L1 Seed Sower through intentional coaching so they become an L2 Church Planter planting autonomous daughter churches.',
             self::IronOnIron => 'Peer-to-peer coaching with generational mapping and 4 Fields diagnostics to celebrate fruit, remove bottlenecks, and cast 4th generation vision.',
             self::SwarmTraining => 'Mobilize catalytic training teams across the ward to model, assist, watch, and leave (MAWL), launching regional midlevel coaching and unreached engagement.',
-            self::ReceiveMentoring => 'Receive 1-on-1 personal mentoring, soul care, and Four Fields coaching from an experienced movement practitioner (Paul). Blocks time for field ministry on this day.',
-            self::SabbathRest => 'A dedicated weekly day of rest, worship, and abiding in Jesus Christ. Ceases field labors to restore soul and body, replenishing Action Points and preventing burnout in Japan. Blocks time for other actions on this day.',
-            self::FastingRetreat => 'A dedicated 4-day corporate prayer and fasting retreat with fellow missionary co-laborers in Japan. Intercedes deeply for spiritual breakthrough and strongholds across Nagoya. Blocks time for other actions for 4 consecutive days.',
-            self::MidLevelConference => 'A No Place Left (NPL) Mid-Level (or "Midlevel") conference is a problem-solving and strategy retreat for active movement practitioners rather than an introductory training session. Practitioners map generations, diagnose bottlenecks, and align on apostolic breakthrough. Blocks time for other actions for 3 consecutive days.',
+            self::ReceiveMentoring => 'Receive 1-on-1 personal mentoring, soul care, and Four Fields coaching from an experienced movement practitioner (Paul). Costs 3 AP of weekly bandwidth without blocking other field actions.',
+            self::SabbathRest => 'A dedicated weekly day of rest, worship, and abiding in Jesus Christ. Dedicates 4 AP of weekly bandwidth to rest, restoring soul and body, clearing exhaustion, and preventing burnout without blocking remaining field actions.',
+            self::FastingRetreat => 'A dedicated 1-week corporate prayer and fasting retreat with fellow missionary co-laborers in Japan. Intercedes deeply for spiritual breakthrough and strongholds across Nagoya. Blocks time for other actions for this week.',
+            self::MidLevelConference => 'A No Place Left (NPL) Mid-Level conference is a problem-solving and strategy retreat for active movement practitioners rather than an introductory training session. Practitioners map generations, diagnose bottlenecks, and align on apostolic breakthrough. Blocks time for other actions for this week.',
         };
     }
 
@@ -349,6 +359,19 @@ enum MinistryActionType: string
     {
         return match ($this) {
             self::ReceiveMentoring, self::SabbathRest, self::FastingRetreat, self::MidLevelConference => true,
+            default => false,
+        };
+    }
+
+    /**
+     * Whether this worker rhythm blocks the entire week from performing other field actions.
+     * Full retreats (Fasting Retreat, Mid-Level Conference) block the week.
+     * Weekly Day of Rest (Sabbath) and Movement Mentoring only reduce weekly AP.
+     */
+    public function blocksEntireWeek(): bool
+    {
+        return match ($this) {
+            self::FastingRetreat, self::MidLevelConference => true,
             default => false,
         };
     }

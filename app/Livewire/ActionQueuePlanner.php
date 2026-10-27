@@ -286,8 +286,6 @@ class ActionQueuePlanner extends Component
             })
             ->where('status', QueuedActionStatus::Pending)
             ->whereIn('action_type', [
-                MinistryActionType::ReceiveMentoring,
-                MinistryActionType::SabbathRest,
                 MinistryActionType::FastingRetreat,
                 MinistryActionType::MidLevelConference,
             ])
@@ -525,20 +523,44 @@ class ActionQueuePlanner extends Component
             return;
         }
 
-        // Check if there are already pending actions on this week
-        $existingActions = QueuedMonthlyAction::where('user_id', $this->player->id)
-            ->where('game_month', $currentMonth)
-            ->where(function ($q) use ($currentWeek, $currentDay) {
-                $q->where('game_week', $currentWeek)
-                    ->orWhere('game_day', $currentDay);
-            })
-            ->where('status', QueuedActionStatus::Pending)
-            ->get();
-
-        if ($existingActions->isNotEmpty()) {
+        // If a full-week blocking retreat is active, other activities cannot be scheduled
+        if ($this->isCurrentWeekBlocked) {
+            $rhythm = $this->activeWorkerRhythm;
             $this->dispatch('notify', [
                 'type' => 'warning',
-                'message' => "Time Conflict: You already have {$existingActions->count()} action(s) scheduled for Week {$currentWeek}. Please cancel them first before blocking this time.",
+                'message' => "Time Blocked: You are participating in {$rhythm?->actionTitle} in Week {$currentWeek}. Other activities cannot be scheduled this week.",
+            ]);
+
+            return;
+        }
+
+        // Full retreats (Fasting Retreat, Mid-Level Conference) require dedicating the entire week
+        if ($rhythmEnum->blocksEntireWeek()) {
+            $existingActions = QueuedMonthlyAction::where('user_id', $this->player->id)
+                ->where('game_month', $currentMonth)
+                ->where(function ($q) use ($currentWeek, $currentDay) {
+                    $q->where('game_week', $currentWeek)
+                        ->orWhere('game_day', $currentDay);
+                })
+                ->where('status', QueuedActionStatus::Pending)
+                ->get();
+
+            if ($existingActions->isNotEmpty()) {
+                $this->dispatch('notify', [
+                    'type' => 'warning',
+                    'message' => "Time Conflict: You already have {$existingActions->count()} action(s) scheduled for Week {$currentWeek}. Please cancel them first before dedicating this entire week to a retreat.",
+                ]);
+
+                return;
+            }
+        }
+
+        // Check bandwidth AP cost (e.g. 4 AP for Sabbath, 3 AP for Mentoring)
+        $apCost = $rhythmEnum->apCost();
+        if ($this->player->action_points < $apCost) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => "Insufficient Action Points! {$rhythmEnum->label()} requires {$apCost} AP of weekly bandwidth, but you only have {$this->player->action_points} AP remaining.",
             ]);
 
             return;
@@ -611,6 +633,11 @@ class ActionQueuePlanner extends Component
             }
         }
 
+        // Deduct AP if applicable
+        if ($apCost > 0) {
+            $this->player->decrement('action_points', $apCost);
+        }
+
         // Schedule record for the week
         $wardId = $this->player->home_ward_id ?? $this->selectedWardId ?? Ward::first()->id;
 
@@ -624,14 +651,18 @@ class ActionQueuePlanner extends Component
             'game_month' => $currentMonth,
             'game_week' => $currentWeek,
             'game_day' => $currentDay,
-            'ap_cost' => 0,
+            'ap_cost' => $apCost,
             'notes' => $rhythmEnum->label(),
         ]);
+
+        $bandwidthDetail = $apCost > 0
+            ? " ({$apCost} AP deducted, {$this->player->action_points} AP remaining for field actions)"
+            : ' (dedicated week)';
 
         $this->dispatch('action-queued');
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => "Successfully committed to {$rhythmEnum->label()} for Week {$currentWeek}! Time is now dedicated to this rhythm.",
+            'message' => "Successfully scheduled {$rhythmEnum->label()} for Week {$currentWeek}!{$bandwidthDetail}",
         ]);
     }
 
@@ -643,7 +674,7 @@ class ActionQueuePlanner extends Component
             ->first();
 
         if ($action) {
-            if ($action->action_type->isWorkerRhythm()) {
+            if ($action->action_type->blocksEntireWeek()) {
                 // Cancel all related pending days of this rhythm in this month
                 $count = QueuedMonthlyAction::where('user_id', $this->player->id)
                     ->where('game_month', $action->game_month)
@@ -653,16 +684,20 @@ class ActionQueuePlanner extends Component
 
                 $this->dispatch('notify', [
                     'type' => 'info',
-                    'message' => "Cancelled {$action->action_type->label()} ({$count} day(s) unblocked).",
+                    'message' => "Cancelled {$action->action_type->label()} ({$count} week(s) unblocked).",
                 ]);
             } else {
                 // Refund AP
-                $this->player->increment('action_points', $action->ap_cost);
+                if ($action->ap_cost > 0) {
+                    $this->player->increment('action_points', $action->ap_cost);
+                }
                 $action->delete();
 
                 $this->dispatch('notify', [
                     'type' => 'info',
-                    'message' => "Action cancelled. {$action->ap_cost} AP refunded.",
+                    'message' => $action->ap_cost > 0
+                        ? "Action cancelled. {$action->ap_cost} AP refunded."
+                        : 'Action cancelled.',
                 ]);
             }
         }
@@ -923,28 +958,32 @@ class ActionQueuePlanner extends Component
                 ->exists()
             : false;
 
+        $playerAp = $this->player?->action_points ?? 0;
+
         $workerRhythmStatuses = [
             MinistryActionType::ReceiveMentoring->value => [
                 'actionType' => MinistryActionType::ReceiveMentoring,
                 'type' => MinistryActionType::ReceiveMentoring,
+                'ap_cost' => 3,
                 'days' => 1,
                 'duration' => 1,
                 'points' => 30,
-                'active' => $activeWorkerRhythm?->action_type === MinistryActionType::ReceiveMentoring,
-                'eligible' => ! $isDayBlocked && ! $recentMentoring,
-                'allowed' => ! $isDayBlocked && ! $recentMentoring,
-                'reason' => $isDayBlocked ? 'Worker is already on a retreat/activity this week.' : ($recentMentoring ? 'Movement mentoring has already been scheduled for this week.' : null),
+                'active' => $recentMentoring !== null,
+                'eligible' => ! $isDayBlocked && ! $recentMentoring && ($playerAp >= 3),
+                'allowed' => ! $isDayBlocked && ! $recentMentoring && ($playerAp >= 3),
+                'reason' => $isDayBlocked ? 'Worker is already on a dedicated retreat this week.' : ($recentMentoring ? 'Movement mentoring has already been scheduled for this week.' : ($playerAp < 3 ? "Requires 3 AP bandwidth (you have {$playerAp} AP)." : null)),
             ],
             MinistryActionType::SabbathRest->value => [
                 'actionType' => MinistryActionType::SabbathRest,
                 'type' => MinistryActionType::SabbathRest,
+                'ap_cost' => 4,
                 'days' => 1,
                 'duration' => 1,
                 'points' => 25,
-                'active' => $activeWorkerRhythm?->action_type === MinistryActionType::SabbathRest,
-                'eligible' => ! $isDayBlocked && ! $recentSabbath,
-                'allowed' => ! $isDayBlocked && ! $recentSabbath,
-                'reason' => $isDayBlocked ? 'Worker is already on a retreat/activity this week.' : ($recentSabbath ? 'Weekly Sabbath has already been scheduled for this week.' : null),
+                'active' => $recentSabbath !== null,
+                'eligible' => ! $isDayBlocked && ! $recentSabbath && ($playerAp >= 4),
+                'allowed' => ! $isDayBlocked && ! $recentSabbath && ($playerAp >= 4),
+                'reason' => $isDayBlocked ? 'Worker is already on a dedicated retreat this week.' : ($recentSabbath ? 'Weekly Sabbath has already been scheduled for this week.' : ($playerAp < 4 ? "Requires 4 AP bandwidth (you have {$playerAp} AP)." : null)),
             ],
             MinistryActionType::FastingRetreat->value => [
                 'actionType' => MinistryActionType::FastingRetreat,

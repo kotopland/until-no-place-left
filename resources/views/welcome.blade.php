@@ -1037,7 +1037,7 @@
                     </div>
 
                     <p class="text-xs text-slate-300 leading-relaxed">
-                        Missionary fruitfulness flows from abiding intimacy with Christ and strategic alignment. Accessible via the <strong>Spiritual Rhythms &amp; Retreats</strong> sub-menu in Action HQ or the top navigation <strong>More</strong> menu, workers can schedule dedicated spiritual rhythms and catalytic retreats. <strong>These activities award points and replenish spiritual health, but block time for all other field actions</strong> during their scheduled duration:
+                        Missionary fruitfulness flows from abiding intimacy with Christ and strategic alignment. Accessible via the <strong>Spiritual Rhythms &amp; Retreats</strong> sub-menu in Action HQ or the top navigation <strong>More</strong> menu, workers can schedule dedicated spiritual rhythms and catalytic retreats:
                     </p>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
@@ -1045,13 +1045,13 @@
                         <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 flex flex-col justify-between">
                             <div class="space-y-1.5">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-xl">🧭</span>
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-950 text-indigo-300 border border-indigo-800">1 Day</span>
+                                    <span class="text-xl">🤝</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-950 text-indigo-300 border border-indigo-800">3 AP</span>
                                 </div>
                                 <h4 class="font-bold text-white text-xs">Receive Mentoring</h4>
                                 <span class="text-[10px] text-indigo-400 block font-semibold">メンターシップ受講</span>
                                 <p class="text-[11px] text-slate-400 leading-relaxed">
-                                    Receive pastoral and catalytic ministry coaching from an experienced movement practitioner. Debrief obstacles, refine vision, and receive prayer.
+                                    Receive pastoral and catalytic ministry coaching from an experienced movement practitioner. Costs 3 AP of weekly bandwidth without blocking other field actions. Debrief obstacles, refine vision, and receive prayer.
                                 </p>
                             </div>
                             <div class="pt-2 border-t border-slate-900 flex items-center justify-between text-[11px]">
@@ -1065,61 +1065,61 @@
                             <div class="space-y-1.5">
                                 <div class="flex items-center justify-between">
                                     <span class="text-xl">🕯️</span>
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800">1 Day</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800">4 AP</span>
                                 </div>
                                 <h4 class="font-bold text-white text-xs">Weekly Sabbath Rest</h4>
                                 <span class="text-[10px] text-amber-400 block font-semibold">安息日・休息</span>
                                 <p class="text-[11px] text-slate-400 leading-relaxed">
-                                    A dedicated weekly day of rest, cessation from labor, and spiritual replenishment before God. Refreshes the missionary's heart, completely resets overwork fatigue to 0, prevents burnout, and restores full 12 AP.
+                                    A dedicated weekly day of rest, cessation from labor, and spiritual replenishment before God. Dedicates 4 AP of weekly bandwidth to rest (leaving 16 AP for field ministry), completely resets overwork fatigue to 0, prevents burnout, and earns +25 points.
                                 </p>
                             </div>
                             <div class="pt-2 border-t border-slate-900 flex items-center justify-between text-[11px]">
-                                <span class="font-bold text-emerald-400">Resets Fatigue &amp; 100% AP</span>
+                                <span class="font-bold text-emerald-400">+25 Pts • Resets Fatigue</span>
                                 <span class="text-[10px] text-slate-500">Max 1 / week</span>
                             </div>
                         </div>
 
-                        <!-- Rhythm 3: 4-Day Fasting Retreat -->
+                        <!-- Rhythm 3: 1-Week Fasting Retreat -->
                         <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 flex flex-col justify-between">
                             <div class="space-y-1.5">
                                 <div class="flex items-center justify-between">
                                     <span class="text-xl">⏳</span>
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950 text-purple-300 border border-purple-800">4 Days</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950 text-purple-300 border border-purple-800">1 Week Block</span>
                                 </div>
-                                <h4 class="font-bold text-white text-xs">4-Day Fasting Retreat</h4>
-                                <span class="text-[10px] text-purple-400 block font-semibold">4日間の断食リトリート</span>
+                                <h4 class="font-bold text-white text-xs">Fasting Retreat</h4>
+                                <span class="text-[10px] text-purple-400 block font-semibold">断食リトリート</span>
                                 <p class="text-[11px] text-slate-400 leading-relaxed">
-                                    An extended 4-consecutive-day corporate prayer and fasting retreat with fellow missionaries to seek God for spiritual breakthrough across Nagoya.
+                                    A dedicated 1-week corporate prayer and fasting retreat with fellow missionaries to seek God for spiritual breakthrough across Nagoya. Blocks other field actions this week.
                                 </p>
                             </div>
                             <div class="pt-2 border-t border-slate-900 flex items-center justify-between text-[11px]">
-                                <span class="font-bold text-emerald-400">+100 Pts (+25/day)</span>
+                                <span class="font-bold text-emerald-400">+100 Points</span>
                                 <span class="text-[10px] text-slate-500">Max 1 / month</span>
                             </div>
                         </div>
 
-                        <!-- Rhythm 4: 3-Day NPL Mid-Level Conference -->
+                        <!-- Rhythm 4: NPL Mid-Level Conference -->
                         <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 flex flex-col justify-between">
                             <div class="space-y-1.5">
                                 <div class="flex items-center justify-between">
                                     <span class="text-xl">🏛️</span>
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-950 text-blue-300 border border-blue-800">3 Days</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-950 text-blue-300 border border-blue-800">1 Week Block</span>
                                 </div>
-                                <h4 class="font-bold text-white text-xs">3-Day NPL Mid-Level</h4>
-                                <span class="text-[10px] text-blue-400 block font-semibold">3日間のNPL中級会議</span>
+                                <h4 class="font-bold text-white text-xs">NPL Mid-Level Conference</h4>
+                                <span class="text-[10px] text-blue-400 block font-semibold">NPL中級会議</span>
                                 <p class="text-[11px] text-slate-400 leading-relaxed">
-                                    A No Place Left (NPL) Mid-Level (or "Midlevel") conference is a problem-solving and strategy retreat for active movement practitioners rather than an introductory training session.
+                                    A No Place Left (NPL) Mid-Level conference is a problem-solving and strategy retreat for active movement practitioners rather than an introductory training session. Blocks other field actions this week.
                                 </p>
                             </div>
                             <div class="pt-2 border-t border-slate-900 flex items-center justify-between text-[11px]">
-                                <span class="font-bold text-emerald-400">+75 Pts (+25/day)</span>
+                                <span class="font-bold text-emerald-400">+75 Points</span>
                                 <span class="text-[10px] text-slate-500">Max 1 / month</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="p-3 rounded-xl bg-indigo-950/40 border border-indigo-800/60 text-xs text-indigo-300 leading-relaxed">
-                        ⏰ <em>Time-Blocking Mechanics:</em> When a worker schedules any of these rhythms from the dedicated top section in Action HQ, that day's calendar is locked. Standard field actions (Steps 1–3) cannot be queued for blocked days. Simply click <strong>Turn to Next Day</strong> to advance and resolve each day's spiritual gain and points.
+                        ⏰ <em>Rhythm &amp; Retreat Mechanics:</em> Full retreats (Fasting Retreat, NPL Mid-Level Conference) dedicate the entire week to prayer and strategy, blocking other field actions. In contrast, weekly personal rhythms (Weekly Sabbath Rest at 4 AP and Movement Mentoring at 3 AP) only consume Action Points from your 20 AP weekly bandwidth, allowing you to deploy your remaining AP toward field ministry during the week.
                     </div>
                 </div>
 

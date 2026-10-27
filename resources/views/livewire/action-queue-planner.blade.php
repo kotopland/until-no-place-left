@@ -348,9 +348,15 @@
                                         </span>
                                     </div>
                                 </div>
-                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 {{ $status['active'] ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-slate-900 text-slate-300 border border-slate-800' }}">
-                                    1 Week
-                                </span>
+                                @if(($status['ap_cost'] ?? 0) > 0)
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 {{ $status['active'] ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-amber-950/70 text-amber-300 border border-amber-800/60' }}">
+                                        ⚡ {{ $status['ap_cost'] }} AP
+                                    </span>
+                                @else
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 {{ $status['active'] ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-indigo-950/70 text-indigo-300 border border-indigo-800/60' }}">
+                                        1 Week Block
+                                    </span>
+                                @endif
                             </div>
 
                             <!-- Rewards & Duration Pills -->
@@ -360,7 +366,11 @@
                                 </span>
                                 @if($key === 'sabbath_rest')
                                     <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950/70 text-amber-300 border border-amber-800/60">
-                                        ⚡ 100% AP Reset
+                                        🛡️ Clears Exhaustion
+                                    </span>
+                                @elseif($key === 'receive_mentoring')
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-950/70 text-indigo-300 border border-indigo-800/60">
+                                        🤝 Senior Debrief
                                     </span>
                                 @endif
                                 <span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-900 text-slate-400 border border-slate-800">

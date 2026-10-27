@@ -49,7 +49,9 @@ beforeEach(function () {
     ]);
 });
 
-test('worker can schedule mentoring and gains 30 points upon day resolution', function () {
+test('worker can schedule mentoring which costs 3 AP and gains 30 points upon resolution', function () {
+    $this->user->update(['action_points' => 20]);
+
     Livewire::actingAs($this->user)
         ->test(ActionQueuePlanner::class)
         ->call('scheduleWorkerRhythm', MinistryActionType::ReceiveMentoring->value)
@@ -59,30 +61,41 @@ test('worker can schedule mentoring and gains 30 points upon day resolution', fu
     expect($queued)->not->toBeNull()
         ->and($queued->action_type)->toBe(MinistryActionType::ReceiveMentoring)
         ->and($queued->game_day)->toBe(1)
-        ->and($queued->ap_cost)->toBe(0);
+        ->and($queued->ap_cost)->toBe(3);
 
-    // Resolve day tick via engine
+    $this->user->refresh();
+    expect($this->user->action_points)->toBe(17);
+
+    // Resolve tick via engine
     $engine = app(FourFieldsEngine::class);
-    $engine->resolveDailyTick($this->session, $this->user);
+    $engine->resolveWeeklyTick($this->session, $this->user);
 
     $this->user->refresh();
     expect($this->user->compositeScore)->toBe(30);
 });
 
-test('worker can schedule weekly sabbath rest, gaining 25 points and resetting AP', function () {
-    $this->user->update(['action_points' => 2]);
+test('worker can schedule weekly sabbath rest which costs 4 AP, clears exhaustion, and awards 25 points', function () {
+    $this->user->update(['action_points' => 20, 'consecutive_exhaustion_weeks' => 2]);
 
     Livewire::actingAs($this->user)
         ->test(ActionQueuePlanner::class)
         ->call('scheduleWorkerRhythm', MinistryActionType::SabbathRest->value)
         ->assertDispatched('notify');
 
+    $queued = QueuedMonthlyAction::where('user_id', $this->user->id)->first();
+    expect($queued)->not->toBeNull()
+        ->and($queued->action_type)->toBe(MinistryActionType::SabbathRest)
+        ->and($queued->ap_cost)->toBe(4);
+
+    $this->user->refresh();
+    expect($this->user->action_points)->toBe(16);
+
     $engine = app(FourFieldsEngine::class);
-    $engine->resolveDailyTick($this->session, $this->user);
+    $engine->resolveWeeklyTick($this->session, $this->user);
 
     $this->user->refresh();
     expect($this->user->compositeScore)->toBe(25)
-        ->and($this->user->action_points)->toBe(12);
+        ->and($this->user->consecutive_exhaustion_weeks)->toBe(0);
 });
 
 test('worker can schedule 1-week fasting retreat which blocks 1 week and awards 100 points total', function () {
@@ -144,20 +157,20 @@ test('worker can schedule 1-week NPL mid-level conference which blocks 1 week an
     expect($this->user->compositeScore)->toBe(75);
 });
 
-test('active worker rhythm blocks scheduling standard field actions', function () {
-    // Schedule sabbath on Day 1
+test('fasting retreat blocks field actions, but weekly sabbath rest allows field actions with remaining AP', function () {
+    // 1. Fasting retreat blocks field actions
     QueuedMonthlyAction::create([
         'user_id' => $this->user->id,
         'ward_id' => $this->ward->id,
         'game_session_id' => $this->session->id,
         'game_month' => 1,
+        'game_week' => 1,
         'game_day' => 1,
-        'action_type' => MinistryActionType::SabbathRest,
+        'action_type' => MinistryActionType::FastingRetreat,
         'ap_cost' => 0,
         'status' => 'pending',
     ]);
 
-    // Attempt to queue a field action (e.g. casual talk)
     Livewire::actingAs($this->user)
         ->test(ActionQueuePlanner::class)
         ->set('selectedActionType', MinistryActionType::CasualTalk->value)
@@ -165,12 +178,30 @@ test('active worker rhythm blocks scheduling standard field actions', function (
         ->call('queueAction')
         ->assertDispatched('notify');
 
-    // Verify casual talk was NOT scheduled
-    $casualTalkCount = QueuedMonthlyAction::where('user_id', $this->user->id)
-        ->where('action_type', MinistryActionType::CasualTalk)
-        ->count();
+    expect(QueuedMonthlyAction::where('user_id', $this->user->id)->where('action_type', MinistryActionType::CasualTalk)->count())->toBe(0);
 
-    expect($casualTalkCount)->toBe(0);
+    // 2. Clear retreat, schedule Sabbath Rest (4 AP)
+    QueuedMonthlyAction::query()->delete();
+    $this->user->update(['action_points' => 20]);
+
+    Livewire::actingAs($this->user)
+        ->test(ActionQueuePlanner::class)
+        ->call('scheduleWorkerRhythm', MinistryActionType::SabbathRest->value);
+
+    $this->user->refresh();
+    expect($this->user->action_points)->toBe(16);
+
+    // Now queue Prayer Walk (1 AP) in the same week
+    Livewire::actingAs($this->user)
+        ->test(ActionQueuePlanner::class)
+        ->set('selectedActionType', MinistryActionType::PrayerWalk->value)
+        ->set('selectedWardId', $this->ward->id)
+        ->call('queueAction');
+
+    expect(QueuedMonthlyAction::where('user_id', $this->user->id)->where('action_type', MinistryActionType::PrayerWalk)->count())->toBe(1);
+
+    $this->user->refresh();
+    expect($this->user->action_points)->toBe(15);
 });
 
 test('cancelling a retreat cancels all pending days of the multi-day retreat', function () {
