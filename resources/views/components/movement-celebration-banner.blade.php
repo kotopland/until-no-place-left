@@ -123,8 +123,7 @@
                 class="px-4 py-2 rounded-xl text-xs font-black text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 shadow-lg shadow-emerald-950/50 border border-emerald-400/50 transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-1.5"
                 title="Celebrate and acknowledge this breakthrough"
             >
-                <span>🙌</span>
-                <span>Rejoice! (ハレルヤ)</span>
+                <span>Close</span>
             </button>
         </div>
     </div>

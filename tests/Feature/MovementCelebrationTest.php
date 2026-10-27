@@ -345,8 +345,7 @@ test('action queue planner displays celebratory info banner and allows dismissin
         ->assertSee('Showa-ku (昭和区)')
         ->assertSee('Yuki Takahashi (高橋 由紀)')
         ->assertSee('Missionary Sarah')
-        ->assertSee('Luke 15:7')
-        ->assertSee('Rejoice! (ハレルヤ)');
+        ->assertSee('Luke 15:7');
 
     // Dismissing the celebration should mark it dismissed and hide banner
     $component->call('dismissCelebration', $celebration->id)
