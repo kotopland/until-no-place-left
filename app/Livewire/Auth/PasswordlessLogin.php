@@ -21,6 +21,12 @@ class PasswordlessLogin extends Component
 
     public string $name = '';
 
+    public string $nationality = 'Japanese' {
+        set(string|array $value) => is_array($value) ? ($value['nationality'] ?? reset($value) ?? 'Japanese') : (string) $value;
+    }
+
+    public int $age = 30;
+
     public bool $sent = false;
 
     public ?string $sentEmail = null;
@@ -37,6 +43,14 @@ class PasswordlessLogin extends Component
         if (request()->has('email')) {
             $this->email = (string) request()->query('email');
             $this->checkExistingUser();
+        }
+
+        if (request()->has('nationality')) {
+            $this->nationality = (string) request()->query('nationality');
+        }
+
+        if (request()->has('age')) {
+            $this->age = (int) request()->query('age');
         }
     }
 
@@ -62,6 +76,12 @@ class PasswordlessLogin extends Component
                 if ($this->name === '') {
                     $this->name = $user->name;
                 }
+                if ($user->nationality) {
+                    $this->nationality = $user->nationality;
+                }
+                if ($user->age) {
+                    $this->age = (int) $user->age;
+                }
 
                 return;
             }
@@ -77,6 +97,7 @@ class PasswordlessLogin extends Component
     {
         $this->email = strtolower(trim($this->email));
         $this->name = trim($this->name);
+        $this->nationality = trim($this->nationality) !== '' ? trim($this->nationality) : 'Japanese';
 
         $existingUser = User::where('email', $this->email)->first();
         $this->isExistingUser = $existingUser !== null;
@@ -85,19 +106,32 @@ class PasswordlessLogin extends Component
             $this->validate([
                 'email' => ['required', 'email:rfc'],
                 'name' => ['nullable', 'string', 'max:50'],
+                'nationality' => ['nullable', 'string', 'max:50'],
+                'age' => ['nullable', 'integer', 'gt:18', 'max:120'],
+            ], [
+                'age.gt' => 'You must be older than 18 years old.',
             ]);
 
             $resolvedName = $this->name !== '' ? $this->name : $existingUser->name;
+            $resolvedNationality = $this->nationality !== '' ? $this->nationality : ($existingUser->nationality ?? 'Japanese');
+            $resolvedAge = $this->age > 18 ? $this->age : ($existingUser->age ?? 30);
         } else {
             $this->validate([
                 'email' => ['required', 'email:rfc'],
                 'name' => ['required', 'string', 'min:2', 'max:50'],
+                'nationality' => ['required', 'string', 'min:2', 'max:50'],
+                'age' => ['required', 'integer', 'gt:18', 'max:120'],
             ], [
                 'name.required' => 'Please create a player / missionary name to create your account.',
                 'name.min' => 'Player name must be at least 2 characters long.',
+                'nationality.required' => 'Please select your country of origin.',
+                'age.required' => 'Please enter your age.',
+                'age.gt' => 'You must be older than 18 years old.',
             ]);
 
             $resolvedName = $this->name;
+            $resolvedNationality = $this->nationality;
+            $resolvedAge = $this->age;
         }
 
         // Generate temporary cryptographic signed URL
@@ -107,6 +141,8 @@ class PasswordlessLogin extends Component
             [
                 'email' => $this->email,
                 'name' => $resolvedName,
+                'nationality' => $resolvedNationality,
+                'age' => $resolvedAge,
             ]
         );
 

@@ -150,6 +150,21 @@
 
                     <!-- Livewire Form -->
                     <form wire:submit="sendMagicLink" class="space-y-4">
+                        <!-- Live Avatar & Demographic Preview -->
+                        <div class="flex items-center gap-3.5 p-3 rounded-2xl bg-slate-950/70 border border-slate-800/80 shadow-inner">
+                            <x-person-avatar :nationality="$nationality" :gender="'male'" :age="$age > 0 ? $age : 30" size="md" :showBadges="true" class="shrink-0" />
+                            <div class="min-w-0 flex-1">
+                                <div class="text-xs font-bold text-white truncate">
+                                    {{ $name !== '' ? $name : 'Your Missionary Name' }}
+                                </div>
+                                <div class="text-[11px] text-indigo-300 mt-0.5 flex items-center gap-1.5">
+                                    <span>{{ app(\App\Services\PersonAvatarService::class)->flagEmoji($nationality) }} {{ $nationality }}</span>
+                                    <span class="text-slate-500">•</span>
+                                    <span>{{ $age > 0 ? $age : 30 }} yrs ({{ app(\App\Services\PersonAvatarService::class)->ageGroupLabel($age > 0 ? $age : 30) }})</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Player / User Name Input -->
                         <div>
                             <label for="name" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
@@ -176,6 +191,52 @@
                             @enderror
                             <p class="text-[10px] text-slate-500 mt-1">
                                 This name appears on the city leaderboard, church trees, and co-op notifications.
+                            </p>
+                        </div>
+
+                        <!-- Country of Origin Selection -->
+                        <div>
+                            <label for="nationality" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                                <span>Country of Origin</span>
+                                <span class="text-[10px] text-emerald-400 font-medium">sending nation</span>
+                            </label>
+                            <x-searchable-country-select 
+                                id="nationality" 
+                                wire:model.live="nationality"
+                                :value="$nationality"
+                                class="{{ $errors->has('nationality') ? 'border-rose-500 focus:border-rose-400' : 'border-slate-800 focus:border-indigo-500' }}"
+                            />
+                            @error('nationality')
+                                <p class="text-[11px] text-rose-400 font-medium mt-1.5">{{ $message }}</p>
+                            @enderror
+                            <p class="text-[10px] text-slate-500 mt-1">
+                                Determines your flag badge and missionary demographic on city maps and teams.
+                            </p>
+                        </div>
+
+                        <!-- Age Input (must be older than 18) -->
+                        <div>
+                            <label for="age" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                                <span>Age (Years)</span>
+                                <span class="text-[10px] text-amber-400 font-medium">must be older than 18</span>
+                            </label>
+                            <div class="relative">
+                                <input 
+                                    id="age"
+                                    type="number" 
+                                    wire:model.live.debounce.300ms="age"
+                                    min="19"
+                                    max="120"
+                                    placeholder="e.g. 24, 30, 45" 
+                                    class="w-full bg-slate-950/80 border {{ $errors->has('age') ? 'border-rose-500 focus:border-rose-400' : 'border-slate-800 focus:border-indigo-500' }} rounded-2xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
+                                >
+                                <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-sm">🎂</span>
+                            </div>
+                            @error('age')
+                                <p class="text-[11px] text-rose-400 font-medium mt-1.5">{{ $message }}</p>
+                            @enderror
+                            <p class="text-[10px] text-slate-500 mt-1">
+                                Missionary deployment requirement: disciples must be older than 18 years old.
                             </p>
                         </div>
 

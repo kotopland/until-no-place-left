@@ -722,7 +722,7 @@
                         </li>
                     </ul>
                     <div class="p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-800/60 text-[11px] text-indigo-300">
-                        ⚡ <em>Action HQ Flow:</em> Scheduling actions follows an intuitive 3-step path: (1) Pick District (with expanded scroll fields &amp; interactive scroll indicators) ➔ (2) Pick Resident (featuring demographic avatars representing each person's nationality, gender, age bracket, and interactive scroll prompts) ➔ (3) Choose an Action from the list. The planner smoothly scrolls down to the <strong>Ready to Queue for Week X</strong> box at the bottom where you can add personal prayer notes and queue the action with one click (or use the persistent confirmation dock on mobile devices).
+                        ⚡ <em>Action HQ Flow:</em> Scheduling actions follows an intuitive 3-step path: (1) Pick District (with expanded scroll fields &amp; interactive scroll indicators) ➔ (2) Pick Resident or Co-labour (featuring prominent <strong>Fellow Missionaries Living Here</strong> cards with demographic avatars, nationality flags, and one-tap <strong>Joint Prayer Walk (2 AP)</strong> and <strong>Iron-on-Iron (+2 AP)</strong> actions, alongside resident cards with nationality and age badges) ➔ (3) Choose an Action from the list. The planner smoothly scrolls down to the <strong>Ready to Queue for Week X</strong> box at the bottom where you can add personal prayer notes and queue the action with one click (or use the persistent confirmation dock on mobile devices).
                     </div>
                     <div class="p-2.5 rounded-xl bg-amber-950/40 border border-amber-800/60 text-[11px] text-amber-200 space-y-1">
                         <div class="flex items-center gap-1.5 font-bold text-amber-300">
@@ -1278,8 +1278,8 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3.5 text-left text-xs">
                 <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-indigo-500/50 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">1</span>
-                    <strong class="text-white block font-semibold">Candidate Screening Gate</strong>
-                    <span class="text-slate-400 block leading-relaxed">Complete the 14-question evaluation across <strong class="text-indigo-400">7 missionary dimensions</strong> (Food & Culture, Calling, Language, Authority, Resilience, Dietary/Health, Financial/Exit). Achieve ≥ 70% to gain <strong>Nagoya Deployment Clearance</strong>!</span>
+                    <strong class="text-white block font-semibold">Profile & Screening Gate</strong>
+                    <span class="text-slate-400 block leading-relaxed">On entry, set your missionary handle, search among <strong>95+ global sending countries</strong> (granting your avatar an authentic flag badge & demographic appearance), and specify your age (&gt; 18 years old). Then complete the 14-question evaluation across <strong class="text-indigo-400">7 missionary dimensions</strong> to gain <strong>Nagoya Deployment Clearance</strong>!</span>
                 </div>
 
                 <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">

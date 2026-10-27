@@ -30,6 +30,12 @@ class NagoyaMovementDashboard extends Component
 
     public string $editingName = '';
 
+    public string $editingNationality = 'Japanese' {
+        set(string|array $value) => is_array($value) ? ($value['nationality'] ?? reset($value) ?? 'Japanese') : (string) $value;
+    }
+
+    public int $editingAge = 30;
+
     public bool $showOnboardingModal = false;
 
     public string $onboardingStage = 'screening'; // 'screening', 'gated_coaching', 'qualified_clearance', 'ward_selection'
@@ -58,6 +64,9 @@ class NagoyaMovementDashboard extends Component
     {
         $user = auth()->user();
         if ($user) {
+            $this->editingName = $user->name;
+            $this->editingNationality = $user->nationality ?? 'Japanese';
+            $this->editingAge = (int) ($user->age ?? 30);
             if ($user->screening_answers) {
                 $this->screeningAnswers = $user->screening_answers;
             }
@@ -109,7 +118,10 @@ class NagoyaMovementDashboard extends Component
 
     public function openEditNameModal(): void
     {
-        $this->editingName = auth()->user() ? auth()->user()->name : '';
+        $user = auth()->user();
+        $this->editingName = $user ? $user->name : '';
+        $this->editingNationality = $user?->nationality ?? 'Japanese';
+        $this->editingAge = (int) ($user?->age ?? 30);
         $this->showEditNameModal = true;
     }
 
@@ -291,16 +303,25 @@ class NagoyaMovementDashboard extends Component
     {
         $this->validate([
             'editingName' => ['required', 'string', 'min:2', 'max:50'],
+            'editingNationality' => ['required', 'string', 'max:50'],
+            'editingAge' => ['required', 'integer', 'gt:18', 'max:120'],
         ], [
             'editingName.required' => 'Please enter a missionary player name.',
             'editingName.min' => 'Player name must be at least 2 characters long.',
+            'editingNationality.required' => 'Please select your country of origin.',
+            'editingAge.required' => 'Please enter your age.',
+            'editingAge.gt' => 'You must be older than 18 years old.',
         ]);
 
         $user = auth()->user();
         if ($user) {
-            $user->update(['name' => trim($this->editingName)]);
+            $user->update([
+                'name' => trim($this->editingName),
+                'nationality' => trim($this->editingNationality),
+                'age' => (int) $this->editingAge,
+            ]);
             $this->showEditNameModal = false;
-            $this->dispatch('notify', message: "Player name updated to '{$user->name}'!", type: 'success');
+            $this->dispatch('notify', message: "Player profile updated: {$user->name} ({$user->nationalityFlag} {$user->nationality}, {$user->age}y)!", type: 'success');
         }
     }
 

@@ -576,22 +576,39 @@
     <!-- Modal: Month In Review Summary -->
     <livewire:month-in-review-modal />
 
-    <!-- Modal: Edit Player Name -->
+    <!-- Modal: Edit Player Profile (Name & Country of Origin) -->
     @if($showEditNameModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
-                <h3 class="text-base font-black text-white tracking-tight flex items-center gap-2">
-                    <span>✏️</span>
-                    <span>Customize Player Name</span>
-                </h3>
-                <p class="text-xs text-slate-400 mt-1 leading-relaxed">
-                    Update how your missionary name appears across the movement, leaderboard, and church planting records.
-                </p>
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative space-y-4">
+                <div>
+                    <h3 class="text-base font-black text-white tracking-tight flex items-center gap-2">
+                        <span>✏️</span>
+                        <span>Customize Missionary Profile</span>
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                        Update how your missionary handle and country of origin appear across the movement, leaderboard, and team co-op maps.
+                    </p>
+                </div>
 
-                <form wire:submit="savePlayerName" class="mt-4 space-y-4">
+                <!-- Live Demographic Avatar Preview -->
+                <div class="flex items-center gap-3 p-3 rounded-2xl bg-slate-950/80 border border-slate-800 shadow-inner">
+                    <x-person-avatar :nationality="$editingNationality" :gender="'male'" :age="$editingAge > 0 ? $editingAge : 30" size="md" :showBadges="true" class="shrink-0" />
+                    <div class="min-w-0 flex-1">
+                        <div class="text-xs font-bold text-white truncate">
+                            {{ $editingName !== '' ? $editingName : 'Missionary Name' }}
+                        </div>
+                        <div class="text-[11px] text-indigo-300 mt-0.5 flex items-center gap-1.5">
+                            <span>{{ app(\App\Services\PersonAvatarService::class)->flagEmoji($editingNationality) }} {{ $editingNationality }}</span>
+                            <span class="text-slate-500">•</span>
+                            <span>{{ $editingAge > 0 ? $editingAge : 30 }} yrs ({{ app(\App\Services\PersonAvatarService::class)->ageGroupLabel($editingAge > 0 ? $editingAge : 30) }})</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form wire:submit="savePlayerName" class="space-y-4">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
-                            Player / Missionary Handle
+                            Missionary / Player Handle
                         </label>
                         <input 
                             type="text" 
@@ -601,6 +618,39 @@
                             autofocus
                         >
                         @error('editingName')
+                            <p class="text-[11px] text-rose-400 mt-1 font-medium">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
+                            Country of Origin
+                        </label>
+                        <x-searchable-country-select 
+                            id="editingNationality" 
+                            wire:model.live="editingNationality"
+                            :value="$editingNationality"
+                            class="{{ $errors->has('editingNationality') ? 'border-rose-500' : 'border-slate-800 focus:border-indigo-500' }}"
+                        />
+                        @error('editingNationality')
+                            <p class="text-[11px] text-rose-400 mt-1 font-medium">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1 flex items-center justify-between">
+                            <span>Age (Years)</span>
+                            <span class="text-[10px] text-amber-400 font-medium">must be older than 18</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            wire:model.live.debounce.300ms="editingAge" 
+                            min="19"
+                            max="120"
+                            class="w-full bg-slate-950 border {{ $errors->has('editingAge') ? 'border-rose-500' : 'border-slate-800 focus:border-indigo-500' }} rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                            placeholder="e.g. 24, 30, 45"
+                        >
+                        @error('editingAge')
                             <p class="text-[11px] text-rose-400 mt-1 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
@@ -617,7 +667,7 @@
                             type="submit" 
                             class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition cursor-pointer"
                         >
-                            Save Changes
+                            Save Profile
                         </button>
                     </div>
                 </form>

@@ -795,104 +795,116 @@
                         @endif
                     </div>
 
-                    @if($aiCoLaborersInWard->isNotEmpty())
-                        <div class="mt-2.5 pt-2 border-t border-slate-700/60 space-y-2">
-                            @foreach($aiCoLaborersInWard as $aiCoLaborer)
-                                <div wire:key="colaborer-{{ $aiCoLaborer->id }}" class="bg-indigo-950/40 border border-indigo-500/30 rounded-xl p-2.5 text-xs">
-                                    <div class="flex items-center justify-between gap-2 flex-wrap">
-                                        <div class="flex items-center gap-2">
-                                            <x-person-avatar :person="$aiCoLaborer" size="sm" :showBadges="true" class="shrink-0" />
-                                            <div>
-                                                <div class="flex items-center gap-1.5">
-                                                    <span class="font-bold text-white">{{ $aiCoLaborer->name }}</span>
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
-                                                        {{ $aiCoLaborer->archetypeBadgeLabel }}
-                                                    </span>
+                    @if($coLaborersInWard->isNotEmpty())
+                        <div class="mt-2.5 pt-2 border-t border-slate-700/60 space-y-2.5">
+                            <div class="flex items-center justify-between text-xs font-bold text-indigo-300">
+                                <span class="flex items-center gap-1.5">
+                                    <span>🏠</span>
+                                    <span><strong>Fellow Missionaries Living Here:</strong></span>
+                                </span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                                    {{ $coLaborersInWard->count() }} {{ Str::plural('Worker', $coLaborersInWard->count()) }}
+                                </span>
+                            </div>
+                            @foreach($coLaborersInWard as $coLaborer)
+                                <div wire:key="colaborer-{{ $coLaborer->id }}" class="bg-indigo-950/40 border border-indigo-500/30 rounded-2xl p-3 text-xs shadow-sm space-y-2.5">
+                                    <div class="flex items-center justify-between gap-3 flex-wrap">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <x-person-avatar :person="$coLaborer" size="md" :showBadges="true" class="shrink-0" />
+                                            <div class="min-w-0">
+                                                <div class="flex items-center gap-1.5 flex-wrap">
+                                                    <span class="font-bold text-white text-sm truncate">{{ $coLaborer->name }}</span>
+                                                    @if($coLaborer->is_ai_colaborer && $coLaborer->archetypeBadgeLabel)
+                                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                                                            {{ $coLaborer->archetypeBadgeLabel }}
+                                                        </span>
+                                                    @else
+                                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                                                            Missionary Partner
+                                                        </span>
+                                                    @endif
                                                 </div>
-                                                <div class="text-[10px] text-slate-400 mt-0.5">
-                                                    {{ $aiCoLaborer->nationalityFlag }} {{ $aiCoLaborer->nationality }} • {{ $aiCoLaborer->genderIcon }} {{ $aiCoLaborer->age }}y
+                                                <div class="text-[11px] text-slate-300 mt-0.5 flex items-center gap-1.5">
+                                                    <span>{{ $coLaborer->nationalityFlag }} {{ $coLaborer->nationality }}</span>
+                                                    <span>•</span>
+                                                    <span>{{ $coLaborer->genderIcon }} {{ $coLaborer->age }}y</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <span class="text-[10px] text-indigo-300 font-medium">
-                                            Co-op: {{ $aiCoLaborer->coop_synergy_score }} pts
+                                        <span class="text-[11px] text-indigo-300 font-semibold bg-indigo-950/80 px-2 py-1 rounded-lg border border-indigo-500/30 shrink-0">
+                                            Co-op: {{ $coLaborer->coop_synergy_score }} pts
                                         </span>
                                     </div>
-                                    @if($aiCoLaborer->ai_strategy_notes)
-                                        <p class="text-[10px] text-slate-300 mt-1 leading-snug">
-                                            {{ $aiCoLaborer->ai_strategy_notes }}
+                                    @if($coLaborer->ai_strategy_notes)
+                                        <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-900/60 p-2 rounded-xl border border-indigo-500/20">
+                                            {{ $coLaborer->ai_strategy_notes }}
                                         </p>
                                     @endif
-                                    <div class="mt-2 flex items-center gap-1.5 flex-wrap">
+                                    <div class="flex items-center gap-2 flex-wrap pt-1">
                                         @if($jointWalkStatus['allowed'] ?? true)
                                             <button 
                                                 type="button"
-                                                wire:click="conductJointPrayerWalk({{ $aiCoLaborer->id }})"
-                                                class="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] transition cursor-pointer shadow flex items-center gap-1 active:scale-95"
-                                                title="Conduct a 2-by-2 joint prayer walk with {{ $aiCoLaborer->name }} (+15 Co-op score, +50% ward openness softening). {{ $jointWalkStatus['remaining_this_week'] ?? 3 }}/3 left this week (max 1/day)."
+                                                wire:click="conductJointPrayerWalk({{ $coLaborer->id }})"
+                                                class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition cursor-pointer shadow flex items-center gap-1.5 active:scale-95"
+                                                title="Conduct a 2-by-2 joint prayer walk with {{ $coLaborer->name }} (+15 Co-op score, +50% ward openness softening). {{ $jointWalkStatus['remaining_this_week'] ?? 3 }}/3 left this week (max 1/day)."
                                             >
                                                 <span>👣</span>
                                                 <span>Joint Prayer Walk (2 AP)</span>
-                                                <span class="text-[9px] text-emerald-200 opacity-90">({{ $jointWalkStatus['remaining_this_week'] ?? 3 }}/3 left)</span>
+                                                <span class="text-[10px] text-emerald-200 opacity-90 font-medium">({{ $jointWalkStatus['remaining_this_week'] ?? 3 }}/3 left)</span>
                                             </button>
                                         @else
                                             <button 
                                                 type="button"
                                                 disabled
-                                                class="px-2 py-1 rounded-lg bg-slate-800 text-slate-400 font-bold text-[10px] cursor-not-allowed opacity-75 flex items-center gap-1 border border-slate-700/60"
+                                                class="px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-400 font-bold text-xs cursor-not-allowed opacity-75 flex items-center gap-1.5 border border-slate-700/60"
                                                 title="{{ $jointWalkStatus['reason'] ?? 'Joint Prayer Walk limit reached.' }}"
                                             >
                                                 <span>👣</span>
                                                 <span>Joint Prayer Walk (2 AP)</span>
-                                                <span class="text-[9px] {{ ($jointWalkStatus['walks_today'] ?? 0) >= 1 ? 'text-amber-400' : 'text-rose-400' }}">({{ ($jointWalkStatus['walks_today'] ?? 0) >= 1 ? '1/day cap' : '3/wk cap' }})</span>
+                                                <span class="text-[10px] {{ ($jointWalkStatus['walks_today'] ?? 0) >= 1 ? 'text-amber-400' : 'text-rose-400' }}">({{ ($jointWalkStatus['walks_today'] ?? 0) >= 1 ? '1/day cap' : '3/wk cap' }})</span>
                                             </button>
                                         @endif
                                         @php
-                                            $isCoLaborerDoneToday = in_array($aiCoLaborer->id, $doneColaborerIdsToday ?? [], true);
+                                            $isCoLaborerDoneToday = in_array($coLaborer->id, $doneColaborerIdsToday ?? [], true);
                                             $isIoICappedToday = ($totalIoIToday ?? 0) >= 3;
                                         @endphp
                                         @if(! $isCoLaborerDoneToday && ! $isIoICappedToday)
                                             <button 
                                                 type="button"
-                                                wire:click="conductIronOnIron({{ $aiCoLaborer->id }})"
-                                                class="px-2 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] transition cursor-pointer shadow flex items-center gap-1 active:scale-95"
-                                                title="Iron-on-Iron meeting with {{ $aiCoLaborer->name }} (+2 bonus AP, +25 Co-op score, and tactical missionary advice). {{ $remainingIoIToday ?? 3 }}/3 sessions left today (max 1/person/day)."
+                                                wire:click="conductIronOnIron({{ $coLaborer->id }})"
+                                                class="px-2.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition cursor-pointer shadow flex items-center gap-1.5 active:scale-95"
+                                                title="Iron-on-Iron meeting with {{ $coLaborer->name }} (+2 bonus AP, +25 Co-op score, and tactical missionary advice). {{ $remainingIoIToday ?? 3 }}/3 sessions left today (max 1/person/day)."
                                             >
                                                 <span>⚔️</span>
                                                 <span>Iron-on-Iron (+2 AP)</span>
-                                                <span class="text-[9px] text-indigo-200 opacity-90">({{ $remainingIoIToday ?? 3 }}/3 left)</span>
+                                                <span class="text-[10px] text-indigo-200 opacity-90 font-medium">({{ $remainingIoIToday ?? 3 }}/3 left)</span>
                                             </button>
                                         @elseif($isCoLaborerDoneToday)
                                             <button 
                                                 type="button"
                                                 disabled
-                                                class="px-2 py-1 rounded-lg bg-slate-800 text-slate-400 font-bold text-[10px] cursor-not-allowed opacity-75 flex items-center gap-1 border border-slate-700/60"
-                                                title="You have already conducted Iron on Iron with {{ $aiCoLaborer->name }} today (max 1 per person per day)."
+                                                class="px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-400 font-bold text-xs cursor-not-allowed opacity-75 flex items-center gap-1.5 border border-slate-700/60"
+                                                title="You have already conducted Iron on Iron with {{ $coLaborer->name }} today (max 1 per person per day)."
                                             >
                                                 <span>⚔️</span>
                                                 <span>Iron-on-Iron (+2 AP)</span>
-                                                <span class="text-[9px] text-amber-400">(Done today)</span>
+                                                <span class="text-[10px] text-amber-400 font-medium">(Done today)</span>
                                             </button>
                                         @else
                                             <button 
                                                 type="button"
                                                 disabled
-                                                class="px-2 py-1 rounded-lg bg-slate-800 text-slate-400 font-bold text-[10px] cursor-not-allowed opacity-75 flex items-center gap-1 border border-slate-700/60"
+                                                class="px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-400 font-bold text-xs cursor-not-allowed opacity-75 flex items-center gap-1.5 border border-slate-700/60"
                                                 title="Daily Iron on Iron limit reached: max 3 sessions allowed per day (3/3 used today)."
                                             >
                                                 <span>⚔️</span>
                                                 <span>Iron-on-Iron (+2 AP)</span>
-                                                <span class="text-[9px] text-rose-400">(3/day cap)</span>
+                                                <span class="text-[10px] text-rose-400 font-medium">(3/day cap)</span>
                                             </button>
                                         @endif
                                     </div>
                                 </div>
                             @endforeach
-                        </div>
-                    @elseif($coLaborersInWard->isNotEmpty())
-                        <div class="mt-2 pt-2 border-t border-slate-700/50 flex items-center gap-1.5 text-[10px] text-indigo-300">
-                            <span>🏠</span>
-                            <span><strong>Fellow Missionaries Living Here:</strong> {{ $coLaborersInWard->pluck('name')->join(', ') }}</span>
                         </div>
                     @endif
                 </div>

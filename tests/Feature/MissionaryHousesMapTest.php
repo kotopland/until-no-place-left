@@ -156,5 +156,7 @@ test('action queue planner displays co-worker missionary badges and banner', fun
         ->assertSee('1 co-worker')
         ->call('selectWard', $wardB->id)
         ->assertSee('Fellow Missionaries Living Here:')
-        ->assertSee('Kenji Yamada');
+        ->assertSee('Kenji Yamada')
+        ->assertSee('Joint Prayer Walk (2 AP)')
+        ->assertSee('Iron-on-Iron (+2 AP)');
 });

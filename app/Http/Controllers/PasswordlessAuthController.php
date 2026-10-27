@@ -27,6 +27,8 @@ class PasswordlessAuthController extends Controller
 
         $email = strtolower(trim((string) $request->query('email', '')));
         $rawName = trim((string) $request->query('name', ''));
+        $rawNationality = trim((string) $request->query('nationality', ''));
+        $rawAge = $request->query('age');
 
         if ($email === '') {
             return redirect()
@@ -37,9 +39,19 @@ class PasswordlessAuthController extends Controller
         $user = User::where('email', $email)->first();
 
         if ($user) {
-            // Existing user login: update name if a new one was explicitly specified
+            // Existing user login: update name/nationality/age if explicitly specified
+            $updates = [];
             if ($rawName !== '' && $rawName !== $user->name) {
-                $user->update(['name' => $rawName]);
+                $updates['name'] = $rawName;
+            }
+            if ($rawNationality !== '' && (! $user->nationality || $user->nationality !== $rawNationality)) {
+                $updates['nationality'] = $rawNationality;
+            }
+            if ($rawAge !== null && is_numeric($rawAge) && (int) $rawAge > 18) {
+                $updates['age'] = (int) $rawAge;
+            }
+            if ($updates !== []) {
+                $user->update($updates);
             }
 
             Auth::login($user, remember: true);
@@ -59,6 +71,8 @@ class PasswordlessAuthController extends Controller
 
         $newUser = User::create([
             'name' => $finalName,
+            'nationality' => $rawNationality !== '' ? $rawNationality : 'Japanese',
+            'age' => ($rawAge !== null && is_numeric($rawAge) && (int) $rawAge > 18) ? (int) $rawAge : 30,
             'email' => $email,
             'email_verified_at' => now(),
             'password' => Hash::make(Str::random(32)),
