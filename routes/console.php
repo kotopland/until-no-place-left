@@ -26,6 +26,6 @@ Schedule::command(ProcessWeeklyTickCommand::class)
  * in the 30-day month along with autonomous disciple and church multiplication.
  */
 Schedule::command(ProcessGameMonthCommand::class)
-    ->dailyAt('00:00')
+    ->dailyAt('00:00')->timezone('Asia/Tokyo')
     ->withoutOverlapping()
     ->runInBackground();
