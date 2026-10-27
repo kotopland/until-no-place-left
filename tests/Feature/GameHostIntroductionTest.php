@@ -93,7 +93,7 @@ test('player with home ward who has not seen host intro is greeted with host wel
         ->assertSee('Welcome to Nagoya & Chikusa-ku!');
 });
 
-test('choosing recommended language and training strategy dedicates 70 percent AP for first two months', function () {
+test('choosing recommended language and training strategy dedicates 70 percent AP for first four months', function () {
     $session = GameSession::create([
         'name' => 'Nagoya Test Session',
         'is_active' => true,
@@ -135,7 +135,7 @@ test('choosing recommended language and training strategy dedicates 70 percent A
         ->and($refreshed->has_seen_host_intro)->toBeTrue()
         ->and($refreshed->language_training_enrolled_month)->toBe(1)
         ->and($refreshed->isLanguageTrainingActive)->toBeTrue()
-        ->and($refreshed->languageTrainingMonthsRemaining)->toBe(2)
+        ->and($refreshed->languageTrainingMonthsRemaining)->toBe(4)
         ->and($refreshed->languageTrainingCurrentMonthNumber)->toBe(1)
         ->and($refreshed->languageSchoolWeeklyAp)->toBe(12) // 60% of 20 AP
         ->and($refreshed->firstLevelTrainingWeeklyAp)->toBe(2) // 10% of 20 AP
@@ -266,13 +266,63 @@ test('action queue planner displays dedicated language school and NPL training b
 
     Livewire::test(ActionQueuePlanner::class)
         ->assertSee('Intensive Japanese Language School & First-Level NPL Foundation')
-        ->assertSee('Month 1 of 2')
+        ->assertSee('Month 1 of 4')
         ->assertSee('60% Japanese Language Studies (12 AP)')
         ->assertSee('10% First-Level NPL Training (2 AP)')
         ->assertSee('30% AP (6 AP) available for field actions');
 });
 
-test('advancing through two months of language training graduates the missionary and restores full AP', function () {
+test('advancing through four months of language training graduates the missionary and restores full AP', function () {
+    $session = GameSession::create([
+        'name' => 'Nagoya Test Session',
+        'is_active' => true,
+        'current_game_month' => 4,
+        'current_game_week' => 4,
+    ]);
+
+    $ward = Ward::create([
+        'game_session_id' => $session->id,
+        'name' => 'Naka-ku',
+        'name_ja' => '中区',
+        'slug' => 'naka-ku',
+        'latitude' => 35.1691,
+        'longitude' => 136.9079,
+        'population' => 90000,
+        'spiritual_openness' => 30,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'home_ward_id' => $ward->id,
+        'screening_passed' => true,
+        'has_seen_host_intro' => true,
+        'committed_to_language_training' => true,
+        'language_training_enrolled_month' => 1,
+        'language_training_completed' => false,
+        'current_game_month' => 4,
+        'current_game_week' => 4,
+        'last_monthly_tick_at' => now()->subDay(),
+        'action_points' => 6,
+        'weekly_action_points' => 20,
+        'max_action_points' => 26,
+        'total_generational_score' => 10,
+    ]);
+
+    $engine = app(FourFieldsEngine::class);
+
+    // Process month advance from Month 4 to Month 5
+    $engine->resolveGameMonth($session);
+
+    $refreshed = $user->fresh();
+    expect($refreshed->current_game_month)->toBe(5)
+        ->and($refreshed->language_training_completed)->toBeTrue()
+        ->and($refreshed->isLanguageTrainingActive)->toBeFalse()
+        ->and($refreshed->action_points)->toBe(26)
+        ->and($refreshed->badges)->toContain('Language & L1 Certified')
+        ->and($refreshed->total_generational_score)->toBeGreaterThan(10);
+});
+
+test('language training remains active through months 2 and 3 with 70 percent AP dedicated', function () {
     $session = GameSession::create([
         'name' => 'Nagoya Test Session',
         'is_active' => true,
@@ -305,7 +355,6 @@ test('advancing through two months of language training graduates the missionary
         'action_points' => 6,
         'weekly_action_points' => 20,
         'max_action_points' => 26,
-        'total_generational_score' => 10,
     ]);
 
     $engine = app(FourFieldsEngine::class);
@@ -315,11 +364,11 @@ test('advancing through two months of language training graduates the missionary
 
     $refreshed = $user->fresh();
     expect($refreshed->current_game_month)->toBe(3)
-        ->and($refreshed->language_training_completed)->toBeTrue()
-        ->and($refreshed->isLanguageTrainingActive)->toBeFalse()
-        ->and($refreshed->action_points)->toBe(26)
-        ->and($refreshed->badges)->toContain('Language & L1 Certified')
-        ->and($refreshed->total_generational_score)->toBeGreaterThan(10);
+        ->and($refreshed->language_training_completed)->toBeFalse()
+        ->and($refreshed->isLanguageTrainingActive)->toBeTrue()
+        ->and($refreshed->languageTrainingCurrentMonthNumber)->toBe(3)
+        ->and($refreshed->languageTrainingMonthsRemaining)->toBe(2)
+        ->and($refreshed->action_points)->toBe(6);
 });
 
 test('host welcome modal can be reopened at any time', function () {

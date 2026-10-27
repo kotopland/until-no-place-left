@@ -356,9 +356,19 @@ class NagoyaMovementDashboard extends Component
     }
 
     #[On('celebration-dismissed')]
-    public function dismissCelebration(int $celebrationId): void
+    public function onCelebrationDismissed(?int $celebrationId = null): void
     {
-        MovementCelebration::where('id', $celebrationId)->update(['is_dismissed' => true]);
+        if ($celebrationId) {
+            MovementCelebration::where('id', $celebrationId)->update(['is_dismissed' => true]);
+        }
+    }
+
+    public function dismissCelebration(?int $celebrationId = null): void
+    {
+        if ($celebrationId) {
+            MovementCelebration::where('id', $celebrationId)->update(['is_dismissed' => true]);
+            $this->dispatch('celebration-dismissed', celebrationId: $celebrationId);
+        }
     }
 
     public function chooseIndependentStrategy(): void

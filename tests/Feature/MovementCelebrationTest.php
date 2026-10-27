@@ -412,3 +412,50 @@ test('nagoya movement dashboard renders celebration banner on non-planner tabs a
     $celebration->refresh();
     expect($celebration->is_dismissed)->toBeTrue();
 });
+
+test('nagoya movement dashboard handles celebration-dismissed event without throwing binding resolution exception', function () {
+    $session = GameSession::create([
+        'name' => 'Event Dispatch Session',
+        'is_active' => true,
+    ]);
+
+    $ward = Ward::create([
+        'game_session_id' => $session->id,
+        'name' => 'Naka-ku',
+        'name_ja' => '中区',
+        'slug' => 'naka-ku',
+        'latitude' => 35.17,
+        'longitude' => 136.90,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'home_ward_id' => $ward->id,
+        'screening_passed' => true,
+        'has_seen_host_intro' => true,
+    ]);
+
+    $this->actingAs($user);
+
+    $celebration = MovementCelebration::recordSalvation(
+        gameSessionId: $session->id,
+        wardId: $ward->id,
+        wardName: 'Naka-ku (中区)',
+        personName: 'Kenji Tanaka',
+        details: 'Saved today!',
+        userId: $user->id,
+    );
+
+    // Test dispatching without parameter (e.g. from child component or broadcast)
+    Livewire::test(NagoyaMovementDashboard::class)
+        ->dispatch('celebration-dismissed')
+        ->assertSuccessful();
+
+    // Test dispatching with parameter
+    Livewire::test(NagoyaMovementDashboard::class)
+        ->dispatch('celebration-dismissed', celebrationId: $celebration->id)
+        ->assertSuccessful();
+
+    $celebration->refresh();
+    expect($celebration->is_dismissed)->toBeTrue();
+});

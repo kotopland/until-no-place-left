@@ -1436,34 +1436,34 @@
                                     <div class="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-800 space-y-2 mt-2">
                                         <div class="flex items-center justify-between text-xs">
                                             <span class="font-black text-slate-900 dark:text-white flex items-center gap-1.5">
-                                                <span>⏱️</span>
-                                                <span>70% AP Bandwidth Investment Rule (First 2 Months):</span>
-                                            </span>
-                                            <span class="font-black text-emerald-600 dark:text-emerald-400 text-xs">
-                                                Months 1 &amp; 2
-                                            </span>
-                                        </div>
-                                        <div class="grid grid-cols-3 gap-2 text-center text-[11px]">
-                                            <div class="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800">
-                                                <div class="font-black text-indigo-600 dark:text-indigo-400 text-sm">60% AP</div>
-                                                <div class="text-[10px] text-slate-600 dark:text-slate-400">Language School ({{ (int) round(($user?->weekly_action_points ?? 20) * 0.60) }} AP/wk)</div>
-                                            </div>
-                                            <div class="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800">
-                                                <div class="font-black text-emerald-600 dark:text-emerald-400 text-sm">10% AP</div>
-                                                <div class="text-[10px] text-slate-600 dark:text-slate-400">First-Level NPL ({{ (int) round(($user?->weekly_action_points ?? 20) * 0.10) }} AP/wk)</div>
-                                            </div>
-                                            <div class="p-2 rounded-lg bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800">
-                                                <div class="font-black text-purple-600 dark:text-purple-400 text-sm">30% AP</div>
-                                                <div class="text-[10px] text-slate-600 dark:text-slate-400">Ward Ministry ({{ (int) round(($user?->weekly_action_points ?? 20) * 0.30) }} AP/wk)</div>
-                                            </div>
-                                        </div>
-                                        <p class="text-[11px] text-slate-600 dark:text-slate-400 italic">
-                                            💡 Choosing this strategy reserves 70% of your AP during Months 1 and 2. After Month 2, you graduate with permanent cultural trust bonuses, First-Level certification, and 100% of your AP bandwidth is restored!
-                                        </p>
-                                        <p class="text-[11px] text-amber-700 dark:text-amber-400 font-semibold pt-1 border-t border-slate-200 dark:border-slate-800">
-                                            ⚠️ <strong>Bypassing Strategy Handicap:</strong> If you proceed independently without foundational training, you will incur the <strong>Language &amp; Cultural Barrier Handicap</strong>, receiving only <strong>14 AP / week</strong> (-6 AP effort friction penalty) because every interaction requires extra energy without language tools.
-                                        </p>
-                                    </div>
+                                                 <span>⏱️</span>
+                                                 <span>70% AP Bandwidth Investment Rule (First 4 Months):</span>
+                                             </span>
+                                             <span class="font-black text-emerald-600 dark:text-emerald-400 text-xs">
+                                                 Months 1 to 4
+                                             </span>
+                                         </div>
+                                         <div class="grid grid-cols-3 gap-2 text-center text-[11px]">
+                                             <div class="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800">
+                                                 <div class="font-black text-indigo-600 dark:text-indigo-400 text-sm">60% AP</div>
+                                                 <div class="text-[10px] text-slate-600 dark:text-slate-400">Language School ({{ (int) round(($user?->weekly_action_points ?? 20) * 0.60) }} AP/wk)</div>
+                                             </div>
+                                             <div class="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800">
+                                                 <div class="font-black text-emerald-600 dark:text-emerald-400 text-sm">10% AP</div>
+                                                 <div class="text-[10px] text-slate-600 dark:text-slate-400">First-Level NPL ({{ (int) round(($user?->weekly_action_points ?? 20) * 0.10) }} AP/wk)</div>
+                                             </div>
+                                             <div class="p-2 rounded-lg bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800">
+                                                 <div class="font-black text-purple-600 dark:text-purple-400 text-sm">30% AP</div>
+                                                 <div class="text-[10px] text-slate-600 dark:text-slate-400">Ward Ministry ({{ (int) round(($user?->weekly_action_points ?? 20) * 0.30) }} AP/wk)</div>
+                                             </div>
+                                         </div>
+                                         <p class="text-[11px] text-slate-600 dark:text-slate-400 italic">
+                                             💡 Choosing this strategy reserves 70% of your AP during Months 1 to 4. After Month 4, you graduate with permanent cultural trust bonuses, First-Level certification, and 100% of your AP bandwidth is restored!
+                                         </p>
+                                         <p class="text-[11px] text-amber-700 dark:text-amber-400 font-semibold pt-1 border-t border-slate-200 dark:border-slate-800">
+                                             ⚠️ <strong>Bypassing Strategy Handicap:</strong> If you proceed independently without foundational training, you will incur the <strong>Language &amp; Cultural Barrier Handicap</strong>, receiving only <strong>14 AP / week</strong> (-6 AP effort friction penalty) because every interaction requires extra energy without language tools.
+                                         </p>
+                                     </div>
                                 </div>
                             </div>
                         </div>
@@ -1479,7 +1479,7 @@
                                         </div>
                                         <div class="text-[11px] text-emerald-600 dark:text-emerald-400">
                                             @if($user->isLanguageTrainingActive)
-                                                Month {{ $user->languageTrainingCurrentMonthNumber }} of 2 Active • {{ $user->languageTrainingMonthsRemaining }} month(s) remaining until full AP release
+                                                Month {{ $user->languageTrainingCurrentMonthNumber }} of 4 Active • {{ $user->languageTrainingMonthsRemaining }} month(s) remaining until full AP release
                                             @else
                                                 Foundation Completed • 100% AP Released
                                             @endif

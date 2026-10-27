@@ -1064,10 +1064,10 @@
                         <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
                             <strong class="text-emerald-400 block font-bold flex items-center gap-1.5">
                                 <span>⚡</span>
-                                <span>70% AP Foundation (Months 1 &amp; 2)</span>
+                                <span>70% AP Foundation (Months 1 to 4)</span>
                             </strong>
                             <p class="text-slate-300 text-[11px] leading-relaxed">
-                                The host’s recommended strategy allocates <strong>70% of weekly Action Points</strong> during Months 1 and 2: <strong>60% in Japanese Language School</strong> and <strong>10% in NPL First-Level Co-worker Training</strong>, leaving 30% for local ward presence. After Month 2, candidates graduate with full 100% AP and permanent trust bonuses!
+                                The host’s recommended strategy allocates <strong>70% of weekly Action Points</strong> during Months 1 to 4: <strong>60% in Japanese Language School</strong> and <strong>10% in NPL First-Level Co-worker Training</strong>, leaving 30% for local ward presence. After Month 4, candidates graduate with full 100% AP and permanent trust bonuses!
                             </p>
                         </div>
                     </div>
@@ -1083,7 +1083,7 @@
                             </span>
                         </div>
                         <p class="text-slate-300 text-[11px] leading-relaxed">
-                            If a player bypasses the recommended foundational strategy to operate independently, they incur the <strong>Language &amp; Cultural Barrier Handicap</strong>: their weekly received Action Points are reduced from 20 AP to <strong>14 AP / week</strong> (-6 AP penalty). Because everyday interactions, relational sifting, and evangelism require significantly more effort without linguistic proficiency and simple NPL tools, actions drain more bandwidth. Players can reopen <strong>Host Field Orientation</strong> from their user menu at any time to enroll in the 2-month foundation and remove this penalty upon graduation!
+                            If a player bypasses the recommended foundational strategy to operate independently, they incur the <strong>Language &amp; Cultural Barrier Handicap</strong>: their weekly received Action Points are reduced from 20 AP to <strong>14 AP / week</strong> (-6 AP penalty). Because everyday interactions, relational sifting, and evangelism require significantly more effort without linguistic proficiency and simple NPL tools, actions drain more bandwidth. Players can reopen <strong>Host Field Orientation</strong> from their user menu at any time to enroll in the 4-month foundation and remove this penalty upon graduation!
                         </p>
                     </div>
                 </div>
@@ -1419,7 +1419,7 @@
                 <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">2</span>
                     <strong class="text-white block font-semibold">Choose Home Base &amp; Host Orientation</strong>
-                    <span class="text-slate-400 block leading-relaxed">Select your home base from the 16 wards (+25% trust &amp; 0 AP commute). On arrival, your <strong>Movement Host</strong> delivers your orientation on Japanese group culture (no individualism, relational trust precedes decisions), language reality, and the recommended <strong>70% AP Foundation Strategy (10% NPL First-Level + 60% Language School)</strong> for Months 1 &amp; 2!</span>
+                    <span class="text-slate-400 block leading-relaxed">Select your home base from the 16 wards (+25% trust &amp; 0 AP commute). On arrival, your <strong>Movement Host</strong> delivers your orientation on Japanese group culture (no individualism, relational trust precedes decisions), language reality, and the recommended <strong>70% AP Foundation Strategy (10% NPL First-Level + 60% Language School)</strong> for Months 1 to 4!</span>
                 </div>
 
                 <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
