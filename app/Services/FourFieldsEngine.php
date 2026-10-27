@@ -394,6 +394,12 @@ class FourFieldsEngine
             // Simulate AI co-laborer turns if co-op mode is active
             if ($session->isCoopMode) {
                 app(AiColaborerService::class)->simulateDailyTurn($session, $nextWeek);
+
+                try {
+                    app(GameChatService::class)->simulateAiColaborerChat($session);
+                } catch (\Throwable) {
+                    // Ignore
+                }
             }
 
             return new WeeklyTickResolutionResult(

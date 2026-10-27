@@ -58,6 +58,7 @@ use Illuminate\Support\Str;
     'password',
     'current_game_session_id',
     'home_ward_id',
+    'last_read_chat_at',
     'is_ai_colaborer',
     'colaborer_archetype',
     'ai_strategy_notes',
@@ -529,6 +530,7 @@ class User extends Authenticatable
             'screening_score' => 'integer',
             'screening_dimension_scores' => 'array',
             'screening_answers' => 'array',
+            'last_read_chat_at' => 'datetime',
             'has_seen_host_intro' => 'boolean',
             'committed_to_language_training' => 'boolean',
             'language_training_enrolled_month' => 'integer',
@@ -666,6 +668,34 @@ class User extends Authenticatable
     public function homeWard(): BelongsTo
     {
         return $this->belongsTo(Ward::class, 'home_ward_id');
+    }
+
+    /**
+     * @return HasMany<ChatMessage, $this>
+     */
+    public function chatMessages(): HasMany
+    {
+        return $this->hasMany(ChatMessage::class);
+    }
+
+    /**
+     * Returns count of unread chat messages for this user in their active session.
+     */
+    public function unreadChatCount(?int $gameSessionId = null): int
+    {
+        $sessionId = $gameSessionId ?? $this->current_game_session_id;
+        if (! $sessionId) {
+            return 0;
+        }
+
+        $query = ChatMessage::where('game_session_id', $sessionId)
+            ->where('user_id', '!=', $this->id);
+
+        if ($this->last_read_chat_at) {
+            $query->where('created_at', '>', $this->last_read_chat_at);
+        }
+
+        return $query->count();
     }
 
     /**

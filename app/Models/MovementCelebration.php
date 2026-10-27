@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\GameChatService;
 use Database\Factories\MovementCelebrationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -57,6 +58,17 @@ class MovementCelebration extends Model
 {
     /** @use HasFactory<MovementCelebrationFactory> */
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::created(function (MovementCelebration $celebration): void {
+            try {
+                app(GameChatService::class)->broadcastCelebration($celebration);
+            } catch (\Throwable) {
+                // Ignore to avoid blocking celebration creation
+            }
+        });
+    }
 
     /**
      * PHP 8.4 Property Hook: Icon representing celebration type

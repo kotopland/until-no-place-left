@@ -294,4 +294,14 @@ class GameSession extends Model
     {
         return $this->hasMany(MonthlyReport::class);
     }
+
+    /**
+     * Asynchronous player and movement chat messages
+     *
+     * @return HasMany<ChatMessage, $this>
+     */
+    public function chatMessages(): HasMany
+    {
+        return $this->hasMany(ChatMessage::class);
+    }
 }

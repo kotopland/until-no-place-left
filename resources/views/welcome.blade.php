@@ -1021,6 +1021,58 @@
                     </div>
                 </div>
 
+                <!-- Mechanic 6.5: Asynchronous Missionary Co-op Chat & Prayer Wall -->
+                <div class="p-6 rounded-3xl bg-slate-900/80 border border-indigo-500/40 shadow-xl space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">💬</span>
+                        <div>
+                            <h3 class="text-base font-bold text-white">Asynchronous Co-op Chat &amp; Prayer Wall</h3>
+                            <span class="text-xs text-indigo-400 font-semibold">Turn-Aware Fellowship &amp; Ward Dispatches</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Because missionaries and church planters play on different real-world schedules, the in-game chat is architected specifically for <strong>asynchronous multiplayer fellowship</strong>:
+                    </p>
+                    <div class="space-y-2 text-xs text-slate-300">
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                            <span class="text-indigo-400 font-bold block flex items-center gap-1.5">
+                                <span>⏳</span>
+                                <span>In-Game Turn &amp; Simulation Timestamping</span>
+                            </span>
+                            <span class="text-slate-400 text-[11px] leading-relaxed block mt-0.5">
+                                Every message is stamped with the exact simulation turn (e.g. <em>Year 1, Month 3 • Week 2</em>) alongside real-world time. You will always know whether a co-laborer's field note applies to the current turn or past months!
+                            </span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                            <span class="text-emerald-400 font-bold block flex items-center gap-1.5">
+                                <span>🙏</span>
+                                <span>Interactive Prayer Wall &amp; Amen Reactions</span>
+                            </span>
+                            <span class="text-slate-400 text-[11px] leading-relaxed block mt-0.5">
+                                Post prayer needs for receptive oikos contacts. Teammates can tap <strong>Amen / Prayed (🙏)</strong> to intercede without typing, and AI co-laborers actively join the prayer chain!
+                            </span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                            <span class="text-amber-400 font-bold block flex items-center gap-1.5">
+                                <span>📍</span>
+                                <span>16-Ward Field Channels &amp; Milestone Broadcasts</span>
+                            </span>
+                            <span class="text-slate-400 text-[11px] leading-relaxed block mt-0.5">
+                                Switch between <strong>#citywide</strong>, <strong>#ward</strong> (filtered by any of Nagoya's 16 wards), and <strong>#announcements</strong> (which auto-broadcasts salvations, baptisms, and church plants).
+                            </span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                            <span class="text-rose-400 font-bold block flex items-center gap-1.5">
+                                <span>🔴</span>
+                                <span>Unread Dividers &amp; Catch-Up Indicators</span>
+                            </span>
+                            <span class="text-slate-400 text-[11px] leading-relaxed block mt-0.5">
+                                Returning after hours or days? An unread badge and catch-up divider clearly marks what was discussed while you were away.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Mechanic 7: Game Host Orientation & The 70% AP Foundation Strategy -->
                 <div class="p-6 rounded-3xl bg-slate-900/80 border border-emerald-500/40 shadow-xl space-y-4 md:col-span-2 lg:col-span-3">
                     <div class="flex items-center justify-between gap-3 flex-wrap border-b border-slate-800 pb-3">

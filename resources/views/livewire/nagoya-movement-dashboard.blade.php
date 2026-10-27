@@ -49,6 +49,22 @@
                     <span>Map</span>
                 </button>
 
+                <!-- Co-op Game Chat -->
+                <button 
+                    type="button" 
+                    wire:click="setTab('chat')"
+                    class="px-3 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'chat' ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                    title="Missionary Dispatch & Co-op Chat"
+                >
+                    <span>💬</span>
+                    <span>Chat</span>
+                    @if(isset($unreadChatCount) && $unreadChatCount > 0)
+                        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-rose-500 text-white animate-pulse">
+                            {{ $unreadChatCount }}
+                        </span>
+                    @endif
+                </button>
+
                 <!-- More Dropdown (Leaderboard, Story & Rules) -->
                 <div class="relative" x-data="{ open: false }" @click.outside="open = false">
                     <button 
@@ -446,6 +462,20 @@
 
                 <button 
                     type="button"
+                    wire:click="setTab('chat')" 
+                    class="px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 relative {{ $currentTab === 'chat' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                >
+                    <span>💬</span>
+                    <span>Chat</span>
+                    @if(isset($unreadChatCount) && $unreadChatCount > 0)
+                        <span class="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-rose-500 text-white animate-pulse">
+                            {{ $unreadChatCount }}
+                        </span>
+                    @endif
+                </button>
+
+                <button 
+                    type="button"
                     wire:click="setTab('leaderboard')" 
                     class="px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 {{ $currentTab === 'leaderboard' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
                 >
@@ -728,6 +758,10 @@
         @elseif($currentTab === 'map')
             <!-- Interactive Nagoya Map Canvas -->
             <livewire:nagoya-map-canvas />
+
+        @elseif($currentTab === 'chat')
+            <!-- Asynchronous Missionary Co-op Chat -->
+            <livewire:game-chat />
         @endif
     </main>
 

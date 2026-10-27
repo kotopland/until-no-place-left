@@ -22,7 +22,7 @@ use Livewire\Component;
 class NagoyaMovementDashboard extends Component
 {
     #[Url(as: 'tab')]
-    public string $currentTab = 'planner'; // 'planner', 'churches', 'leaderboard', 'map'
+    public string $currentTab = 'planner'; // 'planner', 'churches', 'leaderboard', 'map', 'chat'
 
     public string $circlesSubView = 'genmap'; // 'genmap' or 'inspector'
 
@@ -561,10 +561,13 @@ class NagoyaMovementDashboard extends Component
             ->latest()
             ->get();
 
+        $unreadChatCount = $user ? $user->unreadChatCount($session?->id) : 0;
+
         return view('livewire.nagoya-movement-dashboard', [
             'user' => $user,
             'session' => $session,
             'unreadReportsCount' => $unreadReportsCount,
+            'unreadChatCount' => $unreadChatCount,
             'churches' => $churches,
             'activeChurch' => $activeChurch,
             'allWards' => $allWards,
