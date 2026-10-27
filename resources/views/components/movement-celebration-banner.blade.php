@@ -10,7 +10,7 @@
         'salvation' => [
             'border' => 'border-emerald-500/80',
             'glow' => 'shadow-[0_0_50px_rgba(16,185,129,0.35)]',
-            'gradient' => 'from-emerald-950/95 via-teal-950/90 to-slate-950/95',
+            'gradient' => 'from-emerald-950/95 via-teal-950/90 to-slate-900/95',
             'accent' => 'text-emerald-400',
             'badge' => 'bg-emerald-900/80 text-emerald-300 border-emerald-600/60',
             'headerIcon' => '🎉',
@@ -19,7 +19,7 @@
         'baptism' => [
             'border' => 'border-cyan-500/80',
             'glow' => 'shadow-[0_0_50px_rgba(6,182,212,0.35)]',
-            'gradient' => 'from-cyan-950/95 via-blue-950/90 to-slate-950/95',
+            'gradient' => 'from-cyan-950/95 via-blue-950/90 to-slate-900/95',
             'accent' => 'text-cyan-400',
             'badge' => 'bg-cyan-900/80 text-cyan-300 border-cyan-600/60',
             'headerIcon' => '🌊',
@@ -28,7 +28,7 @@
         'church_planted' => [
             'border' => 'border-indigo-500/80',
             'glow' => 'shadow-[0_0_50px_rgba(99,102,241,0.35)]',
-            'gradient' => 'from-indigo-950/95 via-purple-950/90 to-slate-950/95',
+            'gradient' => 'from-indigo-950/95 via-purple-950/90 to-slate-900/95',
             'accent' => 'text-indigo-400',
             'badge' => 'bg-indigo-900/80 text-indigo-300 border-indigo-600/60',
             'headerIcon' => '⛪',
@@ -37,7 +37,7 @@
         'group_formed' => [
             'border' => 'border-amber-500/80',
             'glow' => 'shadow-[0_0_50px_rgba(245,158,11,0.35)]',
-            'gradient' => 'from-amber-950/95 via-orange-950/90 to-slate-950/95',
+            'gradient' => 'from-amber-950/95 via-orange-950/90 to-slate-900/95',
             'accent' => 'text-amber-400',
             'badge' => 'bg-amber-900/80 text-amber-300 border-amber-600/60',
             'headerIcon' => '📖',
@@ -46,7 +46,7 @@
         default => [
             'border' => 'border-purple-500/80',
             'glow' => 'shadow-[0_0_50px_rgba(168,85,247,0.35)]',
-            'gradient' => 'from-purple-950/95 via-indigo-950/90 to-slate-950/95',
+            'gradient' => 'from-purple-950/95 via-indigo-950/90 to-slate-900/95',
             'accent' => 'text-purple-400',
             'badge' => 'bg-purple-900/80 text-purple-300 border-purple-600/60',
             'headerIcon' => '✨',
