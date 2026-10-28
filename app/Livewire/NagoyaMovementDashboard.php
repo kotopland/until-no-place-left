@@ -35,7 +35,8 @@ class NagoyaMovementDashboard extends Component
     public string $editingName = '';
 
     public string $editingNationality = 'Japanese' {
-        set(string|array $value) => is_array($value) ? ($value['nationality'] ?? reset($value) ?? 'Japanese') : (string) $value;
+        /** @param string|array<string, mixed> $value */
+        set(string|array $value) => is_array($value) ? (string) ($value['nationality'] ?? reset($value) ?: 'Japanese') : $value;
     }
 
     public int $editingAge = 30;
@@ -95,7 +96,7 @@ class NagoyaMovementDashboard extends Component
             return;
         }
 
-        if ($this->showShowcaseBar || session('showcase_mode_active', false)) {
+        if ($this->showShowcaseBar || request()->routeIs('simulate') || request()->boolean('showcase')) {
             $userId = auth()->id() ? (int) auth()->id() : null;
             app(ShowcaseSandboxService::class)->activate($userId);
         }
@@ -122,18 +123,23 @@ class NagoyaMovementDashboard extends Component
                 $this->screeningProfileTitle = $user->screening_profile_title;
             }
 
-            if ($this->showShowcaseBar || request()->routeIs('simulate')) {
+            if ($this->showShowcaseBar || request()->routeIs('simulate') || request()->boolean('showcase')) {
                 $this->enterShowcaseSandbox();
-            } elseif (! $user->screening_passed) {
-                $this->showOnboardingModal = true;
-                $this->onboardingStage = 'screening';
-            } elseif (! $user->home_ward_id) {
-                $this->showOnboardingModal = true;
-                $this->onboardingStage = 'ward_selection';
-            } elseif (! $user->has_seen_host_intro) {
-                $this->showOnboardingModal = true;
-                $this->onboardingStage = 'host_welcome';
-                $this->selectedHomeWardId = $user->home_ward_id;
+            } else {
+                session()->forget(['showcase_mode_active', 'showcase_is_guest', 'showcase_user_id']);
+                app(ShowcaseSandboxService::class)->deactivate();
+
+                if (! $user->screening_passed) {
+                    $this->showOnboardingModal = true;
+                    $this->onboardingStage = 'screening';
+                } elseif (! $user->home_ward_id) {
+                    $this->showOnboardingModal = true;
+                    $this->onboardingStage = 'ward_selection';
+                } elseif (! $user->has_seen_host_intro) {
+                    $this->showOnboardingModal = true;
+                    $this->onboardingStage = 'host_welcome';
+                    $this->selectedHomeWardId = $user->home_ward_id;
+                }
             }
         } else {
             $this->isGuestShowcase = true;
@@ -417,7 +423,7 @@ class NagoyaMovementDashboard extends Component
         $milestoneKey = $currentMonth <= 1 ? 'reset' : ($simulator->milestoneKeyForMonths($elapsed) ?? 'reset');
 
         $this->activeShowcaseStage = $milestoneKey;
-        $this->showcaseMode = ($session->isCoopMode ?? true) ? 'coop' : 'solo';
+        $this->showcaseMode = $session->isCoopMode ? 'coop' : 'solo';
         $this->showcaseSnapshot = $simulator->captureSnapshot($session, $leadComputerPioneer, $elapsed, $milestoneKey);
     }
 
@@ -461,8 +467,8 @@ class NagoyaMovementDashboard extends Component
     {
         $user = auth()->user();
         $this->editingName = $user ? $user->name : '';
-        $this->editingNationality = $user?->nationality ?? 'Japanese';
-        $this->editingAge = (int) ($user?->age ?? 30);
+        $this->editingNationality = $user->nationality ?? 'Japanese';
+        $this->editingAge = (int) ($user->age ?? 30);
         $this->showEditNameModal = true;
     }
 
@@ -676,13 +682,13 @@ class NagoyaMovementDashboard extends Component
 
         $user->committed_to_language_training = true;
         $user->language_training_completed = false;
-        $user->language_training_enrolled_month = $user->current_game_month ?: 1;
+        $user->language_training_enrolled_month = max(1, $user->current_game_month);
         $user->has_seen_host_intro = true;
         $user->action_points = $user->availableFieldWeeklyAp;
         $user->save();
 
         $this->showOnboardingModal = false;
-        $wardName = $ward?->name ?? 'Nagoya';
+        $wardName = $ward->name ?? 'Nagoya';
 
         $this->dispatch('notify', [
             'type' => 'success',
@@ -721,7 +727,7 @@ class NagoyaMovementDashboard extends Component
         $user->save();
 
         $this->showOnboardingModal = false;
-        $wardName = $ward?->name ?? 'Nagoya';
+        $wardName = $ward->name ?? 'Nagoya';
 
         $this->dispatch('notify', [
             'type' => 'warning',
@@ -877,7 +883,7 @@ class NagoyaMovementDashboard extends Component
             ->where('id', '!=', $user?->id)
             ->with('homeWard');
 
-        if (! ($session?->isCoopMode ?? true)) {
+        if (! ($session->isCoopMode ?? true)) {
             $otherMissionariesQuery->where('is_ai_colaborer', false);
         }
 

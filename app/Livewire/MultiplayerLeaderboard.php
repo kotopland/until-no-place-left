@@ -27,7 +27,7 @@ class MultiplayerLeaderboard extends Component
     public function mount(): void
     {
         $session = GameSession::where('is_active', true)->first();
-        $this->isCoopMode = $session?->isCoopMode ?? true;
+        $this->isCoopMode = $session->isCoopMode ?? true;
     }
 
     public function setTab(string $tab): void
@@ -38,7 +38,7 @@ class MultiplayerLeaderboard extends Component
     public function render(): View
     {
         $session = GameSession::where('is_active', true)->first();
-        $isCoop = $session?->isCoopMode ?? true;
+        $isCoop = $session->isCoopMode ?? true;
 
         $hasHumanPlayers = User::where('current_game_session_id', $session?->id)
             ->where('is_ai_colaborer', false)

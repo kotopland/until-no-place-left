@@ -233,7 +233,7 @@ class NagoyaMapCanvas extends Component
                 'ward_id' => $ward->id,
                 'ward_name' => $ward->name,
                 'ward_name_ja' => $ward->name_ja,
-                'score' => $user->compositeScore ?? 0,
+                'score' => $user->compositeScore,
                 'day' => $user->current_game_day,
                 'lat' => (float) $ward->center_lat + $offsetLat,
                 'lng' => (float) $ward->center_lng + $offsetLng,

@@ -112,8 +112,8 @@ class Church extends Model
      * PHP 8.4 Property Hook: Effective leader display name
      */
     public string $leaderDisplayName {
-        get => $this->leaderNpc?->displayName
-            ?? $this->leaderUser?->name
+        get => $this->leaderNpc->displayName
+            ?? $this->leaderUser->name
             ?? $this->started_by_name
             ?? 'Local Servant Leader';
     }

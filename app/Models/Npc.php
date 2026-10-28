@@ -352,8 +352,8 @@ class Npc extends Model
             $this->gender ?? 'male',
             $this->age ?? 30,
             $this->nationality ?? 'Japanese',
-            $this->role_archetype?->value,
-            $this->status?->value,
+            $this->role_archetype->value,
+            $this->status->value,
             $pixelSize,
             $includeBadges,
             $this->name

@@ -116,7 +116,7 @@ class ChurchGenerationMap extends Component
             return;
         }
 
-        $gameMonth = $user?->current_game_month ?? 1;
+        $gameMonth = $user->current_game_month ?? 1;
         $church->revitalize($gameMonth, $user);
 
         // If there's an NPC leader, update them back to active church planter
@@ -259,7 +259,7 @@ class ChurchGenerationMap extends Component
 
         // Group by generation tiers
         $byGen = $churches->groupBy(fn (Church $c) => min(4, $c->generation));
-        $maxGen = max($churches->pluck('generation')->all() ?: [1]);
+        $maxGen = (int) max($churches->pluck('generation')->all() ?: [1]);
 
         $nodes = [];
         $nodePositions = []; // church_id => [x, y]
@@ -304,7 +304,7 @@ class ChurchGenerationMap extends Component
                 $tierCounts[$g] = ($byGen->get($g) ?? collect())->count();
             }
 
-            $maxNodesInTier = max(array_values($tierCounts) ?: [1]);
+            $maxNodesInTier = max(1, ...array_values($tierCounts));
             $totalWidth = max(950, ($maxNodesInTier * 260) + 200);
             $totalHeight = max(650, (count($byGen) * $rowHeight) + 140);
 

@@ -250,16 +250,18 @@ class NagoyaGeoJsonService
             $storageFile = storage_path('app/nagoya-border.json');
             $encoded = json_encode($result, JSON_UNESCAPED_UNICODE);
 
-            if ($destinationPath) {
-                File::ensureDirectoryExists(dirname($destinationPath));
-                File::put($destinationPath, $encoded);
+            if ($encoded !== false) {
+                if ($destinationPath) {
+                    File::ensureDirectoryExists(dirname($destinationPath));
+                    File::put($destinationPath, $encoded);
+                }
+
+                File::ensureDirectoryExists(dirname($repoFile));
+                File::put($repoFile, $encoded);
+
+                File::ensureDirectoryExists(dirname($storageFile));
+                File::put($storageFile, $encoded);
             }
-
-            File::ensureDirectoryExists(dirname($repoFile));
-            File::put($repoFile, $encoded);
-
-            File::ensureDirectoryExists(dirname($storageFile));
-            File::put($storageFile, $encoded);
         }
 
         return $result;

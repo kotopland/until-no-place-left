@@ -22,7 +22,8 @@ class PasswordlessLogin extends Component
     public string $name = '';
 
     public string $nationality = 'Japanese' {
-        set(string|array $value) => is_array($value) ? ($value['nationality'] ?? reset($value) ?? 'Japanese') : (string) $value;
+        /** @param string|array<string, mixed> $value */
+        set(string|array $value) => is_array($value) ? (string) ($value['nationality'] ?? reset($value) ?: 'Japanese') : $value;
     }
 
     public int $age = 30;

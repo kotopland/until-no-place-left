@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\GameSession;
 use App\Models\User;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
@@ -29,8 +30,21 @@ class ShowcaseSandboxService
             $this->primaryConnection = $currentDefault;
         }
 
-        // Always pin Laravel HTTP session storage to the primary database connection
-        config(['session.connection' => $this->primaryConnection]);
+        // Always pin Laravel HTTP session, cache, and queue storage to the primary database connection
+        $this->pinFrameworkInfrastructureToPrimaryConnection();
+    }
+
+    /**
+     * Pin Laravel HTTP session, database cache, and database queue connections to the primary database.
+     */
+    protected function pinFrameworkInfrastructureToPrimaryConnection(): void
+    {
+        config([
+            'session.connection' => $this->primaryConnection,
+            'cache.stores.database.connection' => $this->primaryConnection,
+            'cache.stores.database.lock_connection' => $this->primaryConnection,
+            'queue.connections.database.connection' => $this->primaryConnection,
+        ]);
     }
 
     /**
@@ -353,7 +367,8 @@ class ShowcaseSandboxService
     }
 
     /**
-     * Clone all table and index DDLs (plus initial 16 Nagoya wards) from the primary SQLite database into the temporary SQLite database.
+     * Clone all table and index DDLs (plus initial 16 Nagoya wards) from the primary database into the temporary SQLite database.
+     * When the primary connection is MariaDB/MySQL/PostgreSQL, run standard Laravel migrations on the temporary SQLite database.
      */
     protected function cloneSchemaFromPrimaryConnection(): void
     {
@@ -362,21 +377,30 @@ class ShowcaseSandboxService
 
         $showcaseConn->statement('PRAGMA foreign_keys = OFF;');
 
-        $ddls = $primaryConn->select(
-            "SELECT type, name, sql FROM sqlite_master WHERE type IN ('table', 'index') AND name NOT LIKE 'sqlite_%' AND sql IS NOT NULL ORDER BY CASE type WHEN 'table' THEN 1 ELSE 2 END"
-        );
+        if ($primaryConn->getDriverName() === 'sqlite') {
+            $ddls = $primaryConn->select(
+                "SELECT type, name, sql FROM sqlite_master WHERE type IN ('table', 'index') AND name NOT LIKE 'sqlite_%' AND sql IS NOT NULL ORDER BY CASE type WHEN 'table' THEN 1 ELSE 2 END"
+            );
 
-        foreach ($ddls as $ddl) {
-            if (! empty($ddl->sql)) {
-                $showcaseConn->statement($ddl->sql);
+            foreach ($ddls as $ddl) {
+                if (! empty($ddl->sql)) {
+                    $showcaseConn->statement($ddl->sql);
+                }
             }
+        } else {
+            Artisan::call('migrate', [
+                '--database' => self::CONNECTION,
+                '--force' => true,
+            ]);
         }
 
         // Copy the 16 Nagoya wards (including imported GeoJSON boundaries) if already seeded in primary DB
-        $existingWards = $primaryConn->table('wards')->get();
-        if ($existingWards->isNotEmpty()) {
-            foreach ($existingWards as $wardRow) {
-                $showcaseConn->table('wards')->insert((array) $wardRow);
+        if ($showcaseConn->table('wards')->count() === 0 && Schema::connection($this->primaryConnection)->hasTable('wards')) {
+            $existingWards = $primaryConn->table('wards')->get();
+            if ($existingWards->isNotEmpty()) {
+                foreach ($existingWards as $wardRow) {
+                    $showcaseConn->table('wards')->insert((array) $wardRow);
+                }
             }
         }
 

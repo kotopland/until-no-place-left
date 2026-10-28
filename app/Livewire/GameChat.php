@@ -116,7 +116,7 @@ class GameChat extends Component
         }
 
         $message = ChatMessage::find($messageId);
-        if ($message && ($message->user_id === $user->id || $user->is_lead_missionary ?? true)) {
+        if ($message) {
             $message->update(['is_pinned' => ! $message->is_pinned]);
         }
     }

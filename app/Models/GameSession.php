@@ -59,7 +59,7 @@ class GameSession extends Model
                 $session->code = 'session-'.Str::lower(Str::random(6));
             }
             if (empty($session->next_tick_at)) {
-                $session->next_tick_at = now()->addHours(12);
+                $session->next_tick_at = Carbon::now()->addHours(12);
             }
         });
     }

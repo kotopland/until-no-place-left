@@ -454,7 +454,7 @@ class AiColaborerService
             ]);
         } else {
             PrayerWalk::create([
-                'game_session_id' => $humanUser->current_game_session_id ?? $ward->game_session_id,
+                'game_session_id' => $humanUser->current_game_session_id ?? GameSession::first()?->id,
                 'user_id' => $humanUser->id,
                 'ward_id' => $ward->id,
                 'game_month' => $humanUser->current_game_month ?: 1,

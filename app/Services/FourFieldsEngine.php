@@ -966,7 +966,7 @@ class FourFieldsEngine
     public function executeAction(User $user, Ward $ward, MinistryActionType $actionType, ?Npc $targetNpc = null, int $gameMonth = 1): ActionResolutionOutcome
     {
         $action = QueuedMonthlyAction::create([
-            'game_session_id' => $user->current_game_session_id ?? $ward->game_session_id,
+            'game_session_id' => $user->current_game_session_id ?? GameSession::first()?->id,
             'user_id' => $user->id,
             'ward_id' => $ward->id,
             'action_type' => $actionType,
@@ -1273,7 +1273,7 @@ class FourFieldsEngine
                         wardId: $ward->id,
                         wardName: "{$ward->name} ({$ward->name_ja})",
                         personName: "{$npc->name} ({$npc->name_ja})",
-                        personRole: $npc->role_archetype?->label() ?? 'Seeker',
+                        personRole: $npc->role_archetype->label(),
                         disciplerName: $user->name,
                         details: "Hallelujah! After {$seekingMonths} months of sincere seeking, {$npc->name} prayed the Sinner's Prayer with genuine sincerity and tears, confessing their sins and receiving Jesus Christ as Lord and Savior!",
                         generation: max(1, $npc->generation),
@@ -1326,7 +1326,7 @@ class FourFieldsEngine
                             wardId: $ward->id,
                             wardName: "{$ward->name} ({$ward->name_ja})",
                             personName: "{$npc->name} ({$npc->name_ja})",
-                            personRole: $npc->role_archetype?->label() ?? 'New Believer',
+                            personRole: $npc->role_archetype->label(),
                             disciplerName: $user->name,
                             details: "Glory to God! After {$npc->baptism_cost_months} months of faithful prayer, overcoming family obstacles, and counting the cost, {$npc->name} publicly confessed Christ and was baptized in water!",
                             generation: max(1, $npc->generation),
@@ -1398,7 +1398,7 @@ class FourFieldsEngine
                                 wardId: $ward->id,
                                 wardName: "{$ward->name} ({$ward->name_ja})",
                                 personName: "{$npc->name} ({$npc->name_ja})",
-                                personRole: $npc->role_archetype?->label() ?? 'Disciple',
+                                personRole: $npc->role_archetype->label(),
                                 disciplerName: $user->name,
                                 details: "Discipled in the Commands of Christ! Having faithfully prepared their family over {$npc->baptism_cost_months} months, {$npc->name} was publicly baptized in water!",
                                 generation: max(1, $npc->generation),
@@ -1448,7 +1448,7 @@ class FourFieldsEngine
                             wardId: $ward->id,
                             wardName: "{$ward->name} ({$ward->name_ja})",
                             personName: "{$npc->name} ({$npc->name_ja})",
-                            personRole: $npc->role_archetype?->label() ?? 'Discovery Seeker',
+                            personRole: $npc->role_archetype->label(),
                             disciplerName: $user->name,
                             details: "Facilitated a SWORD discovery Bible study with {$npc->name}. After {$seekingMonths} months of seeking, the Holy Spirit convicted them as they answered the 4 questions, and they joyfully gave their life to Christ!",
                             generation: max(1, $npc->generation),
@@ -1503,7 +1503,7 @@ class FourFieldsEngine
                                     wardId: $ward->id,
                                     wardName: "{$ward->name} ({$ward->name_ja})",
                                     personName: "{$npc->name} ({$npc->name_ja})",
-                                    personRole: $npc->role_archetype?->label() ?? 'L1 Seed Sower',
+                                    personRole: $npc->role_archetype->label(),
                                     disciplerName: $user->name,
                                     details: "Trained {$npc->name} in 411 Discipleship! Having completed {$npc->baptism_cost_months} months of family preparation, {$npc->name} was joyfully baptized in water during the 411 training gathering!",
                                     generation: max(1, $npc->generation),
@@ -2432,7 +2432,7 @@ class FourFieldsEngine
                         wardId: $targetNpc->ward_id,
                         wardName: "{$targetNpc->ward->name} ({$targetNpc->ward->name_ja})",
                         personName: "{$targetNpc->name} ({$targetNpc->name_ja})",
-                        personRole: $targetNpc->role_archetype?->label() ?? 'Oikos Believer',
+                        personRole: $targetNpc->role_archetype->label(),
                         disciplerName: "{$believer->name} (G{$believer->generation})",
                         details: "🌱 [AUTONOMOUS MULTIPLICATION] {$believer->name} shared Christ with {$targetNpc->name} ({$unsavedTargetRel->relationship_type->label()}) in {$targetNpc->ward->name}! New G{$newGen} disciple born in Nagoya!",
                         generation: $newGen,
@@ -2444,7 +2444,7 @@ class FourFieldsEngine
 
                     // Calculate generational points for original player
                     $originalPlayer = $believer->disciplerUser
-                        ?? $believer->disciplerNpc?->disciplerUser
+                        ?? $believer->disciplerNpc->disciplerUser
                         ?? User::where('current_game_session_id', $session->id)->first();
                     if ($originalPlayer) {
                         $genPoints = match ($newGen) {
@@ -2549,7 +2549,7 @@ class FourFieldsEngine
                 );
 
                 $originalPlayer = $believer->disciplerUser
-                    ?? $believer->disciplerNpc?->disciplerUser
+                    ?? $believer->disciplerNpc->disciplerUser
                     ?? User::where('current_game_session_id', $session->id)->first();
                 if ($originalPlayer) {
                     $churchPts = match ($churchGen) {

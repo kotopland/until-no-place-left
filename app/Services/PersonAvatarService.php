@@ -722,8 +722,8 @@ class PersonAvatarService
         $gender = $person->gender ?? 'male';
         $age = $person->age ?? 30;
         $nationality = $person->nationality ?? 'Japanese';
-        $role = $person instanceof Npc ? ($person->role_archetype?->value ?? null) : ($person->colaborer_archetype ?? 'missionary');
-        $status = $person instanceof Npc ? ($person->status?->value ?? null) : 'green';
+        $role = $person instanceof Npc ? $person->role_archetype->value : ($person->colaborer_archetype ?? 'missionary');
+        $status = $person instanceof Npc ? $person->status->value : 'green';
         $seed = $person->name ?? (string) $person->id;
 
         return $this->generateSvg($gender, $age, $nationality, $role, $status, $pixelSize, $includeBadges, $seed);

@@ -6,6 +6,7 @@ use App\Enums\MinistryActionType;
 use App\Enums\NpcNeedState;
 use App\Enums\QueuedActionStatus;
 use App\Enums\ReceptivityStatus;
+use App\Models\Church;
 use App\Models\GameSession;
 use App\Models\MovementCelebration;
 use App\Models\Npc;
@@ -19,6 +20,11 @@ use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
+/**
+ * @property-read ?QueuedMonthlyAction $activeWorkerRhythm
+ * @property-read bool $isCurrentDayBlocked
+ * @property-read bool $isCurrentWeekBlocked
+ */
 class ActionQueuePlanner extends Component
 {
     #[Url(as: 'view')]
@@ -32,7 +38,9 @@ class ActionQueuePlanner extends Component
 
     public ?string $selectedAction {
         get => $this->selectedActionType;
-        set => $this->selectedActionType = $value;
+        set(?string $value) {
+            $this->selectedActionType = $value;
+        }
     }
 
     public ?string $infoActionType = null;
@@ -68,7 +76,7 @@ class ActionQueuePlanner extends Component
     {
         $this->player = auth()->user() ?? $this->player ?? User::first();
         $this->player?->refresh();
-        $this->session = $this->player?->currentGameSession ?? $this->session ?? GameSession::first();
+        $this->session = $this->player->currentGameSession ?? $this->session ?? GameSession::first();
         $this->session?->refresh();
     }
 
@@ -80,7 +88,7 @@ class ActionQueuePlanner extends Component
         $this->player?->touchActive();
 
         // Default viewing selection to player's home ward, or Naka-ku (without auto-assigning residence)
-        $defaultWard = $this->player?->homeWard ?? Ward::where('slug', 'naka-ku')->first() ?? Ward::first();
+        $defaultWard = $this->player->homeWard ?? Ward::where('slug', 'naka-ku')->first() ?? Ward::first();
         $this->selectedWardId = $defaultWard?->id;
     }
 
@@ -415,7 +423,7 @@ class ActionQueuePlanner extends Component
 
         // Enforce once-per-week rate limit for Church Circles coaching (minimum 7 days between sessions)
         if ($actionEnum === MinistryActionType::ChurchCircles) {
-            $church = $targetNpc?->church
+            $church = $targetNpc->church
                 ?? Church::where('leader_npc_id', $targetNpc?->id)->first()
                 ?? Church::where('ward_id', $this->selectedWardId)->first();
 
@@ -888,7 +896,7 @@ class ActionQueuePlanner extends Component
             ->groupBy('home_ward_id');
 
         $aiCoLaborersInWard = ($this->session?->isCoopMode && $selectedWard)
-            ? User::where('current_game_session_id', $this->session?->id)
+            ? User::where('current_game_session_id', $this->session->id)
                 ->where('is_ai_colaborer', true)
                 ->where('home_ward_id', $selectedWard->id)
                 ->get()
@@ -930,11 +938,11 @@ class ActionQueuePlanner extends Component
             ->values()
             ->all();
 
-        $currentDay = $this->player?->current_game_day ?? 1;
-        $currentMonth = $this->player?->current_game_month ?? 1;
+        $currentDay = $this->player->current_game_day ?? 1;
+        $currentMonth = $this->player->current_game_month ?? 1;
 
         // Active rhythm on current week/day
-        $currentWeek = $this->player?->current_game_week ?? 1;
+        $currentWeek = $this->player->current_game_week ?? 1;
         $activeWorkerRhythm = $this->activeWorkerRhythm;
         $isDayBlocked = $this->isCurrentDayBlocked;
 
@@ -975,7 +983,7 @@ class ActionQueuePlanner extends Component
                 ->exists()
             : false;
 
-        $playerAp = $this->player?->action_points ?? 0;
+        $playerAp = $this->player->action_points ?? 0;
 
         $workerRhythmStatuses = [
             MinistryActionType::ReceiveMentoring->value => [

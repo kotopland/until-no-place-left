@@ -71,21 +71,33 @@ class ChatMessage extends Model
         }
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsTo<GameSession, $this>
+     */
     public function gameSession(): BelongsTo
     {
         return $this->belongsTo(GameSession::class);
     }
 
+    /**
+     * @return BelongsTo<Ward, $this>
+     */
     public function ward(): BelongsTo
     {
         return $this->belongsTo(Ward::class);
     }
 
+    /**
+     * @return HasMany<ChatMessageReaction, $this>
+     */
     public function reactions(): HasMany
     {
         return $this->hasMany(ChatMessageReaction::class);

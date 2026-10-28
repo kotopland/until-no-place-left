@@ -56,6 +56,8 @@ class PasswordlessAuthController extends Controller
 
             Auth::login($user, remember: true);
             $request->session()->regenerate();
+            $request->session()->forget(['showcase_mode_active', 'showcase_is_guest', 'showcase_user_id']);
+            app(\App\Services\ShowcaseSandboxService::class)->deactivate();
             $user->touchActive();
 
             return redirect()
@@ -96,6 +98,8 @@ class PasswordlessAuthController extends Controller
 
         Auth::login($newUser, remember: true);
         $request->session()->regenerate();
+        $request->session()->forget(['showcase_mode_active', 'showcase_is_guest', 'showcase_user_id']);
+        app(\App\Services\ShowcaseSandboxService::class)->deactivate();
 
         return redirect()
             ->route('home')

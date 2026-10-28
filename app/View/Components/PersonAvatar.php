@@ -42,8 +42,8 @@ class PersonAvatar extends Component
             $this->gender = $this->person->gender ?: 'male';
             $this->age = $this->person->age ?: 30;
             $this->nationality = $this->person->nationality ?: 'Japanese';
-            $this->role = $this->person->role_archetype?->value;
-            $this->status = $this->person->status?->value;
+            $this->role = $this->person->role_archetype->value;
+            $this->status = $this->person->status->value;
         } elseif ($this->person instanceof User) {
             $this->gender = $this->person->gender ?: 'male';
             $this->age = $this->person->age ?: 30;
@@ -67,7 +67,7 @@ class PersonAvatar extends Component
             default => 48,
         };
 
-        $seed = $this->person?->name ?? ($this->nationality.$this->gender.$this->age);
+        $seed = $this->person->name ?? ($this->nationality.$this->gender.$this->age);
         $this->svg = $avatarService->generateSvg(
             $this->gender,
             $this->age,

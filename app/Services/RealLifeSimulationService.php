@@ -537,7 +537,7 @@ class RealLifeSimulationService
         $unlocked = collect();
 
         foreach (self::WARD_EXPANSION_ORDER as $slug) {
-            $baseUnlockMonth = self::WARD_UNLOCK_MONTH[$slug] ?? 1;
+            $baseUnlockMonth = self::WARD_UNLOCK_MONTH[$slug];
             // In solo mode, early ward expansion takes slightly longer until indigenous leaders multiply
             $effectiveUnlockMonth = (! $isCoop && $baseUnlockMonth > 1 && $baseUnlockMonth < 120)
                 ? (int) round($baseUnlockMonth * 1.15)
@@ -871,7 +871,7 @@ class RealLifeSimulationService
                 'baptism_cost_months' => 0,
                 'generation' => $newGen,
                 'discipler_npc_id' => $disciplerNpc?->id,
-                'discipler_user_id' => $assignedComputerCatalyst?->id ?? $pioneer?->id,
+                'discipler_user_id' => $assignedComputerCatalyst->id ?? $pioneer?->id,
             ]);
 
             if ($assignedComputerCatalyst) {
@@ -1287,7 +1287,7 @@ class RealLifeSimulationService
                 : 1;
         }
 
-        $leaderName = $leaderNpc ? $leaderNpc->name : ($pioneer?->name ?? 'Nagoya Timothy');
+        $leaderName = $leaderNpc ? $leaderNpc->name : ($pioneer->name ?? 'Nagoya Timothy');
 
         // All new groups begin as Developing Bible Studies practicing the initial 5-6 core elements
         $elements = [
@@ -1832,8 +1832,8 @@ class RealLifeSimulationService
             'prayer_walks_count' => $prayerWalksCount,
             'cumulative_attrition_events' => $this->cumulativeAttritionEvents,
             'cumulative_revitalizations' => $this->cumulativeRevitalizations,
-            'pioneer_score' => (int) ($pioneer?->total_generational_score ?? 0),
-            'coop_score' => (int) ($pioneer?->coop_synergy_score ?? 0),
+            'pioneer_score' => (int) ($pioneer->total_generational_score ?? 0),
+            'coop_score' => (int) ($pioneer->coop_synergy_score ?? 0),
         ];
     }
 }

@@ -31,11 +31,17 @@ class ChatMessageReaction extends Model
     /** @use HasFactory<ChatMessageReactionFactory> */
     use HasFactory;
 
+    /**
+     * @return BelongsTo<ChatMessage, $this>
+     */
     public function chatMessage(): BelongsTo
     {
         return $this->belongsTo(ChatMessage::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

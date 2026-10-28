@@ -47,6 +47,10 @@ use Illuminate\Support\Str;
  * @property Carbon|null $last_daily_tick_at
  * @property Carbon|null $next_daily_tick_at
  * @property Carbon|null $last_monthly_tick_at
+ * @property Carbon|null $last_read_chat_at
+ * @property array<string, string>|null $screening_answers
+ * @property array<string, int>|null $screening_dimension_scores
+ * @property int|null $language_training_enrolled_month
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */

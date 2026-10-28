@@ -16,6 +16,8 @@ class GameChatService
 {
     /**
      * Post a new message into the game chat.
+     *
+     * @param  array<string, mixed>|null  $metadata
      */
     public function postMessage(
         User $user,
@@ -44,7 +46,7 @@ class GameChatService
         $gameWeek = (int) ($user->current_game_week ?: ($session?->current_game_week ?: 1));
 
         $chatMessage = ChatMessage::create([
-            'game_session_id' => $session?->id ?? 1,
+            'game_session_id' => $session->id ?? 1,
             'user_id' => $user->id,
             'channel' => $channel,
             'ward_id' => $wardId,
@@ -133,8 +135,8 @@ class GameChatService
         }
 
         return ChatMessage::create([
-            'game_session_id' => $session?->id ?? 1,
-            'user_id' => $systemUser?->id ?? 1,
+            'game_session_id' => $session->id ?? 1,
+            'user_id' => $systemUser->id ?? 1,
             'channel' => 'announcements',
             'ward_id' => $celebration->ward_id,
             'message' => $content,
@@ -186,7 +188,7 @@ class GameChatService
         }
 
         $homeWard = $aiColaborer->homeWard ?? Ward::find($aiColaborer->home_ward_id) ?? Ward::first();
-        $wardName = $homeWard?->name ?? 'Nagoya';
+        $wardName = $homeWard->name ?? 'Nagoya';
 
         $dispatches = [
             'citywide' => [
