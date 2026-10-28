@@ -166,6 +166,8 @@ class FourFieldsEngine
                     'days_played_today' => $weeksPlayedToday,
                     'weeks_processed_this_month' => $newWeeksProcessed,
                     'days_processed_this_month' => $newWeeksProcessed,
+                    'consecutive_inactive_months' => 0,
+                    'last_played_game_month' => $gameMonth,
                     'last_active_at' => now(),
                     'last_played_real_date' => $today,
                 ];
@@ -533,20 +535,35 @@ class FourFieldsEngine
             // 4. Update player models and reset monthly bandwidth Action Points
             $participatingUsers = User::where('current_game_session_id', $session->id)->lockForUpdate()->get();
             foreach ($participatingUsers as $user) {
-                // If a player has already changed their month today, do NOT change it to the next one!
-                if ($user->hasChangedMonthToday) {
+                // If a player has already changed their month today ahead of the session, do NOT change it to the next one!
+                if ($user->hasChangedMonthToday && $user->current_game_month > $gameMonth) {
                     $user->update(['days_played_today' => 0]);
 
                     continue;
                 }
 
+                $userMonth = $user->current_game_month ?: $gameMonth;
+                $playedThisMonth = $this->didUserPlayInMonth($user, $gameMonth)
+                    || ($userMonth !== $gameMonth && $this->didUserPlayInMonth($user, $userMonth));
+
+                if ($playedThisMonth) {
+                    $consecutiveInactiveMonths = 0;
+                    $lastPlayedGameMonth = $userMonth;
+                } else {
+                    $inactiveByDiff = $user->last_played_game_month !== null
+                        ? max(0, $userMonth - $user->last_played_game_month)
+                        : 0;
+                    $consecutiveInactiveMonths = max(($user->consecutive_inactive_months ?? 0) + 1, $inactiveByDiff);
+                    $lastPlayedGameMonth = $user->last_played_game_month;
+                }
+
                 $scoreGain = $playerScoreGains[$user->id] ?? 0;
                 $nextMonth = $user->current_game_month + 1;
 
-                $isBurnedOut = $user->is_burned_out;
+                $isBurnedOut = (bool) ($user->is_burned_out ?? false);
                 $burnedOutUntilMonth = $user->burned_out_until_game_month;
-                $consecutiveExhaustion = $user->consecutive_exhaustion_days;
-                $fatiguePenalty = $user->fatigue_penalty_ap;
+                $consecutiveExhaustion = (int) ($user->consecutive_exhaustion_days ?? 0);
+                $fatiguePenalty = (int) ($user->fatigue_penalty_ap ?? 0);
                 $languageTrainingCompleted = (bool) ($user->language_training_completed ?? false);
                 $badges = $user->badges ?? [];
 
@@ -584,6 +601,26 @@ class FourFieldsEngine
                         : $user->max_action_points;
                 }
 
+                $newGenScore = $user->total_generational_score + $scoreGain;
+                $newCoopScore = $user->coop_synergy_score ?? 0;
+
+                if (! $user->is_ai_colaborer && ! $playedThisMonth && $consecutiveInactiveMonths >= User::INACTIVITY_DECAY_MONTHS_THRESHOLD) {
+                    $decay = $user->calculateInactivityScoreDecay($newGenScore, $newCoopScore);
+                    $newGenScore = $decay['new_generational_score'];
+                    $newCoopScore = $decay['new_coop_score'];
+                    $scoreGain -= $decay['generational_loss'];
+                    $playerScoreGains[$user->id] = $scoreGain;
+
+                    if ($decay['total_loss'] > 0) {
+                        $autonomousHighlights[] = "📉 [INACTIVITY DECAY] {$user->name} has not played for {$consecutiveInactiveMonths} consecutive game months. Score declined by 5% (-{$decay['total_loss']} pts).";
+                        $coachTips[] = [
+                            'user_id' => $user->id,
+                            'action' => 'Field Inactivity Decay (-5%)',
+                            'tip' => "You have not played for {$consecutiveInactiveMonths} consecutive game months. Unattended relational networks cool over time, causing a 5% monthly score decline until you resume active ministry.",
+                        ];
+                    }
+                }
+
                 $userUpdates = [
                     'current_game_month' => $nextMonth,
                     'current_game_week' => 1,
@@ -591,6 +628,8 @@ class FourFieldsEngine
                     'weeks_played_today' => 0,
                     'current_game_day' => 1,
                     'days_processed_this_month' => 0,
+                    'consecutive_inactive_months' => $consecutiveInactiveMonths,
+                    'last_played_game_month' => $lastPlayedGameMonth,
                     'last_monthly_tick_at' => now(),
                     'last_weekly_tick_at' => now(),
                     'next_weekly_tick_at' => now()->addMinutes(15),
@@ -603,11 +642,9 @@ class FourFieldsEngine
                     'days_played_today' => 0,
                     'language_training_completed' => $languageTrainingCompleted,
                     'badges' => $badges,
+                    'total_generational_score' => $newGenScore,
+                    'coop_synergy_score' => $newCoopScore,
                 ];
-
-                if ($scoreGain > 0) {
-                    $userUpdates['total_generational_score'] = $user->total_generational_score + $scoreGain;
-                }
 
                 $user->update($userUpdates);
             }
@@ -742,30 +779,20 @@ class FourFieldsEngine
             $userAutonomousScore = $multiplicationData['player_scores'][$user->id] ?? 0;
             $totalScoreGain = $playerScoreGain + $userAutonomousScore;
 
-            if ($totalScoreGain > 0) {
-                $user->increment('total_generational_score', $totalScoreGain);
+            $playedThisMonth = $actionsProcessed > 0 || $this->didUserPlayInMonth($user, $gameMonth);
+
+            if ($playedThisMonth) {
+                $consecutiveInactiveMonths = 0;
+                $lastPlayedGameMonth = $gameMonth;
+            } else {
+                $inactiveByDiff = $user->last_played_game_month !== null
+                    ? max(0, $gameMonth - $user->last_played_game_month)
+                    : 0;
+                $consecutiveInactiveMonths = max(($user->consecutive_inactive_months ?? 0) + 1, $inactiveByDiff);
+                $lastPlayedGameMonth = $user->last_played_game_month;
             }
 
-            // 3. Generate Monthly Report for this user
-            MonthlyReport::create([
-                'game_session_id' => $session?->id,
-                'user_id' => $user->id,
-                'game_month' => $gameMonth,
-                'summary_title' => "Nagoya Movement Digest — Month {$gameMonth}",
-                'highlights_json' => $autonomousHighlights,
-                'answered_prayers_json' => [
-                    'count' => $prayersAnswered,
-                    'notes' => $prayersAnswered > 0 ? 'God moved in power through intercession this month!' : 'Continue faithful prayer walking and intercession.',
-                ],
-                'disciples_multiplied_count' => $autonomousMultiplications,
-                'churches_planted_count' => $churchesPlanted,
-                'generational_score_gained' => $totalScoreGain,
-                'total_generational_score' => $user->total_generational_score,
-                'coach_tips_json' => $coachTips,
-                'read_at' => null,
-            ]);
-
-            // 4. Advance seeking and baptism timeline across the month for residents in this session
+            // 3. Advance seeking and baptism timeline across the month for residents in this session
             if ($session) {
                 Npc::where('game_session_id', $session->id)
                     ->where('status', ReceptivityStatus::Yellow)
@@ -777,14 +804,13 @@ class FourFieldsEngine
                     ->increment('baptism_cost_months');
             }
 
-            // 5. Advance user to next game month and reset day counters
-            $user->increment('current_game_month');
-            $newMonth = $user->current_game_month;
+            // 4. Advance user to next game month and reset day counters
+            $newMonth = $user->current_game_month + 1;
 
-            $isBurnedOut = $user->is_burned_out;
+            $isBurnedOut = (bool) ($user->is_burned_out ?? false);
             $burnedOutUntilMonth = $user->burned_out_until_game_month;
-            $consecutiveExhaustion = $user->consecutive_exhaustion_days;
-            $fatiguePenalty = $user->fatigue_penalty_ap;
+            $consecutiveExhaustion = (int) ($user->consecutive_exhaustion_days ?? 0);
+            $fatiguePenalty = (int) ($user->fatigue_penalty_ap ?? 0);
             $languageTrainingCompleted = (bool) ($user->language_training_completed ?? false);
             $badges = $user->badges ?? [];
 
@@ -822,7 +848,27 @@ class FourFieldsEngine
                     : $user->max_action_points;
             }
 
+            $newGenScore = $user->total_generational_score + $totalScoreGain;
+            $newCoopScore = $user->coop_synergy_score ?? 0;
+
+            if (! $user->is_ai_colaborer && ! $playedThisMonth && $consecutiveInactiveMonths >= User::INACTIVITY_DECAY_MONTHS_THRESHOLD) {
+                $decay = $user->calculateInactivityScoreDecay($newGenScore, $newCoopScore);
+                $newGenScore = $decay['new_generational_score'];
+                $newCoopScore = $decay['new_coop_score'];
+                $totalScoreGain -= $decay['generational_loss'];
+
+                if ($decay['total_loss'] > 0) {
+                    $autonomousHighlights[] = "📉 [INACTIVITY DECAY] {$user->name} has not played for {$consecutiveInactiveMonths} consecutive game months. Score declined by 5% (-{$decay['total_loss']} pts).";
+                    $coachTips[] = [
+                        'user_id' => $user->id,
+                        'action' => 'Field Inactivity Decay (-5%)',
+                        'tip' => "You have not played for {$consecutiveInactiveMonths} consecutive game months. Unattended relational networks cool over time, causing a 5% monthly score decline until you resume active ministry.",
+                    ];
+                }
+            }
+
             $user->update([
+                'current_game_month' => $newMonth,
                 'current_game_week' => 1,
                 'weeks_processed_this_month' => 0,
                 'weeks_played_today' => 0,
@@ -830,6 +876,8 @@ class FourFieldsEngine
                 'next_weekly_tick_at' => now()->addMinutes(15),
                 'current_game_day' => 1,
                 'days_processed_this_month' => 0,
+                'consecutive_inactive_months' => $consecutiveInactiveMonths,
+                'last_played_game_month' => $lastPlayedGameMonth,
                 'last_monthly_tick_at' => now(),
                 'next_daily_tick_at' => now()->addMinutes(15),
                 'action_points' => $actionPoints,
@@ -841,6 +889,27 @@ class FourFieldsEngine
                 'days_played_today' => 0,
                 'language_training_completed' => $languageTrainingCompleted,
                 'badges' => $badges,
+                'total_generational_score' => $newGenScore,
+                'coop_synergy_score' => $newCoopScore,
+            ]);
+
+            // 5. Generate Monthly Report for this user
+            MonthlyReport::create([
+                'game_session_id' => $session?->id,
+                'user_id' => $user->id,
+                'game_month' => $gameMonth,
+                'summary_title' => "Nagoya Movement Digest — Month {$gameMonth}",
+                'highlights_json' => $autonomousHighlights,
+                'answered_prayers_json' => [
+                    'count' => $prayersAnswered,
+                    'notes' => $prayersAnswered > 0 ? 'God moved in power through intercession this month!' : 'Continue faithful prayer walking and intercession.',
+                ],
+                'disciples_multiplied_count' => $autonomousMultiplications,
+                'churches_planted_count' => $churchesPlanted,
+                'generational_score_gained' => $totalScoreGain,
+                'total_generational_score' => $user->total_generational_score,
+                'coach_tips_json' => $coachTips,
+                'read_at' => null,
             ]);
 
             return new MonthResolutionResult(
@@ -864,6 +933,34 @@ class FourFieldsEngine
     }
 
     /**
+     * Determines whether a player actively played during the given game month.
+     */
+    public function didUserPlayInMonth(User $user, int $gameMonth): bool
+    {
+        if ($user->weeks_processed_this_month > 0 || $user->days_processed_this_month > 0) {
+            return true;
+        }
+
+        if ($user->last_played_game_month !== null && $user->last_played_game_month >= $gameMonth) {
+            return true;
+        }
+
+        if (QueuedMonthlyAction::where('user_id', $user->id)->where('game_month', $gameMonth)->exists()) {
+            return true;
+        }
+
+        if (PrayerWalk::where('user_id', $user->id)->where('game_month', $gameMonth)->exists()) {
+            return true;
+        }
+
+        if (NpcContribution::where('user_id', $user->id)->where('game_month', $gameMonth)->exists()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Executes and resolves an immediate action for tests or direct simulation.
      */
     public function executeAction(User $user, Ward $ward, MinistryActionType $actionType, ?Npc $targetNpc = null, int $gameMonth = 1): ActionResolutionOutcome
@@ -884,6 +981,11 @@ class FourFieldsEngine
         $action->update([
             'status' => QueuedActionStatus::Processed,
             'outcome_notes' => $outcome->narrativeOutcome,
+        ]);
+
+        $user->update([
+            'consecutive_inactive_months' => 0,
+            'last_played_game_month' => $gameMonth,
         ]);
 
         return $outcome;

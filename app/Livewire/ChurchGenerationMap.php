@@ -179,7 +179,11 @@ class ChurchGenerationMap extends Component
             return;
         }
 
-        $user->decrement('action_points', $totalApCost);
+        $user->update([
+            'action_points' => max(0, $user->action_points - $totalApCost),
+            'consecutive_inactive_months' => 0,
+            'last_played_game_month' => $user->current_game_month ?: 1,
+        ]);
         $user->refresh();
 
         $targetWeek = $user->current_game_day > 4 ? min(4, (int) ceil($user->current_game_day / 7)) : ($user->current_game_week ?: 1);

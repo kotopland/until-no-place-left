@@ -800,6 +800,10 @@
                             <strong class="text-white block font-semibold">📊 Month in Review Digest</strong>
                             <span>When the midnight tick executes, autonomous church multiplications occur, bandwidth AP is reset for the new month, and you receive your rich <strong>Month in Review Digest</strong> celebrating answered prayers, church health, and coach insights.</span>
                         </div>
+                        <div class="p-3 rounded-xl bg-rose-950/30 border border-rose-500/40 space-y-1">
+                            <strong class="text-rose-300 block font-semibold">📉 Field Inactivity Decay (4+ Months)</strong>
+                            <span class="text-slate-300">When a player is not playing for <strong>4 consecutive game months</strong>, unattended relational networks begin to cool and their score starts declining by <strong>5% for each inactive month</strong> until they resume active field ministry.</span>
+                        </div>
                     </div>
                 </div>
 
@@ -918,6 +922,9 @@
                             <span class="text-slate-400 block text-[11px]">G4+ Movement Stream</span>
                             <span class="font-bold text-amber-400">+5,000 pts!</span>
                         </div>
+                    </div>
+                    <div class="p-2.5 rounded-xl bg-rose-950/30 border border-rose-500/40 text-[11px] text-slate-300 leading-relaxed">
+                        <strong class="text-rose-300">⚠️ 4-Month Inactivity Score Decay (-5%/mo):</strong> Consistent presence matters in Japan. If a player does not play for <strong>4 consecutive game months</strong>, their score declines by <strong>5% each month</strong> starting on the 4th inactive month until they return to active play.
                     </div>
                 </div>
 

@@ -47,6 +47,7 @@ class MonthlyMovementReportNotification extends Notification implements ShouldQu
     {
         $month = $this->report->game_month;
         $scoreGain = $this->report->generational_score_gained;
+        $scorePrefix = $scoreGain >= 0 ? '+' : '';
         $totalScore = $this->report->total_generational_score;
         $multiplied = $this->report->disciples_multiplied_count;
         $churches = $this->report->churches_planted_count;
@@ -58,7 +59,7 @@ class MonthlyMovementReportNotification extends Notification implements ShouldQu
             ->greeting("Konnichiwa, {$name}!")
             ->line("Game Month {$month} in Nagoya has concluded and the server tick has resolved your relational actions.")
             ->line('**Monthly Kingdom Impact Summary:**')
-            ->line("• **Generational Score Gained:** +{$scoreGain} pts (Total: {$totalScore} pts)")
+            ->line("• **Generational Score Gained:** {$scorePrefix}{$scoreGain} pts (Total: {$totalScore} pts)")
             ->line("• **Autonomous Disciples Multiplied:** {$multiplied}")
             ->line("• **Churches Planted:** {$churches}");
 

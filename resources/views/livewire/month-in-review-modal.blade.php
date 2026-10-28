@@ -34,7 +34,7 @@
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <div class="p-3 rounded-2xl bg-slate-800/50 border border-slate-700/60 text-center">
                             <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Score Gained</span>
-                            <span class="text-lg font-black text-emerald-400 mt-0.5 block">+{{ $report->generational_score_gained }} pts</span>
+                            <span class="text-lg font-black {{ $report->generational_score_gained < 0 ? 'text-rose-400' : 'text-emerald-400' }} mt-0.5 block">{{ $report->generational_score_gained >= 0 ? '+' : '' }}{{ $report->generational_score_gained }} pts</span>
                         </div>
                         <div class="p-3 rounded-2xl bg-slate-800/50 border border-slate-700/60 text-center">
                             <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Disciples Multiplied</span>

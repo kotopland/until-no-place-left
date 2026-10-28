@@ -39,6 +39,8 @@ use Illuminate\Support\Str;
  * @property int $current_game_month
  * @property int $current_game_day
  * @property int $days_processed_this_month
+ * @property int $consecutive_inactive_months
+ * @property int|null $last_played_game_month
  * @property bool $is_ai_colaborer
  * @property string|null $colaborer_archetype
  * @property string|null $ai_strategy_notes
@@ -81,6 +83,8 @@ use Illuminate\Support\Str;
     'is_burned_out',
     'burned_out_until_game_month',
     'burnout_count',
+    'consecutive_inactive_months',
+    'last_played_game_month',
     'current_game_month',
     'current_game_week',
     'weeks_processed_this_month',
@@ -227,6 +231,98 @@ class User extends Authenticatable
      * Effort friction penalty on weekly received AP when operating without foundational language & NPL training
      */
     public const int LANGUAGE_BARRIER_AP_PENALTY = 6;
+
+    /**
+     * Consecutive inactive game months threshold before score begins declining
+     */
+    public const int INACTIVITY_DECAY_MONTHS_THRESHOLD = 4;
+
+    /**
+     * Monthly score decline rate (5%) once a player is inactive for 4+ game months
+     */
+    public const float INACTIVITY_SCORE_DECAY_RATE = 0.05;
+
+    /**
+     * PHP 8.4 Property Hook: whether player's score is actively declining due to 4+ months of inactivity
+     */
+    public bool $isScoreDecliningFromInactivity {
+        get => ($this->consecutive_inactive_months ?? 0) >= self::INACTIVITY_DECAY_MONTHS_THRESHOLD;
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Human-friendly inactivity status label
+     */
+    public string $inactivityStatusLabel {
+        get {
+            $months = $this->consecutive_inactive_months ?? 0;
+
+            if ($months <= 0) {
+                return 'Active in Field';
+            }
+
+            if ($months < self::INACTIVITY_DECAY_MONTHS_THRESHOLD) {
+                $remaining = self::INACTIVITY_DECAY_MONTHS_THRESHOLD - $months;
+
+                return "Inactive {$months} Month(s) ({$remaining} month(s) until -5% score decay)";
+            }
+
+            return "Inactive {$months} Months (-5% Monthly Score Decay Active)";
+        }
+    }
+
+    /**
+     * Calculates the 5% monthly score decay across generational and co-op scores.
+     *
+     * @return array{
+     *     new_generational_score: int,
+     *     new_coop_score: int,
+     *     generational_loss: int,
+     *     coop_loss: int,
+     *     total_loss: int
+     * }
+     */
+    public function calculateInactivityScoreDecay(?int $genScore = null, ?int $coopScore = null): array
+    {
+        $currentGen = max(0, $genScore ?? $this->total_generational_score ?? 0);
+        $currentCoop = max(0, $coopScore ?? $this->coop_synergy_score ?? 0);
+
+        $genLoss = $currentGen > 0 ? max(1, (int) round($currentGen * self::INACTIVITY_SCORE_DECAY_RATE)) : 0;
+        $coopLoss = $currentCoop > 0 ? max(1, (int) round($currentCoop * self::INACTIVITY_SCORE_DECAY_RATE)) : 0;
+
+        $newGen = max(0, $currentGen - $genLoss);
+        $newCoop = max(0, $currentCoop - $coopLoss);
+
+        return [
+            'new_generational_score' => $newGen,
+            'new_coop_score' => $newCoop,
+            'generational_loss' => $currentGen - $newGen,
+            'coop_loss' => $currentCoop - $newCoop,
+            'total_loss' => ($currentGen - $newGen) + ($currentCoop - $newCoop),
+        ];
+    }
+
+    /**
+     * Applies the 5% monthly score decay directly to this player's scores.
+     *
+     * @return array{
+     *     new_generational_score: int,
+     *     new_coop_score: int,
+     *     generational_loss: int,
+     *     coop_loss: int,
+     *     total_loss: int
+     * }
+     */
+    public function applyInactivityScoreDecay(): array
+    {
+        $decay = $this->calculateInactivityScoreDecay();
+
+        $this->update([
+            'total_generational_score' => $decay['new_generational_score'],
+            'coop_synergy_score' => $decay['new_coop_score'],
+        ]);
+
+        return $decay;
+    }
 
     /**
      * PHP 8.4 Property Hook: whether player suffers the language and cultural friction handicap
@@ -514,6 +610,8 @@ class User extends Authenticatable
             'is_burned_out' => 'boolean',
             'burned_out_until_game_month' => 'integer',
             'burnout_count' => 'integer',
+            'consecutive_inactive_months' => 'integer',
+            'last_played_game_month' => 'integer',
             'current_game_month' => 'integer',
             'current_game_week' => 'integer',
             'weeks_processed_this_month' => 'integer',

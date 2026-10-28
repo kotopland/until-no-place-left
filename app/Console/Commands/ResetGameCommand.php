@@ -143,6 +143,8 @@ class ResetGameCommand extends Command
                         'daily_action_points' => 20,
                         'total_generational_score' => $isCoach ? 60 : 0,
                         'coop_synergy_score' => 0,
+                        'consecutive_inactive_months' => 0,
+                        'last_played_game_month' => null,
                         'days_played_today' => 0,
                         'last_played_real_date' => now()->toDateString(),
                         'last_active_at' => now(),

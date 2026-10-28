@@ -121,6 +121,10 @@
                                                         <span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-indigo-950 text-indigo-300 border border-indigo-700/60 shadow-xs" title="{{ $leader->ai_strategy_notes }}">
                                                             {{ $leader->archetypeBadgeLabel }}
                                                         </span>
+                                                    @elseif($leader->isScoreDecliningFromInactivity)
+                                                        <span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-rose-950 text-rose-300 border border-rose-700/60 shadow-xs" title="{{ $leader->inactivityStatusLabel }}">
+                                                            📉 -5%/mo ({{ $leader->consecutive_inactive_months }}mo inactive)
+                                                        </span>
                                                     @endif
                                                 </div>
                                                 <div class="text-[10px] text-slate-400">

@@ -432,8 +432,12 @@ class ActionQueuePlanner extends Component
             }
         }
 
-        // Deduct player AP (including transit commute surcharge)
-        $this->player->decrement('action_points', $totalApCost);
+        // Deduct player AP (including transit commute surcharge) and mark active for current month
+        $this->player->update([
+            'action_points' => max(0, $this->player->action_points - $totalApCost),
+            'consecutive_inactive_months' => 0,
+            'last_played_game_month' => $this->player->current_game_month ?: 1,
+        ]);
         $this->player->refresh();
 
         // Queue action for the daily/monthly resolution tick (supports joint prayer walking with a resident)
@@ -634,10 +638,12 @@ class ActionQueuePlanner extends Component
             }
         }
 
-        // Deduct AP if applicable
-        if ($apCost > 0) {
-            $this->player->decrement('action_points', $apCost);
-        }
+        // Deduct AP if applicable and mark active for current month
+        $this->player->update([
+            'action_points' => max(0, $this->player->action_points - $apCost),
+            'consecutive_inactive_months' => 0,
+            'last_played_game_month' => $currentMonth,
+        ]);
 
         // Schedule record for the week
         $wardId = $this->player->home_ward_id ?? $this->selectedWardId ?? Ward::first()->id;
