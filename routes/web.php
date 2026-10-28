@@ -13,6 +13,9 @@ use Spatie\MailPreview\MailPreviewServiceProvider;
 // Public Lore, Story & Rules
 Route::view('/welcome', 'welcome')->name('welcome');
 
+// Public Longitudinal Movement Simulation (Shared Daily SQLite DB for Non-Registered Players)
+Route::get('/simulate', NagoyaMovementDashboard::class)->name('simulate');
+
 // Guest Passwordless Auth
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', PasswordlessLogin::class)->name('login');

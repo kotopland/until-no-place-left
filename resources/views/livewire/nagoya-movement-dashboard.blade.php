@@ -117,6 +117,19 @@
                             </div>
                         </button>
 
+                        <button 
+                            type="button" 
+                            wire:click="toggleShowcaseBar" 
+                            @click="open = false"
+                            class="w-full px-3.5 py-2.5 flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition text-left cursor-pointer border-t border-slate-100 dark:border-slate-800/60 {{ $showShowcaseBar ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 font-bold' : '' }}"
+                        >
+                            <span class="text-base">⏱️</span>
+                            <div>
+                                <div class="leading-tight">Time-Stage Showcase</div>
+                                <div class="text-[10px] text-slate-400 font-normal mt-0.5">Demo 3m, 6m, 1y, 2y, 5y, 10y &amp; 15y</div>
+                            </div>
+                        </button>
+
                         <a 
                             href="{{ route('welcome') }}" 
                             class="w-full px-3.5 py-2.5 flex items-center gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition text-left cursor-pointer border-t border-slate-100 dark:border-slate-800/60"
@@ -133,6 +146,22 @@
 
             <!-- User Controls, Clock & Profile Dropdown -->
             <div class="flex items-center gap-2 sm:gap-2.5 shrink-0">
+                <!-- Interactive Time-Stage Showcase Toggle Button -->
+                <button
+                    type="button"
+                    wire:click="toggleShowcaseBar"
+                    class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none {{ $showShowcaseBar ? 'bg-amber-500/20 border-amber-500/70 text-amber-300 shadow-md shadow-amber-500/10 ring-1 ring-amber-400/30' : 'bg-slate-100 dark:bg-slate-950/80 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-amber-500/60 hover:text-amber-600 dark:hover:text-amber-300' }}"
+                    title="Open Interactive Time-Stage Showcase (3m, 6m, 1y, 2y, 5y, 10y, 15y)"
+                >
+                    <span>⏱️</span>
+                    <span>Showcase</span>
+                    @if($showShowcaseBar)
+                        <span class="px-1.5 py-0.2 rounded-md text-[10px] font-black bg-amber-500 text-slate-950 uppercase">
+                            {{ $activeShowcaseStage === 'reset' ? 'Day 1' : strtoupper($activeShowcaseStage) }}
+                        </span>
+                    @endif
+                </button>
+
                 <!-- Month, Week & Digital Clock -->
                 <div 
                     wire:key="dash-clock-{{ $user?->current_game_month }}-{{ $user?->current_game_week }}-{{ $user?->weeks_processed_this_month }}-{{ $user?->weeks_played_today }}"
@@ -246,7 +275,8 @@
                     </button>
                 </div>
 
-                <!-- Player & Missionary Profile Menu Dropdown -->
+                <!-- Player & Missionary Profile Menu Dropdown (or Guest Sign-In / Join CTA) -->
+                @auth
                 <div class="relative pl-1.5 border-l border-slate-200 dark:border-slate-800" x-data="{ open: false }" @click.outside="open = false">
                     <button 
                         type="button" 
@@ -423,6 +453,23 @@
                         </div>
                     </div>
                 </div>
+                @else
+                <div class="flex items-center gap-1.5 pl-1.5 border-l border-slate-200 dark:border-slate-800">
+                    <a
+                        href="{{ route('login') }}"
+                        class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 transition"
+                    >
+                        Sign In
+                    </a>
+                    <a
+                        href="{{ route('register') }}"
+                        class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-emerald-500 hover:from-indigo-500 hover:to-emerald-400 text-white text-xs font-bold shadow-md shadow-indigo-600/20 transition flex items-center gap-1"
+                    >
+                        <span>⚡</span>
+                        <span>Join Mission</span>
+                    </a>
+                </div>
+                @endauth
             </div>
         </div>
 
@@ -535,6 +582,24 @@
                             <div class="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Four Fields Field Manual</div>
                         </div>
                     </a>
+
+                    <button 
+                        type="button" 
+                        wire:click="toggleShowcaseBar" 
+                        @click="mobileMoreOpen = false"
+                        class="col-span-2 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-950/70 border border-amber-300 dark:border-amber-800/80 flex items-center justify-between gap-2.5 text-left transition cursor-pointer"
+                    >
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-lg">⏱️</span>
+                            <div>
+                                <div class="font-bold text-slate-800 dark:text-white leading-tight">Time-Stage Showcase Mode</div>
+                                <div class="text-[10px] text-amber-700 dark:text-amber-400 font-normal">Demonstrate 3m, 6m, 1y, 2y, 5y, 10y &amp; 15y stages</div>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-lg text-[10px] font-black bg-amber-500 text-slate-950">
+                            {{ $showShowcaseBar ? 'Active' : 'Open' }}
+                        </span>
+                    </button>
                 </div>
 
                 <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
@@ -609,6 +674,306 @@
             <button type="button" @click="show = false" class="ml-2 text-slate-400 hover:text-white text-xs opacity-70 hover:opacity-100 cursor-pointer">✕</button>
         </div>
 
+        <!-- Interactive Real-Life Time-Stage Showcase Presenter Panel -->
+        @if($showShowcaseBar)
+            <div class="mb-6 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950/90 border border-amber-500/40 shadow-2xl shadow-amber-950/20 p-5 sm:p-6 space-y-5 relative overflow-hidden">
+                <!-- Subtle top accent bar -->
+                <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-500 via-emerald-400 to-indigo-500"></div>
+
+                <!-- Header & Stage Switcher Row -->
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1.5">
+                                <span>⏱️</span>
+                                <span>Live Longitudinal Showcase Mode</span>
+                            </span>
+                            @if($isGuestShowcase)
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-700/60">
+                                    🌐 Shared Guest SQLite DB • Regenerated Once Daily ({{ $guestDatabaseGeneratedDate ?? now()->toDateString() }})
+                                </span>
+                            @else
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-700/60">
+                                    🧪 Isolated Temp SQLite DB • Computer Players Only
+                                </span>
+                            @endif
+                            @if($showcaseSnapshot)
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-950/90 text-indigo-300 border border-indigo-700/60">
+                                    📅 {{ $showcaseSnapshot['calendar_date'] }} • Month {{ $showcaseSnapshot['months'] }}
+                                </span>
+                            @endif
+                        </div>
+                        <h2 class="text-base sm:text-lg font-black text-white tracking-tight">
+                            Demonstrate Nagoya Movement Across Real-Life Time Horizons
+                        </h2>
+                        <p class="text-xs text-slate-400">
+                            @if($isGuestShowcase)
+                                Public Simulation for Non-Registered Players: Uses a shared SQLite database regenerated at most once per real-life day to reduce server CPU load. Register a free account to launch your own personal movement!
+                            @else
+                                Runs in a per-player isolated SQLite sandbox with computer players only — your live game data is 100% untouched. Explore the Map, Circles &amp; Gen Map, and Leaderboard at each stage.
+                            @endif
+                        </p>
+                    </div>
+
+                    <!-- Mode Switcher & Close Button -->
+                    <div class="flex flex-wrap items-center gap-2 shrink-0">
+                        @if($isGuestShowcase)
+                            <button
+                                type="button"
+                                wire:click="regenerateGuestSimulation"
+                                wire:loading.attr="disabled"
+                                class="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition cursor-pointer flex items-center gap-1.5"
+                                title="Shared guest database can only be regenerated once per real-life day"
+                            >
+                                <span>🔄</span>
+                                <span>Regenerate Daily DB</span>
+                            </button>
+                        @else
+                            <div class="inline-flex items-center p-1 rounded-xl bg-slate-950/90 border border-slate-800 text-[11px] font-bold">
+                                <button
+                                    type="button"
+                                    wire:click="setShowcaseMode('coop')"
+                                    wire:loading.attr="disabled"
+                                    class="px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1 {{ $showcaseMode === 'coop' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white' }}"
+                                    title="Simulate with AI Co-Laborers (Paul, Barnaby & Keiko)"
+                                >
+                                    <span>🤝</span>
+                                    <span>Co-op Team</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    wire:click="setShowcaseMode('solo')"
+                                    wire:loading.attr="disabled"
+                                    class="px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1 {{ $showcaseMode === 'solo' ? 'bg-amber-600 text-white shadow' : 'text-slate-400 hover:text-white' }}"
+                                    title="Simulate as Solo Pioneer Missionary"
+                                >
+                                    <span>🧍</span>
+                                    <span>Solo Pioneer</span>
+                                </button>
+                            </div>
+                        @endif
+
+                        <button
+                            type="button"
+                            wire:click="openShowcaseComparison(true)"
+                            wire:loading.attr="disabled"
+                            class="px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition cursor-pointer flex items-center gap-1.5"
+                            title="Compare all 7 milestones (3m to 15y) side-by-side"
+                        >
+                            <span>📊</span>
+                            <span>Compare All 7 Stages</span>
+                        </button>
+
+                        @if($isGuestShowcase)
+                            <a
+                                href="{{ route('register') }}"
+                                class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-emerald-500 hover:from-indigo-500 hover:to-emerald-400 text-white text-xs font-bold shadow-md transition flex items-center gap-1.5"
+                                title="Create a free player account to play your own session"
+                            >
+                                <span>⚡</span>
+                                <span>Create Player &amp; Join</span>
+                            </a>
+                        @else
+                            <button
+                                type="button"
+                                wire:click="exitShowcaseSandbox"
+                                class="px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-rose-950/80 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-700 text-xs font-bold transition cursor-pointer flex items-center gap-1"
+                                title="Exit Showcase Sandbox and return to your untouched live game"
+                            >
+                                <span>✕</span>
+                                <span>Exit Showcase</span>
+                            </button>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- 8 Interactive Time-Stage Horizon Buttons -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+                    <!-- Stage 0: Day 1 Reset -->
+                    <button
+                        type="button"
+                        wire:click="loadShowcaseStage('reset')"
+                        wire:loading.attr="disabled"
+                        class="p-2.5 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between {{ $activeShowcaseStage === 'reset' ? 'bg-amber-500/20 border-amber-400 text-white shadow-lg shadow-amber-500/10 ring-1 ring-amber-400/50' : 'bg-slate-900/90 border-slate-800 text-slate-300 hover:border-slate-600 hover:bg-slate-800/70' }}"
+                    >
+                        <div class="flex items-center justify-between gap-1">
+                            <span class="text-xs font-black {{ $activeShowcaseStage === 'reset' ? 'text-amber-300' : 'text-white' }}">🌱 Day 1</span>
+                            <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">M1</span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-1 leading-tight">Arrival &amp; G1 Seed</div>
+                    </button>
+
+                    @php
+                        $stageShortSubtitles = [
+                            '3m' => '70% Lang & Plowing',
+                            '6m' => '1st Salvations & DBS',
+                            '1y' => '1st Baptisms & G2',
+                            '2y' => 'Local L2/L3 & G3',
+                            '5y' => '1st Term & G4 Streams',
+                            '10y' => 'Decade & L4/L5',
+                            '15y' => '16/16 No Place Left',
+                        ];
+                    @endphp
+
+                    @foreach($showcaseStageMeta as $stageKey => $meta)
+                        <button
+                            type="button"
+                            wire:click="loadShowcaseStage('{{ $stageKey }}')"
+                            wire:loading.attr="disabled"
+                            class="p-2.5 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between {{ $activeShowcaseStage === $stageKey ? 'bg-amber-500/20 border-amber-400 text-white shadow-lg shadow-amber-500/10 ring-1 ring-amber-400/50' : 'bg-slate-900/90 border-slate-800 text-slate-300 hover:border-slate-600 hover:bg-slate-800/70' }}"
+                        >
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="text-xs font-black {{ $activeShowcaseStage === $stageKey ? 'text-amber-300' : 'text-white' }}">
+                                    {{ $stageKey === '15y' ? '🗾 ' : '' }}{{ $meta['label'] }}
+                                </span>
+                                <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">M{{ $meta['months'] }}</span>
+                            </div>
+                            <div class="text-[10px] text-slate-400 mt-1 leading-tight">
+                                {{ $stageShortSubtitles[$stageKey] ?? 'Movement Stage' }}
+                            </div>
+                        </button>
+                    @endforeach
+                </div>
+
+                <!-- Loading Indicator when simulating -->
+                <div wire:loading.flex wire:target="loadShowcaseStage, setShowcaseMode, openShowcaseComparison" class="items-center justify-center gap-2.5 p-3 rounded-2xl bg-indigo-950/80 border border-indigo-500/40 text-xs font-bold text-indigo-200">
+                    <svg class="w-4 h-4 animate-spin text-amber-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                    </svg>
+                    <span>Simulating longitudinal Japanese church-planting dynamics across Nagoya wards...</span>
+                </div>
+
+                <!-- Active Stage Real-Life Missiological Briefing & Metrics -->
+                @if($showcaseSnapshot)
+                    @php
+                        $snap = $showcaseSnapshot;
+                        $gens = $snap['churches_by_generation'] ?? [1 => 1, 2 => 0, 3 => 0, 4 => 0];
+                        $tiers = $snap['leaders_by_tier'] ?? ['L1' => 1, 'L2' => 0, 'L3' => 0, 'L4' => 0, 'L5' => 0];
+                    @endphp
+                    <div wire:loading.remove wire:target="loadShowcaseStage, setShowcaseMode" class="space-y-4">
+                        <!-- Narrative Card -->
+                        <div class="p-4 rounded-2xl bg-slate-950/85 border border-slate-800/90 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                            <div class="space-y-1.5 max-w-4xl">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-xs font-black uppercase tracking-wider text-amber-400">
+                                        {{ $snap['phase'] }}
+                                    </span>
+                                    <span class="text-[11px] font-bold text-slate-400">
+                                        ({{ $snap['label'] }} • {{ $snap['calendar_date'] }})
+                                    </span>
+                                </div>
+                                <p class="text-xs text-slate-300 leading-relaxed">
+                                    {{ $snap['reflection'] }}
+                                </p>
+                            </div>
+
+                            <!-- 1-Click Live View Switchers for Presenter Demo -->
+                            <div class="flex flex-wrap items-center gap-1.5 shrink-0">
+                                <button
+                                    type="button"
+                                    wire:click="showcaseJumpToView('map')"
+                                    class="px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'map' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700' }}"
+                                >
+                                    <span>🗺️</span>
+                                    <span>16-Ward Map ({{ $snap['wards_reached'] }}/16)</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    wire:click="showcaseJumpToView('churches', 'genmap')"
+                                    class="px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'churches' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700' }}"
+                                >
+                                    <span>⛪</span>
+                                    <span>Circles &amp; Gen Map (G1→G{{ $snap['deepest_generation'] }})</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    wire:click="showcaseJumpToView('leaderboard')"
+                                    class="px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'leaderboard' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700' }}"
+                                >
+                                    <span>🏆</span>
+                                    <span>Leaderboard</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 6 Key Real-Life Metrics Cards -->
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 text-xs">
+                            <!-- 1. Ward Saturation -->
+                            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1.5">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Nagoya Wards</div>
+                                <div class="flex items-baseline justify-between">
+                                    <span class="text-base font-black text-emerald-400">{{ $snap['wards_reached'] }} / {{ $snap['total_wards'] }}</span>
+                                    <span class="text-[11px] font-bold text-emerald-300">{{ $snap['saturation_percent'] }}%</span>
+                                </div>
+                                <div class="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full" style="width: {{ max(6, $snap['saturation_percent']) }}%"></div>
+                                </div>
+                            </div>
+
+                            <!-- 2. Oikos Spiritual Pipeline -->
+                            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Spiritual Pipeline</div>
+                                <div class="text-base font-black text-white">
+                                    {{ $snap['green_believers_count'] }} <span class="text-xs font-bold text-emerald-400">Believers</span>
+                                </div>
+                                <div class="text-[10px] text-slate-400 flex items-center gap-1.5">
+                                    <span class="text-amber-300 font-semibold">{{ $snap['yellow_seekers_count'] }} Yellow</span>
+                                    <span>•</span>
+                                    <span class="text-rose-300">{{ $snap['red_acquaintances_count'] }} Red</span>
+                                </div>
+                            </div>
+
+                            <!-- 3. Japanese Baptism Cost Journey -->
+                            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Water Baptisms</div>
+                                <div class="text-base font-black text-sky-400">
+                                    💧 {{ $snap['baptized_count'] }} <span class="text-xs font-bold text-slate-300">Baptized</span>
+                                </div>
+                                <div class="text-[10px] text-amber-300/90">
+                                    ⏳ {{ $snap['counting_cost_count'] }} counting cost • {{ $snap['trained_411_count'] }} 411
+                                </div>
+                            </div>
+
+                            <!-- 4. Generational Church Streams -->
+                            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Acts 2 Churches</div>
+                                <div class="flex items-baseline justify-between">
+                                    <span class="text-base font-black text-indigo-300">⛪ {{ $snap['active_churches_count'] }} Active</span>
+                                    <span class="px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 border border-indigo-700 text-[10px] font-black">G1→G{{ $snap['deepest_generation'] }}</span>
+                                </div>
+                                <div class="text-[10px] text-slate-400">
+                                    G1:{{ $gens[1] }} • G2:{{ $gens[2] }} • G3:{{ $gens[3] }} • G4+:{{ $gens[4] }}
+                                </div>
+                            </div>
+
+                            <!-- 5. Indigenous 5 Leadership Levels -->
+                            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Japanese Leaders</div>
+                                <div class="text-xs font-black text-purple-300 pt-0.5">
+                                    L1:{{ $tiers['L1'] }} • L2:{{ $tiers['L2'] }} • L3:{{ $tiers['L3'] }}
+                                </div>
+                                <div class="text-[10px] text-amber-300 font-semibold">
+                                    L4 Trainers: {{ $tiers['L4'] }} • L5 Cat: {{ $tiers['L5'] }}
+                                </div>
+                            </div>
+
+                            <!-- 6. Real-Life Attrition & Care -->
+                            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Real-Life Trials</div>
+                                <div class="text-xs font-bold text-slate-200 pt-0.5">
+                                    👣 {{ $snap['prayer_walks_count'] }} Prayer Walks
+                                </div>
+                                <div class="text-[10px] text-slate-400">
+                                    ⚠️ {{ $snap['dissolved_churches_count'] }} Dissolved • ❤️‍🩹 {{ $snap['cumulative_revitalizations'] }} Restored
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        @endif
+
         <!-- Movement Breakthrough Celebration Info Banner (Non-planner Tabs) -->
         @if($currentTab !== 'planner' && isset($activeCelebration) && $activeCelebration)
             <div class="mb-6">
@@ -622,7 +987,7 @@
 
         @if($currentTab === 'planner')
             <!-- Action Queue Planner -->
-            <livewire:action-queue-planner />
+            <livewire:action-queue-planner :key="'planner-'.$session?->id.'-'.$showcaseRevision" />
 
         @elseif($currentTab === 'churches')
             <!-- Tab 2: Acts 2 Church Circles & Visual Church Generation Map -->
@@ -655,7 +1020,7 @@
 
                 @if($circlesSubView === 'genmap')
                     <!-- Visual Church Generation Map -->
-                    <livewire:church-generation-map :key="'church-gen-map-'.$session?->id" />
+                    <livewire:church-generation-map :key="'church-gen-map-'.$session?->id.'-'.$showcaseRevision" />
                 @else
                     <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div class="space-y-1.5 max-w-2xl">
@@ -753,17 +1118,111 @@
 
         @elseif($currentTab === 'leaderboard')
             <!-- Multiplayer Leaderboard -->
-            <livewire:multiplayer-leaderboard />
+            <livewire:multiplayer-leaderboard :key="'leaderboard-'.$session?->id.'-'.$showcaseRevision" />
 
         @elseif($currentTab === 'map')
             <!-- Interactive Nagoya Map Canvas -->
-            <livewire:nagoya-map-canvas />
+            <livewire:nagoya-map-canvas :key="'map-canvas-'.$session?->id.'-'.$showcaseRevision" />
 
         @elseif($currentTab === 'chat')
             <!-- Asynchronous Missionary Co-op Chat -->
-            <livewire:game-chat />
+            <livewire:game-chat :key="'chat-'.$session?->id.'-'.$showcaseRevision" />
         @endif
     </main>
+
+    <!-- Modal: 7-Stage Real-Life Longitudinal Showcase Comparison Table -->
+    @if($showShowcaseComparisonModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+            <div class="bg-slate-900 border border-amber-500/40 rounded-3xl p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-5">
+                <div class="flex items-start justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div>
+                        <div class="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                            <span>📊</span>
+                            <span>Longitudinal Real-Life DMM Comparison (3 Months → 15 Years)</span>
+                        </div>
+                        <h3 class="text-lg font-black text-white tracking-tight mt-0.5">
+                            Nagoya Movement Trajectory Across All 7 Real-Life Milestones
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">
+                            Click any stage column button to load that exact time stage onto the live map and Church Generation Tree.
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        wire:click="closeShowcaseComparison"
+                        class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold cursor-pointer"
+                    >
+                        ✕ Close
+                    </button>
+                </div>
+
+                @if(count($showcaseMilestones) > 0)
+                    <div class="overflow-x-auto rounded-2xl border border-slate-800">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-950 text-slate-300 border-b border-slate-800">
+                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-slate-400">Horizon</th>
+                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-slate-400">Calendar</th>
+                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-emerald-400">Wards Reached</th>
+                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-amber-400"> Pipeline (U/R/Y/G)</th>
+                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-sky-400">Baptized (Cost)</th>
+                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-indigo-400">Churches (Gone)</th>
+                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-purple-400">Gen (G1/G2/G3/G4+)</th>
+                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-pink-400">Leaders (L1-L5)</th>
+                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-right">Inspect</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/80 bg-slate-900/60">
+                                @foreach($showcaseMilestones as $mKey => $mSnap)
+                                    @php
+                                        $mGens = $mSnap['churches_by_generation'] ?? [1 => 1, 2 => 0, 3 => 0, 4 => 0];
+                                        $mTiers = $mSnap['leaders_by_tier'] ?? ['L1' => 1, 'L2' => 0, 'L3' => 0, 'L4' => 0, 'L5' => 0];
+                                    @endphp
+                                    <tr class="hover:bg-slate-800/50 transition {{ $activeShowcaseStage === $mKey ? 'bg-amber-500/10' : '' }}">
+                                        <td class="p-3 font-black text-white whitespace-nowrap">
+                                            {{ $mSnap['label'] }}
+                                            <span class="text-[10px] font-normal text-slate-400 block">Month {{ $mSnap['months'] }}</span>
+                                        </td>
+                                        <td class="p-3 text-slate-300 whitespace-nowrap">{{ $mSnap['calendar_date'] }}</td>
+                                        <td class="p-3 font-bold text-emerald-400 whitespace-nowrap">
+                                            {{ $mSnap['wards_reached'] }}/16 ({{ $mSnap['saturation_percent'] }}%)
+                                        </td>
+                                        <td class="p-3 text-slate-300 whitespace-nowrap">
+                                            {{ $mSnap['unreached_count'] }} / {{ $mSnap['red_acquaintances_count'] }} / <span class="text-amber-300 font-bold">{{ $mSnap['yellow_seekers_count'] }}</span> / <span class="text-emerald-400 font-bold">{{ $mSnap['green_believers_count'] }}</span>
+                                        </td>
+                                        <td class="p-3 whitespace-nowrap">
+                                            <span class="font-bold text-sky-400">💧 {{ $mSnap['baptized_count'] }}</span>
+                                            <span class="text-[10px] text-amber-300">({{ $mSnap['counting_cost_count'] }} cost)</span>
+                                        </td>
+                                        <td class="p-3 whitespace-nowrap">
+                                            <span class="font-bold text-indigo-300">⛪ {{ $mSnap['active_churches_count'] }}</span>
+                                            <span class="text-[10px] text-slate-400">({{ $mSnap['dissolved_churches_count'] }} diss.)</span>
+                                        </td>
+                                        <td class="p-3 text-slate-300 whitespace-nowrap">
+                                            {{ $mGens[1] }} / {{ $mGens[2] }} / {{ $mGens[3] }} / {{ $mGens[4] }}
+                                            <span class="px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 text-[10px] font-bold ml-1">G{{ $mSnap['deepest_generation'] }}</span>
+                                        </td>
+                                        <td class="p-3 text-slate-300 whitespace-nowrap font-mono text-[11px]">
+                                            {{ $mTiers['L1'] }}/{{ $mTiers['L2'] }}/{{ $mTiers['L3'] }}/{{ $mTiers['L4'] }}/{{ $mTiers['L5'] }}
+                                        </td>
+                                        <td class="p-3 text-right whitespace-nowrap">
+                                            <button
+                                                type="button"
+                                                wire:click="loadShowcaseStage('{{ $mKey }}'); closeShowcaseComparison();"
+                                                class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold transition cursor-pointer"
+                                            >
+                                                Load {{ $mSnap['label'] }} →
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
 
     <!-- Modal: Month In Review Summary -->
     <livewire:month-in-review-modal />

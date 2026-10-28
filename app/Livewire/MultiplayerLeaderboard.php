@@ -9,6 +9,7 @@ use App\Models\Npc;
 use App\Models\NpcContribution;
 use App\Models\User;
 use App\Models\Ward;
+use App\Services\ShowcaseSandboxService;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
@@ -17,6 +18,11 @@ class MultiplayerLeaderboard extends Component
     public string $activeTab = 'generational'; // 'generational' or 'coop'
 
     public bool $isCoopMode = true;
+
+    public function boot(): void
+    {
+        app(ShowcaseSandboxService::class)->syncConnectionFromSession();
+    }
 
     public function mount(): void
     {
@@ -34,12 +40,20 @@ class MultiplayerLeaderboard extends Component
         $session = GameSession::where('is_active', true)->first();
         $isCoop = $session?->isCoopMode ?? true;
 
+        $hasHumanPlayers = User::where('current_game_session_id', $session?->id)
+            ->where('is_ai_colaborer', false)
+            ->exists();
+
         // Ladder 1: Generational Depth
         $generationalQuery = User::where('current_game_session_id', $session?->id)
             ->withCount(['ledChurches', 'discipledNpcs']);
 
         if (! $isCoop) {
-            $generationalQuery->where('is_ai_colaborer', false);
+            if ($hasHumanPlayers) {
+                $generationalQuery->where('is_ai_colaborer', false);
+            } else {
+                $generationalQuery->where('email', 'kenji.yamada@nagoyaharvest.jp');
+            }
         }
 
         $generationalLeaders = $generationalQuery
@@ -51,7 +65,11 @@ class MultiplayerLeaderboard extends Component
         $coopQuery = User::where('current_game_session_id', $session?->id);
 
         if (! $isCoop) {
-            $coopQuery->where('is_ai_colaborer', false);
+            if ($hasHumanPlayers) {
+                $coopQuery->where('is_ai_colaborer', false);
+            } else {
+                $coopQuery->where('email', 'kenji.yamada@nagoyaharvest.jp');
+            }
         }
 
         $coopLeaders = $coopQuery

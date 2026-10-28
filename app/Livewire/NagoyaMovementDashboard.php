@@ -12,6 +12,8 @@ use App\Models\User;
 use App\Models\Ward;
 use App\Services\FourFieldsEngine;
 use App\Services\MissionaryScreeningService;
+use App\Services\RealLifeSimulationService;
+use App\Services\ShowcaseSandboxService;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -62,10 +64,48 @@ class NagoyaMovementDashboard extends Component
 
     public ?int $selectedHomeWardId = null;
 
+    #[Url(as: 'showcase')]
+    public bool $showShowcaseBar = false;
+
+    public string $activeShowcaseStage = 'reset';
+
+    public string $showcaseMode = 'coop';
+
+    /** @var array<string, mixed>|null */
+    public ?array $showcaseSnapshot = null;
+
+    /** @var array<string, array<string, mixed>> */
+    public array $showcaseMilestones = [];
+
+    public bool $showShowcaseComparisonModal = false;
+
+    public bool $isGuestShowcase = false;
+
+    public ?string $guestDatabaseGeneratedDate = null;
+
+    public int $showcaseRevision = 0;
+
+    public function boot(): void
+    {
+        if (! auth()->check()) {
+            $this->isGuestShowcase = true;
+            $this->showShowcaseBar = true;
+            app(ShowcaseSandboxService::class)->activateGuest();
+
+            return;
+        }
+
+        if ($this->showShowcaseBar || session('showcase_mode_active', false)) {
+            $userId = auth()->id() ? (int) auth()->id() : null;
+            app(ShowcaseSandboxService::class)->activate($userId);
+        }
+    }
+
     public function mount(): void
     {
         $user = auth()->user();
         if ($user) {
+            $this->isGuestShowcase = false;
             $this->editingName = $user->name;
             $this->editingNationality = $user->nationality ?? 'Japanese';
             $this->editingAge = (int) ($user->age ?? 30);
@@ -82,7 +122,9 @@ class NagoyaMovementDashboard extends Component
                 $this->screeningProfileTitle = $user->screening_profile_title;
             }
 
-            if (! $user->screening_passed) {
+            if ($this->showShowcaseBar || request()->routeIs('simulate')) {
+                $this->enterShowcaseSandbox();
+            } elseif (! $user->screening_passed) {
                 $this->showOnboardingModal = true;
                 $this->onboardingStage = 'screening';
             } elseif (! $user->home_ward_id) {
@@ -93,11 +135,304 @@ class NagoyaMovementDashboard extends Component
                 $this->onboardingStage = 'host_welcome';
                 $this->selectedHomeWardId = $user->home_ward_id;
             }
+        } else {
+            $this->isGuestShowcase = true;
+            $this->enterShowcaseSandbox();
         }
+    }
+
+    public function toggleShowcaseBar(): void
+    {
+        if (! auth()->check()) {
+            $this->enterShowcaseSandbox();
+
+            return;
+        }
+
+        if ($this->showShowcaseBar) {
+            $this->exitShowcaseSandbox();
+        } else {
+            $this->enterShowcaseSandbox();
+        }
+    }
+
+    public function enterShowcaseSandbox(): void
+    {
+        $this->showShowcaseBar = true;
+        $this->showOnboardingModal = false;
+
+        if (! auth()->check()) {
+            $this->isGuestShowcase = true;
+            session([
+                'showcase_mode_active' => true,
+                'showcase_is_guest' => true,
+                'showcase_user_id' => null,
+            ]);
+
+            $session = app(ShowcaseSandboxService::class)->activateGuest();
+            if (! in_array($this->currentTab, ['map', 'churches', 'leaderboard'], true)) {
+                $this->currentTab = 'map';
+            }
+
+            $defaultStage = $this->activeShowcaseStage !== 'reset' ? $this->activeShowcaseStage : '15y';
+            $this->hydrateGuestShowcaseFromSession($session, $defaultStage);
+            $this->showcaseRevision++;
+
+            return;
+        }
+
+        $this->isGuestShowcase = false;
+        $userId = auth()->id() ? (int) auth()->id() : null;
+        session([
+            'showcase_mode_active' => true,
+            'showcase_is_guest' => false,
+            'showcase_user_id' => $userId,
+        ]);
+
+        app(ShowcaseSandboxService::class)->activate($userId);
+
+        if (! in_array($this->currentTab, ['map', 'churches', 'leaderboard'], true)) {
+            $this->currentTab = 'map';
+        }
+
+        $this->syncShowcaseSnapshotFromCurrentState();
+        $this->showcaseRevision++;
+    }
+
+    public function exitShowcaseSandbox(): void
+    {
+        if (! auth()->check()) {
+            $this->redirect(route('register'));
+
+            return;
+        }
+
+        $this->showShowcaseBar = false;
+        $this->showShowcaseComparisonModal = false;
+
+        session()->forget(['showcase_mode_active', 'showcase_is_guest', 'showcase_user_id']);
+        app(ShowcaseSandboxService::class)->deactivate();
+
+        $this->showcaseRevision++;
+
+        $this->dispatch('notify', [
+            'type' => 'info',
+            'message' => '🏡 Exited Showcase Sandbox and returned to your live game session (100% untouched).',
+        ]);
+    }
+
+    public function setShowcaseMode(string $mode): void
+    {
+        if (! auth()->check()) {
+            $session = app(ShowcaseSandboxService::class)->activateGuest();
+            $this->guestDatabaseGeneratedDate = (string) ($session->settings['guest_generated_date'] ?? now()->toDateString());
+            $this->dispatch('notify', [
+                'type' => 'warning',
+                'message' => "⏳ Shared Guest Simulation Limit: The public guest SQLite database is only regenerated once per real-life day ({$this->guestDatabaseGeneratedDate}) to reduce server CPU load. Register a free account to run custom Solo/Co-op simulations!",
+            ]);
+
+            return;
+        }
+
+        $this->showcaseMode = $mode === 'solo' ? 'solo' : 'coop';
+        $this->loadShowcaseStage($this->activeShowcaseStage);
+    }
+
+    public function regenerateGuestSimulation(): void
+    {
+        $result = app(ShowcaseSandboxService::class)->regenerateGuestDatabaseIfAllowed();
+        $session = $result['session'];
+        $this->guestDatabaseGeneratedDate = $result['generated_date'];
+
+        if (! $result['regenerated']) {
+            $this->dispatch('notify', [
+                'type' => 'warning',
+                'message' => "⏳ Daily Regeneration Limit: The shared guest SQLite database was already generated today ({$result['generated_date']}) and can only be regenerated once per real-life day to reduce CPU load.",
+            ]);
+
+            return;
+        }
+
+        $this->hydrateGuestShowcaseFromSession($session, $this->activeShowcaseStage ?: '15y');
+        $this->showcaseRevision++;
+
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => "✅ Shared Guest Simulation SQLite database regenerated for {$result['generated_date']}!",
+        ]);
+    }
+
+    public function loadShowcaseStage(string $stage): void
+    {
+        $validStages = array_merge(['reset'], array_keys(RealLifeSimulationService::MILESTONES));
+        if (! in_array($stage, $validStages, true)) {
+            return;
+        }
+
+        $this->showShowcaseBar = true;
+        $this->showOnboardingModal = false;
+
+        if (! auth()->check()) {
+            $this->isGuestShowcase = true;
+            session([
+                'showcase_mode_active' => true,
+                'showcase_is_guest' => true,
+                'showcase_user_id' => null,
+            ]);
+
+            $session = app(ShowcaseSandboxService::class)->activateGuest();
+            if (! in_array($this->currentTab, ['map', 'churches', 'leaderboard'], true)) {
+                $this->currentTab = 'map';
+            }
+
+            $this->hydrateGuestShowcaseFromSession($session, $stage);
+            $this->showcaseRevision++;
+
+            $label = $this->showcaseSnapshot['label'] ?? $stage;
+            $this->dispatch('notify', [
+                'type' => 'info',
+                'message' => "⏱️ Shared Guest Simulation (Generated {$this->guestDatabaseGeneratedDate}): Viewing {$label} snapshot. Shared guest SQLite DB is regenerated once per real-life day to reduce CPU load.",
+            ]);
+
+            return;
+        }
+
+        $userId = auth()->id() ? (int) auth()->id() : null;
+        session([
+            'showcase_mode_active' => true,
+            'showcase_is_guest' => false,
+            'showcase_user_id' => $userId,
+        ]);
+
+        $session = app(ShowcaseSandboxService::class)->activate($userId);
+
+        if (! in_array($this->currentTab, ['map', 'churches', 'leaderboard'], true)) {
+            $this->currentTab = 'map';
+        }
+
+        $simulator = app(RealLifeSimulationService::class);
+        $leadComputerPioneer = User::where('email', 'kenji.yamada@nagoyaharvest.jp')->first()
+            ?? User::where('is_ai_colaborer', true)->first();
+
+        if ($stage === 'reset') {
+            $simulator->resetSessionToBaseline($session, $this->showcaseMode);
+            $session = GameSession::where('code', 'nagoya-2026')->first() ?? $session->fresh();
+            $leadComputerPioneer = User::where('email', 'kenji.yamada@nagoyaharvest.jp')->first()
+                ?? User::where('is_ai_colaborer', true)->first();
+            $this->activeShowcaseStage = 'reset';
+            $this->showcaseSnapshot = $simulator->captureSnapshot($session, $leadComputerPioneer, 1, 'reset');
+        } else {
+            $targetMonths = RealLifeSimulationService::MILESTONES[$stage]['months'];
+            $result = $simulator->simulate($session, $targetMonths, $this->showcaseMode, resetFirst: true);
+            $session = GameSession::where('code', 'nagoya-2026')->first() ?? $session->fresh();
+            $this->activeShowcaseStage = $stage;
+            $this->showcaseSnapshot = $result['final_snapshot'];
+            $this->showcaseMilestones = array_merge($this->showcaseMilestones, $result['milestones']);
+        }
+
+        $this->activeChurchId = Church::where('game_session_id', $session->id)
+            ->where('is_dissolved', false)
+            ->orderBy('generation')
+            ->value('id');
+
+        $this->showcaseRevision++;
+        $this->dispatch('week-advanced');
+        $this->dispatch('day-advanced');
+
+        $label = $this->showcaseSnapshot['label'] ?? $stage;
+        $wardsReached = $this->showcaseSnapshot['wards_reached'] ?? 1;
+        $totalWards = $this->showcaseSnapshot['total_wards'] ?? 16;
+        $activeChurches = $this->showcaseSnapshot['active_churches_count'] ?? 1;
+        $deepestGen = $this->showcaseSnapshot['deepest_generation'] ?? 1;
+
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => "⏱️ Isolated Showcase Loaded: {$label} ({$this->showcaseSnapshot['calendar_date']}) • {$wardsReached}/{$totalWards} Wards Reached • {$activeChurches} Active Churches (G1→G{$deepestGen})!",
+        ]);
+    }
+
+    protected function hydrateGuestShowcaseFromSession(GameSession $session, string $stage = '15y'): void
+    {
+        $settings = is_array($session->settings) ? $session->settings : [];
+        $this->guestDatabaseGeneratedDate = (string) ($settings['guest_generated_date'] ?? now()->toDateString());
+        $this->showcaseMilestones = is_array($settings['guest_milestones'] ?? null) ? $settings['guest_milestones'] : [];
+
+        if ($stage === 'reset' && is_array($settings['guest_reset_snapshot'] ?? null)) {
+            $this->activeShowcaseStage = 'reset';
+            $this->showcaseSnapshot = $settings['guest_reset_snapshot'];
+        } elseif (isset($this->showcaseMilestones[$stage])) {
+            $this->activeShowcaseStage = $stage;
+            $this->showcaseSnapshot = $this->showcaseMilestones[$stage];
+        } else {
+            $this->activeShowcaseStage = '15y';
+            $this->showcaseSnapshot = $settings['guest_final_snapshot']
+                ?? ($this->showcaseMilestones['15y'] ?? null);
+        }
+
+        $this->activeChurchId = Church::where('game_session_id', $session->id)
+            ->where('is_dissolved', false)
+            ->orderBy('generation')
+            ->value('id');
+    }
+
+    public function openShowcaseComparison(bool $populateAll = false): void
+    {
+        if ($populateAll || count($this->showcaseMilestones) < count(RealLifeSimulationService::MILESTONES)) {
+            $this->loadShowcaseStage('15y');
+        }
+
+        $this->showShowcaseComparisonModal = true;
+    }
+
+    public function closeShowcaseComparison(): void
+    {
+        $this->showShowcaseComparisonModal = false;
+    }
+
+    public function showcaseJumpToView(string $tab, ?string $subView = null): void
+    {
+        if (! in_array($tab, ['map', 'churches', 'leaderboard'], true)) {
+            $tab = 'map';
+        }
+
+        $this->currentTab = $tab;
+        if ($tab === 'churches' && $subView !== null) {
+            $this->circlesSubView = $subView;
+        }
+    }
+
+    protected function syncShowcaseSnapshotFromCurrentState(): void
+    {
+        $session = GameSession::where('is_active', true)->first() ?? GameSession::first();
+        if (! $session) {
+            return;
+        }
+
+        $leadComputerPioneer = User::where('email', 'kenji.yamada@nagoyaharvest.jp')->first()
+            ?? User::where('is_ai_colaborer', true)->first();
+
+        $simulator = app(RealLifeSimulationService::class);
+        $currentMonth = max(1, (int) $session->current_game_month);
+        $elapsed = $currentMonth > 1 ? ($currentMonth - 1) : 1;
+        $milestoneKey = $currentMonth <= 1 ? 'reset' : ($simulator->milestoneKeyForMonths($elapsed) ?? 'reset');
+
+        $this->activeShowcaseStage = $milestoneKey;
+        $this->showcaseMode = ($session->isCoopMode ?? true) ? 'coop' : 'solo';
+        $this->showcaseSnapshot = $simulator->captureSnapshot($session, $leadComputerPioneer, $elapsed, $milestoneKey);
     }
 
     public function setTab(string $tab): void
     {
+        if (! auth()->check() && in_array($tab, ['planner', 'chat'], true)) {
+            $this->redirect(route('register'));
+
+            return;
+        }
+
+        if ($this->showShowcaseBar && in_array($tab, ['planner', 'chat'], true)) {
+            $this->exitShowcaseSandbox();
+        }
+
         $this->currentTab = $tab;
     }
 
@@ -511,13 +846,20 @@ class NagoyaMovementDashboard extends Component
 
     public function render(): View
     {
+        $isShowcase = $this->showShowcaseBar || app(ShowcaseSandboxService::class)->isActive();
         $user = auth()->user() ?? User::first();
-        $user?->touchActive();
-        $session = $user ? ($user->currentGameSession ?? GameSession::first()) : GameSession::first();
 
-        $unreadReportsCount = MonthlyReport::where('user_id', $user?->id)
-            ->whereNull('read_at')
-            ->count();
+        if (! $isShowcase) {
+            $user?->touchActive();
+        }
+
+        $session = $isShowcase
+            ? (GameSession::where('is_active', true)->first() ?? GameSession::first())
+            : ($user ? ($user->currentGameSession ?? GameSession::first()) : GameSession::first());
+
+        $unreadReportsCount = (! $isShowcase && $user)
+            ? MonthlyReport::where('user_id', $user->id)->whereNull('read_at')->count()
+            : 0;
 
         $churches = Church::where('game_session_id', $session?->id)
             ->with(['ward', 'leaderNpc', 'leaderUser'])
@@ -561,7 +903,7 @@ class NagoyaMovementDashboard extends Component
             ->latest()
             ->get();
 
-        $unreadChatCount = $user ? $user->unreadChatCount($session?->id) : 0;
+        $unreadChatCount = (! $isShowcase && $user) ? $user->unreadChatCount($session?->id) : 0;
 
         return view('livewire.nagoya-movement-dashboard', [
             'user' => $user,
@@ -578,6 +920,7 @@ class NagoyaMovementDashboard extends Component
             'screeningDimensions' => $screeningDimensions,
             'activeCelebration' => $activeCelebrations->first(),
             'totalCelebrations' => $activeCelebrations->count(),
+            'showcaseStageMeta' => RealLifeSimulationService::MILESTONES,
         ]);
     }
 }

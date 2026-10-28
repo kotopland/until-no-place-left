@@ -31,8 +31,8 @@ class GameCommand extends Command
      * The name and signature of the console command.
      */
     protected $signature = 'game
-                            {action? : Optional direct action (status, mode, advance-week, advance-day, advance-month, reset, migrate-fresh, borders)}
-                            {param? : Optional secondary parameter (e.g. "solo" or "coop" for mode)}
+                            {action? : Optional direct action (status, mode, simulate, advance-week, advance-day, advance-month, reset, migrate-fresh, borders)}
+                            {param? : Optional secondary parameter (e.g. "solo" or "coop" for mode, or "3m", "6m", "1y", "2y", "5y", "10y", "15y", "all" for simulate)}
                             {--session= : Optional specific GameSession code (e.g. nagoya-2026)}
                             {--force : Bypass confirmation prompts where applicable}';
 
@@ -72,6 +72,7 @@ class GameCommand extends Command
                 options: [
                     'status' => '📊 View Detailed Session & Ward Saturation',
                     'mode' => '🎮 Configure Gameplay Mode (Solo Pioneer vs Team Co-op)',
+                    'simulate' => '⏱️ Simulate Real-Life Horizons (3m, 6m, 1y, 2y, 5y, 10y, 15y)',
                     'advance-week' => '⏩ Advance 1 Game Week (Weekly 15-Min Tick)',
                     'advance-month' => '📅 Advance Game Month (Batch Resolve Month)',
                     'reset' => '🔄 Reset Simulation Timeline (Month 1 Week 1)',
@@ -88,6 +89,9 @@ class GameCommand extends Command
                     break;
                 case 'mode':
                     $this->configureMode($session, $aiService);
+                    break;
+                case 'simulate':
+                    $this->runHorizonSimulation($session);
                     break;
                 case 'advance-week':
                 case 'advance-day':
@@ -129,6 +133,7 @@ class GameCommand extends Command
         return match ($action) {
             'status' => $this->showDetailedStatus($session),
             'mode' => $this->handleDirectMode($session, $aiService),
+            'simulate' => $this->runHorizonSimulation($session, (string) ($this->argument('param') ?: 'all')),
             'advance-week', 'advance-day' => $this->advanceWeek($session, $engine),
             'advance-month' => $this->advanceMonth($session, $engine),
             'reset' => $this->resetSimulation($session),
@@ -393,6 +398,35 @@ class GameCommand extends Command
         return $exitCode;
     }
 
+    protected function runHorizonSimulation(GameSession $session, ?string $directDuration = null): int
+    {
+        $duration = $directDuration ?: select(
+            label: 'Select real-life horizon to simulate:',
+            options: [
+                'all' => '🌏 All 7 Horizons (3m, 6m, 1y, 2y, 5y, 10y, 15y)',
+                '3m' => '🌱 3 Months (Cultural Entry & Plowing)',
+                '6m' => '🌿 6 Months (Foundation Graduation & First Breakthroughs)',
+                '1y' => '🌊 1 Year (First Japanese Baptisms & Oikos Ripples)',
+                '2y' => '👑 2 Years (Raising Local Timothys & G3 Churches)',
+                '5y' => '🔥 5 Years (First Missionary Term & G4 Streams)',
+                '10y' => '🏙️ 10 Years (City-Wide Indigenous Movement)',
+                '15y' => '🗾 15 Years ("Until No Place Left" in 16 Wards)',
+            ],
+            default: 'all',
+        );
+
+        $exitCode = Artisan::call('game:simulate', [
+            'duration' => $duration,
+            '--session' => $session->code,
+            '--mode' => $session->isCoopMode ? 'coop' : 'solo',
+            '--force' => true,
+        ]);
+
+        $this->line(Artisan::output());
+
+        return $exitCode;
+    }
+
     /**
      * Production Database Fresh Migration & Seeding with strong safety confirmation
      */
@@ -469,7 +503,7 @@ class GameCommand extends Command
     protected function unknownAction(string $action): int
     {
         $this->components->error("Unknown action: '{$action}'.");
-        $this->components->info('Available direct actions: status, mode, advance-day, advance-month, reset, borders, migrate-fresh');
+        $this->components->info('Available direct actions: status, mode, simulate, advance-day, advance-month, reset, borders, migrate-fresh');
 
         return self::FAILURE;
     }

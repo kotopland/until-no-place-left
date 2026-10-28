@@ -12,12 +12,18 @@ use App\Models\GameSession;
 use App\Models\Npc;
 use App\Models\QueuedMonthlyAction;
 use App\Models\User;
+use App\Services\ShowcaseSandboxService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Livewire\Component;
 
 class ChurchGenerationMap extends Component
 {
+    public function boot(): void
+    {
+        app(ShowcaseSandboxService::class)->syncConnectionFromSession();
+    }
+
     public ?int $selectedChurchId = null;
 
     public string $viewMode = 'tree'; // 'tree' or 'tiers'
@@ -94,6 +100,15 @@ class ChurchGenerationMap extends Component
      */
     public function revitalizeChurch(int $churchId): void
     {
+        if (! auth()->check()) {
+            $this->dispatch('notify', [
+                'type' => 'info',
+                'message' => '🔑 Register a free missionary account to revitalize churches and lead your own movement!',
+            ]);
+
+            return;
+        }
+
         $user = auth()->user() ?? User::first();
         $church = Church::find($churchId);
 
@@ -125,6 +140,15 @@ class ChurchGenerationMap extends Component
      */
     public function queueCoachingForChurch(int $churchId): void
     {
+        if (! auth()->check()) {
+            $this->dispatch('notify', [
+                'type' => 'info',
+                'message' => '🔑 Register a free missionary account to schedule 3/3rds church coaching!',
+            ]);
+
+            return;
+        }
+
         $user = auth()->user() ?? User::first();
         $church = Church::with(['leaderNpc', 'ward'])->find($churchId);
 
@@ -338,8 +362,13 @@ class ChurchGenerationMap extends Component
 
     public function render(): View
     {
-        $user = auth()->user() ?? User::first();
-        $session = $user ? ($user->currentGameSession ?? GameSession::first()) : GameSession::first();
+        $isShowcase = app(ShowcaseSandboxService::class)->isActive();
+        $user = $isShowcase
+            ? (User::where('is_ai_colaborer', true)->orderBy('id')->first() ?? auth()->user())
+            : (auth()->user() ?? User::first());
+        $session = $isShowcase
+            ? (GameSession::where('is_active', true)->first() ?? GameSession::first())
+            : ($user ? ($user->currentGameSession ?? GameSession::first()) : GameSession::first());
 
         $query = Church::where('game_session_id', $session?->id)
             ->with(['ward', 'leaderNpc', 'leaderUser', 'parentChurch', 'daughterChurches']);

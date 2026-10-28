@@ -10,11 +10,17 @@ use App\Models\PrayerWalk;
 use App\Models\User;
 use App\Models\Ward;
 use App\Services\NagoyaGeoJsonService;
+use App\Services\ShowcaseSandboxService;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 class NagoyaMapCanvas extends Component
 {
+    public function boot(): void
+    {
+        app(ShowcaseSandboxService::class)->syncConnectionFromSession();
+    }
+
     public ?int $selectedChurchId = null;
 
     public ?int $selectedWardId = null;

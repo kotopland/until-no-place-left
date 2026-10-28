@@ -326,6 +326,129 @@ class Church extends Model
     }
 
     /**
+     * Merges this Bible study group / gathering into another active group or church,
+     * transferring core members and marking this group as dissolved due to consolidation/merging.
+     */
+    public function mergeInto(self $targetChurch, int $gameMonth, ?string $reason = null): void
+    {
+        if ($this->is_dissolved || $this->id === $targetChurch->id) {
+            return;
+        }
+
+        $transferredAttenders = max(1, (int) ceil($this->attenders_count * 0.6));
+        $transferredBelievers = max(1, (int) ceil($this->believers_count * 0.6));
+        $transferredBaptized = min($transferredBelievers, (int) ceil($this->baptized_count * 0.6));
+
+        $mergeReason = $reason ?? "Bible study group merged into {$targetChurch->name} to consolidate fellowship and discipleship";
+
+        $targetChurch->update([
+            'attenders_count' => $targetChurch->attenders_count + $transferredAttenders,
+            'believers_count' => $targetChurch->believers_count + $transferredBelievers,
+            'baptized_count' => $targetChurch->baptized_count + $transferredBaptized,
+            'health_score' => min(95, $targetChurch->health_score + 4),
+        ]);
+
+        // Re-link resident NPC members to the merged target church/group
+        Npc::where('church_id', $this->id)->update(['church_id' => $targetChurch->id]);
+
+        $this->update([
+            'is_dissolved' => true,
+            'dissolved_game_month' => $gameMonth,
+            'dissolution_reason' => $mergeReason,
+            'health_score' => 0,
+            'attenders_count' => 0,
+            'believers_count' => 0,
+            'baptized_count' => 0,
+            'is_healthy_church' => false,
+            'last_attrition_month' => $gameMonth,
+            'last_attrition_event' => "Month {$gameMonth}: Merged — {$mergeReason}",
+        ]);
+    }
+
+    /**
+     * Number of game months this group has been gathering since its founding.
+     */
+    public function monthsAsBibleStudy(int $currentGameMonth): int
+    {
+        return max(0, $currentGameMonth - ($this->founded_game_month ?: 1));
+    }
+
+    /**
+     * Determines whether this developing Bible study group has been coached and its leader trained
+     * to transition into an autonomous Acts 2 simple church after 6–12 months.
+     */
+    public function isCoachedAndTrainedForChurchTransition(int $currentGameMonth): bool
+    {
+        if ($this->is_dissolved || $this->is_healthy_church) {
+            return false;
+        }
+
+        if ($this->monthsAsBibleStudy($currentGameMonth) < 6) {
+            return false;
+        }
+
+        $isRecentlyCoached = $this->last_coached_game_month !== null
+            ? ($currentGameMonth - $this->last_coached_game_month) <= 4
+            : ($this->health_score >= 68);
+
+        $leaderNpc = $this->leaderNpc;
+        $isLeaderTrained = $leaderNpc
+            ? ($leaderNpc->trained_411 && $leaderNpc->leadership_tier->level() >= 2)
+            : ($this->leader_user_id !== null);
+
+        return $isRecentlyCoached && $isLeaderTrained;
+    }
+
+    /**
+     * Computes the probability (0–100%) that a developing Bible study group transitions
+     * into a full 9-element Healthy Acts 2 Church at the given game month.
+     * Groups must gather as a Bible study for at least 6–12 months; if coached and trained,
+     * the probability of becoming a church is high (75%–95%).
+     */
+    public function churchTransitionProbability(int $currentGameMonth): int
+    {
+        if ($this->is_dissolved || $this->is_healthy_church) {
+            return 0;
+        }
+
+        $monthsActive = $this->monthsAsBibleStudy($currentGameMonth);
+        if ($monthsActive < 6) {
+            return 0;
+        }
+
+        if ($this->isCoachedAndTrainedForChurchTransition($currentGameMonth)) {
+            $maturityBonus = min(15, ($monthsActive - 6) * 3);
+            $healthBonus = $this->health_score >= 72 ? 5 : 0;
+
+            return min(95, 75 + $maturityBonus + $healthBonus);
+        }
+
+        return $monthsActive >= 12 && $this->health_score >= 70 ? 15 : 5;
+    }
+
+    /**
+     * Transitions a developing Bible study group into a Healthy Acts 2 Church practicing all core elements.
+     */
+    public function transitionToHealthyChurch(int $gameMonth): void
+    {
+        $allElements = array_map(fn (ChurchElement $e) => $e->value, ChurchElement::cases());
+        $newName = str_replace(
+            ['Discovery Bible Study', 'Bible Study', 'Discovery Study'],
+            'Acts 2 Circle',
+            $this->name
+        );
+
+        $this->update([
+            'name' => $newName,
+            'elements_json' => $allElements,
+            'is_healthy_church' => true,
+            'health_score' => min(95, max(75, $this->health_score + 10)),
+            'baptized_count' => max(2, $this->baptized_count),
+            'last_coached_game_month' => $gameMonth,
+        ]);
+    }
+
+    /**
      * Revitalizes a struggling or dissolved church through pastoral coaching / restart.
      */
     public function revitalize(int $gameMonth, ?User $revitalizedBy = null): void

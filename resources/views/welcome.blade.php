@@ -174,6 +174,14 @@
                     </a>
                 @else
                     <a 
+                        href="{{ route('simulate') }}" 
+                        class="hidden sm:flex items-center gap-1.5 text-xs font-bold text-amber-300 hover:text-amber-200 px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 transition"
+                        title="Explore the 15-Year Nagoya Movement Simulation (Shared Daily SQLite DB)"
+                    >
+                        <span>⏱️</span>
+                        <span>Live Simulation</span>
+                    </a>
+                    <a 
                         href="{{ route('login') }}" 
                         class="text-xs font-bold text-slate-300 hover:text-white px-3.5 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 transition"
                     >
@@ -221,6 +229,14 @@
                     >
                         <span>🎮</span>
                         <span>Play Now (Action HQ)</span>
+                    </a>
+                    <a 
+                        href="{{ route('simulate') }}" 
+                        class="px-6 py-3 rounded-2xl text-sm font-bold bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 transition flex items-center gap-2"
+                        title="Explore the 15-Year Simulation without registering (Shared Daily SQLite Database)"
+                    >
+                        <span>⏱️</span>
+                        <span>Explore Simulation (Guest Mode)</span>
                     </a>
                     <a 
                         href="#story" 
@@ -1381,6 +1397,42 @@
 
                     <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 leading-relaxed flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <span><strong>Breakthrough Intelligence:</strong> Every celebration banner includes the exact <strong>Nagoya Ward location</strong>, the <strong>people involved</strong> (new disciple &amp; discipler/co-worker), generation tier (G1 pioneer to G4+ stream), and biblical anchor. Players can click <em>"🙌 Rejoice! (ハレルヤ)"</em> to celebrate!</span>
+                    </div>
+                </div>
+
+                <!-- Mechanic: Real-Life Longitudinal Movement Horizons (3m to 15y) -->
+                <div class="p-6 rounded-3xl bg-slate-900/80 border border-amber-500/40 shadow-xl space-y-4 md:col-span-2 lg:col-span-3">
+                    <div class="flex items-center justify-between gap-3 flex-wrap border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">⏱️</span>
+                            <div>
+                                <h3 class="text-base font-bold text-white">Real-Life Longitudinal Movement Horizons (3 Months to 15 Years)</h3>
+                                <span class="text-xs text-amber-400">Authentic Japanese Pacing Across 3m • 6m • 1y • 2y • 5y • 10y • 15y (`php artisan game:simulate`)</span>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-950 text-amber-300 border border-amber-800 flex items-center gap-1">
+                            <span>🗾</span>
+                            <span>Long Obedience (Mark 4:26–29)</span>
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Operators, coaches, and presenters can benchmark and demonstrate real-life Japanese movement dynamics across <strong>7 canonical time horizons</strong> either in the terminal via <code class="px-1.5 py-0.5 rounded bg-slate-950 text-amber-300 border border-slate-800">php artisan game:simulate [3m|6m|1y|2y|5y|10y|15y|all]</code> or interactively in the browser via the <strong>⏱️ Time-Stage Showcase Mode</strong> switcher in the top navigation bar. Every showcase runs inside an <strong>isolated temporary SQLite database per player populated exclusively by computer players</strong> so your live game data is never altered while you inspect the <strong>Nagoya 16-Ward Map</strong>, <strong>Circles &amp; Generation Map</strong>, and <strong>Leaderboard</strong> at each stage:
+                        <strong>3 Months</strong> (language school &amp; soil plowing, 0 Japanese baptisms yet),
+                        <strong>6 Months</strong> (foundation graduation &amp; first salvations entering family cost-counting),
+                        <strong>1 Year</strong> (first water baptisms after 6–12 months of family preparation &amp; G2 circles),
+                        <strong>2 Years</strong> (raising L2/L3 local Timothys &amp; first G3 simple churches),
+                        <strong>5 Years</strong> (completion of first missionary term with G4 streams across 8–11 wards),
+                        <strong>10 Years</strong> (city-wide indigenous L4/L5 leadership &amp; breaking shrine strongholds), and
+                        <strong>15 Years</strong> (full 16-ward saturation — <em>"Until No Place Left"</em> in Nagoya).
+                    </p>
+                    <div class="pt-1 flex flex-wrap items-center gap-2">
+                        <a
+                            href="{{ route('home', ['showcase' => 1]) }}"
+                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border border-amber-500/40 transition cursor-pointer"
+                        >
+                            <span>⏱️</span>
+                            <span>Launch Interactive Time-Stage Showcase in Browser →</span>
+                        </a>
                     </div>
                 </div>
             </div>

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\ChurchElement;
+use App\Enums\LeadershipTier;
 use App\Enums\MinistryActionType;
 use App\Enums\ReceptivityStatus;
 use App\Livewire\ActionQueuePlanner;
@@ -368,4 +369,100 @@ test('action queue planner enforces 8 ap base cost and weekly limit on church ci
 
     $this->user->refresh();
     expect($this->user->action_points)->toBe(10);
+});
+
+test('bible study groups have high probability to become a church after 6-12 months when coached and trained and can merge into neighboring groups', function () {
+    $this->timothy->update([
+        'status' => ReceptivityStatus::Green,
+        'trained_411' => true,
+        'leadership_tier' => LeadershipTier::L2_ChurchPlanter,
+    ]);
+
+    $bibleStudy = Church::create([
+        'game_session_id' => $this->session->id,
+        'ward_id' => $this->ward->id,
+        'name' => "Timothy's Chikusa Discovery Bible Study (G2)",
+        'parent_church_id' => $this->g1Church->id,
+        'leader_npc_id' => $this->timothy->id,
+        'generation' => 2,
+        'elements_json' => [
+            ChurchElement::RepentanceBelief->value,
+            ChurchElement::Word->value,
+            ChurchElement::Prayer->value,
+            ChurchElement::Fellowship->value,
+            ChurchElement::MakingDisciples->value,
+        ],
+        'is_healthy_church' => false,
+        'health_score' => 72,
+        'attenders_count' => 6,
+        'believers_count' => 4,
+        'baptized_count' => 2,
+        'founded_game_month' => 2,
+        'last_coached_game_month' => 2,
+        'lat' => 35.1675,
+        'lng' => 136.9990,
+    ]);
+
+    // Before 6 months (e.g., Month 5 => 3 months as Bible study), transition probability is 0%
+    expect($bibleStudy->monthsAsBibleStudy(5))->toBe(3)
+        ->and($bibleStudy->churchTransitionProbability(5))->toBe(0);
+
+    // At 6-12 months (e.g., Month 10 => 8 months as Bible study) when coached & leader trained, probability is high (75%-95%)
+    $bibleStudy->update(['last_coached_game_month' => 9]);
+    expect($bibleStudy->monthsAsBibleStudy(10))->toBe(8)
+        ->and($bibleStudy->isCoachedAndTrainedForChurchTransition(10))->toBeTrue()
+        ->and($bibleStudy->churchTransitionProbability(10))->toBeGreaterThanOrEqual(75);
+
+    // If uncoached for > 6 months, probability drops significantly
+    $bibleStudy->update(['last_coached_game_month' => 1]);
+    expect($bibleStudy->isCoachedAndTrainedForChurchTransition(10))->toBeFalse()
+        ->and($bibleStudy->churchTransitionProbability(10))->toBeLessThanOrEqual(25);
+
+    // Transitioning to a Healthy Church equips all 9 Acts 2 elements and updates status
+    $bibleStudy->transitionToHealthyChurch(10);
+    $bibleStudy->refresh();
+    expect($bibleStudy->is_healthy_church)->toBeTrue()
+        ->and($bibleStudy->hasAllCoreElements())->toBeTrue()
+        ->and($bibleStudy->name)->toContain('Acts 2 Circle');
+
+    // Another smaller Bible study group in the same ward merges into the healthy church
+    $smallerStudy = Church::create([
+        'game_session_id' => $this->session->id,
+        'ward_id' => $this->ward->id,
+        'name' => 'Neighbor Household Discovery Bible Study (G2)',
+        'parent_church_id' => $this->g1Church->id,
+        'generation' => 2,
+        'elements_json' => [ChurchElement::Word->value, ChurchElement::Prayer->value],
+        'is_healthy_church' => false,
+        'health_score' => 48,
+        'attenders_count' => 4,
+        'believers_count' => 3,
+        'baptized_count' => 1,
+        'founded_game_month' => 6,
+        'lat' => 35.1680,
+        'lng' => 136.9995,
+    ]);
+
+    $memberNpc = Npc::create([
+        'game_session_id' => $this->session->id,
+        'ward_id' => $this->ward->id,
+        'church_id' => $smallerStudy->id,
+        'name' => 'Yoko Suzuki',
+        'name_ja' => '鈴木 陽子',
+        'status' => ReceptivityStatus::Green,
+        'is_baptized' => true,
+        'lat' => 35.1680,
+        'lng' => 136.9995,
+    ]);
+
+    $smallerStudy->mergeInto($bibleStudy, 11);
+    $smallerStudy->refresh();
+    $bibleStudy->refresh();
+    $memberNpc->refresh();
+
+    expect($smallerStudy->is_dissolved)->toBeTrue()
+        ->and($smallerStudy->dissolution_reason)->toContain('merged into')
+        ->and($smallerStudy->attenders_count)->toBe(0)
+        ->and($memberNpc->church_id)->toBe($bibleStudy->id)
+        ->and($bibleStudy->attenders_count)->toBeGreaterThan(6);
 });

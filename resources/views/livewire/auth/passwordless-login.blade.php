@@ -30,6 +30,15 @@
             </button>
 
             <a 
+                href="{{ route('simulate') }}" 
+                class="text-xs font-bold text-amber-300 hover:text-amber-200 px-3.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 transition flex items-center gap-1.5"
+                title="Explore the 15-Year Nagoya Movement Simulation (Shared Daily SQLite DB — No Registration Required)"
+            >
+                <span>⏱️</span>
+                <span>Live Simulation</span>
+            </a>
+
+            <a 
                 href="{{ route('welcome') }}" 
                 class="text-xs font-bold text-slate-400 hover:text-white px-3.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 transition flex items-center gap-1.5"
             >
@@ -294,10 +303,17 @@
                     </form>
 
                     <!-- Bottom Nav -->
-                    <div class="text-center pt-2 border-t border-slate-800/80">
+                    <div class="text-center pt-3 border-t border-slate-800/80 space-y-2.5">
+                        <a 
+                            href="{{ route('simulate') }}" 
+                            class="w-full py-2.5 px-4 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 font-bold text-xs flex items-center justify-center gap-2 transition"
+                        >
+                            <span>⏱️</span>
+                            <span>Explore Live 15-Year Simulation (No Registration Needed)</span>
+                        </a>
                         <a 
                             href="{{ route('welcome') }}" 
-                            class="text-xs text-slate-400 hover:text-indigo-300 transition"
+                            class="block text-xs text-slate-400 hover:text-indigo-300 transition"
                         >
                             Read the Nagoya Story, 16 Wards & 4 Fields Framework →
                         </a>

@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Enums\ChurchElement;
 use App\Models\Church;
+use App\Services\ShowcaseSandboxService;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
@@ -12,6 +13,11 @@ class ChurchCircleSvg extends Component
     public ?Church $church = null;
 
     public ?int $churchId = null;
+
+    public function boot(): void
+    {
+        app(ShowcaseSandboxService::class)->syncConnectionFromSession();
+    }
 
     public function mount(?int $churchId = null, ?Church $church = null): void
     {
