@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\GameSession;
 use App\Models\User;
+use App\Services\ShowcaseSandboxService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,7 +58,7 @@ class PasswordlessAuthController extends Controller
             Auth::login($user, remember: true);
             $request->session()->regenerate();
             $request->session()->forget(['showcase_mode_active', 'showcase_is_guest', 'showcase_user_id']);
-            app(\App\Services\ShowcaseSandboxService::class)->deactivate();
+            app(ShowcaseSandboxService::class)->deactivate();
             $user->touchActive();
 
             return redirect()
@@ -99,7 +100,7 @@ class PasswordlessAuthController extends Controller
         Auth::login($newUser, remember: true);
         $request->session()->regenerate();
         $request->session()->forget(['showcase_mode_active', 'showcase_is_guest', 'showcase_user_id']);
-        app(\App\Services\ShowcaseSandboxService::class)->deactivate();
+        app(ShowcaseSandboxService::class)->deactivate();
 
         return redirect()
             ->route('home')

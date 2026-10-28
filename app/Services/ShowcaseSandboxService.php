@@ -133,7 +133,7 @@ class ShowcaseSandboxService
 
         $this->ensureSandboxDatabase($resolvedUserId, $recreate);
 
-        config(['session.connection' => $this->primaryConnection]);
+        $this->pinFrameworkInfrastructureToPrimaryConnection();
         DB::setDefaultConnection(self::CONNECTION);
 
         $session = GameSession::where('code', 'nagoya-2026')->first();
@@ -180,7 +180,7 @@ class ShowcaseSandboxService
 
         $this->ensureSandboxDatabase(userId: null, recreate: $forceRegenerate, isGuest: true);
 
-        config(['session.connection' => $this->primaryConnection]);
+        $this->pinFrameworkInfrastructureToPrimaryConnection();
         DB::setDefaultConnection(self::CONNECTION);
 
         $session = GameSession::where('code', 'nagoya-2026')->first();
@@ -285,7 +285,7 @@ class ShowcaseSandboxService
     public function regenerateGuestDatabaseIfAllowed(): array
     {
         $this->ensureSandboxDatabase(userId: null, recreate: false, isGuest: true);
-        config(['session.connection' => $this->primaryConnection]);
+        $this->pinFrameworkInfrastructureToPrimaryConnection();
         DB::setDefaultConnection(self::CONNECTION);
 
         $existingSession = GameSession::where('code', 'nagoya-2026')->first();
@@ -311,15 +311,22 @@ class ShowcaseSandboxService
      */
     public function syncConnectionFromSession(): void
     {
-        if (! session('showcase_mode_active', false) && auth()->check()) {
-            return;
-        }
-
-        if (session('showcase_is_guest', false) || ! auth()->check()) {
+        if (! auth()->check()) {
             if (session('showcase_mode_active', false)) {
                 $this->activateGuest();
             }
 
+            return;
+        }
+
+        if (session('showcase_is_guest', false)) {
+            session()->forget(['showcase_mode_active', 'showcase_is_guest', 'showcase_user_id']);
+            $this->deactivate();
+
+            return;
+        }
+
+        if (! session('showcase_mode_active', false)) {
             return;
         }
 

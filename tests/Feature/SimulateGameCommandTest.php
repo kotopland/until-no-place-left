@@ -10,10 +10,13 @@ use App\Models\Church;
 use App\Models\GameSession;
 use App\Models\Npc;
 use App\Models\User;
+use App\Models\Ward;
 use App\Services\RealLifeSimulationService;
 use App\Services\ShowcaseSandboxService;
 use Database\Seeders\NagoyaOikosSeeder;
+use Illuminate\Database\SQLiteConnection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -316,4 +319,89 @@ test('non-registered guest players can access simulation via shared sqlite datab
 
     // Primary live database remains completely untouched
     expect(GameSession::on('sqlite')->where('code', 'nagoya-2026')->value('current_game_month'))->toBe(1);
+});
+
+test('showcase sandbox initializes sqlite schema via migrations when primary connection is mariadb or non-sqlite and keeps real game on primary connection', function (): void {
+    (new NagoyaOikosSeeder)->run();
+
+    $liveUser = User::on('sqlite')->where('email', 'coach@nagoyaharvest.jp')->firstOrFail();
+
+    // Simulate a non-SQLite driver (e.g. mariadb in production) where querying sqlite_master would fail
+    $primaryConn = DB::connection('sqlite');
+    $originalPdo = $primaryConn->getPdo();
+
+    $mariadbStyleConn = new class($originalPdo, $primaryConn->getDatabaseName(), $primaryConn->getTablePrefix(), $primaryConn->getConfig()) extends SQLiteConnection
+    {
+        public function getDriverName(): string
+        {
+            return 'mariadb';
+        }
+
+        public function select($query, $bindings = [], $useReadPdo = true, array $fetchUsing = []): array
+        {
+            if (str_contains((string) $query, 'SELECT type, name, sql FROM sqlite_master')) {
+                throw new RuntimeException('Syntax error or access violation: 1064 near FROM sqlite_master on MariaDB connection');
+            }
+
+            return parent::select($query, $bindings, $useReadPdo, $fetchUsing);
+        }
+    };
+
+    $mariadbStyleConn->useDefaultQueryGrammar();
+    $mariadbStyleConn->useDefaultPostProcessor();
+    $mariadbStyleConn->useDefaultSchemaGrammar();
+
+    DB::extend('mariadb_simulated', fn () => $mariadbStyleConn);
+    config([
+        'database.connections.mariadb_simulated' => config('database.connections.sqlite'),
+        'database.default' => 'mariadb_simulated',
+    ]);
+
+    try {
+        $sandbox = new ShowcaseSandboxService;
+        app()->instance(ShowcaseSandboxService::class, $sandbox);
+        expect($sandbox->primaryConnection())->toBe('mariadb_simulated');
+
+        // Activate showcase sandbox for user: must migrate SQLite schema without querying sqlite_master on primary connection
+        $session = $sandbox->activate((int) $liveUser->id, recreate: true);
+
+        expect($sandbox->isActive())->toBeTrue()
+            ->and(DB::getDefaultConnection())->toBe(ShowcaseSandboxService::CONNECTION)
+            ->and($session->code)->toBe('nagoya-2026')
+            ->and(Ward::count())->toBe(16);
+
+        // Deactivate sandbox: real game connection is restored to primary connection
+        $sandbox->deactivate();
+        expect($sandbox->isActive())->toBeFalse()
+            ->and(DB::getDefaultConnection())->toBe('mariadb_simulated');
+    } finally {
+        config(['database.default' => 'sqlite']);
+        DB::setDefaultConnection('sqlite');
+        app()->singleton(ShowcaseSandboxService::class);
+        $playerDbPath = app(ShowcaseSandboxService::class)->getSandboxDatabasePath((int) $liveUser->id);
+        @unlink($playerDbPath);
+        @unlink("{$playerDbPath}-wal");
+        @unlink("{$playerDbPath}-shm");
+    }
+});
+
+test('authenticated player visiting real game home after guest simulation uses primary database connection', function (): void {
+    (new NagoyaOikosSeeder)->run();
+
+    // 1. Visit /simulate as guest (sets showcase_mode_active and showcase_is_guest in session)
+    $this->get(route('simulate'))->assertSuccessful();
+    expect(session('showcase_mode_active'))->toBeTrue()
+        ->and(session('showcase_is_guest'))->toBeTrue();
+
+    // 2. Authenticate as real player and load real game dashboard (/)
+    $liveUser = User::on('sqlite')->where('email', 'coach@nagoyaharvest.jp')->firstOrFail();
+
+    Livewire::actingAs($liveUser)
+        ->test(NagoyaMovementDashboard::class)
+        ->assertSet('showShowcaseBar', false)
+        ->assertSet('isGuestShowcase', false);
+
+    expect(app(ShowcaseSandboxService::class)->isActive())->toBeFalse()
+        ->and(DB::getDefaultConnection())->toBe('sqlite')
+        ->and(session('showcase_mode_active', false))->toBeFalse();
 });
