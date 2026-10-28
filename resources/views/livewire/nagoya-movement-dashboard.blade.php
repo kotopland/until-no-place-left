@@ -1,7 +1,7 @@
-<div class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-200">
+<div class="min-h-screen overflow-x-hidden bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-200">
     <!-- Top Navigation Bar -->
     <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-md transition-colors duration-200">
-        <div class="max-w-7xl 2xl:max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+        <div class="max-w-7xl 2xl:max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-3">
             <!-- Brand & Game Title (Clean, minimal, no subheaders) -->
             <a href="{{ route('welcome') }}" class="flex items-center gap-2.5 group cursor-pointer shrink-0" title="Nagoya Oikos - Movement Simulation">
                 <img 
@@ -281,13 +281,13 @@
                     <button 
                         type="button" 
                         @click="open = !open"
-                        class="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-2xl border transition cursor-pointer select-none bg-slate-100 dark:bg-slate-800/80 border-slate-300 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 shadow-sm"
+                        class="flex items-center gap-1.5 sm:gap-2 p-1 pl-1.5 pr-2 sm:pr-2.5 rounded-2xl border transition cursor-pointer select-none bg-slate-100 dark:bg-slate-800/80 border-slate-300 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 shadow-sm"
                         title="Missionary Profile, Clearance & Account Settings"
                     >
                         <div class="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-[11px] font-bold text-white shadow-sm shrink-0">
                             {{ $user?->initials() ?? 'MC' }}
                         </div>
-                        <div class="text-left text-xs whitespace-nowrap min-w-0">
+                        <div class="hidden sm:block text-left text-xs whitespace-nowrap min-w-0">
                             <div class="font-bold text-slate-800 dark:text-white leading-none truncate max-w-[85px]">
                                 {{ $user?->name ?? 'Player' }}
                             </div>
@@ -312,7 +312,7 @@
                         x-transition:leave="transition ease-in duration-100"
                         x-transition:leave-start="transform opacity-100 scale-100 translate-y-0"
                         x-transition:leave-end="transform opacity-0 scale-95 -translate-y-1"
-                        class="absolute right-0 mt-2 w-72 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-50 text-xs"
+                        class="absolute right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-50 text-xs"
                         style="display: none;"
                     >
                         <!-- User Card / Handle Edit -->
@@ -454,19 +454,19 @@
                     </div>
                 </div>
                 @else
-                <div class="flex items-center gap-1.5 pl-1.5 border-l border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-1 sm:gap-1.5 pl-1 sm:pl-1.5 border-l border-slate-200 dark:border-slate-800">
                     <a
                         href="{{ route('login') }}"
-                        class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 transition"
+                        class="px-2 sm:px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-200 transition whitespace-nowrap"
                     >
                         Sign In
                     </a>
                     <a
                         href="{{ route('register') }}"
-                        class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-emerald-500 hover:from-indigo-500 hover:to-emerald-400 text-white text-xs font-bold shadow-md shadow-indigo-600/20 transition flex items-center gap-1"
+                        class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-emerald-500 hover:from-indigo-500 hover:to-emerald-400 text-white text-[11px] sm:text-xs font-bold shadow-md shadow-indigo-600/20 transition flex items-center gap-1 whitespace-nowrap"
                     >
                         <span>⚡</span>
-                        <span>Join Mission</span>
+                        <span>Join<span class="hidden sm:inline"> Mission</span></span>
                     </a>
                 </div>
                 @endauth
@@ -479,68 +479,59 @@
             @click.outside="mobileMoreOpen = false"
             class="md:hidden border-t border-slate-200 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md relative z-30 transition-colors duration-200"
         >
-            <div class="flex items-center justify-around px-2 py-2 text-xs font-semibold">
+            <div class="grid grid-cols-5 gap-1 px-2 py-1.5 text-[11px] sm:text-xs font-semibold">
                 <button 
                     type="button"
                     wire:click="setTab('planner')" 
-                    class="px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 {{ $currentTab === 'planner' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                    class="min-w-0 px-1.5 py-1.5 rounded-xl transition flex items-center justify-center gap-1 whitespace-nowrap {{ $currentTab === 'planner' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
                 >
                     <span>⚡</span>
-                    <span>HQ</span>
+                    <span class="truncate">HQ</span>
                 </button>
 
                 <button 
                     type="button"
                     wire:click="setTab('churches')" 
-                    class="px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 {{ $currentTab === 'churches' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                    class="min-w-0 px-1.5 py-1.5 rounded-xl transition flex items-center justify-center gap-1 whitespace-nowrap {{ $currentTab === 'churches' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
                 >
                     <span>⛪</span>
-                    <span>Circles</span>
+                    <span class="truncate">Circles</span>
                 </button>
 
                 <button 
                     type="button"
                     wire:click="setTab('map')" 
-                    class="px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 {{ $currentTab === 'map' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                    class="min-w-0 px-1.5 py-1.5 rounded-xl transition flex items-center justify-center gap-1 whitespace-nowrap {{ $currentTab === 'map' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
                 >
                     <span>🗺️</span>
-                    <span>Map</span>
+                    <span class="truncate">Map</span>
                 </button>
 
                 <button 
                     type="button"
                     wire:click="setTab('chat')" 
-                    class="px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 relative {{ $currentTab === 'chat' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                    class="min-w-0 px-1.5 py-1.5 rounded-xl transition flex items-center justify-center gap-1 relative whitespace-nowrap {{ $currentTab === 'chat' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
                 >
                     <span>💬</span>
-                    <span>Chat</span>
+                    <span class="truncate">Chat</span>
                     @if(isset($unreadChatCount) && $unreadChatCount > 0)
-                        <span class="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-rose-500 text-white animate-pulse">
+                        <span class="px-1 py-0.2 rounded-full text-[9px] font-black bg-rose-500 text-white animate-pulse shrink-0">
                             {{ $unreadChatCount }}
                         </span>
                     @endif
-                </button>
-
-                <button 
-                    type="button"
-                    wire:click="setTab('leaderboard')" 
-                    class="px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 {{ $currentTab === 'leaderboard' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
-                >
-                    <span>🏆</span>
-                    <span>Ladder</span>
                 </button>
 
                 <!-- More Submenu Button -->
                 <button 
                     type="button" 
                     @click="mobileMoreOpen = !mobileMoreOpen"
-                    class="px-3 py-1.5 rounded-xl transition flex items-center gap-1 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                    :class="mobileMoreOpen ? 'bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white font-bold' : ''"
+                    class="min-w-0 px-1.5 py-1.5 rounded-xl transition flex items-center justify-center gap-0.5 whitespace-nowrap {{ $currentTab === 'leaderboard' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
+                    :class="mobileMoreOpen && '{{ $currentTab }}' !== 'leaderboard' ? 'bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white font-bold' : ''"
                     title="More Features & Controls"
                 >
                     <span>⋯</span>
-                    <span>More</span>
-                    <svg class="w-3 h-3 transition-transform duration-200" :class="mobileMoreOpen ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <span class="truncate">More</span>
+                    <svg class="w-3 h-3 shrink-0 transition-transform duration-200" :class="mobileMoreOpen ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
                     </svg>
                 </button>
@@ -561,25 +552,41 @@
                 <div class="grid grid-cols-2 gap-2">
                     <button 
                         type="button" 
+                        wire:click="setTab('leaderboard')" 
+                        @click="mobileMoreOpen = false"
+                        class="col-span-2 p-2.5 rounded-xl border flex items-center justify-between gap-2.5 text-left transition cursor-pointer {{ $currentTab === 'leaderboard' ? 'bg-indigo-50 dark:bg-indigo-950/80 border-indigo-400 dark:border-indigo-600 text-indigo-700 dark:text-indigo-300' : 'bg-slate-50 dark:bg-slate-800/80 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 border-slate-200 dark:border-slate-700/80' }}"
+                    >
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <span class="text-lg shrink-0">🏆</span>
+                            <div class="min-w-0">
+                                <div class="font-bold text-slate-800 dark:text-white leading-tight truncate">Leaderboard &amp; Co-op</div>
+                                <div class="text-[10px] text-slate-500 dark:text-slate-400 font-normal truncate">Player scores &amp; collaborative tiers</div>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 shrink-0">View →</span>
+                    </button>
+
+                    <button 
+                        type="button" 
                         wire:click="openSpiritualRhythms" 
                         @click="mobileMoreOpen = false"
-                        class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 border border-slate-200 dark:border-slate-700/80 flex items-center gap-2.5 text-left transition cursor-pointer"
+                        class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 border border-slate-200 dark:border-slate-700/80 flex items-center gap-2 text-left transition cursor-pointer min-w-0"
                     >
-                        <span class="text-lg">🕊️</span>
-                        <div>
-                            <div class="font-bold text-slate-800 dark:text-white leading-tight">Spiritual Rhythms</div>
-                            <div class="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Sabbath, Retreats & Fasting</div>
+                        <span class="text-lg shrink-0">🕊️</span>
+                        <div class="min-w-0">
+                            <div class="font-bold text-slate-800 dark:text-white leading-tight truncate">Spiritual Rhythms</div>
+                            <div class="text-[10px] text-slate-500 dark:text-slate-400 font-normal truncate">Sabbath &amp; Retreats</div>
                         </div>
                     </button>
 
                     <a 
                         href="{{ route('welcome') }}" 
-                        class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-amber-50 dark:hover:bg-amber-950/60 border border-slate-200 dark:border-slate-700/80 flex items-center gap-2.5 text-left transition cursor-pointer"
+                        class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-amber-50 dark:hover:bg-amber-950/60 border border-slate-200 dark:border-slate-700/80 flex items-center gap-2 text-left transition cursor-pointer min-w-0"
                     >
-                        <span class="text-lg">📖</span>
-                        <div>
-                            <div class="font-bold text-slate-800 dark:text-white leading-tight">Story & Rules</div>
-                            <div class="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Four Fields Field Manual</div>
+                        <span class="text-lg shrink-0">📖</span>
+                        <div class="min-w-0">
+                            <div class="font-bold text-slate-800 dark:text-white leading-tight truncate">Story &amp; Rules</div>
+                            <div class="text-[10px] text-slate-500 dark:text-slate-400 font-normal truncate">Four Fields Manual</div>
                         </div>
                     </a>
 
@@ -589,27 +596,27 @@
                         @click="mobileMoreOpen = false"
                         class="col-span-2 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-950/70 border border-amber-300 dark:border-amber-800/80 flex items-center justify-between gap-2.5 text-left transition cursor-pointer"
                     >
-                        <div class="flex items-center gap-2.5">
-                            <span class="text-lg">⏱️</span>
-                            <div>
-                                <div class="font-bold text-slate-800 dark:text-white leading-tight">Time-Stage Showcase Mode</div>
-                                <div class="text-[10px] text-amber-700 dark:text-amber-400 font-normal">Demonstrate 3m, 6m, 1y, 2y, 5y, 10y &amp; 15y stages</div>
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <span class="text-lg shrink-0">⏱️</span>
+                            <div class="min-w-0">
+                                <div class="font-bold text-slate-800 dark:text-white leading-tight truncate">Time-Stage Showcase Mode</div>
+                                <div class="text-[10px] text-amber-700 dark:text-amber-400 font-normal truncate">Demonstrate 3m, 6m, 1y, 2y, 5y, 10y &amp; 15y stages</div>
                             </div>
                         </div>
-                        <span class="px-2 py-0.5 rounded-lg text-[10px] font-black bg-amber-500 text-slate-950">
+                        <span class="px-2 py-0.5 rounded-lg text-[10px] font-black bg-amber-500 text-slate-950 shrink-0">
                             {{ $showShowcaseBar ? 'Active' : 'Open' }}
                         </span>
                     </button>
                 </div>
 
-                <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 grid grid-cols-3 gap-1.5">
                     <!-- Music -->
                     <button 
                         type="button" 
                         @click="$store.audio?.toggle()" 
-                        class="flex-1 py-2 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
+                        class="min-w-0 py-2 px-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-[11px] font-semibold flex items-center justify-center gap-1 transition cursor-pointer truncate"
                     >
-                        <span x-text="$store.audio?.isPlaying ? '🎵 Music: Playing' : '🔇 Music: Muted'"></span>
+                        <span class="truncate" x-text="$store.audio?.isPlaying ? '🎵 Playing' : '🔇 Muted'"></span>
                     </button>
 
                     <!-- Theme -->
@@ -617,11 +624,11 @@
                         wire:ignore
                         type="button" 
                         onclick="window.__toggleTheme ? window.__toggleTheme() : null"
-                        class="py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-amber-500 dark:text-amber-400 flex items-center gap-1.5 transition cursor-pointer"
+                        class="min-w-0 py-2 px-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-[11px] font-semibold text-amber-500 dark:text-amber-400 flex items-center justify-center gap-1 transition cursor-pointer truncate"
                         title="Toggle Light / Dark Mode"
                     >
                         <span data-theme-icon>☀️</span>
-                        <span data-theme-label>Theme</span>
+                        <span data-theme-label class="truncate">Theme</span>
                     </button>
 
                     <!-- Rename Profile -->
@@ -629,10 +636,10 @@
                         type="button" 
                         wire:click="openEditNameModal" 
                         @click="mobileMoreOpen = false"
-                        class="py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 transition cursor-pointer"
+                        class="min-w-0 py-2 px-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 flex items-center justify-center gap-1 transition cursor-pointer truncate"
                     >
                         <span>👤</span>
-                        <span>Rename</span>
+                        <span class="truncate">Rename</span>
                     </button>
                 </div>
             </div>

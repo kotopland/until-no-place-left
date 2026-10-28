@@ -67,19 +67,19 @@
 
     <!-- Header Navigation -->
     <header class="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
-            <a href="{{ route('welcome') }}" class="flex items-center gap-3 group">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
+            <a href="{{ route('welcome') }}" class="flex items-center gap-2.5 sm:gap-3 group min-w-0 shrink-0">
                 <img 
                     src="{{ asset('images/until-no-place-left-logo-small.png') }}" 
                     alt="Nagoya Oikos: The Four Fields Logo" 
-                    class="w-11 h-11 object-contain rounded-2xl shadow-xl shadow-indigo-500/25 border border-indigo-500/40 group-hover:scale-105 transition duration-300"
+                    class="w-9 h-9 sm:w-11 sm:h-11 object-contain rounded-xl sm:rounded-2xl shadow-xl shadow-indigo-500/25 border border-indigo-500/40 group-hover:scale-105 transition duration-300 shrink-0"
                 >
-                <div>
-                    <span class="text-xs font-black text-white tracking-wider uppercase flex items-center gap-1.5">
+                <div class="min-w-0">
+                    <span class="text-xs font-black text-white tracking-wider uppercase flex items-center gap-1.5 whitespace-nowrap">
                         <span>Nagoya Oikos</span>
-                        <span class="px-1.5 py-0.5 rounded text-[10px] bg-indigo-950 text-indigo-400 border border-indigo-800">Four Fields</span>
+                        <span class="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] bg-indigo-950 text-indigo-400 border border-indigo-800">Four Fields</span>
                     </span>
-                    <span class="text-[11px] text-slate-400 block font-medium">Until No Place Left • Japan</span>
+                    <span class="hidden sm:block text-[11px] text-slate-400 font-medium truncate">Until No Place Left • Japan</span>
                 </div>
             </a>
 
@@ -183,16 +183,16 @@
                     </a>
                     <a 
                         href="{{ route('login') }}" 
-                        class="text-xs font-bold text-slate-300 hover:text-white px-3.5 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 transition"
+                        class="text-[11px] sm:text-xs font-bold text-slate-300 hover:text-white px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 transition whitespace-nowrap"
                     >
                         Sign In
                     </a>
                     <a 
                         href="{{ route('login') }}" 
-                        class="px-5 py-2.5 rounded-2xl text-xs font-bold bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-500 text-white shadow-xl shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] active:scale-[0.98] transition flex items-center gap-2 cursor-pointer"
+                        class="px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-bold bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-500 text-white shadow-xl shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] active:scale-[0.98] transition flex items-center gap-1.5 sm:gap-2 cursor-pointer whitespace-nowrap"
                     >
                         <span>⚡</span>
-                        <span>Create Player & Join</span>
+                        <span>Join<span class="hidden sm:inline"> Mission</span></span>
                     </a>
                 @endauth
             </div>
