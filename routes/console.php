@@ -1,15 +1,9 @@
 <?php
 
 use App\Console\Commands\ProcessGameMonthCommand;
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Schedule;
-
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
-
 use App\Console\Commands\ProcessWeeklyTickCommand;
+use App\Console\Commands\SendInactivityRemindersCommand;
+use Illuminate\Support\Facades\Schedule;
 
 /**
  * Schedule the Nagoya Oikos 15-minute online weekly tick.
@@ -27,6 +21,16 @@ Schedule::command(ProcessWeeklyTickCommand::class)
  */
 Schedule::command(ProcessGameMonthCommand::class, ['--force'])
     ->dailyAt('00:00')
+    ->timezone('Asia/Tokyo')
+    ->withoutOverlapping()
+    ->runInBackground();
+
+/**
+ * Schedule the Nagoya Oikos inactivity reminder check.
+ * Evaluates daily at 09:00 Tokyo time for players who forgot to play for 2 real-life days in a row.
+ */
+Schedule::command(SendInactivityRemindersCommand::class)
+    ->dailyAt('09:00')
     ->timezone('Asia/Tokyo')
     ->withoutOverlapping()
     ->runInBackground();

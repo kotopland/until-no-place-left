@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\NotificationPreferenceController;
 use App\Http\Controllers\PasswordlessAuthController;
 use App\Livewire\Auth\PasswordlessLogin;
 use App\Livewire\NagoyaMovementDashboard;
@@ -27,6 +28,15 @@ Route::middleware('guest')->group(function (): void {
 
 // Signed Magic Link Verification
 Route::get('/auth/magic-link', [PasswordlessAuthController::class, 'verify'])->name('auth.magic-link');
+
+// Notification Opt-Out & Opt-In (Cryptographically Signed Links)
+Route::get('/notifications/opt-out/{user}', [NotificationPreferenceController::class, 'optOut'])
+    ->name('notifications.opt-out')
+    ->middleware('signed');
+
+Route::post('/notifications/opt-in/{user}', [NotificationPreferenceController::class, 'optIn'])
+    ->name('notifications.opt-in')
+    ->middleware('signed');
 
 // Authenticated Movement Dashboard & Logout
 Route::middleware('auth')->group(function (): void {

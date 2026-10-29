@@ -41,6 +41,8 @@ class NagoyaMovementDashboard extends Component
 
     public int $editingAge = 30;
 
+    public bool $editingNotifyEmail = true;
+
     public bool $showOnboardingModal = false;
 
     public string $onboardingStage = 'screening'; // 'screening', 'gated_coaching', 'qualified_clearance', 'ward_selection', 'host_welcome'
@@ -469,6 +471,7 @@ class NagoyaMovementDashboard extends Component
         $this->editingName = $user ? $user->name : '';
         $this->editingNationality = $user->nationality ?? 'Japanese';
         $this->editingAge = (int) ($user->age ?? 30);
+        $this->editingNotifyEmail = (bool) ($user->notify_email ?? true);
         $this->showEditNameModal = true;
     }
 
@@ -755,6 +758,7 @@ class NagoyaMovementDashboard extends Component
                 'name' => trim($this->editingName),
                 'nationality' => trim($this->editingNationality),
                 'age' => (int) $this->editingAge,
+                'notify_email' => (bool) $this->editingNotifyEmail,
             ]);
             $this->showEditNameModal = false;
             $this->dispatch('notify', message: "Player profile updated: {$user->name} ({$user->nationalityFlag} {$user->nationality}, {$user->age}y)!", type: 'success');

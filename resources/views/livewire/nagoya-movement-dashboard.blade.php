@@ -1313,6 +1313,21 @@
                         @enderror
                     </div>
 
+                    <!-- Email Notification Preferences / Opt-Out -->
+                    <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <span class="text-[11px] font-bold text-slate-300">Email Notifications</span>
+                            <input 
+                                type="checkbox" 
+                                wire:model="editingNotifyEmail"
+                                class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+                            >
+                        </label>
+                        <p class="text-[10px] text-slate-500 leading-tight">
+                            Receive inactivity reminders if you miss 2 days and monthly movement reports. Uncheck to opt out.
+                        </p>
+                    </div>
+
                     <div class="flex items-center justify-end gap-2 pt-2">
                         <button 
                             type="button" 

@@ -35,6 +35,7 @@ use Illuminate\Support\Str;
  * @property Carbon|null $last_active_at
  * @property int $days_played_today
  * @property Carbon|null $last_played_real_date
+ * @property Carbon|null $last_inactivity_reminder_sent_at
  * @property int $daily_action_points
  * @property int $current_game_month
  * @property int $current_game_day
@@ -79,6 +80,7 @@ use Illuminate\Support\Str;
     'weeks_played_today',
     'days_played_today',
     'last_played_real_date',
+    'last_inactivity_reminder_sent_at',
     'weekly_action_points',
     'daily_action_points',
     'consecutive_exhaustion_weeks',
@@ -584,6 +586,61 @@ class User extends Authenticatable
     }
 
     /**
+     * Calculate how many full real-life days have passed since the player last played.
+     */
+    public function realDaysSinceLastPlayed(): int
+    {
+        $referenceDate = $this->last_played_real_date
+            ?? $this->last_active_at?->copy()->startOfDay()
+            ?? $this->created_at?->copy()->startOfDay();
+
+        if ($referenceDate === null) {
+            return 0;
+        }
+
+        return (int) max(0, $referenceDate->copy()->startOfDay()->diffInDays(now()->startOfDay()));
+    }
+
+    /**
+     * Check if the player has missed playing for a given number of consecutive real-life days (default 2 days).
+     */
+    public function hasForgottenToPlayForDays(int $days = 2): bool
+    {
+        if ($this->is_ai_colaborer) {
+            return false;
+        }
+
+        return $this->realDaysSinceLastPlayed() >= $days;
+    }
+
+    /**
+     * Determine if this user is eligible to receive an inactivity reminder notification email.
+     */
+    public function shouldReceiveInactivityReminder(int $days = 2): bool
+    {
+        if (! $this->notify_email || $this->is_ai_colaborer || empty($this->email)) {
+            return false;
+        }
+
+        if (! $this->hasForgottenToPlayForDays($days)) {
+            return false;
+        }
+
+        // If a reminder was already sent since the player last played, do not spam them
+        if ($this->last_inactivity_reminder_sent_at !== null) {
+            $referenceDate = $this->last_played_real_date
+                ?? $this->last_active_at
+                ?? $this->created_at;
+
+            if ($referenceDate !== null && $this->last_inactivity_reminder_sent_at->greaterThanOrEqualTo($referenceDate)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -607,6 +664,7 @@ class User extends Authenticatable
             'weeks_played_today' => 'integer',
             'days_played_today' => 'integer',
             'last_played_real_date' => 'date',
+            'last_inactivity_reminder_sent_at' => 'datetime',
             'weekly_action_points' => 'integer',
             'daily_action_points' => 'integer',
             'consecutive_exhaustion_weeks' => 'integer',
