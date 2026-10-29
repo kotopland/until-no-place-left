@@ -10,7 +10,10 @@ use Illuminate\Support\Facades\Route;
 use Spatie\MailPreview\Http\Controllers\ShowMailController;
 use Spatie\MailPreview\MailPreviewServiceProvider;
 
-// Public Lore, Story & Rules
+// Public Invitation to Reach Nagoya with Jesus Until No Place Left (Root View)
+Route::view('/', 'invitation')->name('invitation');
+
+// Public Lore, Story & Comprehensive Game Rules Overview
 Route::view('/welcome', 'welcome')->name('welcome');
 
 // Public Longitudinal Movement Simulation (Shared Daily SQLite DB for Non-Registered Players)
@@ -27,7 +30,8 @@ Route::get('/auth/magic-link', [PasswordlessAuthController::class, 'verify'])->n
 
 // Authenticated Movement Dashboard & Logout
 Route::middleware('auth')->group(function (): void {
-    Route::get('/', NagoyaMovementDashboard::class)->name('home');
+    Route::get('/dashboard', NagoyaMovementDashboard::class)->name('dashboard');
+    Route::get('/home', fn () => redirect()->route('dashboard'))->name('home');
     Route::post('/logout', [PasswordlessAuthController::class, 'logout'])->name('logout');
 });
 

@@ -28,9 +28,20 @@ test('login page renders successfully with player name creation and email fields
 });
 
 test('unauthenticated user hitting dashboard is redirected to login', function (): void {
-    $response = $this->get('/');
+    $response = $this->get('/dashboard');
 
     $response->assertRedirect('/login');
+});
+
+test('root view renders public invitation to reach nagoya with jesus until no place left', function (): void {
+    $response = $this->get('/');
+
+    $response->assertStatus(200);
+    $response->assertSee('Reach Nagoya with Jesus');
+    $response->assertSee('Until There is No Place Left');
+    $response->assertSee('Romans 15:23');
+    $response->assertSee('The Four Fields');
+    $response->assertSee('Nagoya Wards');
 });
 
 test('new user registration requires a player name and valid email and age over 18', function (): void {
@@ -121,7 +132,7 @@ test('verifying signed magic link creates new user with player name and national
 
     $response = $this->get($signedUrl);
 
-    $response->assertRedirect('/');
+    $response->assertRedirect('/dashboard');
 
     $this->assertAuthenticated();
     $user = Auth::user();
@@ -166,7 +177,7 @@ test('existing user clicking magic link logs in without duplicating record', fun
 
     $response = $this->get($signedUrl);
 
-    $response->assertRedirect('/');
+    $response->assertRedirect('/dashboard');
     $this->assertAuthenticatedAs($existing);
     expect(User::where('email', 'leader@nagoya.jp')->count())->toBe(1);
 });

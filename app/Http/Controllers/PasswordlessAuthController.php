@@ -62,7 +62,7 @@ class PasswordlessAuthController extends Controller
             $user->touchActive();
 
             return redirect()
-                ->intended(route('home'))
+                ->intended(route('dashboard'))
                 ->with('success', "Welcome back, {$user->name}! Your mission awaits.");
         }
 
@@ -103,7 +103,7 @@ class PasswordlessAuthController extends Controller
         app(ShowcaseSandboxService::class)->deactivate();
 
         return redirect()
-            ->route('home')
+            ->route('dashboard')
             ->with('success', "Welcome to Nagoya, {$newUser->name}! Your missionary disciple profile has been created.");
     }
 

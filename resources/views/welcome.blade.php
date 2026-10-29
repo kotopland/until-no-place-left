@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nagoya Oikos: The Four Fields • Movement Simulation Story & Rules</title>
+    <title>Game Overview &amp; Rules • Nagoya Oikos: The Four Fields</title>
     
     <link rel="icon" href="{{ asset('images/until-no-place-left-logo-small.png') }}" type="image/png">
     <link rel="apple-touch-icon" href="{{ asset('images/until-no-place-left-logo-small.png') }}">
@@ -68,7 +68,7 @@
     <!-- Header Navigation -->
     <header class="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
-            <a href="{{ route('welcome') }}" class="flex items-center gap-2.5 sm:gap-3 group min-w-0 shrink-0">
+            <a href="{{ url('/') }}" class="flex items-center gap-2.5 sm:gap-3 group min-w-0 shrink-0" title="Return to Movement Invitation">
                 <img 
                     src="{{ asset('images/until-no-place-left-logo-small.png') }}" 
                     alt="Nagoya Oikos: The Four Fields Logo" 
@@ -83,13 +83,35 @@
                 </div>
             </a>
 
-            <nav class="hidden md:flex items-center gap-3 lg:gap-4 xl:gap-6 text-xs font-semibold text-slate-300">
-                <a href="#story" class="hover:text-indigo-400 transition"><span class="hidden xl:inline">The </span>Story</a>
-                <a href="#four-fields" class="hover:text-emerald-400 transition"><span class="hidden xl:inline">The </span>Four Fields</a>
-                <a href="#toolbox" class="hover:text-cyan-400 transition"><span class="hidden lg:inline">5 Levels </span>Toolbox</a>
-                <a href="#rules" class="hover:text-amber-400 transition"><span class="hidden xl:inline">Game </span>Rules</a>
-                <a href="#wards" class="hover:text-purple-400 transition">16 Wards</a>
-                <a href="#quickstart" class="hover:text-emerald-400 transition">Quick Start</a>
+            <nav class="hidden md:flex items-center gap-2.5 lg:gap-3.5 xl:gap-5 text-xs font-semibold text-slate-300">
+                <a href="{{ url('/') }}" class="text-amber-400 hover:text-amber-300 transition flex items-center gap-1 font-bold">
+                    <span>←</span>
+                    <span>Invitation</span>
+                </a>
+                <a href="#story" class="hover:text-indigo-400 transition flex items-center gap-1">
+                    <span class="text-indigo-400/80 font-mono text-[10px]">1.</span>
+                    <span>Story</span>
+                </a>
+                <a href="#four-fields" class="hover:text-emerald-400 transition flex items-center gap-1">
+                    <span class="text-emerald-400/80 font-mono text-[10px]">2.</span>
+                    <span>Four Fields</span>
+                </a>
+                <a href="#toolbox" class="hover:text-cyan-400 transition flex items-center gap-1">
+                    <span class="text-cyan-400/80 font-mono text-[10px]">3.</span>
+                    <span>Toolbox</span>
+                </a>
+                <a href="#rules" class="hover:text-amber-400 transition flex items-center gap-1">
+                    <span class="text-amber-400/80 font-mono text-[10px]">4.</span>
+                    <span>Rules Matrix</span>
+                </a>
+                <a href="#wards" class="hover:text-purple-400 transition flex items-center gap-1">
+                    <span class="text-purple-400/80 font-mono text-[10px]">5.</span>
+                    <span>16 Wards</span>
+                </a>
+                <a href="#quickstart" class="hover:text-emerald-400 transition flex items-center gap-1">
+                    <span class="text-emerald-400/80 font-mono text-[10px]">6.</span>
+                    <span>Quick Start</span>
+                </a>
             </nav>
 
             <div class="flex items-center gap-2 lg:gap-2.5">
@@ -158,7 +180,7 @@
 
                 @auth
                     <a 
-                        href="{{ route('home') }}" 
+                        href="{{ route('dashboard') }}" 
                         class="hidden sm:flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-white px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 truncate max-w-[120px]"
                         title="{{ auth()->user()->name }}"
                     >
@@ -166,7 +188,7 @@
                         <span class="truncate">{{ auth()->user()->name }}</span>
                     </a>
                     <a 
-                        href="{{ route('home') }}" 
+                        href="{{ route('dashboard') }}" 
                         class="px-3.5 xl:px-5 py-2 xl:py-2.5 rounded-2xl text-xs font-bold bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-500 text-white shadow-xl shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] active:scale-[0.98] transition flex items-center gap-2 cursor-pointer shrink-0"
                     >
                         <span>⚡</span>
@@ -188,7 +210,7 @@
                         Sign In
                     </a>
                     <a 
-                        href="{{ route('login') }}" 
+                        href="{{ route('register') }}" 
                         class="px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-bold bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-500 text-white shadow-xl shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] active:scale-[0.98] transition flex items-center gap-1.5 sm:gap-2 cursor-pointer whitespace-nowrap"
                     >
                         <span>⚡</span>
@@ -201,49 +223,65 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-24">
 
-        <!-- HERO SECTION: The Big Visual Banner & Hook -->
-        <section class="relative flex flex-col lg:flex-row items-center gap-12 pt-6 lg:pt-12">
+        <!-- HERO SECTION: Complete Game Overview & Rules Guide -->
+        <section class="relative flex flex-col lg:flex-row items-start gap-8 lg:gap-12 pt-4 lg:pt-8">
             <div class="flex-1 space-y-6 text-center lg:text-left">
-                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs text-indigo-300 font-semibold shadow-inner">
-                    <span>🌸</span>
-                    <span>Nagoya, Aichi Prefecture • 2.3 Million Souls</span>
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                
+                <!-- Mobile-Only Logo: Positioned directly above the H1 Title -->
+                <div class="lg:hidden w-full max-w-sm sm:max-w-md mx-auto relative group my-2">
+                    <div class="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-amber-500/30 via-emerald-500/30 to-indigo-600/40 blur-xl opacity-75"></div>
+                    <div class="relative rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900/90 backdrop-blur-md p-3">
+                        <img 
+                            src="{{ asset('images/until-no-place-left-logo.jpeg') }}" 
+                            alt="Nagoya Oikos: The Four Fields Official Logo Artwork" 
+                            class="w-full h-auto rounded-2xl object-cover shadow-inner"
+                        >
+                    </div>
                 </div>
 
                 <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.1]">
-                    Relational Church <br/>
-                    Planting in the <br/>
+                    Game Overview &amp; <br/>
+                    Complete Rules Manual <br/>
                     <span class="bg-gradient-to-r from-amber-400 via-emerald-400 to-indigo-400 bg-clip-text text-transparent">
-                        Heart of Japan
+                        The Four Fields Simulation
                     </span>
                 </h1>
 
                 <p class="text-sm sm:text-base text-slate-300 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                    Step into the shoes of a missionary coach in Nagoya. Form friendships, listen deeply to the brokenhearted, sow the Gospel, and equip Japanese disciples to reach their own <strong class="text-white">Oikos (relational webs)</strong> until there is <strong class="text-amber-400">No Place Left</strong> without a healthy Acts 2 church.
+                    A comprehensive guide to the spiritual narrative, Four Fields ministry dynamics, and complete game mechanics of Nagoya Oikos. Master your weekly Action Points, understand transit friction, avoid spiritual burnout, screen missionary candidates, and multiply generational Acts 2 church streams until there is <strong class="text-amber-400">No Place Left</strong>.
                 </p>
 
-                <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
+                <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3.5 pt-2">
                     <a 
-                        href="{{ route('home') }}" 
-                        class="px-6 py-3 rounded-2xl text-sm font-black bg-gradient-to-r from-indigo-600 to-emerald-500 text-white shadow-xl shadow-indigo-600/30 hover:scale-[1.03] active:scale-[0.98] transition flex items-center gap-2"
+                        href="{{ url('/') }}" 
+                        class="px-5 py-3 rounded-2xl text-sm font-bold bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 hover:text-white transition flex items-center gap-2"
                     >
-                        <span>🎮</span>
-                        <span>Play Now (Action HQ)</span>
+                        <span>←</span>
+                        <span>Movement Invitation</span>
                     </a>
+                    @auth
+                        <a 
+                            href="{{ route('dashboard') }}" 
+                            class="px-6 py-3 rounded-2xl text-sm font-black bg-gradient-to-r from-indigo-600 to-emerald-500 text-white shadow-xl shadow-indigo-600/30 hover:scale-[1.03] active:scale-[0.98] transition flex items-center gap-2"
+                        >
+                            <span>🎮</span>
+                            <span>Play Now (Action HQ)</span>
+                        </a>
+                    @else
+                        <a 
+                            href="{{ route('register') }}" 
+                            class="px-6 py-3 rounded-2xl text-sm font-black bg-gradient-to-r from-indigo-600 to-emerald-500 text-white shadow-xl shadow-indigo-600/30 hover:scale-[1.03] active:scale-[0.98] transition flex items-center gap-2"
+                        >
+                            <span>🎮</span>
+                            <span>Join Mission (Create Player)</span>
+                        </a>
+                    @endauth
                     <a 
-                        href="{{ route('simulate') }}" 
-                        class="px-6 py-3 rounded-2xl text-sm font-bold bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 transition flex items-center gap-2"
-                        title="Explore the 15-Year Simulation without registering (Shared Daily SQLite Database)"
+                        href="#rules" 
+                        class="px-5 py-3 rounded-2xl text-sm font-bold bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 transition flex items-center gap-2"
                     >
-                        <span>⏱️</span>
-                        <span>Explore Simulation (Guest Mode)</span>
-                    </a>
-                    <a 
-                        href="#story" 
-                        class="px-6 py-3 rounded-2xl text-sm font-bold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800/80 transition flex items-center gap-2"
-                    >
-                        <span>📜</span>
-                        <span>Read the Story & Rules</span>
+                        <span>⚡</span>
+                        <span>Jump to Rules Matrix</span>
                     </a>
                 </div>
 
@@ -264,8 +302,8 @@
                 </div>
             </div>
 
-            <!-- Logo Art Card Feature -->
-            <div class="flex-1 w-full max-w-xl relative group">
+            <!-- Desktop-Only Logo Art Card Feature -->
+            <div class="hidden lg:block flex-1 w-full max-w-md xl:max-w-lg lg:pt-1 relative group self-start">
                 <div class="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-amber-500/30 via-emerald-500/30 to-indigo-600/40 blur-xl opacity-75 group-hover:opacity-100 transition duration-700"></div>
                 <div class="relative rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900/90 backdrop-blur-md p-3">
                     <img 
@@ -273,20 +311,21 @@
                         alt="Nagoya Oikos: The Four Fields Official Logo Artwork" 
                         class="w-full h-auto rounded-2xl object-cover shadow-inner"
                     >
-                   
                 </div>
             </div>
         </section>
 
         <!-- SECTION 1: THE STORY & SPIRITUAL CONTEXT -->
-        <section id="story" class="space-y-8 scroll-mt-24">
-            <div class="text-center max-w-3xl mx-auto space-y-3">
-                <span class="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center justify-center gap-1.5">
+        <section id="story" class="space-y-8 scroll-mt-24 sm:scroll-mt-28">
+            <div class="sticky top-16 sm:top-20 z-30 py-3 sm:py-3.5 px-4 sm:px-6 rounded-2xl sm:rounded-3xl bg-slate-50/95 dark:bg-slate-950/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 shadow-lg dark:shadow-2xl dark:shadow-black/60 space-y-1 sm:space-y-1.5 text-center">
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[11px] font-bold uppercase tracking-wider">
                     <span>📖</span>
-                    <span>The Background Lore & Narrative</span>
-                </span>
-                <h2 class="text-3xl sm:text-4xl font-black text-white">The Cry of Nagoya & The Apostolic Vision</h2>
-                <p class="text-sm text-slate-400">
+                    <span>Chapter 1 &bull; Lore &amp; Narrative</span>
+                </div>
+                <h2 class="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                    The Cry of Nagoya &amp; The Apostolic Vision
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto hidden sm:block">
                     Why Nagoya? Why Relational Movements? Understanding the biblical foundation of No Place Left.
                 </p>
             </div>
@@ -337,15 +376,17 @@
         </section>
 
         <!-- SECTION 2: THE FOUR FIELDS FRAMEWORK (Mark 4:26-29) -->
-        <section id="four-fields" class="space-y-8 scroll-mt-24">
-            <div class="text-center max-w-3xl mx-auto space-y-3">
-                <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center justify-center gap-1.5">
+        <section id="four-fields" class="space-y-8 scroll-mt-24 sm:scroll-mt-28">
+            <div class="sticky top-16 sm:top-20 z-30 py-3 sm:py-3.5 px-4 sm:px-6 rounded-2xl sm:rounded-3xl bg-slate-50/95 dark:bg-slate-950/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 shadow-lg dark:shadow-2xl dark:shadow-black/60 space-y-1 sm:space-y-1.5 text-center">
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[11px] font-bold uppercase tracking-wider">
                     <span>🌱</span>
-                    <span>The Ministry Engine</span>
-                </span>
-                <h2 class="text-3xl sm:text-4xl font-black text-white">The 5 Fields of Kingdom Multiplication</h2>
-                <p class="text-sm text-slate-400">
-                    Based on Jesus' parable of the growing seed in Mark 4:26-29, every healthy movement moves systematically through five distinct phases.
+                    <span>Chapter 2 &bull; The Ministry Engine</span>
+                </div>
+                <h2 class="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                    The 5 Fields of Kingdom Multiplication
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto hidden sm:block">
+                    Based on Jesus&rsquo; parable of the growing seed in Mark 4:26-29, every healthy movement moves systematically through five distinct phases.
                 </p>
             </div>
 
@@ -440,15 +481,17 @@
             </div>
         </section>
 
-        <!-- SECTION 2.5: THE 5 LEVELS OF LEADERSHIP TRAINING & COACHING TOOLBOX -->
-        <section id="toolbox" class="space-y-8 scroll-mt-24">
-            <div class="text-center max-w-3xl mx-auto space-y-3">
-                <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest flex items-center justify-center gap-1.5">
+        <!-- SECTION 3: THE 5 LEVELS OF LEADERSHIP TRAINING & COACHING TOOLBOX -->
+        <section id="toolbox" class="space-y-8 scroll-mt-24 sm:scroll-mt-28">
+            <div class="sticky top-16 sm:top-20 z-30 py-3 sm:py-3.5 px-4 sm:px-6 rounded-2xl sm:rounded-3xl bg-slate-50/95 dark:bg-slate-950/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 shadow-lg dark:shadow-2xl dark:shadow-black/60 space-y-1 sm:space-y-1.5 text-center">
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 text-[11px] font-bold uppercase tracking-wider">
                     <span>🧰</span>
-                    <span>Movement Leadership Matrix</span>
-                </span>
-                <h2 class="text-3xl sm:text-4xl font-black text-white">5 Levels of Leadership Training & Coaching Toolbox</h2>
-                <p class="text-sm text-slate-400">
+                    <span>Chapter 3 &bull; Leadership Toolbox</span>
+                </div>
+                <h2 class="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                    5 Levels of Leadership Training &amp; Coaching Toolbox
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto hidden sm:block">
                     A comprehensive framework to identify, train, coach, and multiply Japanese Christian workers from first-time seed sowers to regional strategy coordinators.
                 </p>
             </div>
@@ -632,16 +675,18 @@
             </div>
         </section>
 
-        <!-- SECTION 3: GAME RULES & SIMULATION MECHANICS -->
-        <section id="rules" class="space-y-8 scroll-mt-24">
-            <div class="text-center max-w-3xl mx-auto space-y-3">
-                <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest flex items-center justify-center gap-1.5">
+        <!-- SECTION 4: GAME RULES & SIMULATION MECHANICS -->
+        <section id="rules" class="space-y-8 scroll-mt-24 sm:scroll-mt-28">
+            <div class="sticky top-16 sm:top-20 z-30 py-3 sm:py-3.5 px-4 sm:px-6 rounded-2xl sm:rounded-3xl bg-slate-50/95 dark:bg-slate-950/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 shadow-lg dark:shadow-2xl dark:shadow-black/60 space-y-1 sm:space-y-1.5 text-center">
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-[11px] font-bold uppercase tracking-wider">
                     <span>⚡</span>
-                    <span>Game Mechanics</span>
-                </span>
-                <h2 class="text-3xl sm:text-4xl font-black text-white">How the Game Operates & How to Win</h2>
-                <p class="text-sm text-slate-400">
-                    Mastering Action Points, daily relational ripples, and multiplayer cooperative synergy.
+                    <span>Chapter 4 &bull; Comprehensive Rules Matrix</span>
+                </div>
+                <h2 class="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                    How the Game Operates &amp; How to Win
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto hidden sm:block">
+                    Mastering Action Points, commuting friction, spiritual rhythms, candidate screening, and cooperative synergy.
                 </p>
             </div>
 
@@ -1427,7 +1472,7 @@
                     </p>
                     <div class="pt-1 flex flex-wrap items-center gap-2">
                         <a
-                            href="{{ route('home', ['showcase' => 1]) }}"
+                            href="{{ route('dashboard', ['showcase' => 1]) }}"
                             class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border border-amber-500/40 transition cursor-pointer"
                         >
                             <span>⏱️</span>
@@ -1438,15 +1483,17 @@
             </div>
         </section>
 
-        <!-- SECTION 4: 16 WARDS OF NAGOYA OVERVIEW -->
-        <section id="wards" class="space-y-8 scroll-mt-24">
-            <div class="text-center max-w-3xl mx-auto space-y-3">
-                <span class="text-xs font-bold text-purple-400 uppercase tracking-widest flex items-center justify-center gap-1.5">
+        <!-- SECTION 5: 16 WARDS OF NAGOYA OVERVIEW -->
+        <section id="wards" class="space-y-8 scroll-mt-24 sm:scroll-mt-28">
+            <div class="sticky top-16 sm:top-20 z-30 py-3 sm:py-3.5 px-4 sm:px-6 rounded-2xl sm:rounded-3xl bg-slate-50/95 dark:bg-slate-950/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 shadow-lg dark:shadow-2xl dark:shadow-black/60 space-y-1 sm:space-y-1.5 text-center">
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 text-[11px] font-bold uppercase tracking-wider">
                     <span>🗾</span>
-                    <span>The Mission Field</span>
-                </span>
-                <h2 class="text-3xl sm:text-4xl font-black text-white">Nagoya's 16 Diverse Wards</h2>
-                <p class="text-sm text-slate-400">
+                    <span>Chapter 5 &bull; The Mission Field</span>
+                </div>
+                <h2 class="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                    Nagoya&rsquo;s 16 Diverse Wards
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto hidden sm:block">
                     Each ward has its own distinct demographics, spiritual openness index, and poverty/need dynamics.
                 </p>
             </div>
@@ -1500,7 +1547,7 @@
                     </div>
                 </div>
                 <a 
-                    href="{{ route('home') }}" 
+                    href="{{ route('dashboard') }}" 
                     class="shrink-0 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition flex items-center gap-1.5 cursor-pointer"
                 >
                     <span>🧭</span>
@@ -1509,16 +1556,22 @@
             </div>
         </section>
 
-        <!-- SECTION 5: QUICK START CHECKLIST FOR NEW MISSIONARIES -->
-        <section id="quickstart" class="scroll-mt-24 p-8 sm:p-12 rounded-3xl bg-gradient-to-tr from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 shadow-2xl space-y-8">
-            <div class="text-center max-w-2xl mx-auto space-y-2">
-                <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center justify-center gap-1.5">
+        <!-- SECTION 6: QUICK START CHECKLIST FOR NEW MISSIONARIES -->
+        <section id="quickstart" class="space-y-8 scroll-mt-24 sm:scroll-mt-28">
+            <div class="sticky top-16 sm:top-20 z-30 py-3 sm:py-3.5 px-4 sm:px-6 rounded-2xl sm:rounded-3xl bg-slate-50/95 dark:bg-slate-950/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 shadow-lg dark:shadow-2xl dark:shadow-black/60 space-y-1 sm:space-y-1.5 text-center">
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[11px] font-bold uppercase tracking-wider">
                     <span>🚀</span>
-                    <span>Quick-Start Walkthrough</span>
-                </span>
-                <h3 class="text-2xl sm:text-3xl font-black text-white">Your First 6 Steps in Nagoya</h3>
-                <p class="text-xs sm:text-sm text-slate-400">Follow this simple roadmap to establish your base and multiply indigenous churches.</p>
+                    <span>Chapter 6 &bull; Quick-Start Roadmap</span>
+                </div>
+                <h2 class="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                    Your First 6 Steps in Nagoya
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto hidden sm:block">
+                    Follow this simple roadmap to establish your base and multiply indigenous churches.
+                </p>
             </div>
+
+            <div class="p-8 sm:p-12 rounded-3xl bg-gradient-to-tr from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 shadow-2xl space-y-8">
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3.5 text-left text-xs">
                 <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-indigo-500/50 space-y-2">
@@ -1560,7 +1613,7 @@
 
             <div class="pt-4 text-center">
                 <a 
-                    href="{{ route('home') }}" 
+                    href="{{ route('dashboard') }}" 
                     class="inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-sm font-black bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-500 text-white shadow-2xl shadow-indigo-600/30 hover:scale-105 active:scale-[0.98] transition cursor-pointer"
                 >
                     <span>⚡</span>

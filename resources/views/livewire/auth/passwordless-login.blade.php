@@ -4,7 +4,7 @@
 
     <!-- Top Floating Header Bar -->
     <header class="absolute top-0 left-0 right-0 p-6 flex items-center justify-between max-w-7xl mx-auto w-full">
-        <a href="{{ route('welcome') }}" class="flex items-center gap-3 group">
+        <a href="{{ url('/') }}" class="flex items-center gap-3 group" title="Return to Movement Invitation">
             <img 
                 src="{{ asset('images/until-no-place-left-logo-small.png') }}" 
                 alt="Nagoya Oikos Logo" 
@@ -17,6 +17,15 @@
         </a>
 
         <div class="flex items-center gap-2">
+            <a 
+                href="{{ url('/') }}" 
+                class="text-xs font-bold text-amber-400 hover:text-amber-300 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 transition flex items-center gap-1.5"
+                title="Return to Movement Invitation"
+            >
+                <span>←</span>
+                <span class="hidden sm:inline">Invitation</span>
+            </a>
+
             <!-- Theme Mode Toggle Button (Light/Dark) -->
             <button 
                 wire:ignore
@@ -43,7 +52,7 @@
                 class="text-xs font-bold text-slate-400 hover:text-white px-3.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 transition flex items-center gap-1.5"
             >
                 <span>📖</span>
-                <span>Story & Rules</span>
+                <span>Game Rules</span>
             </a>
         </div>
     </header>

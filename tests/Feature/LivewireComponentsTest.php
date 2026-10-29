@@ -69,6 +69,10 @@ test('home route renders full page dashboard without layout error', function () 
     $response = $this->actingAs($user)->get('/');
     $response->assertStatus(200);
     $response->assertSee('Nagoya Oikos');
+
+    $dashboardResponse = $this->actingAs($user)->get('/dashboard');
+    $dashboardResponse->assertStatus(200);
+    $dashboardResponse->assertSee('Nagoya Oikos');
 });
 
 test('welcome route renders full story and game rules page', function () {

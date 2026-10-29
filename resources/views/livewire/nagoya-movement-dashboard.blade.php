@@ -3,7 +3,7 @@
     <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-md transition-colors duration-200">
         <div class="max-w-7xl 2xl:max-w-[1536px] mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-3">
             <!-- Brand & Game Title (Clean, minimal, no subheaders) -->
-            <a href="{{ route('welcome') }}" class="flex items-center gap-2.5 group cursor-pointer shrink-0" title="Nagoya Oikos - Movement Simulation">
+            <a href="{{ url('/') }}" class="flex items-center gap-2.5 group cursor-pointer shrink-0" title="Nagoya Oikos - Movement Invitation">
                 <img 
                     src="{{ asset('images/until-no-place-left-logo-small.png') }}" 
                     alt="Nagoya Oikos Logo" 
