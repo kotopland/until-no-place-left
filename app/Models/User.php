@@ -578,6 +578,7 @@ class User extends Authenticatable
         $this->update([
             'last_active_at' => now(),
             'last_played_real_date' => $today,
+            'weeks_played_today' => $isNewRealDay ? 0 : $this->weeks_played_today,
             'days_played_today' => $isNewRealDay ? 0 : $this->days_played_today,
         ]);
     }

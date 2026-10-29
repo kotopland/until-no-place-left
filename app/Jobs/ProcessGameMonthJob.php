@@ -16,18 +16,13 @@ class ProcessGameMonthJob implements ShouldQueue
     use Queueable;
 
     /**
-     * The name of the queue the job should be sent to.
-     *
-     * @var string|null
-     */
-    public $queue = 'game-engine';
-
-    /**
      * Create a new job instance.
      */
     public function __construct(
         public GameSession $session
-    ) {}
+    ) {
+        $this->onQueue('game-engine');
+    }
 
     /**
      * Execute the job.

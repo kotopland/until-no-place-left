@@ -25,7 +25,8 @@ Schedule::command(ProcessWeeklyTickCommand::class)
  * Runs once every 24 hours (or at scheduled interval) to batch-process all remaining days
  * in the 30-day month along with autonomous disciple and church multiplication.
  */
-Schedule::command(ProcessGameMonthCommand::class)
-    ->dailyAt('00:00')->timezone('Asia/Tokyo')
+Schedule::command(ProcessGameMonthCommand::class, ['--force'])
+    ->dailyAt('00:00')
+    ->timezone('Asia/Tokyo')
     ->withoutOverlapping()
     ->runInBackground();

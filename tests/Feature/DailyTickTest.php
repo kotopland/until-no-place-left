@@ -9,9 +9,11 @@ use App\Models\Npc;
 use App\Models\QueuedMonthlyAction;
 use App\Models\User;
 use App\Models\Ward;
+use App\Notifications\MonthlyMovementReportNotification;
 use App\Services\FourFieldsEngine;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Notification;
 
 uses(RefreshDatabase::class);
 
@@ -280,4 +282,64 @@ test('process daily tick command executes successfully via artisan', function ()
     $session->refresh();
     expect($session->current_game_week)->toBe(2)
         ->and($session->weeks_processed_this_month)->toBe(1);
+});
+
+test('daily play limit and midnight month resolution align with Asia/Tokyo timezone', function () {
+    expect(config('app.timezone'))->toBe('Asia/Tokyo');
+
+    // 08:30 JST (23:30 UTC previous day)
+    $this->travelTo(now('Asia/Tokyo')->setDate(2026, 10, 29)->setTime(8, 30, 0));
+
+    $session = GameSession::create([
+        'name' => 'Tokyo Timezone Session',
+        'code' => 'tokyo-tz-1',
+        'current_game_month' => 1,
+        'current_game_week' => 4,
+        'weeks_processed_this_month' => 4,
+        'calendar_date' => '2026-04-01',
+        'month_duration_minutes' => 720,
+        'next_tick_at' => now()->addHours(12),
+        'is_active' => true,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'current_game_month' => 1,
+        'current_game_week' => 4,
+        'weeks_processed_this_month' => 4,
+        'weeks_played_today' => 4,
+        'days_played_today' => 4,
+        'last_played_real_date' => now()->startOfDay(),
+    ]);
+
+    Notification::fake([MonthlyMovementReportNotification::class]);
+
+    expect($user->isPlayedToday())->toBeTrue()
+        ->and($user->hasReachedDailyPlayLimit)->toBeTrue();
+
+    // Cross 09:00 JST (00:00 UTC) - still the same calendar day in Tokyo!
+    $this->travelTo(now('Asia/Tokyo')->setDate(2026, 10, 29)->setTime(9, 30, 0));
+
+    expect($user->fresh()->isPlayedToday())->toBeTrue()
+        ->and($user->fresh()->hasReachedDailyPlayLimit)->toBeTrue();
+
+    // Cross 00:00 JST midnight into Oct 30 and run scheduled game:process-month --force
+    $this->travelTo(now('Asia/Tokyo')->setDate(2026, 10, 30)->setTime(0, 0, 0));
+    $session->update(['next_tick_at' => now()->addHours(6)]); // Even if session was created 6h ago
+
+    $exitCode = Artisan::call('game:process-month', ['--force' => true]);
+
+    expect($exitCode)->toBe(0);
+
+    $session->refresh();
+    $user->refresh();
+
+    expect($session->current_game_month)->toBe(2)
+        ->and($user->current_game_month)->toBe(2)
+        ->and($user->weeks_played_today)->toBe(0)
+        ->and($user->hasReachedDailyPlayLimit)->toBeFalse();
+
+    Notification::assertSentTo($user, MonthlyMovementReportNotification::class);
+
+    $this->travelBack();
 });

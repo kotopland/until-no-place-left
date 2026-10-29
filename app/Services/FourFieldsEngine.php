@@ -537,7 +537,10 @@ class FourFieldsEngine
             foreach ($participatingUsers as $user) {
                 // If a player has already changed their month today ahead of the session, do NOT change it to the next one!
                 if ($user->hasChangedMonthToday && $user->current_game_month > $gameMonth) {
-                    $user->update(['days_played_today' => 0]);
+                    $user->update([
+                        'weeks_played_today' => 0,
+                        'days_played_today' => 0,
+                    ]);
 
                     continue;
                 }
