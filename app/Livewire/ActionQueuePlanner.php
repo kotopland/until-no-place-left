@@ -1012,6 +1012,17 @@ class ActionQueuePlanner extends Component
                 ->exists()
             : false;
 
+        $hasExistingActionsThisWeek = $this->player
+            ? QueuedMonthlyAction::where('user_id', $this->player->id)
+                ->where('game_month', $currentMonth)
+                ->where(function ($q) use ($currentWeek, $currentDay) {
+                    $q->where('game_week', $currentWeek)
+                        ->orWhere('game_day', $currentDay);
+                })
+                ->where('status', QueuedActionStatus::Pending)
+                ->exists()
+            : false;
+
         $playerAp = $this->player->action_points ?? 0;
 
         $workerRhythmStatuses = [
@@ -1046,9 +1057,9 @@ class ActionQueuePlanner extends Component
                 'duration' => 1,
                 'points' => 100,
                 'active' => $activeWorkerRhythm?->action_type === MinistryActionType::FastingRetreat,
-                'eligible' => ! $isDayBlocked && ! $hasFastingThisMonth && ($currentWeek <= 4),
-                'allowed' => ! $isDayBlocked && ! $hasFastingThisMonth && ($currentWeek <= 4),
-                'reason' => $isDayBlocked ? 'Worker is already on a retreat/activity this week.' : ($hasFastingThisMonth ? 'Fasting Retreat can only be joined once per month.' : ($currentWeek > 4 ? 'All 4 weeks of Month '.$currentMonth.' have been completed.' : null)),
+                'eligible' => ! $isDayBlocked && ! $hasFastingThisMonth && ($currentWeek <= 4) && ! $hasExistingActionsThisWeek,
+                'allowed' => ! $isDayBlocked && ! $hasFastingThisMonth && ($currentWeek <= 4) && ! $hasExistingActionsThisWeek,
+                'reason' => $isDayBlocked ? 'Worker is already on a retreat/activity this week.' : ($hasExistingActionsThisWeek ? "Week {$currentWeek} already has scheduled actions. Retreat requires a dedicated, empty week." : ($hasFastingThisMonth ? 'Fasting Retreat can only be joined once per month.' : ($currentWeek > 4 ? 'All 4 weeks of Month '.$currentMonth.' have been completed.' : null))),
             ],
             MinistryActionType::MidLevelConference->value => [
                 'actionType' => MinistryActionType::MidLevelConference,
@@ -1057,9 +1068,9 @@ class ActionQueuePlanner extends Component
                 'duration' => 1,
                 'points' => 75,
                 'active' => $activeWorkerRhythm?->action_type === MinistryActionType::MidLevelConference,
-                'eligible' => ! $isDayBlocked && ! $hasMidLevelThisMonth && ($currentWeek <= 4),
-                'allowed' => ! $isDayBlocked && ! $hasMidLevelThisMonth && ($currentWeek <= 4),
-                'reason' => $isDayBlocked ? 'Worker is already on a retreat/activity this week.' : ($hasMidLevelThisMonth ? 'NPL Mid-Level Conference can only be joined once per month.' : ($currentWeek > 4 ? 'All 4 weeks of Month '.$currentMonth.' have been completed.' : null)),
+                'eligible' => ! $isDayBlocked && ! $hasMidLevelThisMonth && ($currentWeek <= 4) && ! $hasExistingActionsThisWeek,
+                'allowed' => ! $isDayBlocked && ! $hasMidLevelThisMonth && ($currentWeek <= 4) && ! $hasExistingActionsThisWeek,
+                'reason' => $isDayBlocked ? 'Worker is already on a retreat/activity this week.' : ($hasExistingActionsThisWeek ? "Week {$currentWeek} already has scheduled actions. Conference requires a dedicated, empty week." : ($hasMidLevelThisMonth ? 'NPL Mid-Level Conference can only be joined once per month.' : ($currentWeek > 4 ? 'All 4 weeks of Month '.$currentMonth.' have been completed.' : null))),
             ],
             MinistryActionType::SupporterLetterAndAdmin->value => [
                 'actionType' => MinistryActionType::SupporterLetterAndAdmin,

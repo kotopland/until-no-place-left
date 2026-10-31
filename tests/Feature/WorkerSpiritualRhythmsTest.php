@@ -259,3 +259,27 @@ test('enforces frequency limits and month boundary limits on worker rhythms', fu
 
     expect(QueuedMonthlyAction::where('user_id', $this->user->id)->count())->toBe(0);
 });
+
+test('fasting retreat and mid-level conference are marked ineligible when actions are already scheduled in current week', function () {
+    QueuedMonthlyAction::create([
+        'user_id' => $this->user->id,
+        'ward_id' => $this->ward->id,
+        'game_session_id' => $this->session->id,
+        'game_month' => 1,
+        'game_week' => 1,
+        'game_day' => 1,
+        'action_type' => MinistryActionType::SabbathRest,
+        'ap_cost' => 4,
+        'status' => 'pending',
+    ]);
+
+    $component = Livewire::actingAs($this->user)
+        ->test(ActionQueuePlanner::class);
+
+    $statuses = $component->viewData('workerRhythmStatuses');
+
+    expect($statuses[MinistryActionType::FastingRetreat->value]['eligible'])->toBeFalse()
+        ->and($statuses[MinistryActionType::FastingRetreat->value]['reason'])->toContain('already has scheduled actions')
+        ->and($statuses[MinistryActionType::MidLevelConference->value]['eligible'])->toBeFalse()
+        ->and($statuses[MinistryActionType::MidLevelConference->value]['reason'])->toContain('already has scheduled actions');
+});
