@@ -616,6 +616,24 @@ class ActionQueuePlanner extends Component
 
                 return;
             }
+        } elseif ($rhythmEnum === MinistryActionType::SupporterLetterAndAdmin) {
+            $recentLetter = QueuedMonthlyAction::where('user_id', $this->player->id)
+                ->where('game_month', $currentMonth)
+                ->where('action_type', MinistryActionType::SupporterLetterAndAdmin)
+                ->where(function ($q) use ($currentWeek, $currentDay) {
+                    $q->where('game_week', $currentWeek)
+                        ->orWhere('game_day', $currentDay);
+                })
+                ->exists();
+
+            if ($recentLetter) {
+                $this->dispatch('notify', [
+                    'type' => 'error',
+                    'message' => 'Supporter prayer letter & admin can be scheduled at most once per week.',
+                ]);
+
+                return;
+            }
         } elseif ($rhythmEnum === MinistryActionType::FastingRetreat) {
             $hadFasting = QueuedMonthlyAction::where('user_id', $this->player->id)
                 ->where('game_month', $currentMonth)
@@ -969,6 +987,17 @@ class ActionQueuePlanner extends Component
                 ->first()
             : null;
 
+        $recentSupporterLetter = $this->player
+            ? QueuedMonthlyAction::where('user_id', $this->player->id)
+                ->where('game_month', $currentMonth)
+                ->where('action_type', MinistryActionType::SupporterLetterAndAdmin)
+                ->where(function ($q) use ($currentWeek, $currentDay) {
+                    $q->where('game_week', $currentWeek)
+                        ->orWhere('game_day', $currentDay);
+                })
+                ->first()
+            : null;
+
         $hasFastingThisMonth = $this->player
             ? QueuedMonthlyAction::where('user_id', $this->player->id)
                 ->where('game_month', $currentMonth)
@@ -1031,6 +1060,18 @@ class ActionQueuePlanner extends Component
                 'eligible' => ! $isDayBlocked && ! $hasMidLevelThisMonth && ($currentWeek <= 4),
                 'allowed' => ! $isDayBlocked && ! $hasMidLevelThisMonth && ($currentWeek <= 4),
                 'reason' => $isDayBlocked ? 'Worker is already on a retreat/activity this week.' : ($hasMidLevelThisMonth ? 'NPL Mid-Level Conference can only be joined once per month.' : ($currentWeek > 4 ? 'All 4 weeks of Month '.$currentMonth.' have been completed.' : null)),
+            ],
+            MinistryActionType::SupporterLetterAndAdmin->value => [
+                'actionType' => MinistryActionType::SupporterLetterAndAdmin,
+                'type' => MinistryActionType::SupporterLetterAndAdmin,
+                'ap_cost' => 2,
+                'days' => 1,
+                'duration' => 1,
+                'points' => 30,
+                'active' => $recentSupporterLetter !== null,
+                'eligible' => ! $isDayBlocked && ! $recentSupporterLetter && ($playerAp >= 2),
+                'allowed' => ! $isDayBlocked && ! $recentSupporterLetter && ($playerAp >= 2),
+                'reason' => $isDayBlocked ? 'Worker is already on a dedicated retreat this week.' : ($recentSupporterLetter ? 'Supporter prayer letter & admin has already been scheduled for this week.' : ($playerAp < 2 ? "Requires 2 AP bandwidth (you have {$playerAp} AP)." : null)),
             ],
         ];
 

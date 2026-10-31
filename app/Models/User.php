@@ -113,6 +113,10 @@ use Illuminate\Support\Str;
     'committed_to_language_training',
     'language_training_enrolled_month',
     'language_training_completed',
+    'last_prayer_letter_game_month',
+    'consecutive_admin_neglect_months',
+    'active_prayer_focus',
+    'prayer_shield_expires_at_month',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
@@ -154,10 +158,43 @@ class User extends Authenticatable
     }
 
     /**
-     * PHP 8.4 Property Hook: Effective weekly AP replenished taking into account overwork fatigue and language/cultural barrier handicap
+     * PHP 8.4 Property Hook: Effective weekly AP replenished taking into account overwork fatigue, language barrier, and admin clutter
      */
     public int $effectiveWeeklyActionPoints {
-        get => $this->is_burned_out ? 0 : max(2, $this->availableFieldWeeklyAp - $this->fatigue_penalty_ap);
+        get => $this->is_burned_out ? 0 : max(2, $this->availableFieldWeeklyAp - $this->fatigue_penalty_ap - $this->adminClutterPenaltyAp);
+    }
+
+    /**
+     * PHP 8.4 Property Hook: Action point deduction due to administrative neglect and supporter silence (2+ months)
+     */
+    public int $adminClutterPenaltyAp {
+        get => ($this->consecutive_admin_neglect_months ?? 0) >= 2 ? 1 : 0;
+    }
+
+    /**
+     * PHP 8.4 Property Hook: whether admin clutter penalty is active
+     */
+    public bool $hasAdminClutterPenalty {
+        get => ($this->consecutive_admin_neglect_months ?? 0) >= 2;
+    }
+
+    /**
+     * PHP 8.4 Property Hook: whether the player has active overseas prayer backing
+     */
+    public bool $hasOverseasPrayerShield {
+        get => ! empty($this->active_prayer_focus) && ($this->prayer_shield_expires_at_month === null || $this->current_game_month <= $this->prayer_shield_expires_at_month);
+    }
+
+    /**
+     * PHP 8.4 Property Hook: human-friendly label of active overseas prayer focus
+     */
+    public string $prayerFocusLabel {
+        get => match ($this->active_prayer_focus) {
+            'pioneering' => 'Pioneer Sowing (+15% Field 1/2)',
+            'family_shield' => 'Family Altar Shield (+15% Baptism)',
+            'timothy_multiplier' => 'Timothy Multiplier (+15% Leadership)',
+            default => 'General Overseas Prayer Shield',
+        };
     }
 
     /**
@@ -696,6 +733,10 @@ class User extends Authenticatable
             'committed_to_language_training' => 'boolean',
             'language_training_enrolled_month' => 'integer',
             'language_training_completed' => 'boolean',
+            'last_prayer_letter_game_month' => 'integer',
+            'consecutive_admin_neglect_months' => 'integer',
+            'active_prayer_focus' => 'string',
+            'prayer_shield_expires_at_month' => 'integer',
         ];
     }
 

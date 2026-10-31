@@ -122,11 +122,13 @@
                 <div class="border-l border-slate-200 dark:border-slate-800 pl-4 pr-2">
                     <div class="flex items-center justify-between text-xs mb-1">
                         <span class="text-slate-600 dark:text-slate-400 font-medium">Vitality:</span>
-                        <span class="font-bold ml-2 text-xs {{ $player?->is_burned_out ? 'text-rose-500' : (($player?->fatigue_penalty_ap ?? 0) > 0 ? 'text-amber-500' : 'text-emerald-500') }}">
+                        <span class="font-bold ml-2 text-xs {{ $player?->is_burned_out ? 'text-rose-500' : (($player?->fatigue_penalty_ap ?? 0) > 0 || ($player?->hasAdminClutterPenalty ?? false) ? 'text-amber-500' : 'text-emerald-500') }}">
                             @if($player?->is_burned_out)
                                 🚨 Burnout ({{ $player?->burnoutMonthsRemaining($player?->current_game_month) }}m leave)
                             @elseif(($player?->fatigue_penalty_ap ?? 0) > 0)
                                 ⚠️ -{{ $player->fatigue_penalty_ap }} AP Fatigue
+                            @elseif($player?->hasAdminClutterPenalty)
+                                📑 -1 AP Admin Clutter
                             @elseif(($player?->consecutive_exhaustion_weeks ?? $player?->consecutive_exhaustion_days ?? 0) > 0)
                                 ⚡ Overworked (Wk {{ $player?->consecutive_exhaustion_weeks ?? $player?->consecutive_exhaustion_days }})
                             @else
@@ -138,14 +140,38 @@
                         @php
                             $consecutiveWeeks = $player?->consecutive_exhaustion_weeks ?? $player?->consecutive_exhaustion_days ?? 0;
                             $fatigueWidth = $player?->is_burned_out ? 100 : min(100, ($consecutiveWeeks / 4) * 100);
-                            $fatigueBarColor = $player?->is_burned_out ? 'bg-rose-500 animate-pulse' : ($consecutiveWeeks >= 2 ? 'bg-amber-500' : 'bg-emerald-500');
+                            $fatigueBarColor = $player?->is_burned_out ? 'bg-rose-500 animate-pulse' : ($consecutiveWeeks >= 2 || ($player?->hasAdminClutterPenalty ?? false) ? 'bg-amber-500' : 'bg-emerald-500');
                         @endphp
                         <div class="h-full {{ $fatigueBarColor }} rounded-full transition-all duration-300" style="width: {{ $fatigueWidth }}%"></div>
                     </div>
                     <span class="text-[9px] text-slate-500 dark:text-slate-400 block mt-0.5 truncate max-w-[130px]">
-                        {{ $player?->is_burned_out ? 'Mandatory Sabbatical' : ($consecutiveWeeks ? $consecutiveWeeks.'w overwork without rest' : 'Sabbath rhythm active') }}
+                        @if($player?->is_burned_out)
+                            Mandatory Sabbatical
+                        @elseif($player?->hasAdminClutterPenalty)
+                            Neglected admin backlog
+                        @elseif($consecutiveWeeks)
+                            {{ $consecutiveWeeks }}w overwork without rest
+                        @else
+                            Sabbath rhythm active
+                        @endif
                     </span>
                 </div>
+
+                @if($player?->hasOverseasPrayerShield)
+                    <!-- Active Overseas Prayer Shield Indicator -->
+                    <div class="border-l border-slate-200 dark:border-slate-800 pl-4 pr-2">
+                        <div class="flex items-center justify-between text-xs mb-1">
+                            <span class="text-slate-600 dark:text-slate-400 font-medium">Prayer Shield:</span>
+                            <span class="font-bold text-xs text-indigo-500 ml-2">Active</span>
+                        </div>
+                        <span class="text-[10px] font-bold text-indigo-500 dark:text-indigo-400 block truncate max-w-[140px]" title="{{ $player->prayerFocusLabel }}">
+                            🛡️ {{ $player->prayerFocusLabel }}
+                        </span>
+                        <span class="text-[9px] text-slate-500 dark:text-slate-400 block mt-0.5">
+                            Thru Month {{ $player->prayer_shield_expires_at_month }}
+                        </span>
+                    </div>
+                @endif
 
                 <!-- Daily Real-Life Play Cap (4 Weeks Max) -->
                 <div class="border-l border-slate-200 dark:border-slate-800 pl-4 pr-2">
@@ -448,6 +474,10 @@
                                 @elseif($key === 'receive_mentoring')
                                     <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-950/70 text-indigo-300 border border-indigo-800/60">
                                         🤝 Senior Debrief
+                                    </span>
+                                @elseif($key === 'supporter_letter_admin')
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-950/70 text-cyan-300 border border-cyan-800/60">
+                                        ✉️ Supporter Care &amp; Admin
                                     </span>
                                 @endif
                                 <span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-900 text-slate-400 border border-slate-800">

@@ -127,7 +127,8 @@ class FourFieldsEngine
                     $burnedOutUntilMonth = null;
                     $consecutiveExhaustion = 0;
                     $fatiguePenalty = 0;
-                    $newAp = min($maxAp, $lockedUser->action_points + $baseWeeklyAp);
+                    $effectiveBaseAp = max(2, $baseWeeklyAp - $lockedUser->adminClutterPenaltyAp);
+                    $newAp = min($maxAp, $lockedUser->action_points + $effectiveBaseAp);
                 } else {
                     // Exhausted all weekly AP (remaining AP <= 1) without Sabbath:
                     $consecutiveExhaustion++;
@@ -141,7 +142,8 @@ class FourFieldsEngine
                     } else {
                         // Progressive fatigue penalty: reduces available AP next weeks (-2, -4, -6 AP)
                         $fatiguePenalty = ($consecutiveExhaustion - 1) * 2;
-                        $replenished = max(2, $baseWeeklyAp - $fatiguePenalty);
+                        $effectiveBaseAp = max(2, $baseWeeklyAp - $lockedUser->adminClutterPenaltyAp);
+                        $replenished = max(2, $effectiveBaseAp - $fatiguePenalty);
                         $effectiveMaxAp = max(2, $maxAp - $fatiguePenalty);
                         $newAp = min($effectiveMaxAp, $lockedUser->action_points + $replenished);
                     }
@@ -324,7 +326,8 @@ class FourFieldsEngine
                     $burnedOutUntilMonth = null;
                     $consecutiveExhaustion = 0;
                     $fatiguePenalty = 0;
-                    $newAp = min($maxAp, $user->action_points + $baseWeeklyAp);
+                    $effectiveBaseAp = max(2, $baseWeeklyAp - $user->adminClutterPenaltyAp);
+                    $newAp = min($maxAp, $user->action_points + $effectiveBaseAp);
                 } else {
                     if ($user->action_points <= 1) {
                         $consecutiveExhaustion++;
@@ -336,7 +339,8 @@ class FourFieldsEngine
                             $newAp = 0;
                         } else {
                             $fatiguePenalty = ($consecutiveExhaustion - 1) * 2;
-                            $replenished = max(2, $baseWeeklyAp - $fatiguePenalty);
+                            $effectiveBaseAp = max(2, $baseWeeklyAp - $user->adminClutterPenaltyAp);
+                            $replenished = max(2, $effectiveBaseAp - $fatiguePenalty);
                             $effectiveMaxAp = max(2, $maxAp - $fatiguePenalty);
                             $newAp = min($effectiveMaxAp, $user->action_points + $replenished);
                         }
@@ -870,6 +874,44 @@ class FourFieldsEngine
                 }
             }
 
+            // Evaluate Supporter Care & Field Administration status for this month
+            $didSupporterCareThisMonth = $pendingActions->where('user_id', $user->id)
+                ->contains(fn ($a) => $a->action_type === MinistryActionType::SupporterLetterAndAdmin)
+                || ($user->last_prayer_letter_game_month === $gameMonth);
+
+            $consecutiveAdminNeglect = $user->consecutive_admin_neglect_months ?? 0;
+            $activePrayerFocus = $user->active_prayer_focus;
+            $prayerShieldExpires = $user->prayer_shield_expires_at_month;
+
+            if ($didSupporterCareThisMonth) {
+                $consecutiveAdminNeglect = 0;
+                $prayerShieldExpires = $newMonth;
+
+                // Dynamic Positive Event: 25% chance of Sending Church Prayer Surge
+                if (mt_rand(1, 100) <= 25) {
+                    $autonomousHighlights[] = '🕊️ [OVERSEAS PRAYER SURGE] Partner sending churches held a 24-hour prayer vigil for your work in Nagoya! (+15 Co-Op Synergy).';
+                    $newCoopScore += 15;
+                }
+            } else {
+                $consecutiveAdminNeglect++;
+                if ($consecutiveAdminNeglect === 1) {
+                    $coachTips[] = [
+                        'user_id' => $user->id,
+                        'action' => 'Overseas Supporter Care & Admin',
+                        'tip' => 'Overseas partners have not received an update this month. Be sure to dispatch a prayer letter to maintain spiritual backing and keep your administration current.',
+                    ];
+                } elseif ($consecutiveAdminNeglect >= 2) {
+                    $activePrayerFocus = null;
+                    $prayerShieldExpires = null;
+                    $autonomousHighlights[] = "📑 [ADMIN CLUTTER & SUPPORTER SILENCE] 2+ months without administrative maintenance or prayer letters. A -1 AP weekly clutter penalty is active until 'Supporter Prayer Letter & Administration' is completed.";
+                    $coachTips[] = [
+                        'user_id' => $user->id,
+                        'action' => 'Administrative Backlog (-1 AP)',
+                        'tip' => 'Administrative backlogs, visa/financial paperwork, and supporter silence create friction. Queue "Supporter Prayer Letter & Administration" to clear the backlog.',
+                    ];
+                }
+            }
+
             $user->update([
                 'current_game_month' => $newMonth,
                 'current_game_week' => 1,
@@ -894,6 +936,9 @@ class FourFieldsEngine
                 'badges' => $badges,
                 'total_generational_score' => $newGenScore,
                 'coop_synergy_score' => $newCoopScore,
+                'consecutive_admin_neglect_months' => $consecutiveAdminNeglect,
+                'active_prayer_focus' => $activePrayerFocus,
+                'prayer_shield_expires_at_month' => $prayerShieldExpires,
             ]);
 
             // 5. Generate Monthly Report for this user
@@ -1032,6 +1077,10 @@ class FourFieldsEngine
             return $this->resolveMidLevelConference($action, $gameMonth);
         }
 
+        if ($action->action_type === MinistryActionType::SupporterLetterAndAdmin) {
+            return $this->resolveSupporterLetterAndAdmin($action, $gameMonth);
+        }
+
         if (! $npc) {
             return new ActionResolutionOutcome(
                 actionId: $action->id,
@@ -1070,6 +1119,13 @@ class FourFieldsEngine
             ->where('user_id', '!=', $user->id)
             ->get();
         $isCollaborative = $priorOtherContributions->isNotEmpty();
+
+        // Overseas Prayer Shield & Focus Buffs
+        $hasPrayerShield = $user->hasOverseasPrayerShield;
+        $prayerFocus = $user->active_prayer_focus;
+        $pioneeringBonus = ($hasPrayerShield && $prayerFocus === 'pioneering');
+        $familyShieldBonus = ($hasPrayerShield && $prayerFocus === 'family_shield');
+        $timothyMultiplierBonus = ($hasPrayerShield && $prayerFocus === 'timothy_multiplier');
 
         switch ($action->action_type) {
             case MinistryActionType::CasualTalk:
@@ -1725,6 +1781,41 @@ class FourFieldsEngine
             }
         }
 
+        // Apply Overseas Prayer Shield bonuses
+        if ($hasPrayerShield) {
+            if ($pioneeringBonus && in_array($action->action_type, [
+                MinistryActionType::CasualTalk,
+                MinistryActionType::DeepTalk,
+                MinistryActionType::PrayerForHealing,
+                MinistryActionType::MercyCareFoodBible,
+                MinistryActionType::Share15SecTestimony,
+                MinistryActionType::Share3Circles,
+            ], true)) {
+                if ($trustChange > 0) {
+                    $trustChange = (int) max(1, round($trustChange * 1.15));
+                }
+                $points = (int) round($points * 1.15);
+                $narrative .= ' [🛡️ Overseas Prayer Shield: Pioneer Sowing +15%!]';
+            } elseif ($familyShieldBonus && $action->action_type === MinistryActionType::CommitToBaptism) {
+                if ($trustChange > 0) {
+                    $trustChange += 8;
+                }
+                $points += 15;
+                $narrative .= ' [🛡️ Overseas Prayer Shield: Family Altar Protection +15%!]';
+            } elseif ($timothyMultiplierBonus && in_array($action->action_type, [
+                MinistryActionType::CommandsOfChrist,
+                MinistryActionType::SwordBibleStudy,
+                MinistryActionType::Train411,
+                MinistryActionType::ChurchCircles,
+                MinistryActionType::MentorTimothy,
+                MinistryActionType::IronOnIron,
+                MinistryActionType::SwarmTraining,
+            ], true)) {
+                $points = (int) round($points * 1.15);
+                $narrative .= ' [🛡️ Overseas Prayer Shield: Timothy Multiplication +15%!]';
+            }
+        }
+
         // Apply new trust level bounded 1-100
         $newTrust = (int) max(1, min(100, $prevTrust + $trustChange));
         $statusChanged = $newStatus !== $prevStatus;
@@ -2222,6 +2313,41 @@ class FourFieldsEngine
             collaboratorsImpacted: [],
             narrativeOutcome: "{$dayLabel}: Engaged in high-level strategic problem-solving at the No Place Left (NPL) Mid-Level conference. Analyzed generational lines, diagnosed movement bottlenecks, and established joint multiplication targets across Chubu.",
             pedagogicalTip: "A No Place Left (NPL) Mid-Level (or 'Midlevel') conference is a problem-solving and strategy retreat for active movement practitioners rather than an introductory training session. Teams address real field obstacles and establish clear reproduction pathways.",
+        );
+    }
+
+    /**
+     * Resolves worker drafting and dispatching monthly prayer letter and settling local administration.
+     */
+    protected function resolveSupporterLetterAndAdmin(QueuedMonthlyAction $action, int $gameMonth): ActionResolutionOutcome
+    {
+        $user = $action->user;
+        $points = 30;
+
+        $user->update([
+            'consecutive_admin_neglect_months' => 0,
+            'last_prayer_letter_game_month' => $gameMonth,
+            'active_prayer_focus' => $user->active_prayer_focus ?: 'pioneering',
+            'prayer_shield_expires_at_month' => $gameMonth + 1,
+        ]);
+
+        return new ActionResolutionOutcome(
+            actionId: $action->id,
+            actionType: $action->action_type,
+            userId: $user->id,
+            targetNpcId: null,
+            wardId: $action->ward_id,
+            trustChange: 0,
+            newTrustLevel: 0,
+            previousStatus: ReceptivityStatus::Green,
+            newStatus: ReceptivityStatus::Green,
+            statusChanged: false,
+            pointsAwarded: $points,
+            coopPointsAwarded: 15,
+            roleAssigned: null,
+            collaboratorsImpacted: [],
+            narrativeOutcome: 'Dedicated time to draft a transparent prayer letter to overseas partners, balanced mission financial receipts, and filed required ward documentation. Supporter trust fortified, administrative clutter prevented, and Overseas Prayer Shield renewed.',
+            pedagogicalTip: 'Paul and Barnabas faithfully gathered their sending church to report all that God had done through them (Acts 14:27). Consistent missionary administration and supporter communication anchor field labor in the global fellowship of prayer.',
         );
     }
 

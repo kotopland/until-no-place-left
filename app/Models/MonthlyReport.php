@@ -40,6 +40,8 @@ use Illuminate\Support\Carbon;
     'total_generational_score',
     'coach_tips_json',
     'read_at',
+    'prayer_letter_dispatched_at',
+    'selected_prayer_focus',
 ])]
 class MonthlyReport extends Model
 {
@@ -60,6 +62,13 @@ class MonthlyReport extends Model
     }
 
     /**
+     * PHP 8.4 Property Hook: Whether the player dispatched the prayer letter for this month
+     */
+    public bool $isPrayerLetterDispatched {
+        get => $this->prayer_letter_dispatched_at !== null;
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -76,6 +85,8 @@ class MonthlyReport extends Model
             'total_generational_score' => 'integer',
             'coach_tips_json' => 'array',
             'read_at' => 'datetime',
+            'prayer_letter_dispatched_at' => 'datetime',
+            'selected_prayer_focus' => 'string',
         ];
     }
 

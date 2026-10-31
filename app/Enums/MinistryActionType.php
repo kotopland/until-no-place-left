@@ -38,6 +38,7 @@ enum MinistryActionType: string
     case SabbathRest = 'sabbath_rest';
     case FastingRetreat = 'fasting_retreat';
     case MidLevelConference = 'midlevel_conference';
+    case SupporterLetterAndAdmin = 'supporter_letter_admin';
 
     /**
      * Display title of the action
@@ -66,6 +67,7 @@ enum MinistryActionType: string
             self::SabbathRest => 'Weekly Day of Rest (Sabbath)',
             self::FastingRetreat => '4-Day Fasting Retreat with Fellow Missionaries',
             self::MidLevelConference => '3-Day NPL Mid-Level Strategy Conference',
+            self::SupporterLetterAndAdmin => 'Supporter Prayer Letter & Administration',
         };
     }
 
@@ -96,6 +98,7 @@ enum MinistryActionType: string
             self::SabbathRest => '週ごとの安息日（シャバット・休息と礼拝）',
             self::FastingRetreat => '宣教師仲間との4日間断食祈祷リトリート',
             self::MidLevelConference => '3日間 NPLミッドレベル戦略会議（実践者課題解決）',
+            self::SupporterLetterAndAdmin => '支援者への祈りの手紙・事務連絡',
         };
     }
 
@@ -113,7 +116,7 @@ enum MinistryActionType: string
             self::ChurchCircles => 4,                       // Field 4: Healthy Church Formation
             self::MentorTimothy, self::IronOnIron, self::SwarmTraining => 5, // Field 5: Leadership Multiplication & Movement
             self::ReceiveMentoring, self::MidLevelConference => 5,
-            self::SabbathRest, self::FastingRetreat => 1,
+            self::SabbathRest, self::FastingRetreat, self::SupporterLetterAndAdmin => 1,
         };
     }
 
@@ -132,6 +135,7 @@ enum MinistryActionType: string
             self::SabbathRest => 'Worker Rhythm: Weekly Sabbath Rest',
             self::FastingRetreat => 'Worker Rhythm: 4-Day Fasting Retreat',
             self::MidLevelConference => 'Worker Strategy: 3-Day NPL Mid-Level Conference',
+            self::SupporterLetterAndAdmin => 'Worker Rhythm: Supporter Prayer Letter & Admin',
             default => match ($this->field()) {
                 1 => 'Field 1: Entry / Friendship',
                 2 => 'Field 2: Gospel Presentation',
@@ -159,6 +163,7 @@ enum MinistryActionType: string
             self::SabbathRest => 'Worker Care: Weekly Sabbath',
             self::FastingRetreat => 'All Levels: Prayer & Fasting',
             self::MidLevelConference => 'L4: Movement Trainer / L5: Strategy Coordinator',
+            self::SupporterLetterAndAdmin => 'Worker Stewardship & Operations',
         };
     }
 
@@ -186,6 +191,7 @@ enum MinistryActionType: string
             self::SwarmTraining => 4,
             self::SabbathRest => 4,
             self::ReceiveMentoring => 3,
+            self::SupporterLetterAndAdmin => 2,
             self::FastingRetreat, self::MidLevelConference => 0,
         };
     }
@@ -225,6 +231,7 @@ enum MinistryActionType: string
             self::SabbathRest => 'A dedicated weekly day of rest, worship, and abiding in Jesus Christ. Dedicates 4 AP of weekly bandwidth to rest, restoring soul and body, clearing exhaustion, and preventing burnout without blocking remaining field actions.',
             self::FastingRetreat => 'A dedicated 1-week corporate prayer and fasting retreat with fellow missionary co-laborers in Japan. Intercedes deeply for spiritual breakthrough and strongholds across Nagoya. Blocks time for other actions for this week.',
             self::MidLevelConference => 'A No Place Left (NPL) Mid-Level conference is a problem-solving and strategy retreat for active movement practitioners rather than an introductory training session. Practitioners map generations, diagnose bottlenecks, and align on apostolic breakthrough. Blocks time for other actions for this week.',
+            self::SupporterLetterAndAdmin => 'Draft and dispatch a monthly missionary prayer letter to overseas supporters, balance mission finances, and manage local administration. Restores overseas prayer backing (+10% spiritual breakthrough shield next month), prevents admin clutter fatigue, and awards co-op synergy points.',
         };
     }
 
@@ -255,6 +262,7 @@ enum MinistryActionType: string
             self::SabbathRest => '🕊️',
             self::FastingRetreat => '🔥',
             self::MidLevelConference => '🗺️',
+            self::SupporterLetterAndAdmin => '✉️',
         };
     }
 
@@ -265,7 +273,7 @@ enum MinistryActionType: string
     {
         return match ($this) {
             self::InternationalEvent, self::PrayerWalk,
-            self::ReceiveMentoring, self::SabbathRest, self::FastingRetreat, self::MidLevelConference => false,
+            self::ReceiveMentoring, self::SabbathRest, self::FastingRetreat, self::MidLevelConference, self::SupporterLetterAndAdmin => false,
             default => true,
         };
     }
@@ -286,7 +294,7 @@ enum MinistryActionType: string
 
         return match ($this) {
             // Worker Spiritual Rhythms: Never applied to an NPC
-            self::ReceiveMentoring, self::SabbathRest, self::FastingRetreat, self::MidLevelConference => false,
+            self::ReceiveMentoring, self::SabbathRest, self::FastingRetreat, self::MidLevelConference, self::SupporterLetterAndAdmin => false,
 
             // Field 1 Entry & Platform: Open to anyone (Unreached, Red, Yellow, Green, Leaders)
             self::CasualTalk, self::DeepTalk, self::PrayerForHealing, self::MercyCareFoodBible,
@@ -335,7 +343,7 @@ enum MinistryActionType: string
         }
 
         return match ($this) {
-            self::ReceiveMentoring, self::SabbathRest, self::FastingRetreat, self::MidLevelConference => 'This is a worker spiritual rhythm/retreat and is not scheduled for residents.',
+            self::ReceiveMentoring, self::SabbathRest, self::FastingRetreat, self::MidLevelConference, self::SupporterLetterAndAdmin => 'This is a worker spiritual rhythm/stewardship activity and is not scheduled for residents.',
             self::PrayerWalk => 'To invite someone to prayer walk together, build initial acquaintance through Casual Talk first (requires trust 20+, Yellow seeker, Person of Peace, or believer).',
             self::PraySalvation => 'Resident has already prayed the prayer of salvation and received Jesus Christ.',
             self::CommitToBaptism => 'People who have not yet accepted Jesus cannot commit to baptism. Share the Gospel (Field 2) first.',
@@ -358,7 +366,7 @@ enum MinistryActionType: string
     public function isWorkerRhythm(): bool
     {
         return match ($this) {
-            self::ReceiveMentoring, self::SabbathRest, self::FastingRetreat, self::MidLevelConference => true,
+            self::ReceiveMentoring, self::SabbathRest, self::FastingRetreat, self::MidLevelConference, self::SupporterLetterAndAdmin => true,
             default => false,
         };
     }
@@ -406,6 +414,7 @@ enum MinistryActionType: string
             self::SabbathRest => 25,
             self::FastingRetreat => 100,
             self::MidLevelConference => 75,
+            self::SupporterLetterAndAdmin => 30,
             default => 0,
         };
     }

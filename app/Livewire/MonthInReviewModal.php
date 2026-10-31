@@ -62,6 +62,48 @@ class MonthInReviewModal extends Component
         $this->isOpen = false;
     }
 
+    public function dispatchPrayerLetter(string $focus): void
+    {
+        if (! in_array($focus, ['pioneering', 'family_shield', 'timothy_multiplier'], true)) {
+            return;
+        }
+
+        $user = auth()->user() ?? User::first();
+        if (! $user) {
+            return;
+        }
+
+        if ($this->report) {
+            $this->report->update([
+                'prayer_letter_dispatched_at' => now(),
+                'selected_prayer_focus' => $focus,
+            ]);
+            $this->report->refresh();
+        }
+
+        $nextMonth = $this->report ? ($this->report->game_month + 1) : ($user->current_game_month + 1);
+
+        $user->update([
+            'last_prayer_letter_game_month' => $this->report?->game_month ?? $user->current_game_month,
+            'consecutive_admin_neglect_months' => 0,
+            'active_prayer_focus' => $focus,
+            'prayer_shield_expires_at_month' => $nextMonth,
+        ]);
+
+        $focusName = match ($focus) {
+            'pioneering' => 'Pioneer Sowing (+15% Field 1/2)',
+            'family_shield' => 'Family Altar Shield (+15% Baptism)',
+            'timothy_multiplier' => 'Timothy Multiplication (+15% Leadership)',
+            default => 'General Prayer Backing',
+        };
+
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => "✉️ Supporter Prayer Letter dispatched with {$focusName} focus! Overseas Prayer Shield active through Month {$nextMonth}.",
+        ]);
+        $this->dispatch('prayer-shield-activated');
+    }
+
     public function render(): View
     {
         return view('livewire.month-in-review-modal');

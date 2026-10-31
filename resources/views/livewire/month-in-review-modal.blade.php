@@ -89,6 +89,86 @@
                             </div>
                         </div>
                     @endif
+
+                    <!-- Overseas Supporter Prayer Letter & Focus Selection -->
+                    @if($report->isPrayerLetterDispatched)
+                        <div class="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-800/60 flex items-center justify-between gap-3 shadow-inner">
+                            <div class="flex items-center gap-3">
+                                <span class="text-2xl">✉️</span>
+                                <div>
+                                    <div class="text-xs font-bold text-emerald-300">
+                                        Month {{ $report->game_month }} Supporter Prayer Letter Dispatched
+                                    </div>
+                                    <div class="text-[11px] text-emerald-400/90 mt-0.5">
+                                        Overseas Prayer Shield Active: 
+                                        <strong>{{ match($report->selected_prayer_focus) {
+                                            'pioneering' => '🧭 Pioneer Sowing (+15% Field 1/2 Receptivity)',
+                                            'family_shield' => '🛡️ Family Altar Shield (+15% Baptism)',
+                                            'timothy_multiplier' => '👑 Timothy Multiplication (+15% Leadership)',
+                                            default => 'General Prayer Backing'
+                                        } }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-900/80 text-emerald-200 border border-emerald-700/80 shrink-0">
+                                ✓ Sent to Sending Base
+                            </span>
+                        </div>
+                    @else
+                        <div class="p-4 rounded-2xl bg-gradient-to-r from-indigo-950/60 via-slate-900 to-slate-950 border border-indigo-800/60 space-y-3 shadow-lg">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xl">✉️</span>
+                                    <div>
+                                        <h4 class="text-xs font-bold text-white uppercase tracking-wider">
+                                            Dispatch Supporter Letter &amp; Choose Next Month's Prayer Focus
+                                        </h4>
+                                        <p class="text-[11px] text-slate-300 mt-0.5">
+                                            Send this month's updates to your overseas partner churches and select your intercessory focus to activate your Overseas Prayer Shield:
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                                <button 
+                                    type="button" 
+                                    wire:click="dispatchPrayerLetter('pioneering')"
+                                    class="p-3 rounded-xl bg-slate-900/90 hover:bg-indigo-950/80 border border-slate-700/80 hover:border-indigo-400 text-left transition group cursor-pointer shadow-sm"
+                                >
+                                    <div class="text-lg mb-1">🧭</div>
+                                    <div class="text-xs font-bold text-white group-hover:text-indigo-300">Pioneer Sowing</div>
+                                    <div class="text-[10px] text-slate-400 mt-0.5 leading-snug">
+                                        +15% discovery &amp; receptivity on Field 1 &amp; 2 actions
+                                    </div>
+                                </button>
+
+                                <button 
+                                    type="button" 
+                                    wire:click="dispatchPrayerLetter('family_shield')"
+                                    class="p-3 rounded-xl bg-slate-900/90 hover:bg-emerald-950/80 border border-slate-700/80 hover:border-emerald-400 text-left transition group cursor-pointer shadow-sm"
+                                >
+                                    <div class="text-lg mb-1">🛡️</div>
+                                    <div class="text-xs font-bold text-white group-hover:text-emerald-300">Family Altar Shield</div>
+                                    <div class="text-[10px] text-slate-400 mt-0.5 leading-snug">
+                                        +15% baptism commitment success &amp; family peace
+                                    </div>
+                                </button>
+
+                                <button 
+                                    type="button" 
+                                    wire:click="dispatchPrayerLetter('timothy_multiplier')"
+                                    class="p-3 rounded-xl bg-slate-900/90 hover:bg-purple-950/80 border border-slate-700/80 hover:border-purple-400 text-left transition group cursor-pointer shadow-sm"
+                                >
+                                    <div class="text-lg mb-1">👑</div>
+                                    <div class="text-xs font-bold text-white group-hover:text-purple-300">Timothy Multiplier</div>
+                                    <div class="text-[10px] text-slate-400 mt-0.5 leading-snug">
+                                        +15% leadership growth in Field 4/5 discipleship
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Footer Action -->
