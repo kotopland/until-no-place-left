@@ -138,3 +138,28 @@ test('recent weekly developments card is displayed at top and opens modal for la
     $component->call('closeWeeklyDevelopmentsModal')
         ->assertSet('showWeeklyDevelopmentsModal', false);
 });
+
+test('player committed to intensive japanese language school does not see top banner text', function () {
+    $this->user->update([
+        'committed_to_language_training' => true,
+        'language_training_enrolled_month' => 1,
+        'language_training_completed' => false,
+    ]);
+
+    $this->actingAs($this->user);
+
+    Livewire::test(ActionQueuePlanner::class)
+        ->assertDontSee('New to Nagoya Oikos?')
+        ->assertDontSee('Explore the biblical narrative, the 5 Fields of CPM multiplication')
+        ->assertDontSee('Relational evangelization takes steady faithfulness')
+        ->assertSee('Intensive Japanese Language School & First-Level NPL Foundation');
+});
+
+test('chosen home ward is displayed under nagoya relational action hq header', function () {
+    $this->actingAs($this->user);
+
+    Livewire::test(ActionQueuePlanner::class)
+        ->assertSee('Nagoya Relational Action HQ')
+        ->assertSee('Home Ward:')
+        ->assertSee('Naka-ku');
+});

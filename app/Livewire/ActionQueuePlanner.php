@@ -80,6 +80,7 @@ class ActionQueuePlanner extends Component
     {
         $this->player = auth()->user() ?? $this->player ?? User::first();
         $this->player?->refresh();
+        $this->player?->loadMissing('homeWard');
         $this->session = $this->player->currentGameSession ?? $this->session ?? GameSession::first();
         $this->session?->refresh();
     }
@@ -88,7 +89,8 @@ class ActionQueuePlanner extends Component
     {
         $this->boot();
 
-        $this->hideWelcomeGuide = (bool) ($this->player?->hide_welcome_guide ?? session('hide_welcome_guide', false));
+        $isLanguageCommitted = (bool) ($this->player?->committed_to_language_training);
+        $this->hideWelcomeGuide = $isLanguageCommitted || (bool) ($this->player?->hide_welcome_guide ?? session('hide_welcome_guide', false));
 
         // Mark player active (online)
         $this->player?->touchActive();
@@ -102,7 +104,8 @@ class ActionQueuePlanner extends Component
     {
         $this->boot();
         $this->selectedActionType = null;
-        $this->hideWelcomeGuide = (bool) ($this->player?->hide_welcome_guide ?? session('hide_welcome_guide', false));
+        $isLanguageCommitted = (bool) ($this->player?->committed_to_language_training);
+        $this->hideWelcomeGuide = $isLanguageCommitted || (bool) ($this->player?->hide_welcome_guide ?? session('hide_welcome_guide', false));
     }
 
     public function toggleWelcomeGuide(): void

@@ -53,58 +53,60 @@
     @endif
 
     <!-- Welcome Guide Banner with Official Logo (Hideable) -->
-    @if($hideWelcomeGuide)
-        <div class="flex items-center justify-end">
-            <button 
-                type="button" 
-                wire:click="toggleWelcomeGuide"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900/60 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition cursor-pointer shadow-sm"
-                title="Show New to Nagoya Oikos guide"
-            >
-                <span>📖</span>
-                <span>New to Nagoya Oikos? Show Field Guide</span>
-            </button>
-        </div>
-    @else
-        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-100 via-indigo-50/60 to-slate-100 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 border border-slate-200 dark:border-slate-800/80 p-4 shadow-sm dark:shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div class="flex items-center gap-3.5">
-                <img 
-                    src="{{ asset('images/until-no-place-left-logo-small.png') }}" 
-                    alt="Nagoya Oikos Logo" 
-                    class="w-12 h-12 object-contain rounded-xl border border-indigo-500/30 shadow-md shrink-0"
-                >
-                <div>
-                    <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                        <span>New to Nagoya Oikos?</span>
-                        <span class="px-1.5 py-0.2 rounded bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-[10px] font-semibold border border-indigo-300 dark:border-indigo-700">Story & Field Guide</span>
-                    </h3>
-                    <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
-                        Explore the biblical narrative, the 5 Fields of CPM multiplication, and the rules of relational church planting in Japan.
-                    </p>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-2 self-start sm:self-center shrink-0">
-                <a 
-                    href="{{ route('welcome') }}" 
-                    class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400/40 transition shrink-0 flex items-center gap-1.5 cursor-pointer shadow"
-                >
-                    <span>📖</span>
-                    <span>Read Story & Rules</span>
-                </a>
+    @unless($player?->committed_to_language_training)
+        @if($hideWelcomeGuide)
+            <div class="flex items-center justify-end">
                 <button 
                     type="button" 
                     wire:click="toggleWelcomeGuide"
-                    class="px-2.5 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 transition cursor-pointer"
-                    title="Hide this welcome banner"
-                    aria-label="Hide welcome banner"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900/60 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition cursor-pointer shadow-sm"
+                    title="Show New to Nagoya Oikos guide"
                 >
-                    <span class="hidden sm:inline">Hide</span>
-                    <span>✕</span>
+                    <span>📖</span>
+                    <span>New to Nagoya Oikos? Show Field Guide</span>
                 </button>
             </div>
-        </div>
-    @endif
+        @else
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-100 via-indigo-50/60 to-slate-100 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 border border-slate-200 dark:border-slate-800/80 p-4 shadow-sm dark:shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3.5">
+                    <img 
+                        src="{{ asset('images/until-no-place-left-logo-small.png') }}" 
+                        alt="Nagoya Oikos Logo" 
+                        class="w-12 h-12 object-contain rounded-xl border border-indigo-500/30 shadow-md shrink-0"
+                    >
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <span>New to Nagoya Oikos?</span>
+                            <span class="px-1.5 py-0.2 rounded bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-[10px] font-semibold border border-indigo-300 dark:border-indigo-700">Story & Field Guide</span>
+                        </h3>
+                        <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
+                            Explore the biblical narrative, the 5 Fields of CPM multiplication, and the rules of relational church planting in Japan.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 self-start sm:self-center shrink-0">
+                    <a 
+                        href="{{ route('welcome') }}" 
+                        class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400/40 transition shrink-0 flex items-center gap-1.5 cursor-pointer shadow"
+                    >
+                        <span>📖</span>
+                        <span>Read Story & Rules</span>
+                    </a>
+                    <button 
+                        type="button" 
+                        wire:click="toggleWelcomeGuide"
+                        class="px-2.5 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 transition cursor-pointer"
+                        title="Hide this welcome banner"
+                        aria-label="Hide welcome banner"
+                    >
+                        <span class="hidden sm:inline">Hide</span>
+                        <span>✕</span>
+                    </button>
+                </div>
+            </div>
+        @endif
+    @endunless
 
     <!-- Recent Weekly Developments Banner (Click to open last 4 weeks modal) -->
     <div 
@@ -175,9 +177,31 @@
                         </span>
                     @endif
                 </div>
-                <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 font-medium leading-relaxed">
-                    Relational evangelization takes steady faithfulness. 1 Game Week processes every 15 min while online (max 4 weeks/day). Daily month ticks resolve autonomous multiplication!
-                </p>
+
+                <!-- Chosen Home Ward -->
+                <div class="flex flex-wrap items-center gap-2 mt-2">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/70">
+                        <span>🏡</span>
+                        <span>Home Ward:</span>
+                        <strong class="font-bold text-indigo-800 dark:text-indigo-200">
+                            {{ $player?->homeWard?->name ?? 'None' }}
+                            @if($player?->homeWard?->name_ja)
+                                <span class="font-normal opacity-85">({{ $player->homeWard->name_ja }})</span>
+                            @endif
+                        </strong>
+                    </span>
+                    @if($player?->homeWard?->district_type)
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                            • {{ $player->homeWard->district_type }}
+                        </span>
+                    @endif
+                </div>
+
+                @unless($player?->committed_to_language_training)
+                    <p class="text-xs text-slate-600 dark:text-slate-400 mt-1.5 font-medium leading-relaxed">
+                        Relational evangelization takes steady faithfulness. 1 Game Week processes every 15 min while online (max 4 weeks/day). Daily month ticks resolve autonomous multiplication!
+                    </p>
+                @endunless
             </div>
 
             <!-- AP Bandwidth Meter, Weekly Limit & Digital Countdown Clock -->
