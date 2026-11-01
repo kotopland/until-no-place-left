@@ -106,11 +106,18 @@ class GameSession extends Model
     }
 
     /**
+     * PHP 8.4 Property Hook: whether session has completed all 4 weeks of this game month
+     */
+    public bool $hasCompletedMonth {
+        get => $this->current_game_week > 4 || $this->weeks_processed_this_month >= 4 || $this->days_processed_this_month >= 30;
+    }
+
+    /**
      * PHP 8.4 Property Hook: whether the 15-minute weekly tick is due and within the 4-week month limit
      */
     public bool $isWeeklyTickDue {
         get {
-            if ($this->weeks_processed_this_month >= 4 && $this->days_processed_this_month >= 30) {
+            if ($this->hasCompletedMonth) {
                 return false;
             }
 

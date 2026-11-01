@@ -505,6 +505,20 @@
                 </button>
             </div>
 
+            @if($player?->hasCompletedMonth)
+                <div class="p-3.5 rounded-xl bg-indigo-50 dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800/60 flex items-center gap-3">
+                    <span class="text-2xl">🌙</span>
+                    <div>
+                        <div class="text-xs font-bold text-slate-900 dark:text-white">
+                            Month {{ $player?->current_game_month ?? 1 }} Complete (All 4 Weeks Resolved)
+                        </div>
+                        <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">
+                            All 4 weekly turns have completed for this month. New spiritual rhythms and retreats can be scheduled when Month {{ ($player?->current_game_month ?? 1) + 1 }} begins tonight at midnight!
+                        </p>
+                    </div>
+                </div>
+            @endif
+
             <!-- Active Retreat Notice Banner if currently time-blocked -->
             @if($isDayBlocked && $activeWorkerRhythm)
                 <div class="p-3.5 rounded-xl bg-amber-50 dark:bg-gradient-to-r dark:from-amber-950/40 dark:via-indigo-950/40 dark:to-slate-900 border border-amber-200 dark:border-amber-700/50 flex items-center justify-between gap-3 flex-wrap">
@@ -616,14 +630,32 @@
                                     </span>
                                 </button>
                             @else
-                                <button 
-                                    type="button" 
-                                    disabled
-                                    class="w-full py-1.5 px-3 rounded-lg text-[11px] font-medium bg-slate-900 text-slate-500 border border-slate-800/80 cursor-not-allowed text-center truncate"
-                                    title="{{ $status['reason'] }}"
-                                >
-                                    {{ $status['reason'] ?? 'Unavailable' }}
-                                </button>
+                                @if(in_array($key, ['fasting_retreat', 'midlevel_conference']) && ($status['hasExistingActions'] ?? false) && !($status['isMonthComplete'] ?? false) && !$isDayBlocked)
+                                    <button 
+                                        type="button" 
+                                        wire:click="dedicateWeekToRhythm('{{ $actionEnum->value }}')"
+                                        wire:loading.attr="disabled"
+                                        class="w-full py-1.5 px-3 rounded-lg text-[11px] font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-md transition cursor-pointer text-center"
+                                        title="Clear and refund all scheduled actions this week to dedicate the entire week to {{ $actionEnum->label() }}"
+                                    >
+                                        <span wire:loading.remove wire:target="dedicateWeekToRhythm('{{ $actionEnum->value }}')">
+                                            <span>⚡ Dedicate Week (Clear Actions)</span>
+                                        </span>
+                                        <span wire:loading wire:target="dedicateWeekToRhythm('{{ $actionEnum->value }}')" class="flex items-center justify-center gap-1">
+                                            <span class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                            <span>Dedicating...</span>
+                                        </span>
+                                    </button>
+                                @else
+                                    <button 
+                                        type="button" 
+                                        disabled
+                                        class="w-full py-1.5 px-3 rounded-lg text-[11px] font-medium bg-slate-900 text-slate-500 border border-slate-800/80 cursor-not-allowed text-center truncate"
+                                        title="{{ $status['reason'] }}"
+                                    >
+                                        {{ $status['reason'] ?? 'Unavailable' }}
+                                    </button>
+                                @endif
                             @endif
                         </div>
                     </div>
@@ -776,7 +808,11 @@
                 <span class="w-5 h-5 rounded-full bg-indigo-600 text-white font-extrabold text-[11px] flex items-center justify-center shadow-sm">3</span>
                 <div>
                     <span class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider block font-semibold leading-none">Step 3 • Action HQ</span>
-                    <span class="font-bold text-slate-900 dark:text-white leading-tight">Queue for Week {{ $player?->current_game_week ?? 1 }}</span>
+                    @if($player?->hasCompletedMonth)
+                        <span class="font-bold text-emerald-600 dark:text-emerald-400 leading-tight">Month {{ $player?->current_game_month ?? 1 }} Complete</span>
+                    @else
+                        <span class="font-bold text-slate-900 dark:text-white leading-tight">Queue for Week {{ $player?->current_game_week ?? 1 }}</span>
+                    @endif
                 </div>
             </div>
             <div class="flex items-center gap-1.5">
@@ -1595,13 +1631,23 @@
                             wire:click="queueAction"
                             @click="scrollToStep2()"
                             wire:loading.attr="disabled"
-                            @disabled($isDayBlocked || ! $hasEnoughApForSelected || ($player?->is_burned_out ?? false))
-                            class="w-full py-3 px-4 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-[0.99] {{ ($hasEnoughApForSelected && ! $isDayBlocked && ! ($player?->is_burned_out ?? false)) ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950 ring-2 ring-emerald-400/50 hover:scale-[1.01]' : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60' }}"
+                            @disabled($isDayBlocked || ! $hasEnoughApForSelected || ($player?->is_burned_out ?? false) || ($player?->hasCompletedMonth ?? false) || ($player?->hasReachedDailyPlayLimit ?? false))
+                            class="w-full py-3 px-4 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-[0.99] {{ ($hasEnoughApForSelected && ! $isDayBlocked && ! ($player?->is_burned_out ?? false) && ! ($player?->hasCompletedMonth ?? false) && ! ($player?->hasReachedDailyPlayLimit ?? false)) ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950 ring-2 ring-emerald-400/50 hover:scale-[1.01]' : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60' }}"
                         >
                             @if($player?->is_burned_out)
                                 <span class="flex items-center gap-1.5 text-rose-300">
                                     <span>🚨</span>
                                     <span>Mandatory Sabbatical: Burnout Recovery ({{ $player?->burnoutMonthsRemaining($player?->current_game_month) }}m left)</span>
+                                </span>
+                            @elseif($player?->hasCompletedMonth)
+                                <span class="flex items-center gap-1.5 text-slate-300">
+                                    <span>🌙</span>
+                                    <span>Month {{ $player?->current_game_month ?? 1 }} Complete • Resolving Tonight at Midnight</span>
+                                </span>
+                            @elseif($player?->hasReachedDailyPlayLimit)
+                                <span class="flex items-center gap-1.5 text-amber-300">
+                                    <span>🌙</span>
+                                    <span>Daily Limit Reached (4 Weeks Played Today)</span>
                                 </span>
                             @elseif($isDayBlocked)
                                 <span class="flex items-center gap-1.5 text-amber-300">
@@ -1636,7 +1682,13 @@
                             disabled 
                             class="w-full py-3 px-4 rounded-xl font-bold text-xs bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60"
                         >
-                            Select an Action Above to Queue for Week {{ $player?->current_game_week ?? 1 }}
+                            @if($player?->hasCompletedMonth)
+                                Month {{ $player?->current_game_month ?? 1 }} Complete • All 4 Weeks Resolved
+                            @elseif($player?->hasReachedDailyPlayLimit)
+                                Daily Limit Reached • Next Month Starts Tonight at Midnight
+                            @else
+                                Select an Action Above to Queue for Week {{ $player?->current_game_week ?? 1 }}
+                            @endif
                         </button>
                     @endif
 
@@ -1666,9 +1718,21 @@
                             </h3>
                             <p class="text-[10px] text-slate-500 dark:text-slate-400">Executes immediately when turning to Week {{ min(4, ($player?->current_game_week ?? 1) + 1) }}</p>
                         </div>
-                        <span class="px-2 py-0.5 rounded text-[10px] bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 font-semibold border border-slate-200 dark:border-transparent">
-                            {{ $queuedActions->count() }} Pending
-                        </span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 font-semibold border border-slate-200 dark:border-transparent">
+                                {{ $queuedActions->count() }} Pending
+                            </span>
+                            @if($queuedActions->count() > 1)
+                                <button 
+                                    type="button" 
+                                    wire:click="cancelAllPendingActions"
+                                    class="text-rose-700 hover:text-rose-900 dark:text-rose-400 dark:hover:text-rose-300 px-2 py-0.5 rounded bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/50 border border-rose-200 dark:border-rose-900 text-[10px] transition cursor-pointer font-bold"
+                                    title="Cancel and refund all pending actions"
+                                >
+                                    Cancel All ✕
+                                </button>
+                            @endif
+                        </div>
                     </div>
 
                     <div class="overflow-y-auto space-y-2 max-h-44 pr-1 custom-scrollbar">
@@ -1800,9 +1864,9 @@
                                             <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-emerald-700 dark:text-emerald-400 font-medium">
                                                 📍 {{ $outcome->ward->name }}
                                             </span>
-                                            @if($outcome->game_day)
-                                                <span>Day {{ $outcome->game_day }}</span>
-                                            @endif
+                                            <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-indigo-700 dark:text-indigo-400 font-semibold">
+                                                Week {{ $outcome->game_week ?: ($outcome->game_day > 4 ? min(4, (int) ceil($outcome->game_day / 7)) : ($outcome->game_day ?: 1)) }}
+                                            </span>
                                             @if($outcome->ap_cost)
                                                 <span class="text-amber-800 dark:text-amber-400 font-semibold">{{ $outcome->ap_cost }} AP</span>
                                             @endif
@@ -2006,13 +2070,23 @@
                 wire:click="queueAction"
                 @click="scrollToStep2()"
                 wire:loading.attr="disabled"
-                @disabled($isDayBlocked || ! $hasEnoughApForSelected || ($player?->is_burned_out ?? false))
-                class="px-4 py-2.5 rounded-xl font-bold text-xs transition shadow-lg shrink-0 flex items-center justify-center gap-1.5 {{ ($hasEnoughApForSelected && ! $isDayBlocked && ! ($player?->is_burned_out ?? false)) ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950 active:scale-95' : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60' }}"
+                @disabled($isDayBlocked || ! $hasEnoughApForSelected || ($player?->is_burned_out ?? false) || ($player?->hasCompletedMonth ?? false) || ($player?->hasReachedDailyPlayLimit ?? false))
+                class="px-4 py-2.5 rounded-xl font-bold text-xs transition shadow-lg shrink-0 flex items-center justify-center gap-1.5 {{ ($hasEnoughApForSelected && ! $isDayBlocked && ! ($player?->is_burned_out ?? false) && ! ($player?->hasCompletedMonth ?? false) && ! ($player?->hasReachedDailyPlayLimit ?? false)) ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950 active:scale-95' : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60' }}"
             >
                 @if($player?->is_burned_out)
                     <span class="flex items-center gap-1 text-rose-300">
                         <span>🚨</span>
                         <span>Burnout Leave</span>
+                    </span>
+                @elseif($player?->hasCompletedMonth)
+                    <span class="flex items-center gap-1 text-slate-300">
+                        <span>🌙</span>
+                        <span>Month Done</span>
+                    </span>
+                @elseif($player?->hasReachedDailyPlayLimit)
+                    <span class="flex items-center gap-1 text-amber-300">
+                        <span>🌙</span>
+                        <span>Night Rest</span>
                     </span>
                 @elseif($isDayBlocked)
                     <span class="flex items-center gap-1 text-amber-300">

@@ -426,7 +426,7 @@
                                         </button>
                                     @else
                                         @php
-                                            $coachingCheck = $church->coachingEligibility($user?->current_game_month ?? 1, $user?->current_game_day ?? 1);
+                                            $coachingCheck = $church->coachingEligibility($user?->current_game_month ?? 1, $user?->current_game_week ?? 1, $user?->current_game_day ?? 1);
                                         @endphp
                                         <button 
                                             type="button" 
@@ -621,7 +621,7 @@
                 <div class="p-4 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex flex-col gap-2">
                     @if(! $selectedChurch->is_dissolved)
                         @php
-                            $drawerCoaching = $selectedChurch->coachingEligibility($user?->current_game_month ?? 1, $user?->current_game_day ?? 1);
+                            $drawerCoaching = $selectedChurch->coachingEligibility($user?->current_game_month ?? 1, $user?->current_game_week ?? 1, $user?->current_game_day ?? 1);
                         @endphp
                         <button 
                             type="button" 

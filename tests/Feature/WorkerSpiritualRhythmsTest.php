@@ -283,3 +283,104 @@ test('fasting retreat and mid-level conference are marked ineligible when action
         ->and($statuses[MinistryActionType::MidLevelConference->value]['eligible'])->toBeFalse()
         ->and($statuses[MinistryActionType::MidLevelConference->value]['reason'])->toContain('already has scheduled actions');
 });
+
+test('dedicateWeekToRhythm clears existing actions, refunds AP and schedules full retreat', function () {
+    $this->user->update(['action_points' => 15]);
+
+    // Queue 2 actions
+    QueuedMonthlyAction::create([
+        'user_id' => $this->user->id,
+        'ward_id' => $this->ward->id,
+        'game_session_id' => $this->session->id,
+        'game_month' => 1,
+        'game_week' => 1,
+        'game_day' => 1,
+        'action_type' => MinistryActionType::PrayerWalk,
+        'ap_cost' => 2,
+        'status' => 'pending',
+    ]);
+    QueuedMonthlyAction::create([
+        'user_id' => $this->user->id,
+        'ward_id' => $this->ward->id,
+        'game_session_id' => $this->session->id,
+        'game_month' => 1,
+        'game_week' => 1,
+        'game_day' => 1,
+        'action_type' => MinistryActionType::InternationalEvent,
+        'ap_cost' => 3,
+        'status' => 'pending',
+    ]);
+
+    expect(QueuedMonthlyAction::where('user_id', $this->user->id)->count())->toBe(2);
+
+    Livewire::actingAs($this->user)
+        ->test(ActionQueuePlanner::class)
+        ->call('dedicateWeekToRhythm', MinistryActionType::MidLevelConference->value)
+        ->assertDispatched('notify');
+
+    $actions = QueuedMonthlyAction::where('user_id', $this->user->id)->get();
+    expect($actions)->toHaveCount(1)
+        ->and($actions->first()->action_type)->toBe(MinistryActionType::MidLevelConference);
+
+    // AP should be refunded for the 2 cancelled actions (+5 AP)
+    expect($this->user->fresh()->action_points)->toBe(20);
+});
+
+test('cancelAllPendingActions refunds all AP and clears pending queue', function () {
+    $this->user->update(['action_points' => 10]);
+
+    QueuedMonthlyAction::create([
+        'user_id' => $this->user->id,
+        'ward_id' => $this->ward->id,
+        'game_session_id' => $this->session->id,
+        'game_month' => 1,
+        'game_week' => 1,
+        'game_day' => 1,
+        'action_type' => MinistryActionType::PrayerWalk,
+        'ap_cost' => 3,
+        'status' => 'pending',
+    ]);
+    QueuedMonthlyAction::create([
+        'user_id' => $this->user->id,
+        'ward_id' => $this->ward->id,
+        'game_session_id' => $this->session->id,
+        'game_month' => 1,
+        'game_week' => 1,
+        'game_day' => 1,
+        'action_type' => MinistryActionType::InternationalEvent,
+        'ap_cost' => 4,
+        'status' => 'pending',
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(ActionQueuePlanner::class)
+        ->call('cancelAllPendingActions')
+        ->assertDispatched('notify');
+
+    expect(QueuedMonthlyAction::where('user_id', $this->user->id)->count())->toBe(0)
+        ->and($this->user->fresh()->action_points)->toBe(17);
+});
+
+test('cannot queue field actions or spiritual rhythms when month has completed 4 weeks', function () {
+    $this->user->update([
+        'current_game_week' => 4,
+        'weeks_processed_this_month' => 4,
+        'action_points' => 20,
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(ActionQueuePlanner::class)
+        ->set('selectedActionType', MinistryActionType::PrayerWalk->value)
+        ->set('selectedWardId', $this->ward->id)
+        ->call('queueAction')
+        ->assertDispatched('notify');
+
+    expect(QueuedMonthlyAction::where('user_id', $this->user->id)->count())->toBe(0);
+
+    Livewire::actingAs($this->user)
+        ->test(ActionQueuePlanner::class)
+        ->call('scheduleWorkerRhythm', MinistryActionType::SabbathRest->value)
+        ->assertDispatched('notify');
+
+    expect(QueuedMonthlyAction::where('user_id', $this->user->id)->count())->toBe(0);
+});

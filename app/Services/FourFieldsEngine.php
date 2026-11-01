@@ -1020,6 +1020,7 @@ class FourFieldsEngine
             'action_type' => $actionType,
             'target_npc_id' => $targetNpc?->id,
             'game_month' => $gameMonth,
+            'game_week' => $user->current_game_week ?: 1,
             'game_day' => $user->current_game_day ?: 1,
             'status' => QueuedActionStatus::Pending,
         ]);

@@ -521,7 +521,7 @@ class User extends Authenticatable
      * PHP 8.4 Property Hook: whether player has completed all 4 weeks of this game month
      */
     public bool $hasCompletedMonth {
-        get => $this->weeks_processed_this_month >= 4 || $this->days_processed_this_month >= 30;
+        get => $this->current_game_week > 4 || $this->weeks_processed_this_month >= 4 || $this->days_processed_this_month >= 30;
     }
 
     /**
@@ -536,7 +536,7 @@ class User extends Authenticatable
      */
     public bool $isWeeklyTickDue {
         get {
-            if ($this->weeks_processed_this_month >= 4 && $this->days_processed_this_month >= 30) {
+            if ($this->hasCompletedMonth || $this->hasReachedDailyPlayLimit) {
                 return false;
             }
 
