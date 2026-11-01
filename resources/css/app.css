@@ -22,18 +22,22 @@ html {
     font-size: 10.5px !important;
     line-height: 1.35 !important;
 }
+
 .text-\[10px\] {
     font-size: 11.5px !important;
     line-height: 1.4 !important;
 }
+
 .text-\[11px\] {
     font-size: 12.5px !important;
     line-height: 1.45 !important;
 }
+
 .text-xs {
     font-size: 0.8125rem !important;
     line-height: 1.25rem !important;
 }
+
 .text-sm {
     font-size: 0.9375rem !important;
     line-height: 1.375rem !important;
@@ -58,6 +62,7 @@ html {
 .dark .bg-slate-950 {
     background-color: #0f172a;
 }
+
 .dark .bg-slate-950\/90,
 .dark .bg-slate-950\/80,
 .dark .bg-slate-950\/70,
@@ -70,6 +75,7 @@ html {
 .dark .bg-slate-900 {
     background-color: #1e293b;
 }
+
 .dark .bg-slate-900\/95,
 .dark .bg-slate-900\/90,
 .dark .bg-slate-900\/80,
@@ -92,6 +98,7 @@ html {
 .dark .hover\:bg-slate-800:hover {
     background-color: #334155;
 }
+
 .dark .hover\:bg-slate-700:hover {
     background-color: #3e4f6d;
 }
@@ -104,6 +111,7 @@ html {
 .dark .border-slate-800\/40 {
     border-color: rgba(71, 85, 105, 0.45);
 }
+
 .dark .border-slate-700,
 .dark .border-slate-700\/60,
 .dark .border-slate-700\/50 {
@@ -114,9 +122,11 @@ html {
 .dark .from-slate-900 {
     --tw-gradient-from: #1e293b var(--tw-gradient-from-position);
 }
+
 .dark .to-slate-900 {
     --tw-gradient-to: #1e293b var(--tw-gradient-to-position);
 }
+
 .dark .via-slate-900 {
     --tw-gradient-via: #1e293b var(--tw-gradient-via-position);
 }
@@ -125,9 +135,11 @@ html {
 .dark .text-slate-400 {
     color: #94a3b8;
 }
+
 .dark .text-slate-500 {
     color: #94a3b8;
 }
+
 .dark .text-slate-300 {
     color: #cbd5e1;
 }
@@ -136,9 +148,11 @@ html {
 .dark .bg-black\/95 {
     background-color: #111827;
 }
+
 .dark .bg-black\/80 {
     background-color: rgba(15, 23, 42, 0.85);
 }
+
 .dark .bg-black\/40 {
     background-color: rgba(30, 41, 59, 0.5);
 }
@@ -160,9 +174,11 @@ html {
 :root:not(.dark) .bg-slate-950 {
     background-color: #ffffff;
 }
+
 :root:not(.dark) .bg-slate-900 {
     background-color: #f8fafc;
 }
+
 :root:not(.dark) .bg-slate-900\/95,
 :root:not(.dark) .bg-slate-900\/90,
 :root:not(.dark) .bg-slate-900\/80,
@@ -172,6 +188,7 @@ html {
 :root:not(.dark) .bg-slate-900\/40 {
     background-color: rgba(255, 255, 255, 0.95);
 }
+
 :root:not(.dark) .bg-slate-950\/95,
 :root:not(.dark) .bg-slate-950\/90,
 :root:not(.dark) .bg-slate-950\/80,
@@ -181,6 +198,7 @@ html {
 :root:not(.dark) .bg-slate-950\/40 {
     background-color: rgba(241, 245, 249, 0.85);
 }
+
 :root:not(.dark) .bg-slate-800,
 :root:not(.dark) .bg-slate-800\/95,
 :root:not(.dark) .bg-slate-800\/90,
@@ -191,16 +209,22 @@ html {
 :root:not(.dark) .bg-slate-800\/40 {
     background-color: #f1f5f9;
 }
+
 :root:not(.dark) .hover\:bg-slate-800:hover,
 :root:not(.dark) .hover\:bg-slate-700:hover {
     background-color: #e2e8f0;
 }
 
 /* Borders & Dividers */
+:root:not(.dark) .border-slate-950,
+:root:not(.dark) .border-slate-900,
 :root:not(.dark) .border-slate-800,
+:root:not(.dark) .border-slate-800\/90,
 :root:not(.dark) .border-slate-800\/80,
 :root:not(.dark) .border-slate-800\/60,
+:root:not(.dark) .border-slate-800\/40,
 :root:not(.dark) .border-slate-700,
+:root:not(.dark) .border-slate-700\/80,
 :root:not(.dark) .border-slate-700\/60,
 :root:not(.dark) .border-slate-700\/50 {
     border-color: #cbd5e1;
@@ -210,34 +234,82 @@ html {
 :root:not(.dark) .text-white {
     color: #0f172a;
 }
+
 :root:not(.dark) .text-slate-100 {
     color: #0f172a;
 }
+
 :root:not(.dark) .text-slate-200 {
     color: #1e293b;
 }
+
 :root:not(.dark) .text-slate-300 {
     color: #334155;
 }
+
 :root:not(.dark) .text-slate-400 {
-    color: #475569; /* Slate 600 - crisp, readable contrast */
+    color: #475569;
+    /* Slate 600 - crisp, readable contrast */
 }
+
 :root:not(.dark) .text-slate-500 {
     color: #64748b;
 }
+
 :root:not(.dark) .text-slate-600 {
     color: #1e293b;
+}
+
+/* High-Contrast Accessible Accents in Light Mode */
+:root:not(.dark) .text-emerald-500 {
+    color: #047857;
+}
+
+:root:not(.dark) .text-amber-500 {
+    color: #92400e;
+}
+
+:root:not(.dark) .text-cyan-500 {
+    color: #0e7490;
+}
+
+:root:not(.dark) .text-sky-300,
+:root:not(.dark) .text-sky-400,
+:root:not(.dark) .text-sky-500 {
+    color: #0369a1;
+}
+
+:root:not(.dark) .text-teal-300,
+:root:not(.dark) .text-teal-400,
+:root:not(.dark) .text-teal-500 {
+    color: #0f766e;
+}
+
+:root:not(.dark) .text-yellow-300,
+:root:not(.dark) .text-yellow-400,
+:root:not(.dark) .text-yellow-500 {
+    color: #a16207;
+}
+
+:root:not(.dark) .text-rose-500 {
+    color: #be123c;
+}
+
+:root:not(.dark) .text-indigo-500 {
+    color: #4338ca;
 }
 
 /* Gradients in Light Mode */
 :root:not(.dark) .from-slate-900 {
     --tw-gradient-from: #ffffff var(--tw-gradient-from-position);
 }
+
 :root:not(.dark) .via-indigo-950\/40,
 :root:not(.dark) .via-indigo-950\/60,
 :root:not(.dark) .via-indigo-950\/70 {
     --tw-gradient-via: rgba(238, 242, 255, 0.7) var(--tw-gradient-via-position);
 }
+
 :root:not(.dark) .to-slate-900 {
     --tw-gradient-to: #ffffff var(--tw-gradient-to-position);
 }
@@ -255,12 +327,14 @@ html {
 :root:not(.dark) .bg-indigo-950\/20 {
     background-color: #e0e7ff;
 }
+
 :root:not(.dark) .text-indigo-300,
 :root:not(.dark) .text-indigo-400,
 :root:not(.dark) .text-indigo-300\/90,
 :root:not(.dark) .text-indigo-400\/90 {
     color: #4338ca;
 }
+
 :root:not(.dark) .border-indigo-800,
 :root:not(.dark) .border-indigo-700 {
     border-color: #c7d2fe;
@@ -278,12 +352,14 @@ html {
 :root:not(.dark) .bg-emerald-950\/20 {
     background-color: #d1fae5;
 }
+
 :root:not(.dark) .text-emerald-300,
 :root:not(.dark) .text-emerald-400,
 :root:not(.dark) .text-emerald-300\/90,
 :root:not(.dark) .text-emerald-400\/90 {
     color: #047857;
 }
+
 :root:not(.dark) .border-emerald-800,
 :root:not(.dark) .border-emerald-700 {
     border-color: #a7f3d0;
@@ -301,14 +377,17 @@ html {
 :root:not(.dark) .bg-amber-950\/20 {
     background-color: #fef3c7;
 }
+
 :root:not(.dark) .text-amber-300,
 :root:not(.dark) .text-amber-400,
 :root:not(.dark) .text-amber-300\/90,
 :root:not(.dark) .text-amber-400\/90,
 :root:not(.dark) .text-amber-300\/80,
 :root:not(.dark) .text-amber-400\/80 {
-    color: #92400e; /* Amber 800 - high contrast readable */
+    color: #92400e;
+    /* Amber 800 - high contrast readable */
 }
+
 :root:not(.dark) .border-amber-800,
 :root:not(.dark) .border-amber-700 {
     border-color: #fde68a;
@@ -326,12 +405,14 @@ html {
 :root:not(.dark) .bg-rose-950\/20 {
     background-color: #ffe4e6;
 }
+
 :root:not(.dark) .text-rose-300,
 :root:not(.dark) .text-rose-400,
 :root:not(.dark) .text-rose-300\/90,
 :root:not(.dark) .text-rose-400\/90 {
     color: #be123c;
 }
+
 :root:not(.dark) .border-rose-800,
 :root:not(.dark) .border-rose-700 {
     border-color: #fecdd3;
@@ -349,12 +430,14 @@ html {
 :root:not(.dark) .bg-purple-950\/20 {
     background-color: #f3e8ff;
 }
+
 :root:not(.dark) .text-purple-300,
 :root:not(.dark) .text-purple-400,
 :root:not(.dark) .text-purple-300\/90,
 :root:not(.dark) .text-purple-400\/90 {
     color: #6b21a8;
 }
+
 :root:not(.dark) .border-purple-800,
 :root:not(.dark) .border-purple-700 {
     border-color: #e9d5ff;
@@ -372,12 +455,14 @@ html {
 :root:not(.dark) .bg-cyan-950\/20 {
     background-color: #cffafe;
 }
+
 :root:not(.dark) .text-cyan-300,
 :root:not(.dark) .text-cyan-400,
 :root:not(.dark) .text-cyan-300\/90,
 :root:not(.dark) .text-cyan-400\/90 {
     color: #0e7490;
 }
+
 :root:not(.dark) .border-cyan-800,
 :root:not(.dark) .border-cyan-700 {
     border-color: #a5f3fc;
@@ -395,12 +480,14 @@ html {
 :root:not(.dark) .bg-blue-950\/20 {
     background-color: #dbeafe;
 }
+
 :root:not(.dark) .text-blue-300,
 :root:not(.dark) .text-blue-400,
 :root:not(.dark) .text-blue-300\/90,
 :root:not(.dark) .text-blue-400\/90 {
     color: #1d4ed8;
 }
+
 :root:not(.dark) .border-blue-800 {
     border-color: #bfdbfe;
 }
@@ -415,34 +502,80 @@ html {
     color: #0f172a;
     border-color: #cbd5e1;
 }
+
 :root:not(.dark) input::placeholder,
 :root:not(.dark) textarea::placeholder {
     color: #94a3b8;
 }
 
-/* Keep High-Emphasis Action Buttons crisp with white text */
+/* Keep High-Emphasis Action Buttons, Badges, Pills, and Dark Surfaces crisp with white text in Light Mode */
 :root:not(.dark) button.bg-indigo-600,
 :root:not(.dark) button.bg-indigo-500,
 :root:not(.dark) button.bg-emerald-600,
 :root:not(.dark) button.bg-emerald-500,
 :root:not(.dark) button.bg-rose-600,
+:root:not(.dark) button.bg-rose-500,
 :root:not(.dark) button.bg-amber-600,
-:root:not(.dark) a.bg-indigo-600,
-:root:not(.dark) a.bg-emerald-600,
+:root:not(.dark) button.bg-blue-600,
+:root:not(.dark) button.bg-purple-600,
+:root:not(.dark) button.bg-orange-500,
+:root:not(.dark) button.bg-orange-600,
+:root:not(.dark) button.bg-slate-900,
+:root:not(.dark) button.bg-slate-800,
 :root:not(.dark) button.bg-gradient-to-r,
 :root:not(.dark) button.bg-gradient-to-tr,
+:root:not(.dark) a.bg-indigo-600,
+:root:not(.dark) a.bg-indigo-500,
+:root:not(.dark) a.bg-emerald-600,
+:root:not(.dark) a.bg-emerald-500,
+:root:not(.dark) a.bg-rose-600,
+:root:not(.dark) a.bg-blue-600,
+:root:not(.dark) a.bg-purple-600,
 :root:not(.dark) a.bg-gradient-to-r,
-:root:not(.dark) a.bg-gradient-to-tr {
+:root:not(.dark) a.bg-gradient-to-tr,
+:root:not(.dark) .text-white[class*="bg-indigo-"],
+:root:not(.dark) .text-white[class*="bg-emerald-"],
+:root:not(.dark) .text-white[class*="bg-rose-"],
+:root:not(.dark) .text-white[class*="bg-blue-"],
+:root:not(.dark) .text-white[class*="bg-purple-"],
+:root:not(.dark) .text-white[class*="bg-orange-"],
+:root:not(.dark) .text-white[class*="bg-amber-6"],
+:root:not(.dark) .text-white[class*="bg-amber-7"],
+:root:not(.dark) .text-white[class*="bg-black"],
+:root:not(.dark) .text-white[class*="bg-gradient-"],
+:root:not(.dark) [class*="bg-indigo-6"] .text-white,
+:root:not(.dark) [class*="bg-indigo-5"] .text-white,
+:root:not(.dark) [class*="bg-emerald-6"] .text-white,
+:root:not(.dark) [class*="bg-emerald-5"] .text-white,
+:root:not(.dark) [class*="bg-rose-6"] .text-white,
+:root:not(.dark) [class*="bg-rose-5"] .text-white,
+:root:not(.dark) [class*="bg-blue-6"] .text-white,
+:root:not(.dark) [class*="bg-purple-6"] .text-white,
+:root:not(.dark) [class*="bg-orange-5"] .text-white,
+:root:not(.dark) [class*="bg-orange-6"] .text-white,
+:root:not(.dark) [class*="bg-black"] .text-white,
+:root:not(.dark) [class*="bg-gradient-"] .text-white,
+:root:not(.dark) button .text-white,
+:root:not(.dark) a .text-white,
+:root:not(.dark) button.text-white,
+:root:not(.dark) a.text-white,
+:root:not(.dark) .keep-white,
+:root:not(.dark) .keep-white * {
     color: #ffffff !important;
 }
+
 :root:not(.dark) button.bg-gradient-to-r *,
 :root:not(.dark) button.bg-gradient-to-tr *,
 :root:not(.dark) a.bg-gradient-to-r *,
 :root:not(.dark) a.bg-gradient-to-tr *,
 :root:not(.dark) button.bg-indigo-600 *,
+:root:not(.dark) button.bg-indigo-500 *,
 :root:not(.dark) a.bg-indigo-600 *,
 :root:not(.dark) button.bg-emerald-600 *,
-:root:not(.dark) a.bg-emerald-600 * {
+:root:not(.dark) button.bg-emerald-500 *,
+:root:not(.dark) a.bg-emerald-600 *,
+:root:not(.dark) button.bg-rose-600 *,
+:root:not(.dark) a.bg-rose-600 * {
     color: inherit;
 }
 
@@ -450,6 +583,7 @@ html {
 :root:not(.dark) .from-indigo-900\/20 {
     --tw-gradient-from: rgba(199, 210, 254, 0.4) var(--tw-gradient-from-position);
 }
+
 :root:not(.dark) .via-emerald-900\/10 {
     --tw-gradient-via: rgba(209, 250, 229, 0.3) var(--tw-gradient-via-position);
 }
@@ -495,6 +629,7 @@ html {
 .leaflet-tooltip-top:before {
     border-top-color: rgba(255, 255, 255, 0.96) !important;
 }
+
 .dark .leaflet-tooltip-top:before {
     border-top-color: rgba(15, 23, 42, 0.96) !important;
 }
@@ -502,6 +637,7 @@ html {
 .leaflet-tooltip-bottom:before {
     border-bottom-color: rgba(255, 255, 255, 0.96) !important;
 }
+
 .dark .leaflet-tooltip-bottom:before {
     border-bottom-color: rgba(15, 23, 42, 0.96) !important;
 }
@@ -509,6 +645,7 @@ html {
 .leaflet-tooltip-left:before {
     border-left-color: rgba(255, 255, 255, 0.96) !important;
 }
+
 .dark .leaflet-tooltip-left:before {
     border-left-color: rgba(15, 23, 42, 0.96) !important;
 }
@@ -516,6 +653,7 @@ html {
 .leaflet-tooltip-right:before {
     border-right-color: rgba(255, 255, 255, 0.96) !important;
 }
+
 .dark .leaflet-tooltip-right:before {
     border-right-color: rgba(15, 23, 42, 0.96) !important;
 }
@@ -539,6 +677,7 @@ html {
 .leaflet-popup-tip {
     background: rgba(255, 255, 255, 0.96) !important;
 }
+
 .dark .leaflet-popup-tip {
     background: rgba(15, 23, 42, 0.96) !important;
 }

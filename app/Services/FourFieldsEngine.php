@@ -1606,26 +1606,49 @@ class FourFieldsEngine
 
                 if (! $existingChurch) {
                     // Determine parent church:
-                    // 1. Check if the active player has an established church in this session
-                    $parentChurch = Church::where('game_session_id', $action->game_session_id)
-                        ->where('leader_user_id', $user->id)
-                        ->where('is_dissolved', false)
-                        ->first()
-                        ?? Church::where('game_session_id', $action->game_session_id)
-                            ->where('started_by_name', $user->name)
-                            ->where('generation', 1)
+                    // 1. Check if the NPC already belongs to an established active church (their mother church!)
+                    $parentChurch = null;
+                    if ($npc->church_id) {
+                        $parentChurch = Church::where('id', $npc->church_id)
                             ->where('is_dissolved', false)
                             ->first();
+                    }
 
-                    // 2. If the active player does not lead a church, check if the NPC has a discipler NPC with a church
+                    // 2. Check if the NPC's discipler NPC leads an active church
                     if (! $parentChurch && $npc->discipler_npc_id) {
                         $parentChurch = Church::where('leader_npc_id', $npc->discipler_npc_id)
                             ->where('is_dissolved', false)
                             ->first();
                     }
 
-                    // 3. Determine generation:
-                    // If a parent church is found, this is a daughter church (gen + 1).
+                    // 3. Check if the NPC's discipler User leads an active church
+                    if (! $parentChurch && $npc->discipler_user_id) {
+                        $parentChurch = Church::where('game_session_id', $action->game_session_id)
+                            ->where('leader_user_id', $npc->discipler_user_id)
+                            ->where('is_dissolved', false)
+                            ->first();
+                    }
+
+                    // 4. Check if the active coaching player has an established church in this ward or session
+                    if (! $parentChurch) {
+                        $parentChurch = Church::where('game_session_id', $action->game_session_id)
+                            ->where('ward_id', $npc->ward_id)
+                            ->where('leader_user_id', $user->id)
+                            ->where('is_dissolved', false)
+                            ->first()
+                            ?? Church::where('game_session_id', $action->game_session_id)
+                                ->where('leader_user_id', $user->id)
+                                ->where('is_dissolved', false)
+                                ->first()
+                            ?? Church::where('game_session_id', $action->game_session_id)
+                                ->where('started_by_name', $user->name)
+                                ->where('generation', 1)
+                                ->where('is_dissolved', false)
+                                ->first();
+                    }
+
+                    // 5. Determine generation:
+                    // If a parent church is found, this is a daughter church (parent gen + 1).
                     // If no parent church exists, this is the player's own pioneer Generation 1 (G1) church!
                     $churchGen = $parentChurch ? ($parentChurch->generation + 1) : max(1, $npc->generation);
 
@@ -1635,7 +1658,7 @@ class FourFieldsEngine
                         'name' => "{$npc->name}'s Acts 2 Church Circle (G{$churchGen})",
                         'parent_church_id' => $parentChurch?->id,
                         'leader_npc_id' => $npc->id,
-                        'leader_user_id' => null,
+                        'leader_user_id' => $churchGen === 1 ? $user->id : null,
                         'generation' => $churchGen,
                         'elements_json' => [
                             ChurchElement::RepentanceBelief->value,
@@ -2599,11 +2622,23 @@ class FourFieldsEngine
 
             // When an equipped believer has at least 1 disciple or can lead a church (L2+), they birth an autonomous church!
             if (! $alreadyPlantedDaughter && ($believer->leadership_tier->canLeadChurch() || $disciplesCount >= 1)) {
-                // Find parent church: first check discipler NPC, then discipler User
-                $parentChurch = Church::where('leader_npc_id', $believer->discipler_npc_id)
-                    ->where('is_dissolved', false)
-                    ->first();
+                // Find parent church:
+                // 1. Check if believer belongs to an active church (their mother church!)
+                $parentChurch = null;
+                if ($believer->church_id) {
+                    $parentChurch = Church::where('id', $believer->church_id)
+                        ->where('is_dissolved', false)
+                        ->first();
+                }
 
+                // 2. Check if believer's discipler NPC leads an active church
+                if (! $parentChurch && $believer->discipler_npc_id) {
+                    $parentChurch = Church::where('leader_npc_id', $believer->discipler_npc_id)
+                        ->where('is_dissolved', false)
+                        ->first();
+                }
+
+                // 3. Check if believer's discipler User leads an active church
                 if (! $parentChurch && $believer->discipler_user_id) {
                     $parentChurch = Church::where('game_session_id', $session->id)
                         ->where('leader_user_id', $believer->discipler_user_id)
@@ -2616,11 +2651,30 @@ class FourFieldsEngine
                             ->first();
                 }
 
+                // 4. Fallback: match an active mother church in the same ward or session with fewest children
                 if (! $parentChurch) {
-                    $parentChurch = Church::where('game_session_id', $session->id)
+                    $pool = Church::where('game_session_id', $session->id)
                         ->where('is_dissolved', false)
-                        ->orderBy('generation')
-                        ->first();
+                        ->where('ward_id', $believer->ward_id)
+                        ->get();
+
+                    if ($pool->isEmpty()) {
+                        $pool = Church::where('game_session_id', $session->id)
+                            ->where('is_dissolved', false)
+                            ->get();
+                    }
+
+                    if ($pool->isNotEmpty()) {
+                        $childCounts = Church::where('game_session_id', $session->id)
+                            ->where('is_dissolved', false)
+                            ->whereIn('parent_church_id', $pool->pluck('id'))
+                            ->select('parent_church_id', DB::raw('count(*) as aggregate'))
+                            ->groupBy('parent_church_id')
+                            ->pluck('aggregate', 'parent_church_id')
+                            ->all();
+
+                        $parentChurch = $pool->sortBy(fn (Church $c) => $childCounts[$c->id] ?? 0)->first();
+                    }
                 }
 
                 $churchGen = $parentChurch ? ($parentChurch->generation + 1) : max(2, $believer->generation + 1);

@@ -350,7 +350,15 @@ class AiColaborerService
         $existingChurch = Church::where('ward_id', $homeWard->id)->exists();
 
         if ($greenBelieversCount >= 3 && ! $existingChurch) {
-            return [MinistryActionType::ChurchCircles, null, $homeWard];
+            $potentialLeader = Npc::where('ward_id', $homeWard->id)
+                ->where('status', ReceptivityStatus::Green)
+                ->orderByDesc('is_baptized')
+                ->orderByDesc('trained_411')
+                ->first();
+
+            if ($potentialLeader) {
+                return [MinistryActionType::ChurchCircles, $potentialLeader, $homeWard];
+            }
         }
 
         return [MinistryActionType::PrayerWalk, null, $homeWard];

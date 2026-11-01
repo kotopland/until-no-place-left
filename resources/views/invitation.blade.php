@@ -63,7 +63,7 @@
     <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[550px] bg-gradient-to-b from-indigo-500/10 via-emerald-500/5 to-transparent dark:from-indigo-900/25 dark:via-emerald-900/15 dark:to-transparent blur-3xl pointer-events-none -z-10"></div>
 
     <!-- Header Navigation -->
-    <header class="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80">
+    <header class="sticky top-0 z-50 bg-white/90 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
             <a href="{{ url('/') }}" class="flex items-center gap-2.5 sm:gap-3 group min-w-0 shrink-0">
                 <img 
@@ -72,21 +72,21 @@
                     class="w-9 h-9 sm:w-11 sm:h-11 object-contain rounded-xl sm:rounded-2xl shadow-xl shadow-indigo-500/25 border border-indigo-500/40 group-hover:scale-105 transition duration-300 shrink-0"
                 >
                 <div class="min-w-0">
-                    <span class="text-xs font-black text-white tracking-wider uppercase flex items-center gap-1.5 whitespace-nowrap">
+                    <span class="text-xs font-black text-slate-900 dark:text-white tracking-wider uppercase flex items-center gap-1.5 whitespace-nowrap">
                         <span>Nagoya Oikos</span>
-                        <span class="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] bg-indigo-950 text-indigo-400 border border-indigo-800 font-bold">Romans 15:23</span>
+                        <span class="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] bg-indigo-50 text-indigo-900 border border-indigo-200 dark:bg-indigo-950 dark:text-indigo-400 dark:border-indigo-800 font-bold">Romans 15:23</span>
                     </span>
-                    <span class="hidden sm:block text-[11px] text-slate-400 font-medium truncate">Reach Nagoya with Jesus • No Place Left</span>
+                    <span class="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate">Reach Nagoya with Jesus • No Place Left</span>
                 </div>
             </a>
 
             <!-- Center Navigation Links -->
-            <nav class="hidden md:flex items-center gap-3 lg:gap-5 xl:gap-7 text-xs font-semibold text-slate-300">
-                <a href="#vision" class="hover:text-amber-400 transition">The Vision</a>
-                <a href="#four-fields" class="hover:text-emerald-400 transition">The Movement Cycle</a>
-                <a href="#wards" class="hover:text-purple-400 transition">16 Wards</a>
-                <a href="#how-to-join" class="hover:text-indigo-400 transition">How to Step In</a>
-                <a href="{{ route('welcome') }}" class="hover:text-cyan-400 transition flex items-center gap-1">
+            <nav class="hidden md:flex items-center gap-3 lg:gap-5 xl:gap-7 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                <a href="#vision" class="hover:text-amber-600 dark:hover:text-amber-400 transition">The Vision</a>
+                <a href="#four-fields" class="hover:text-emerald-600 dark:hover:text-emerald-400 transition">The Movement Cycle</a>
+                <a href="#wards" class="hover:text-purple-600 dark:hover:text-purple-400 transition">16 Wards</a>
+                <a href="#how-to-join" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">How to Step In</a>
+                <a href="{{ route('welcome') }}" class="hover:text-cyan-600 dark:hover:text-cyan-400 transition flex items-center gap-1">
                     <span>📖</span>
                     <span>Game Overview &amp; Rules</span>
                 </a>
@@ -111,7 +111,7 @@
                         type="button" 
                         @click="$store.audio?.toggle()" 
                         class="flex items-center gap-1.5 p-2 xl:px-3 xl:py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none"
-                        :class="$store.audio?.isPlaying ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 shadow-md shadow-indigo-500/20 ring-1 ring-indigo-500/40' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'"
+                        :class="$store.audio?.isPlaying ? 'bg-indigo-50 dark:bg-indigo-950/90 border-indigo-300 dark:border-indigo-500 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-400/40' : 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
                         title="Japanese Background Music"
                     >
                         <span x-show="!$store.audio?.isPlaying">🔇</span>
@@ -128,31 +128,31 @@
 
                     <!-- Hover Popover: Song Title & Controls -->
                     <div 
-                        class="absolute right-0 top-full mt-2 w-64 p-3.5 rounded-2xl bg-slate-900/95 backdrop-blur-xl border border-indigo-500/30 shadow-2xl shadow-black/80 z-50 pointer-events-none opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 transition-all duration-200 origin-top-right space-y-2 text-left"
+                        class="absolute right-0 top-full mt-2 w-64 p-3.5 rounded-2xl bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-indigo-500/30 shadow-2xl shadow-black/20 dark:shadow-black/80 z-50 pointer-events-none opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 transition-all duration-200 origin-top-right space-y-2 text-left"
                     >
-                        <div class="flex items-center justify-between gap-2 border-b border-slate-800 pb-2">
-                            <span class="text-[10px] font-black uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                        <div class="flex items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+                            <span class="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
                                 <span class="w-2 h-2 rounded-full" :class="$store.audio?.isPlaying ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'"></span>
                                 <span x-text="$store.audio?.isPlaying ? 'Now Playing' : 'Background Music'"></span>
                             </span>
-                            <span class="text-[9px] font-semibold text-slate-300 px-1.5 py-0.5 rounded bg-slate-800/90 border border-slate-700/60" x-text="$store.audio?.isPlaying ? ($store.audio?.currentSongCategory || 'Traditional & Folk') : 'Paused'"></span>
+                            <span class="text-[9px] font-semibold text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/60" x-text="$store.audio?.isPlaying ? ($store.audio?.currentSongCategory || 'Traditional & Folk') : 'Paused'"></span>
                         </div>
 
                         <div x-show="$store.audio?.isPlaying" class="space-y-1">
-                            <div class="text-xs font-bold text-white leading-snug flex items-center gap-1.5">
+                            <div class="text-xs font-bold text-slate-900 dark:text-white leading-snug flex items-center gap-1.5">
                                 <span>🎵</span>
                                 <span x-text="$store.audio?.currentSongEnglish || 'Traditional Melody'"></span>
                             </div>
-                            <div class="text-[11px] text-indigo-300/90 font-medium pl-5" x-text="$store.audio?.currentSongJapanese || ''"></div>
-                            <div class="text-[10px] text-slate-400 pt-1 border-t border-slate-800/60 flex items-center gap-1">
+                            <div class="text-[11px] text-indigo-700 dark:text-indigo-300/90 font-medium pl-5" x-text="$store.audio?.currentSongJapanese || ''"></div>
+                            <div class="text-[10px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200 dark:border-slate-800/60 flex items-center gap-1">
                                 <span>💡</span>
                                 <span>Click to mute • Shuffles on next play</span>
                             </div>
                         </div>
 
                         <div x-show="!$store.audio?.isPlaying" class="space-y-1">
-                            <div class="text-xs font-semibold text-slate-300">Music is muted</div>
-                            <div class="text-[10px] text-slate-400">Click to play famous Japanese melodies (Sakura, Sukiyaki, Furusato, etc.)</div>
+                            <div class="text-xs font-semibold text-slate-600 dark:text-slate-300">Music is muted</div>
+                            <div class="text-[10px] text-slate-500 dark:text-slate-400">Click to play famous Japanese melodies (Sakura, Sukiyaki, Furusato, etc.)</div>
                         </div>
                     </div>
                 </div>
@@ -161,7 +161,7 @@
                     <!-- Authenticated Player Pill & Dashboard Link -->
                     <a 
                         href="{{ route('dashboard') }}" 
-                        class="hidden sm:flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-white px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 truncate max-w-[130px]"
+                        class="hidden sm:flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 truncate max-w-[130px]"
                         title="{{ auth()->user()->name }} ({{ auth()->user()->nationality ?? 'Japan' }})"
                     >
                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
@@ -179,7 +179,7 @@
                     <!-- Guest Options: Simulation, Sign In, Join -->
                     <a 
                         href="{{ route('simulate') }}" 
-                        class="hidden sm:flex items-center gap-1.5 text-xs font-bold text-amber-300 hover:text-amber-200 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 transition"
+                        class="hidden sm:flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-500/15 hover:bg-amber-100 dark:hover:bg-amber-500/25 border border-amber-300 dark:border-amber-500/40 transition"
                         title="Explore the 15-Year Movement Simulation (Shared Daily SQLite DB — No Account Required)"
                     >
                         <span>⏱️</span>
@@ -188,7 +188,7 @@
 
                     <a 
                         href="{{ route('login') }}" 
-                        class="text-[11px] sm:text-xs font-bold text-slate-300 hover:text-white px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 transition whitespace-nowrap"
+                        class="text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900/80 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition whitespace-nowrap"
                     >
                         Sign In
                     </a>

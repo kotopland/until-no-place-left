@@ -1140,83 +1140,83 @@
     <!-- Modal: 7-Stage Real-Life Longitudinal Showcase Comparison Table -->
     @if($showShowcaseComparisonModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-            <div class="bg-slate-900 border border-amber-500/40 rounded-3xl p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-5">
-                <div class="flex items-start justify-between gap-4 border-b border-slate-800 pb-4">
+            <div class="bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-500/40 rounded-3xl p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-5">
+                <div class="flex items-start justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
                     <div>
-                        <div class="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                        <div class="text-[10px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
                             <span>📊</span>
                             <span>Longitudinal Real-Life DMM Comparison (3 Months → 15 Years)</span>
                         </div>
-                        <h3 class="text-lg font-black text-white tracking-tight mt-0.5">
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
                             Nagoya Movement Trajectory Across All 7 Real-Life Milestones
                         </h3>
-                        <p class="text-xs text-slate-400 mt-1">
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">
                             Click any stage column button to load that exact time stage onto the live map and Church Generation Tree.
                         </p>
                     </div>
                     <button
                         type="button"
                         wire:click="closeShowcaseComparison"
-                        class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold cursor-pointer"
+                        class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-white text-xs font-bold cursor-pointer transition border border-slate-200 dark:border-slate-700"
                     >
                         ✕ Close
                     </button>
                 </div>
 
                 @if(count($showcaseMilestones) > 0)
-                    <div class="overflow-x-auto rounded-2xl border border-slate-800">
+                    <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                         <table class="w-full text-left text-xs border-collapse">
                             <thead>
-                                <tr class="bg-slate-950 text-slate-300 border-b border-slate-800">
-                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-slate-400">Horizon</th>
-                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-slate-400">Calendar</th>
-                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-emerald-400">Wards Reached</th>
-                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-amber-400"> Pipeline (U/R/Y/G)</th>
-                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-sky-400">Baptized (Cost)</th>
-                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-indigo-400">Churches (Gone)</th>
-                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-purple-400">Gen (G1/G2/G3/G4+)</th>
-                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-pink-400">Leaders (L1-L5)</th>
+                                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Horizon</th>
+                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-slate-500 dark:text-slate-400">Calendar</th>
+                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-emerald-700 dark:text-emerald-400">Wards Reached</th>
+                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-amber-700 dark:text-amber-400"> Pipeline (U/R/Y/G)</th>
+                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-sky-700 dark:text-sky-400">Baptized (Cost)</th>
+                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-indigo-700 dark:text-indigo-400">Churches (Gone)</th>
+                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-purple-700 dark:text-purple-400">Gen (G1/G2/G3/G4+)</th>
+                                    <th class="p-3 font-black uppercase tracking-wider text-[10px] text-pink-700 dark:text-pink-400">Leaders (L1-L5)</th>
                                     <th class="p-3 font-black uppercase tracking-wider text-[10px] text-right">Inspect</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-800/80 bg-slate-900/60">
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80 bg-white dark:bg-slate-900/60">
                                 @foreach($showcaseMilestones as $mKey => $mSnap)
                                     @php
                                         $mGens = $mSnap['churches_by_generation'] ?? [1 => 1, 2 => 0, 3 => 0, 4 => 0];
                                         $mTiers = $mSnap['leaders_by_tier'] ?? ['L1' => 1, 'L2' => 0, 'L3' => 0, 'L4' => 0, 'L5' => 0];
                                     @endphp
-                                    <tr class="hover:bg-slate-800/50 transition {{ $activeShowcaseStage === $mKey ? 'bg-amber-500/10' : '' }}">
-                                        <td class="p-3 font-black text-white whitespace-nowrap">
+                                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition {{ $activeShowcaseStage === $mKey ? 'bg-amber-50 dark:bg-amber-500/10' : '' }}">
+                                        <td class="p-3 font-black text-slate-900 dark:text-white whitespace-nowrap">
                                             {{ $mSnap['label'] }}
-                                            <span class="text-[10px] font-normal text-slate-400 block">Month {{ $mSnap['months'] }}</span>
+                                            <span class="text-[10px] font-normal text-slate-500 dark:text-slate-400 block">Month {{ $mSnap['months'] }}</span>
                                         </td>
-                                        <td class="p-3 text-slate-300 whitespace-nowrap">{{ $mSnap['calendar_date'] }}</td>
-                                        <td class="p-3 font-bold text-emerald-400 whitespace-nowrap">
+                                        <td class="p-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">{{ $mSnap['calendar_date'] }}</td>
+                                        <td class="p-3 font-bold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
                                             {{ $mSnap['wards_reached'] }}/16 ({{ $mSnap['saturation_percent'] }}%)
                                         </td>
-                                        <td class="p-3 text-slate-300 whitespace-nowrap">
-                                            {{ $mSnap['unreached_count'] }} / {{ $mSnap['red_acquaintances_count'] }} / <span class="text-amber-300 font-bold">{{ $mSnap['yellow_seekers_count'] }}</span> / <span class="text-emerald-400 font-bold">{{ $mSnap['green_believers_count'] }}</span>
+                                        <td class="p-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                                            {{ $mSnap['unreached_count'] }} / {{ $mSnap['red_acquaintances_count'] }} / <span class="text-amber-700 dark:text-amber-300 font-bold">{{ $mSnap['yellow_seekers_count'] }}</span> / <span class="text-emerald-700 dark:text-emerald-400 font-bold">{{ $mSnap['green_believers_count'] }}</span>
                                         </td>
                                         <td class="p-3 whitespace-nowrap">
-                                            <span class="font-bold text-sky-400">💧 {{ $mSnap['baptized_count'] }}</span>
-                                            <span class="text-[10px] text-amber-300">({{ $mSnap['counting_cost_count'] }} cost)</span>
+                                            <span class="font-bold text-sky-700 dark:text-sky-400">💧 {{ $mSnap['baptized_count'] }}</span>
+                                            <span class="text-[10px] text-amber-700 dark:text-amber-300">({{ $mSnap['counting_cost_count'] }} cost)</span>
                                         </td>
                                         <td class="p-3 whitespace-nowrap">
-                                            <span class="font-bold text-indigo-300">⛪ {{ $mSnap['active_churches_count'] }}</span>
-                                            <span class="text-[10px] text-slate-400">({{ $mSnap['dissolved_churches_count'] }} diss.)</span>
+                                            <span class="font-bold text-indigo-700 dark:text-indigo-300">⛪ {{ $mSnap['active_churches_count'] }}</span>
+                                            <span class="text-[10px] text-slate-500 dark:text-slate-400">({{ $mSnap['dissolved_churches_count'] }} diss.)</span>
                                         </td>
-                                        <td class="p-3 text-slate-300 whitespace-nowrap">
+                                        <td class="p-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">
                                             {{ $mGens[1] }} / {{ $mGens[2] }} / {{ $mGens[3] }} / {{ $mGens[4] }}
-                                            <span class="px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 text-[10px] font-bold ml-1">G{{ $mSnap['deepest_generation'] }}</span>
+                                            <span class="px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-900 border border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300 text-[10px] font-bold ml-1">G{{ $mSnap['deepest_generation'] }}</span>
                                         </td>
-                                        <td class="p-3 text-slate-300 whitespace-nowrap font-mono text-[11px]">
+                                        <td class="p-3 text-slate-600 dark:text-slate-300 whitespace-nowrap font-mono text-[11px]">
                                             {{ $mTiers['L1'] }}/{{ $mTiers['L2'] }}/{{ $mTiers['L3'] }}/{{ $mTiers['L4'] }}/{{ $mTiers['L5'] }}
                                         </td>
                                         <td class="p-3 text-right whitespace-nowrap">
                                             <button
                                                 type="button"
                                                 wire:click="loadShowcaseStage('{{ $mKey }}'); closeShowcaseComparison();"
-                                                class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border border-amber-500/40 text-[11px] font-bold transition cursor-pointer"
+                                                class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 dark:bg-amber-500/20 dark:hover:bg-amber-500 dark:text-amber-300 dark:hover:text-slate-950 dark:border-amber-500/40 text-[11px] font-bold transition cursor-pointer"
                                             >
                                                 Load {{ $mSnap['label'] }} →
                                             </button>
@@ -1237,27 +1237,27 @@
     <!-- Modal: Edit Player Profile (Name & Country of Origin) -->
     @if($showEditNameModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative space-y-4">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative space-y-4">
                 <div>
-                    <h3 class="text-base font-black text-white tracking-tight flex items-center gap-2">
+                    <h3 class="text-base font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                         <span>✏️</span>
                         <span>Customize Missionary Profile</span>
                     </h3>
-                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                    <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
                         Update how your missionary handle and country of origin appear across the movement, leaderboard, and team co-op maps.
                     </p>
                 </div>
 
                 <!-- Live Demographic Avatar Preview -->
-                <div class="flex items-center gap-3 p-3 rounded-2xl bg-slate-950/80 border border-slate-800 shadow-inner">
+                <div class="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 shadow-inner">
                     <x-person-avatar :nationality="$editingNationality" :gender="'male'" :age="$editingAge > 0 ? $editingAge : 30" size="md" :showBadges="true" class="shrink-0" />
                     <div class="min-w-0 flex-1">
-                        <div class="text-xs font-bold text-white truncate">
+                        <div class="text-xs font-bold text-slate-900 dark:text-white truncate">
                             {{ $editingName !== '' ? $editingName : 'Missionary Name' }}
                         </div>
-                        <div class="text-[11px] text-indigo-300 mt-0.5 flex items-center gap-1.5">
+                        <div class="text-[11px] text-indigo-700 dark:text-indigo-300 mt-0.5 flex items-center gap-1.5">
                             <span>{{ app(\App\Services\PersonAvatarService::class)->flagEmoji($editingNationality) }} {{ $editingNationality }}</span>
-                            <span class="text-slate-500">•</span>
+                            <span class="text-slate-400">•</span>
                             <span>{{ $editingAge > 0 ? $editingAge : 30 }} yrs ({{ app(\App\Services\PersonAvatarService::class)->ageGroupLabel($editingAge > 0 ? $editingAge : 30) }})</span>
                         </div>
                     </div>
@@ -1265,62 +1265,62 @@
 
                 <form wire:submit="savePlayerName" class="space-y-4">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
+                        <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                             Missionary / Player Handle
                         </label>
                         <input 
                             type="text" 
                             wire:model="editingName" 
-                            class="w-full bg-slate-950 border {{ $errors->has('editingName') ? 'border-rose-500' : 'border-slate-800 focus:border-indigo-500' }} rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                            class="w-full bg-white dark:bg-slate-950 border {{ $errors->has('editingName') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-800 focus:border-indigo-500' }} rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                             placeholder="e.g. Kenji Tanaka, Coach Paul"
                             autofocus
                         >
                         @error('editingName')
-                            <p class="text-[11px] text-rose-400 mt-1 font-medium">{{ $message }}</p>
+                            <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
+                        <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                             Country of Origin
                         </label>
                         <x-searchable-country-select 
                             id="editingNationality" 
                             wire:model.live="editingNationality"
                             :value="$editingNationality"
-                            class="{{ $errors->has('editingNationality') ? 'border-rose-500' : 'border-slate-800 focus:border-indigo-500' }}"
+                            class="{{ $errors->has('editingNationality') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-800 focus:border-indigo-500' }}"
                         />
                         @error('editingNationality')
-                            <p class="text-[11px] text-rose-400 mt-1 font-medium">{{ $message }}</p>
+                            <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1 flex items-center justify-between">
+                        <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1 flex items-center justify-between">
                             <span>Age (Years)</span>
-                            <span class="text-[10px] text-amber-400 font-medium">must be older than 18</span>
+                            <span class="text-[10px] text-amber-700 dark:text-amber-400 font-medium">must be older than 18</span>
                         </label>
                         <input 
                             type="number" 
                             wire:model.live.debounce.300ms="editingAge" 
                             min="19"
                             max="120"
-                            class="w-full bg-slate-950 border {{ $errors->has('editingAge') ? 'border-rose-500' : 'border-slate-800 focus:border-indigo-500' }} rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                            class="w-full bg-white dark:bg-slate-950 border {{ $errors->has('editingAge') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-800 focus:border-indigo-500' }} rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                             placeholder="e.g. 24, 30, 45"
                         >
                         @error('editingAge')
-                            <p class="text-[11px] text-rose-400 mt-1 font-medium">{{ $message }}</p>
+                            <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <!-- Email Notification Preferences / Opt-Out -->
-                    <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
+                    <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1">
                         <label class="flex items-center justify-between cursor-pointer">
-                            <span class="text-[11px] font-bold text-slate-300">Email Notifications</span>
+                            <span class="text-[11px] font-bold text-slate-700 dark:text-slate-300">Email Notifications</span>
                             <input 
                                 type="checkbox" 
-                                wire:model="editingNotifyEmail"
-                                class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+                                wire:model="editingNotifyEmail" 
+                                class="rounded border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
                             >
                         </label>
                         <p class="text-[10px] text-slate-500 leading-tight">
@@ -1332,7 +1332,7 @@
                         <button 
                             type="button" 
                             wire:click="closeEditNameModal"
-                            class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white bg-slate-800/60 hover:bg-slate-800 transition cursor-pointer"
+                            class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition cursor-pointer"
                         >
                             Cancel
                         </button>

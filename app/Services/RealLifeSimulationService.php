@@ -238,6 +238,8 @@ class RealLifeSimulationService
 
             $meito = Ward::where('slug', 'meito-ku')->first() ?? Ward::first();
             $naka = Ward::where('slug', 'naka-ku')->first() ?? $meito;
+            $chikusa = Ward::where('slug', 'chikusa-ku')->first() ?? $meito;
+            $minato = Ward::where('slug', 'minato-ku')->first() ?? $meito;
 
             // Ensure 4th computer co-laborer (Yuki Takahashi) exists alongside Kenji, Sarah, and Marcus
             User::updateOrCreate(
@@ -269,28 +271,191 @@ class RealLifeSimulationService
             $leadComputerPioneer = User::where('email', 'kenji.yamada@nagoyaharvest.jp')->first()
                 ?? User::where('is_ai_colaborer', true)->first();
 
-            if ($leadComputerPioneer) {
-                Npc::where('game_session_id', $session->id)
-                    ->whereNotNull('discipler_user_id')
-                    ->update(['discipler_user_id' => $leadComputerPioneer->id]);
+            $sarah = User::where('email', 'sarah.jenkins@nagoyaharvest.jp')->first();
+            $marcus = User::where('email', 'marcus.silva@nagoyaharvest.jp')->first();
+            $yuki = User::where('email', 'yuki.takahashi@nagoyaharvest.jp')->first();
 
-                Church::where('game_session_id', $session->id)
-                    ->update([
-                        'leader_user_id' => $leadComputerPioneer->id,
-                        'started_by_name' => $leadComputerPioneer->name,
-                        'is_healthy_church' => false,
-                        'health_score' => 70,
-                        'founded_game_month' => 1,
-                        'last_coached_game_month' => 1,
-                        'elements_json' => [
-                            ChurchElement::RepentanceBelief->value,
-                            ChurchElement::Baptism->value,
-                            ChurchElement::Word->value,
-                            ChurchElement::Prayer->value,
-                            ChurchElement::Fellowship->value,
-                            ChurchElement::MakingDisciples->value,
+            // In Co-op mode, establish G1 pioneer churches for all 4 missionary co-laborers in their home wards
+            if ($mode !== 'solo') {
+                if ($leadComputerPioneer && $meito) {
+                    $meitoChurch = Church::where('game_session_id', $session->id)
+                        ->where('ward_id', $meito->id)
+                        ->first();
+
+                    if ($meitoChurch) {
+                        $meitoChurch->update([
+                            'leader_user_id' => $leadComputerPioneer->id,
+                            'leader_npc_id' => null,
+                            'started_by_name' => $leadComputerPioneer->name,
+                            'is_healthy_church' => false,
+                            'health_score' => 70,
+                            'founded_game_month' => 1,
+                            'last_coached_game_month' => 1,
+                        ]);
+                    }
+
+                    Npc::where('game_session_id', $session->id)
+                        ->where('ward_id', $meito->id)
+                        ->where('status', ReceptivityStatus::Green)
+                        ->update([
+                            'church_id' => $meitoChurch?->id,
+                            'discipler_user_id' => $leadComputerPioneer->id,
+                        ]);
+                }
+
+                if ($sarah && $chikusa) {
+                    $sarahChurch = Church::updateOrCreate(
+                        [
+                            'game_session_id' => $session->id,
+                            'name' => 'Chikusa Campus Light (G1)',
                         ],
-                    ]);
+                        [
+                            'ward_id' => $chikusa->id,
+                            'parent_church_id' => null,
+                            'leader_npc_id' => null,
+                            'leader_user_id' => $sarah->id,
+                            'generation' => 1,
+                            'elements_json' => [
+                                ChurchElement::RepentanceBelief->value,
+                                ChurchElement::Baptism->value,
+                                ChurchElement::Word->value,
+                                ChurchElement::Prayer->value,
+                                ChurchElement::Fellowship->value,
+                                ChurchElement::MakingDisciples->value,
+                            ],
+                            'is_healthy_church' => false,
+                            'health_score' => 70,
+                            'attenders_count' => 7,
+                            'believers_count' => 4,
+                            'baptized_count' => 3,
+                            'is_dissolved' => false,
+                            'started_by_name' => $sarah->name,
+                            'lat' => 35.1650,
+                            'lng' => 136.9600,
+                            'founded_game_month' => 1,
+                            'last_coached_game_month' => 1,
+                        ]
+                    );
+
+                    Npc::where('game_session_id', $session->id)
+                        ->where('ward_id', $chikusa->id)
+                        ->where('status', ReceptivityStatus::Green)
+                        ->update([
+                            'church_id' => $sarahChurch->id,
+                            'discipler_user_id' => $sarah->id,
+                        ]);
+                }
+
+                if ($marcus && $minato) {
+                    $marcusChurch = Church::updateOrCreate(
+                        [
+                            'game_session_id' => $session->id,
+                            'name' => 'Minato Grace Harbor (G1)',
+                        ],
+                        [
+                            'ward_id' => $minato->id,
+                            'parent_church_id' => null,
+                            'leader_npc_id' => null,
+                            'leader_user_id' => $marcus->id,
+                            'generation' => 1,
+                            'elements_json' => [
+                                ChurchElement::RepentanceBelief->value,
+                                ChurchElement::Baptism->value,
+                                ChurchElement::Word->value,
+                                ChurchElement::Prayer->value,
+                                ChurchElement::Fellowship->value,
+                                ChurchElement::MakingDisciples->value,
+                            ],
+                            'is_healthy_church' => false,
+                            'health_score' => 70,
+                            'attenders_count' => 8,
+                            'believers_count' => 4,
+                            'baptized_count' => 3,
+                            'is_dissolved' => false,
+                            'started_by_name' => $marcus->name,
+                            'lat' => 35.1050,
+                            'lng' => 136.8850,
+                            'founded_game_month' => 1,
+                            'last_coached_game_month' => 1,
+                        ]
+                    );
+
+                    Npc::where('game_session_id', $session->id)
+                        ->where('ward_id', $minato->id)
+                        ->where('status', ReceptivityStatus::Green)
+                        ->update([
+                            'church_id' => $marcusChurch->id,
+                            'discipler_user_id' => $marcus->id,
+                        ]);
+                }
+
+                if ($yuki && $naka) {
+                    $yukiChurch = Church::updateOrCreate(
+                        [
+                            'game_session_id' => $session->id,
+                            'name' => 'Sakae Oikos Fellowship (G1)',
+                        ],
+                        [
+                            'ward_id' => $naka->id,
+                            'parent_church_id' => null,
+                            'leader_npc_id' => null,
+                            'leader_user_id' => $yuki->id,
+                            'generation' => 1,
+                            'elements_json' => [
+                                ChurchElement::RepentanceBelief->value,
+                                ChurchElement::Baptism->value,
+                                ChurchElement::Word->value,
+                                ChurchElement::Prayer->value,
+                                ChurchElement::Fellowship->value,
+                                ChurchElement::MakingDisciples->value,
+                            ],
+                            'is_healthy_church' => false,
+                            'health_score' => 70,
+                            'attenders_count' => 7,
+                            'believers_count' => 4,
+                            'baptized_count' => 2,
+                            'is_dissolved' => false,
+                            'started_by_name' => $yuki->name,
+                            'lat' => 35.1700,
+                            'lng' => 136.9080,
+                            'founded_game_month' => 1,
+                            'last_coached_game_month' => 1,
+                        ]
+                    );
+
+                    Npc::where('game_session_id', $session->id)
+                        ->where('ward_id', $naka->id)
+                        ->where('status', ReceptivityStatus::Green)
+                        ->update([
+                            'church_id' => $yukiChurch->id,
+                            'discipler_user_id' => $yuki->id,
+                        ]);
+                }
+            } else {
+                // Solo Mode: Kenji Yamada is the sole pioneer
+                if ($leadComputerPioneer) {
+                    Npc::where('game_session_id', $session->id)
+                        ->whereNotNull('discipler_user_id')
+                        ->update(['discipler_user_id' => $leadComputerPioneer->id]);
+
+                    Church::where('game_session_id', $session->id)
+                        ->update([
+                            'leader_user_id' => $leadComputerPioneer->id,
+                            'started_by_name' => $leadComputerPioneer->name,
+                            'is_healthy_church' => false,
+                            'health_score' => 70,
+                            'founded_game_month' => 1,
+                            'last_coached_game_month' => 1,
+                            'elements_json' => [
+                                ChurchElement::RepentanceBelief->value,
+                                ChurchElement::Baptism->value,
+                                ChurchElement::Word->value,
+                                ChurchElement::Prayer->value,
+                                ChurchElement::Fellowship->value,
+                                ChurchElement::MakingDisciples->value,
+                            ],
+                        ]);
+                }
             }
 
             // Remove all human (non-computer) players from the isolated simulation database
@@ -1263,28 +1428,61 @@ class RealLifeSimulationService
 
         if ($forcedGeneration !== null) {
             $churchGen = max(1, min($maxAllowedGen, $forcedGeneration));
-            $parentChurch = $churchGen === 1
-                ? null
-                : ($activeChurches->where('generation', $churchGen - 1)->first() ?? $activeChurches->first());
         } elseif ($g1Count < max(1, (int) floor($totalActive * 0.16)) && $gameMonth >= 8) {
-            $parentChurch = null;
             $churchGen = 1;
         } elseif ($maxAllowedGen >= 2 && $g2Count < max(2, (int) floor($totalActive * 0.25))) {
-            $parentChurch = $activeChurches->where('generation', 1)->first() ?? $activeChurches->first();
             $churchGen = 2;
         } elseif ($maxAllowedGen >= 3 && $g3Count < max(3, (int) floor($totalActive * 0.28))) {
-            $parentChurch = $activeChurches->where('generation', 2)->first() ?? $activeChurches->first();
             $churchGen = 3;
         } else {
-            $parentChurch = $activeChurches
+            $candidateMothers = $activeChurches
                 ->where('generation', '<', $maxAllowedGen)
-                ->sortByDesc('generation')
-                ->first()
-                ?? $activeChurches->first();
+                ->sortByDesc('generation');
 
-            $churchGen = $parentChurch
-                ? min($maxAllowedGen, $parentChurch->generation + 1)
-                : 1;
+            $deepestMother = $candidateMothers->first();
+            $churchGen = $deepestMother ? min($maxAllowedGen, $deepestMother->generation + 1) : 1;
+        }
+
+        $parentChurch = null;
+        if ($churchGen > 1) {
+            $targetParentGen = $churchGen - 1;
+            $candidateParents = $activeChurches->where('generation', $targetParentGen);
+            if ($candidateParents->isEmpty()) {
+                $candidateParents = $activeChurches->where('generation', '<', $churchGen);
+            }
+
+            if ($candidateParents->isNotEmpty()) {
+                // 1. Leader NPC already belongs to an active candidate mother church
+                if ($leaderNpc?->church_id && $candidateParents->contains('id', $leaderNpc->church_id)) {
+                    $parentChurch = $candidateParents->firstWhere('id', $leaderNpc->church_id);
+                }
+
+                // 2. Leader NPC's discipler NPC leads a candidate church
+                if (! $parentChurch && $leaderNpc?->discipler_npc_id) {
+                    $parentChurch = $candidateParents->firstWhere('leader_npc_id', $leaderNpc->discipler_npc_id);
+                }
+
+                // 3. Leader NPC's discipler User leads a candidate church
+                if (! $parentChurch && $leaderNpc?->discipler_user_id) {
+                    $parentChurch = $candidateParents->firstWhere('leader_user_id', $leaderNpc->discipler_user_id);
+                }
+
+                // 4. Prefer candidates in the same ward, distributing across mother churches with the fewest active daughter churches
+                if (! $parentChurch) {
+                    $sameWardCandidates = $candidateParents->where('ward_id', $ward->id);
+                    $pool = $sameWardCandidates->isNotEmpty() ? $sameWardCandidates : $candidateParents;
+
+                    $childCounts = Church::where('game_session_id', $session->id)
+                        ->where('is_dissolved', false)
+                        ->whereIn('parent_church_id', $pool->pluck('id'))
+                        ->select('parent_church_id', DB::raw('count(*) as aggregate'))
+                        ->groupBy('parent_church_id')
+                        ->pluck('aggregate', 'parent_church_id')
+                        ->all();
+
+                    $parentChurch = $pool->sortBy(fn (Church $c) => $childCounts[$c->id] ?? 0)->first();
+                }
+            }
         }
 
         $leaderName = $leaderNpc ? $leaderNpc->name : ($pioneer->name ?? 'Nagoya Timothy');
@@ -1334,6 +1532,10 @@ class RealLifeSimulationService
             'lng' => $leaderNpc ? $leaderNpc->lng : (float) $ward->center_lng,
             'founded_game_month' => $gameMonth,
         ]);
+
+        if ($leaderNpc) {
+            $leaderNpc->update(['church_id' => $church->id]);
+        }
 
         // Associate unchurched believers in this ward with the new Bible study group
         Npc::where('game_session_id', $session->id)

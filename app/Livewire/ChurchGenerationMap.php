@@ -267,7 +267,7 @@ class ChurchGenerationMap extends Component
 
         $colWidth = 240;
         $rowHeight = 280;
-        $topMargin = 160;
+        $topMargin = 190;
         $leftMargin = 120;
 
         if ($this->viewMode === 'tiers') {

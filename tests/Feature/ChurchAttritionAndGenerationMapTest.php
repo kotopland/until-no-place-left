@@ -15,6 +15,8 @@ use App\Models\QueuedMonthlyAction;
 use App\Models\User;
 use App\Models\Ward;
 use App\Services\FourFieldsEngine;
+use App\Services\RealLifeSimulationService;
+use App\Services\ShowcaseSandboxService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -465,4 +467,175 @@ test('bible study groups have high probability to become a church after 6-12 mon
         ->and($smallerStudy->attenders_count)->toBe(0)
         ->and($memberNpc->church_id)->toBe($bibleStudy->id)
         ->and($bibleStudy->attenders_count)->toBeGreaterThan(6);
+});
+
+test('church circles coaching assigns daughter church to leader npc mother church rather than forcing coaching player church', function () {
+    // G2 Daughter Church led by Daisuke Kato (child of John Meito G1)
+    $g2Church = Church::create([
+        'game_session_id' => $this->session->id,
+        'ward_id' => $this->ward->id,
+        'name' => "Daisuke Kato's Acts 2 Church Circle (G2)",
+        'parent_church_id' => $this->g1Church->id,
+        'leader_npc_id' => $this->timothy->id,
+        'leader_user_id' => null,
+        'generation' => 2,
+        'elements_json' => [
+            ChurchElement::RepentanceBelief->value,
+            ChurchElement::Word->value,
+            ChurchElement::Prayer->value,
+        ],
+        'is_healthy_church' => true,
+        'health_score' => 80,
+        'attenders_count' => 8,
+        'believers_count' => 5,
+        'baptized_count' => 3,
+        'is_dissolved' => false,
+        'lat' => 35.1675,
+        'lng' => 136.9990,
+        'founded_game_month' => 2,
+    ]);
+
+    // G2 Disciple Tomoko Tanaka, who belongs to g2Church and was discipled by Daisuke Kato
+    $g2Disciple = Npc::create([
+        'game_session_id' => $this->session->id,
+        'ward_id' => $this->ward->id,
+        'church_id' => $g2Church->id,
+        'discipler_npc_id' => $this->timothy->id,
+        'name' => 'Tomoko Tanaka',
+        'name_ja' => '田中 智子',
+        'status' => ReceptivityStatus::Green,
+        'trained_411' => true,
+        'is_baptized' => true,
+        'trust_level' => 85,
+        'leadership_tier' => LeadershipTier::L2_ChurchPlanter,
+        'generation' => 2,
+    ]);
+
+    // Missionary John coaches Tomoko Tanaka to birth a church
+    $action = QueuedMonthlyAction::create([
+        'user_id' => $this->user->id,
+        'ward_id' => $this->ward->id,
+        'game_session_id' => $this->session->id,
+        'game_month' => 4,
+        'game_day' => 1,
+        'action_type' => MinistryActionType::ChurchCircles,
+        'target_npc_id' => $g2Disciple->id,
+        'ap_cost' => 2,
+        'status' => 'pending',
+    ]);
+
+    $engine = app(FourFieldsEngine::class);
+    $outcome = $engine->resolveSingleAction($action, 4);
+
+    $newChurch = Church::where('leader_npc_id', $g2Disciple->id)->first();
+
+    expect($newChurch)->not->toBeNull()
+        ->and($newChurch->parent_church_id)->toBe($g2Church->id)
+        ->and($newChurch->generation)->toBe(3);
+});
+
+test('autonomous daughter church planting branches from believer home church', function () {
+    $g2Church = Church::create([
+        'game_session_id' => $this->session->id,
+        'ward_id' => $this->ward->id,
+        'name' => "Daisuke Kato's Acts 2 Church Circle (G2)",
+        'parent_church_id' => $this->g1Church->id,
+        'leader_npc_id' => $this->timothy->id,
+        'leader_user_id' => null,
+        'generation' => 2,
+        'elements_json' => [
+            ChurchElement::RepentanceBelief->value,
+            ChurchElement::Word->value,
+            ChurchElement::Prayer->value,
+        ],
+        'is_healthy_church' => true,
+        'health_score' => 80,
+        'attenders_count' => 8,
+        'believers_count' => 5,
+        'baptized_count' => 3,
+        'is_dissolved' => false,
+        'lat' => 35.1675,
+        'lng' => 136.9990,
+        'founded_game_month' => 2,
+    ]);
+
+    $believer = Npc::create([
+        'game_session_id' => $this->session->id,
+        'ward_id' => $this->ward->id,
+        'church_id' => $g2Church->id,
+        'discipler_npc_id' => $this->timothy->id,
+        'name' => 'Kenji Tanaka',
+        'name_ja' => '田中 健二',
+        'status' => ReceptivityStatus::Green,
+        'trained_411' => true,
+        'is_baptized' => true,
+        'trust_level' => 90,
+        'leadership_tier' => LeadershipTier::L2_ChurchPlanter,
+        'generation' => 2,
+    ]);
+
+    // Give believer 1 disciple
+    Npc::create([
+        'game_session_id' => $this->session->id,
+        'ward_id' => $this->ward->id,
+        'discipler_npc_id' => $believer->id,
+        'name' => 'Apprentice Seeker',
+        'name_ja' => '弟子 求道者',
+        'status' => ReceptivityStatus::Green,
+        'trained_411' => true,
+        'is_baptized' => false,
+        'trust_level' => 75,
+        'generation' => 3,
+    ]);
+
+    $engine = app(FourFieldsEngine::class);
+    $engine->runAutonomousMultiplication($this->session, 5);
+
+    $autonomousChurch = Church::where('leader_npc_id', $believer->id)->first();
+
+    expect($autonomousChurch)->not->toBeNull()
+        ->and($autonomousChurch->parent_church_id)->toBe($g2Church->id)
+        ->and($autonomousChurch->generation)->toBe(3);
+});
+
+test('simulation initializes distinct g1 churches for all co-laborers in coop mode and distributes daughter church parentage', function () {
+    $simulator = app(RealLifeSimulationService::class);
+    $simulator->resetSessionToBaseline($this->session, 'coop');
+
+    // 1. Check all 4 co-laborers have G1 churches in their home wards
+    $g1Churches = Church::where('game_session_id', $this->session->id)
+        ->where('generation', 1)
+        ->get();
+
+    expect($g1Churches->count())->toBeGreaterThanOrEqual(4);
+
+    $kenji = User::where('email', 'kenji.yamada@nagoyaharvest.jp')->first();
+    $sarah = User::where('email', 'sarah.jenkins@nagoyaharvest.jp')->first();
+    $marcus = User::where('email', 'marcus.silva@nagoyaharvest.jp')->first();
+    $yuki = User::where('email', 'yuki.takahashi@nagoyaharvest.jp')->first();
+
+    expect($g1Churches->contains('leader_user_id', $kenji->id))->toBeTrue()
+        ->and($g1Churches->contains('leader_user_id', $sarah->id))->toBeTrue()
+        ->and($g1Churches->contains('leader_user_id', $marcus->id))->toBeTrue()
+        ->and($g1Churches->contains('leader_user_id', $yuki->id))->toBeTrue();
+
+    // 2. Run simulation for 12 months (into Year 1 / G2 reproduction)
+    $simulator->simulate(
+        session: $this->session,
+        targetMonths: 12,
+        mode: 'coop',
+        resetFirst: false,
+    );
+
+    // 3. Verify that G2 daughter churches have multiple distinct parent churches (not all Kenji Yamada!)
+    $g2Churches = Church::where('game_session_id', $this->session->id)
+        ->where('generation', 2)
+        ->get();
+
+    expect($g2Churches->count())->toBeGreaterThan(0);
+
+    $uniqueParents = $g2Churches->pluck('parent_church_id')->filter()->unique();
+    expect($uniqueParents->count())->toBeGreaterThan(1);
+
+    app(ShowcaseSandboxService::class)->deactivate();
 });

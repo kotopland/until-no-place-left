@@ -66,7 +66,7 @@
     <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] bg-gradient-to-b from-indigo-900/20 via-emerald-900/10 to-transparent blur-3xl pointer-events-none -z-10"></div>
 
     <!-- Header Navigation -->
-    <header class="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80">
+    <header class="sticky top-0 z-50 bg-white/90 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
             <a href="{{ url('/') }}" class="flex items-center gap-2.5 sm:gap-3 group min-w-0 shrink-0" title="Return to Movement Invitation">
                 <img 
@@ -75,41 +75,41 @@
                     class="w-9 h-9 sm:w-11 sm:h-11 object-contain rounded-xl sm:rounded-2xl shadow-xl shadow-indigo-500/25 border border-indigo-500/40 group-hover:scale-105 transition duration-300 shrink-0"
                 >
                 <div class="min-w-0">
-                    <span class="text-xs font-black text-white tracking-wider uppercase flex items-center gap-1.5 whitespace-nowrap">
+                    <span class="text-xs font-black text-slate-900 dark:text-white tracking-wider uppercase flex items-center gap-1.5 whitespace-nowrap">
                         <span>Nagoya Oikos</span>
-                        <span class="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] bg-indigo-950 text-indigo-400 border border-indigo-800">Four Fields</span>
+                        <span class="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] bg-indigo-50 text-indigo-900 border border-indigo-200 dark:bg-indigo-950 dark:text-indigo-400 dark:border-indigo-800">Four Fields</span>
                     </span>
-                    <span class="hidden sm:block text-[11px] text-slate-400 font-medium truncate">Until No Place Left • Japan</span>
+                    <span class="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate">Until No Place Left • Japan</span>
                 </div>
             </a>
 
-            <nav class="hidden md:flex items-center gap-2.5 lg:gap-3.5 xl:gap-5 text-xs font-semibold text-slate-300">
-                <a href="{{ url('/') }}" class="text-amber-400 hover:text-amber-300 transition flex items-center gap-1 font-bold">
+            <nav class="hidden md:flex items-center gap-2.5 lg:gap-3.5 xl:gap-5 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                <a href="{{ url('/') }}" class="text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition flex items-center gap-1 font-bold">
                     <span>←</span>
                     <span>Invitation</span>
                 </a>
-                <a href="#story" class="hover:text-indigo-400 transition flex items-center gap-1">
-                    <span class="text-indigo-400/80 font-mono text-[10px]">1.</span>
+                <a href="#story" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition flex items-center gap-1">
+                    <span class="text-indigo-600/80 dark:text-indigo-400/80 font-mono text-[10px]">1.</span>
                     <span>Story</span>
                 </a>
-                <a href="#four-fields" class="hover:text-emerald-400 transition flex items-center gap-1">
-                    <span class="text-emerald-400/80 font-mono text-[10px]">2.</span>
+                <a href="#four-fields" class="hover:text-emerald-600 dark:hover:text-emerald-400 transition flex items-center gap-1">
+                    <span class="text-emerald-600/80 dark:text-emerald-400/80 font-mono text-[10px]">2.</span>
                     <span>Four Fields</span>
                 </a>
-                <a href="#toolbox" class="hover:text-cyan-400 transition flex items-center gap-1">
-                    <span class="text-cyan-400/80 font-mono text-[10px]">3.</span>
+                <a href="#toolbox" class="hover:text-cyan-600 dark:hover:text-cyan-400 transition flex items-center gap-1">
+                    <span class="text-cyan-600/80 dark:text-cyan-400/80 font-mono text-[10px]">3.</span>
                     <span>Toolbox</span>
                 </a>
-                <a href="#rules" class="hover:text-amber-400 transition flex items-center gap-1">
-                    <span class="text-amber-400/80 font-mono text-[10px]">4.</span>
+                <a href="#rules" class="hover:text-amber-600 dark:hover:text-amber-400 transition flex items-center gap-1">
+                    <span class="text-amber-600/80 dark:text-amber-400/80 font-mono text-[10px]">4.</span>
                     <span>Rules Matrix</span>
                 </a>
-                <a href="#wards" class="hover:text-purple-400 transition flex items-center gap-1">
-                    <span class="text-purple-400/80 font-mono text-[10px]">5.</span>
+                <a href="#wards" class="hover:text-purple-600 dark:hover:text-purple-400 transition flex items-center gap-1">
+                    <span class="text-purple-600/80 dark:text-purple-400/80 font-mono text-[10px]">5.</span>
                     <span>16 Wards</span>
                 </a>
-                <a href="#quickstart" class="hover:text-emerald-400 transition flex items-center gap-1">
-                    <span class="text-emerald-400/80 font-mono text-[10px]">6.</span>
+                <a href="#quickstart" class="hover:text-emerald-600 dark:hover:text-emerald-400 transition flex items-center gap-1">
+                    <span class="text-emerald-600/80 dark:text-emerald-400/80 font-mono text-[10px]">6.</span>
                     <span>Quick Start</span>
                 </a>
             </nav>
@@ -132,7 +132,7 @@
                         type="button" 
                         @click="$store.audio?.toggle()" 
                         class="flex items-center gap-1.5 p-2 xl:px-3 xl:py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none"
-                        :class="$store.audio?.isPlaying ? 'bg-indigo-950/90 border-indigo-500 text-indigo-300 shadow-md shadow-indigo-500/20 ring-1 ring-indigo-500/40' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'"
+                        :class="$store.audio?.isPlaying ? 'bg-indigo-50 dark:bg-indigo-950/90 border-indigo-300 dark:border-indigo-500 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-400/40' : 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
                         title="Japanese Background Music"
                     >
                         <span x-show="!$store.audio?.isPlaying">🔇</span>
@@ -149,31 +149,31 @@
 
                     <!-- Hover Popover: Song Title & Controls -->
                     <div 
-                        class="absolute right-0 top-full mt-2 w-64 p-3.5 rounded-2xl bg-slate-900/95 backdrop-blur-xl border border-indigo-500/30 shadow-2xl shadow-black/80 z-50 pointer-events-none opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 transition-all duration-200 origin-top-right space-y-2 text-left"
+                        class="absolute right-0 top-full mt-2 w-64 p-3.5 rounded-2xl bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-indigo-500/30 shadow-2xl shadow-black/20 dark:shadow-black/80 z-50 pointer-events-none opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 transition-all duration-200 origin-top-right space-y-2 text-left"
                     >
-                        <div class="flex items-center justify-between gap-2 border-b border-slate-800 pb-2">
-                            <span class="text-[10px] font-black uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                        <div class="flex items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+                            <span class="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
                                 <span class="w-2 h-2 rounded-full" :class="$store.audio?.isPlaying ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'"></span>
                                 <span x-text="$store.audio?.isPlaying ? 'Now Playing' : 'Background Music'"></span>
                             </span>
-                            <span class="text-[9px] font-semibold text-slate-300 px-1.5 py-0.5 rounded bg-slate-800/90 border border-slate-700/60" x-text="$store.audio?.isPlaying ? ($store.audio?.currentSongCategory || 'Traditional & Folk') : 'Paused'"></span>
+                            <span class="text-[9px] font-semibold text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/60" x-text="$store.audio?.isPlaying ? ($store.audio?.currentSongCategory || 'Traditional & Folk') : 'Paused'"></span>
                         </div>
 
                         <div x-show="$store.audio?.isPlaying" class="space-y-1">
-                            <div class="text-xs font-bold text-white leading-snug flex items-center gap-1.5">
+                            <div class="text-xs font-bold text-slate-900 dark:text-white leading-snug flex items-center gap-1.5">
                                 <span>🎵</span>
                                 <span x-text="$store.audio?.currentSongEnglish || 'Traditional Melody'"></span>
                             </div>
-                            <div class="text-[11px] text-indigo-300/90 font-medium pl-5" x-text="$store.audio?.currentSongJapanese || ''"></div>
-                            <div class="text-[10px] text-slate-400 pt-1 border-t border-slate-800/60 flex items-center gap-1">
+                            <div class="text-[11px] text-indigo-700 dark:text-indigo-300/90 font-medium pl-5" x-text="$store.audio?.currentSongJapanese || ''"></div>
+                            <div class="text-[10px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200 dark:border-slate-800/60 flex items-center gap-1">
                                 <span>💡</span>
                                 <span>Click to mute • Shuffles on next play</span>
                             </div>
                         </div>
 
                         <div x-show="!$store.audio?.isPlaying" class="space-y-1">
-                            <div class="text-xs font-semibold text-slate-300">Music is muted</div>
-                            <div class="text-[10px] text-slate-400">Click to play famous Japanese melodies (Sakura, Sukiyaki, Furusato, etc.)</div>
+                            <div class="text-xs font-semibold text-slate-600 dark:text-slate-300">Music is muted</div>
+                            <div class="text-[10px] text-slate-500 dark:text-slate-400">Click to play famous Japanese melodies (Sakura, Sukiyaki, Furusato, etc.)</div>
                         </div>
                     </div>
                 </div>
@@ -181,7 +181,7 @@
                 @auth
                     <a 
                         href="{{ route('dashboard') }}" 
-                        class="hidden sm:flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-white px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 truncate max-w-[120px]"
+                        class="hidden sm:flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 truncate max-w-[120px]"
                         title="{{ auth()->user()->name }}"
                     >
                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
@@ -197,7 +197,7 @@
                 @else
                     <a 
                         href="{{ route('simulate') }}" 
-                        class="hidden sm:flex items-center gap-1.5 text-xs font-bold text-amber-300 hover:text-amber-200 px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 transition"
+                        class="hidden sm:flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 px-3.5 py-2 rounded-xl bg-amber-50 dark:bg-amber-500/15 hover:bg-amber-100 dark:hover:bg-amber-500/25 border border-amber-300 dark:border-amber-500/40 transition"
                         title="Explore the 15-Year Nagoya Movement Simulation (Shared Daily SQLite DB)"
                     >
                         <span>⏱️</span>
@@ -205,7 +205,7 @@
                     </a>
                     <a 
                         href="{{ route('login') }}" 
-                        class="text-[11px] sm:text-xs font-bold text-slate-300 hover:text-white px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 transition whitespace-nowrap"
+                        class="text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900/80 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition whitespace-nowrap"
                     >
                         Sign In
                     </a>
@@ -332,43 +332,43 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Story Card 1 -->
-                <div class="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-4 relative overflow-hidden">
-                    <div class="w-12 h-12 rounded-2xl bg-rose-950/60 border border-rose-800/60 flex items-center justify-center text-2xl text-rose-400">
+                <div class="p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 shadow-md dark:shadow-xl space-y-4 relative overflow-hidden">
+                    <div class="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 dark:bg-rose-950/60 dark:border-rose-800/60 dark:text-rose-400 flex items-center justify-center text-2xl">
                         ⛩️
                     </div>
-                    <h3 class="text-lg font-bold text-white">The Missionary "Graveyard"?</h3>
-                    <p class="text-xs text-slate-300 leading-relaxed">
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">The Missionary "Graveyard"?</h3>
+                    <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                         Japan is home to 125 million people, yet less than half of one percent know Jesus Christ. In Nagoya, corporate burnout, intense loneliness, ancestral Buddhist household obligations, and ancient Shinto shrines (like Atsuta Jingu) often make cold, Western-style pulpit preaching hit a brick wall.
                     </p>
-                    <div class="pt-2 text-[11px] text-rose-300 font-semibold">
+                    <div class="pt-2 text-[11px] text-rose-700 dark:text-rose-300 font-semibold">
                         💡 Key Insight: Preaching without deep listening causes Japanese seekers to politely withdraw.
                     </div>
                 </div>
 
                 <!-- Story Card 2 -->
-                <div class="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-4 relative overflow-hidden">
-                    <div class="w-12 h-12 rounded-2xl bg-indigo-950/60 border border-indigo-800/60 flex items-center justify-center text-2xl text-indigo-400">
+                <div class="p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 shadow-md dark:shadow-xl space-y-4 relative overflow-hidden">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-600 dark:bg-indigo-950/60 dark:border-indigo-800/60 dark:text-indigo-400 flex items-center justify-center text-2xl">
                         🌐
                     </div>
-                    <h3 class="text-lg font-bold text-white">The Oikos Relational Web</h3>
-                    <p class="text-xs text-slate-300 leading-relaxed">
-                        In Greek, <strong class="text-indigo-400">Oikos</strong> means household or relational sphere: family, close friends, coworkers, and neighbors. In Japan, trust is everything. The Gospel spreads virally not through strangers, but through natural networks of trust once a Japanese person accepts Christ and shares with their family.
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">The Oikos Relational Web</h3>
+                    <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                        In Greek, <strong class="text-indigo-700 dark:text-indigo-400">Oikos</strong> means household or relational sphere: family, close friends, coworkers, and neighbors. In Japan, trust is everything. The Gospel spreads virally not through strangers, but through natural networks of trust once a Japanese person accepts Christ and shares with their family.
                     </p>
-                    <div class="pt-2 text-[11px] text-indigo-300 font-semibold">
+                    <div class="pt-2 text-[11px] text-indigo-700 dark:text-indigo-300 font-semibold">
                         💡 Key Insight: Disciples multiply through existing webs of trust, not isolated steeples.
                     </div>
                 </div>
 
                 <!-- Story Card 3 -->
-                <div class="p-6 rounded-3xl bg-slate-900/70 border border-slate-800 shadow-xl space-y-4 relative overflow-hidden">
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-950/60 border border-emerald-800/60 flex items-center justify-center text-2xl text-emerald-400">
+                <div class="p-6 rounded-3xl bg-white dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 shadow-md dark:shadow-xl space-y-4 relative overflow-hidden">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 dark:bg-emerald-950/60 dark:border-emerald-800/60 dark:text-emerald-400 flex items-center justify-center text-2xl">
                         🔥
                     </div>
-                    <h3 class="text-lg font-bold text-white">Romans 15:23 & No Place Left</h3>
-                    <p class="text-xs text-slate-300 leading-relaxed">
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Romans 15:23 & No Place Left</h3>
+                    <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                         The Apostle Paul wrote in Romans 15:23: <em>"Having no place left in these parts..."</em> How could Paul say that in major provinces? Because he didn't convert everyone himself — he planted reproducing, indigenous church movements that filled every neighborhood. This is your assignment in Nagoya.
                     </p>
-                    <div class="pt-2 text-[11px] text-emerald-300 font-semibold">
+                    <div class="pt-2 text-[11px] text-emerald-700 dark:text-emerald-300 font-semibold">
                         💡 Victory Condition: Indigenous 4th generation (G4+) church streams in all 16 wards!
                     </div>
                 </div>
@@ -392,89 +392,89 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <!-- Field 1 -->
-                <div class="p-5 rounded-3xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-4 hover:border-blue-500/50 transition">
+                <div class="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 shadow-sm dark:shadow-none flex flex-col justify-between space-y-4 hover:border-blue-500/50 transition">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-950 text-blue-400 border border-blue-800 uppercase">Field 1</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-900 border border-blue-300 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-800 uppercase">Field 1</span>
                             <span class="text-xl">🤝</span>
                         </div>
-                        <h4 class="text-base font-bold text-white">Empty Field (Entry Strategy)</h4>
-                        <p class="text-xs text-slate-300 leading-relaxed">
-                            Entering new territory. Softening spiritual soil and discovering <strong class="text-blue-300">Persons of Peace (Luke 10)</strong> through solo street prayer walks or <strong class="text-emerald-400">Joint MAWL Prayer Walks</strong> with residents, Casual Talk, listening to corporate burnout, healing prayer, mercy care, and International Cafes.
+                        <h4 class="text-base font-bold text-slate-900 dark:text-white">Empty Field (Entry Strategy)</h4>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Entering new territory. Softening spiritual soil and discovering <strong class="text-blue-700 dark:text-blue-300">Persons of Peace (Luke 10)</strong> through solo street prayer walks or <strong class="text-emerald-700 dark:text-emerald-400">Joint MAWL Prayer Walks</strong> with residents, Casual Talk, listening to corporate burnout, healing prayer, mercy care, and International Cafes.
                         </p>
                     </div>
-                    <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[11px] text-blue-300">
+                    <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800/80 text-[11px] text-blue-700 dark:text-blue-300">
                         ⚡ Actions: Prayer Walking (Solo/Joint), Casual Talk, Deep Listening, Healing Prayer, Mercy Outreach, International Cafe.
                     </div>
                 </div>
 
                 <!-- Field 2 -->
-                <div class="p-5 rounded-3xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-4 hover:border-emerald-500/50 transition">
+                <div class="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 shadow-sm dark:shadow-none flex flex-col justify-between space-y-4 hover:border-emerald-500/50 transition">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800 uppercase">Field 2</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800 uppercase">Field 2</span>
                             <span class="text-xl">🌾</span>
                         </div>
-                        <h4 class="text-base font-bold text-white">Seeded Field (Gospel Sowing & Gradual Seeking)</h4>
-                        <p class="text-xs text-slate-300 leading-relaxed">
-                            Proclaiming the Good News simply and reproducibly through the <strong class="text-emerald-300">15-Second Testimony</strong> and <strong class="text-emerald-300">3 Circles Gospel</strong>. While a person can move rapidly from <strong class="text-rose-400">Red</strong> to <strong class="text-amber-400">Yellow</strong> because they love the community and warmth, moving from <strong class="text-amber-400">Yellow</strong> to <strong class="text-emerald-400">Green</strong> (salvation) in Japan is a gradual, long-term journey typically taking <span class="text-amber-300 font-semibold">several months to several years</span>. Direct encounters with Scripture and patient prayer water the seed until genuine repentance takes root.
+                        <h4 class="text-base font-bold text-slate-900 dark:text-white">Seeded Field (Gospel Sowing & Gradual Seeking)</h4>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Proclaiming the Good News simply and reproducibly through the <strong class="text-emerald-700 dark:text-emerald-300">15-Second Testimony</strong> and <strong class="text-emerald-700 dark:text-emerald-300">3 Circles Gospel</strong>. While a person can move rapidly from <strong class="text-rose-700 dark:text-rose-400">Red</strong> to <strong class="text-amber-700 dark:text-amber-400">Yellow</strong> because they love the community and warmth, moving from <strong class="text-amber-700 dark:text-amber-400">Yellow</strong> to <strong class="text-emerald-700 dark:text-emerald-400">Green</strong> (salvation) in Japan is a gradual, long-term journey typically taking <span class="text-amber-700 dark:text-amber-300 font-semibold">several months to several years</span>. Direct encounters with Scripture and patient prayer water the seed until genuine repentance takes root.
                         </p>
                     </div>
-                    <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[11px] text-emerald-300">
+                    <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800/80 text-[11px] text-emerald-700 dark:text-emerald-300">
                         ⚡ Actions: 15-Sec Testimony, 3 Circles Gospel, Prayer of Salvation (unlocked after gradual seeking).
                     </div>
                 </div>
 
                 <!-- Field 3 -->
-                <div class="p-5 rounded-3xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-4 hover:border-amber-500/50 transition">
+                <div class="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 shadow-sm dark:shadow-none flex flex-col justify-between space-y-4 hover:border-amber-500/50 transition">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-400 border border-amber-800 uppercase">Field 3</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800 uppercase">Field 3</span>
                             <span class="text-xl">🌿</span>
                         </div>
-                        <h4 class="text-base font-bold text-white">Growing Field (Discipleship & 6mo-2yr Baptism)</h4>
-                        <p class="text-xs text-slate-300 leading-relaxed">
-                            Grounding believers in loving obedience through the <strong class="text-amber-300">Commands of Christ</strong> and <strong class="text-amber-300">Sword Bible Studies</strong>. Equipping them with <strong class="text-amber-300">411 Tool</strong> to map their Oikos. In Japan, water baptism is rarely a matter of days—it typically spans <span class="text-cyan-300 font-semibold">6 months to 2 years</span> (<span class="text-amber-400">Counting Cost</span> ➔ <span class="text-blue-400">Committed</span> ➔ <span class="text-cyan-400">Baptized</span>), as new disciples prayerfully navigate family obligations, ancestral rites (<em>butsudan</em>), and parental honor to win their households.
+                        <h4 class="text-base font-bold text-slate-900 dark:text-white">Growing Field (Discipleship & 6mo-2yr Baptism)</h4>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Grounding believers in loving obedience through the <strong class="text-amber-700 dark:text-amber-300">Commands of Christ</strong> and <strong class="text-amber-700 dark:text-amber-300">Sword Bible Studies</strong>. Equipping them with <strong class="text-amber-700 dark:text-amber-300">411 Tool</strong> to map their Oikos. In Japan, water baptism is rarely a matter of days—it typically spans <span class="text-cyan-700 dark:text-cyan-300 font-semibold">6 months to 2 years</span> (<span class="text-amber-700 dark:text-amber-400">Counting Cost</span> ➔ <span class="text-blue-700 dark:text-blue-400">Committed</span> ➔ <span class="text-cyan-700 dark:text-cyan-400">Baptized</span>), as new disciples prayerfully navigate family obligations, ancestral rites (<em>butsudan</em>), and parental honor to win their households.
                         </p>
                     </div>
-                    <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[11px] text-amber-300">
+                    <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800/80 text-[11px] text-amber-700 dark:text-amber-300">
                         ⚡ Actions: Commands of Christ, Sword Bible Study, Count Cost & Baptism (6mo-2yr journey), 411 Discipleship.
                     </div>
                 </div>
 
                 <!-- Field 4 -->
-                <div class="p-5 rounded-3xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-4 hover:border-purple-500/50 transition">
+                <div class="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 shadow-sm dark:shadow-none flex flex-col justify-between space-y-4 hover:border-purple-500/50 transition">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950 text-purple-400 border border-purple-800 uppercase">Field 4</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-900 border border-purple-300 dark:bg-purple-950 dark:text-purple-400 dark:border-purple-800 uppercase">Field 4</span>
                             <span class="text-xl">⛪</span>
                         </div>
-                        <h4 class="text-base font-bold text-white">Harvested Field (Acts 2 Church Circles & Gen Map)</h4>
-                        <p class="text-xs text-slate-300 leading-relaxed">
-                            Gathering baptized disciples into self-governing 3/3rds groups practicing the <strong class="text-purple-300">11 Acts 2 rhythms</strong>: Word, Prayer, Fellowship, Communion, Baptism, Giving, Worship, Local Leaders, and Multiplying Groups. Tracked across generations in the <strong class="text-amber-300">Visual Church Generation Map</strong>.
+                        <h4 class="text-base font-bold text-slate-900 dark:text-white">Harvested Field (Acts 2 Church Circles & Gen Map)</h4>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Gathering baptized disciples into self-governing 3/3rds groups practicing the <strong class="text-purple-700 dark:text-purple-300">11 Acts 2 rhythms</strong>: Word, Prayer, Fellowship, Communion, Baptism, Giving, Worship, Local Leaders, and Multiplying Groups. Tracked across generations in the <strong class="text-amber-700 dark:text-amber-300">Visual Church Generation Map</strong>.
                         </p>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            ⚠️ <strong>Real-World Attrition & Dissolution:</strong> From time to time, members leave a church because they <span class="text-amber-300">move</span> (job transfer/relocation), get <span class="text-rose-300">sick</span>, or face <span class="text-orange-300">interpersonal conflict</span>. This reduces church quality and attendance, and can occasionally dissolve struggling groups. Dissolved churches appear ghosted on the Gen Map and can be revitalized through pastoral coaching!
+                        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                            ⚠️ <strong>Real-World Attrition & Dissolution:</strong> From time to time, members leave a church because they <span class="text-amber-700 dark:text-amber-300">move</span> (job transfer/relocation), get <span class="text-rose-700 dark:text-rose-300">sick</span>, or face <span class="text-orange-700 dark:text-orange-300">interpersonal conflict</span>. This reduces church quality and attendance, and can occasionally dissolve struggling groups. Dissolved churches appear ghosted on the Gen Map and can be revitalized through pastoral coaching!
                         </p>
                     </div>
-                    <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[11px] text-purple-300">
+                    <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800/80 text-[11px] text-purple-700 dark:text-purple-300">
                         ⚡ Actions: Acts 2 Church Circles (3/3rds: Look Back, Look Up, Look Ahead), Church Revitalization, & Generational Mapping.
                     </div>
                 </div>
 
                 <!-- Field 5 -->
-                <div class="p-5 rounded-3xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-4 hover:border-rose-500/50 transition">
+                <div class="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 shadow-sm dark:shadow-none flex flex-col justify-between space-y-4 hover:border-rose-500/50 transition">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950 text-rose-400 border border-rose-800 uppercase">Field 5</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-900 border border-rose-300 dark:bg-rose-950 dark:text-rose-400 dark:border-rose-800 uppercase">Field 5</span>
                             <span class="text-xl">👑</span>
                         </div>
-                        <h4 class="text-base font-bold text-white">Multiplication (5 Levels of Leadership)</h4>
-                        <p class="text-xs text-slate-300 leading-relaxed">
-                            Multiplying leadership beyond missionary bottlenecks. Mentoring Timothys (L1 to L2), conducting quarterly <strong class="text-rose-300">Iron-on-Iron peer coaching</strong> with generational mapping, and deploying regional <strong class="text-rose-300">Swarm Training teams</strong>.
+                        <h4 class="text-base font-bold text-slate-900 dark:text-white">Multiplication (5 Levels of Leadership)</h4>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Multiplying leadership beyond missionary bottlenecks. Mentoring Timothys (L1 to L2), conducting quarterly <strong class="text-rose-700 dark:text-rose-300">Iron-on-Iron peer coaching</strong> with generational mapping, and deploying regional <strong class="text-rose-700 dark:text-rose-300">Swarm Training teams</strong>.
                         </p>
                     </div>
-                    <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[11px] text-rose-300">
+                    <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800/80 text-[11px] text-rose-700 dark:text-rose-300">
                         ⚡ Actions: Mentor Timothy, Iron-on-Iron Coaching, Swarm Training & Movement Catalyzing.
                     </div>
                 </div>
@@ -497,15 +497,15 @@
             </div>
 
             <!-- Guiding Principle Banner -->
-            <div class="p-6 rounded-3xl bg-gradient-to-r from-cyan-950/80 via-indigo-950/70 to-slate-900 border border-cyan-800/60 shadow-xl space-y-3">
+            <div class="p-6 rounded-3xl bg-gradient-to-r from-cyan-50 via-indigo-50/70 to-white dark:from-cyan-950/80 dark:via-indigo-950/70 dark:to-slate-900 border border-cyan-200 dark:border-cyan-800/60 shadow-md dark:shadow-xl space-y-3">
                 <div class="flex items-center gap-3">
                     <span class="text-2xl">💡</span>
-                    <h3 class="text-base font-bold text-cyan-200">The Guiding Principle of Movement Coaching</h3>
+                    <h3 class="text-base font-bold text-cyan-900 dark:text-cyan-200">The Guiding Principle of Movement Coaching</h3>
                 </div>
-                <blockquote class="text-sm text-cyan-100 font-medium italic border-l-4 border-cyan-500 pl-4 py-1 leading-relaxed">
+                <blockquote class="text-sm text-cyan-950 dark:text-cyan-100 font-medium italic border-l-4 border-cyan-500 pl-4 py-1 leading-relaxed">
                     "Lead from one level ahead of wherever the leader is who you are with! Once your leaders are confident and competent with the tools for their current level, begin equipping them with tools from 1 level above!"
                 </blockquote>
-                <p class="text-xs text-slate-300 leading-relaxed">
+                <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                     In the simulation, every resident's spiritual readiness and leadership tier are tracked in real-time. The system strictly guards against pedagogical mismatches: <em>people who have never heard about Jesus cannot be assigned Timothy Mentoring or Swarm Training</em>.
                 </p>
             </div>
@@ -513,130 +513,130 @@
             <!-- 5 Levels Cards Matrix -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <!-- Level 1 -->
-                <div class="p-5 rounded-3xl bg-slate-900/80 border border-cyan-800/40 flex flex-col justify-between space-y-4 hover:border-cyan-500/60 transition group">
+                <div class="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-cyan-800/40 flex flex-col justify-between space-y-4 hover:border-cyan-500/60 transition group shadow-sm dark:shadow-none">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-950 text-cyan-400 border border-cyan-800">LEVEL 1</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-100 text-cyan-900 border border-cyan-300 dark:bg-cyan-950 dark:text-cyan-400 dark:border-cyan-800">LEVEL 1</span>
                             <span class="text-xl">🌱</span>
                         </div>
                         <div>
-                            <h4 class="text-base font-bold text-white group-hover:text-cyan-300 transition">Seed Sower</h4>
-                            <span class="text-[11px] text-cyan-400 font-medium block">種まく人 (Personal Sower)</span>
+                            <h4 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition">Seed Sower</h4>
+                            <span class="text-[11px] text-cyan-700 dark:text-cyan-400 font-medium block">種まく人 (Personal Sower)</span>
                         </div>
-                        <p class="text-xs text-slate-300 leading-relaxed">
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                             <strong>Core Focus:</strong> Personal evangelism, entry into new relational spheres, and basic discipleship tools.
                         </p>
-                        <div class="space-y-1.5 text-[11px] text-slate-400">
-                            <div><strong class="text-slate-200">Tools:</strong> 411, 15-Sec Testimony, 3 Circles, 3-Touch Entry, Oikos Mapping.</div>
-                            <div><strong class="text-slate-200">Studies:</strong> Commands of Christ, My Story / Jesus Story.</div>
-                            <div><strong class="text-slate-200">Progression:</strong> Overcome fear of man; witness consistently to family & friends.</div>
+                        <div class="space-y-1.5 text-[11px] text-slate-600 dark:text-slate-400">
+                            <div><strong class="text-slate-900 dark:text-slate-200">Tools:</strong> 411, 15-Sec Testimony, 3 Circles, 3-Touch Entry, Oikos Mapping.</div>
+                            <div><strong class="text-slate-900 dark:text-slate-200">Studies:</strong> Commands of Christ, My Story / Jesus Story.</div>
+                            <div><strong class="text-slate-900 dark:text-slate-200">Progression:</strong> Overcome fear of man; witness consistently to family & friends.</div>
                         </div>
                     </div>
-                    <div class="pt-3 border-t border-slate-800 text-[10px] font-bold text-cyan-300 flex items-center justify-between">
+                    <div class="pt-3 border-t border-slate-200 dark:border-slate-800 text-[10px] font-bold text-cyan-700 dark:text-cyan-300 flex items-center justify-between">
                         <span>Residential: 3-Touch Entry</span>
                         <span>Multiplication: 1x</span>
                     </div>
                 </div>
 
                 <!-- Level 2 -->
-                <div class="p-5 rounded-3xl bg-slate-900/80 border border-emerald-800/40 flex flex-col justify-between space-y-4 hover:border-emerald-500/60 transition group">
+                <div class="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-emerald-800/40 flex flex-col justify-between space-y-4 hover:border-emerald-500/60 transition group shadow-sm dark:shadow-none">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">LEVEL 2</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800">LEVEL 2</span>
                             <span class="text-xl">⛪</span>
                         </div>
                         <div>
-                            <h4 class="text-base font-bold text-white group-hover:text-emerald-300 transition">Church Planter</h4>
-                            <span class="text-[11px] text-emerald-400 font-medium block">開拓者 (Simple Church Planter)</span>
+                            <h4 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition">Church Planter</h4>
+                            <span class="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium block">開拓者 (Simple Church Planter)</span>
                         </div>
-                        <p class="text-xs text-slate-300 leading-relaxed">
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                             <strong>Core Focus:</strong> Gathering disciples, forming simple reproducing churches, and pastoral care.
                         </p>
-                        <div class="space-y-1.5 text-[11px] text-slate-400">
-                            <div><strong class="text-slate-200">Tools:</strong> 3/3rds Church Circles, Commands of Christ, Sword DBS, Baptism practice.</div>
-                            <div><strong class="text-slate-200">Studies:</strong> 3/3rds Meeting Pattern, Lord's Supper, Acts 2 Church Health.</div>
-                            <div><strong class="text-slate-200">Progression:</strong> Lead a 3/3rds church; practice loving accountability.</div>
+                        <div class="space-y-1.5 text-[11px] text-slate-600 dark:text-slate-400">
+                            <div><strong class="text-slate-900 dark:text-slate-200">Tools:</strong> 3/3rds Church Circles, Commands of Christ, Sword DBS, Baptism practice.</div>
+                            <div><strong class="text-slate-900 dark:text-slate-200">Studies:</strong> 3/3rds Meeting Pattern, Lord's Supper, Acts 2 Church Health.</div>
+                            <div><strong class="text-slate-900 dark:text-slate-200">Progression:</strong> Lead a 3/3rds church; practice loving accountability.</div>
                         </div>
                     </div>
-                    <div class="pt-3 border-t border-slate-800 text-[10px] font-bold text-emerald-300 flex items-center justify-between">
+                    <div class="pt-3 border-t border-slate-200 dark:border-slate-800 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 flex items-center justify-between">
                         <span>Residential: Church Formation</span>
                         <span>Multiplication: 2x–3x</span>
                     </div>
                 </div>
 
                 <!-- Level 3 -->
-                <div class="p-5 rounded-3xl bg-slate-900/80 border border-amber-800/40 flex flex-col justify-between space-y-4 hover:border-amber-500/60 transition group">
+                <div class="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-amber-800/40 flex flex-col justify-between space-y-4 hover:border-amber-500/60 transition group shadow-sm dark:shadow-none">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-400 border border-amber-800">LEVEL 3</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800">LEVEL 3</span>
                             <span class="text-xl">🌿</span>
                         </div>
                         <div>
-                            <h4 class="text-base font-bold text-white group-hover:text-amber-300 transition">CPMer / Multiplier</h4>
-                            <span class="text-[11px] text-amber-400 font-medium block">増殖者 (Generational Multiplier)</span>
+                            <h4 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-300 transition">CPMer / Multiplier</h4>
+                            <span class="text-[11px] text-amber-700 dark:text-amber-400 font-medium block">増殖者 (Generational Multiplier)</span>
                         </div>
-                        <p class="text-xs text-slate-300 leading-relaxed">
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                             <strong>Core Focus:</strong> Multiplying churches to 2nd, 3rd, and 4th generations (G2–G4+).
                         </p>
-                        <div class="space-y-1.5 text-[11px] text-slate-400">
-                            <div><strong class="text-slate-200">Tools:</strong> Iron-on-Iron Coaching, Generational Mapping, 4 Fields Diagnostics.</div>
-                            <div><strong class="text-slate-200">Studies:</strong> 4 Fields Diagnostics, 12 Diagnostic Questions, 5 Levels Matrix.</div>
-                            <div><strong class="text-slate-200">Progression:</strong> Solve generational bottlenecks; coach daughter churches.</div>
+                        <div class="space-y-1.5 text-[11px] text-slate-600 dark:text-slate-400">
+                            <div><strong class="text-slate-900 dark:text-slate-200">Tools:</strong> Iron-on-Iron Coaching, Generational Mapping, 4 Fields Diagnostics.</div>
+                            <div><strong class="text-slate-900 dark:text-slate-200">Studies:</strong> 4 Fields Diagnostics, 12 Diagnostic Questions, 5 Levels Matrix.</div>
+                            <div><strong class="text-slate-900 dark:text-slate-200">Progression:</strong> Solve generational bottlenecks; coach daughter churches.</div>
                         </div>
                     </div>
-                    <div class="pt-3 border-t border-slate-800 text-[10px] font-bold text-amber-300 flex items-center justify-between">
+                    <div class="pt-3 border-t border-slate-200 dark:border-slate-800 text-[10px] font-bold text-amber-700 dark:text-amber-300 flex items-center justify-between">
                         <span>Residential: Left/Right Hand</span>
                         <span>Multiplication: 4x–8x</span>
                     </div>
                 </div>
 
                 <!-- Level 4 -->
-                <div class="p-5 rounded-3xl bg-slate-900/80 border border-purple-800/40 flex flex-col justify-between space-y-4 hover:border-purple-500/60 transition group">
+                <div class="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-purple-800/40 flex flex-col justify-between space-y-4 hover:border-purple-500/60 transition group shadow-sm dark:shadow-none">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950 text-purple-400 border border-purple-800">LEVEL 4</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-900 border border-purple-300 dark:bg-purple-950 dark:text-purple-400 dark:border-purple-800">LEVEL 4</span>
                             <span class="text-xl">🐝</span>
                         </div>
                         <div>
-                            <h4 class="text-base font-bold text-white group-hover:text-purple-300 transition">Movement Trainer</h4>
-                            <span class="text-[11px] text-purple-400 font-medium block">運動トレーナー (Regional Trainer)</span>
+                            <h4 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300 transition">Movement Trainer</h4>
+                            <span class="text-[11px] text-purple-700 dark:text-purple-400 font-medium block">運動トレーナー (Regional Trainer)</span>
                         </div>
-                        <p class="text-xs text-slate-300 leading-relaxed">
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                             <strong>Core Focus:</strong> Equipping and multiplying trainers across multiple wards and networks.
                         </p>
-                        <div class="space-y-1.5 text-[11px] text-slate-400">
-                            <div><strong class="text-slate-200">Tools:</strong> Swarm Training, Mid-Level Leadership Training, Strategy Evaluation.</div>
-                            <div><strong class="text-slate-200">Studies:</strong> CPM Case Studies, Training Trainers (T4T), Catalyst Multiplication.</div>
-                            <div><strong class="text-slate-200">Progression:</strong> Lead multi-team field saturation; establish regional cohorts.</div>
+                        <div class="space-y-1.5 text-[11px] text-slate-600 dark:text-slate-400">
+                            <div><strong class="text-slate-900 dark:text-slate-200">Tools:</strong> Swarm Training, Mid-Level Leadership Training, Strategy Evaluation.</div>
+                            <div><strong class="text-slate-900 dark:text-slate-200">Studies:</strong> CPM Case Studies, Training Trainers (T4T), Catalyst Multiplication.</div>
+                            <div><strong class="text-slate-900 dark:text-slate-200">Progression:</strong> Lead multi-team field saturation; establish regional cohorts.</div>
                         </div>
                     </div>
-                    <div class="pt-3 border-t border-slate-800 text-[10px] font-bold text-purple-300 flex items-center justify-between">
+                    <div class="pt-3 border-t border-slate-200 dark:border-slate-800 text-[10px] font-bold text-purple-700 dark:text-purple-300 flex items-center justify-between">
                         <span>Residential: Mid-Level Training</span>
                         <span>Multiplication: 10x–20x</span>
                     </div>
                 </div>
 
                 <!-- Level 5 -->
-                <div class="p-5 rounded-3xl bg-slate-900/80 border border-rose-800/40 flex flex-col justify-between space-y-4 hover:border-rose-500/60 transition group">
+                <div class="p-5 rounded-3xl bg-white dark:bg-slate-900/80 border border-slate-200/80 dark:border-rose-800/40 flex flex-col justify-between space-y-4 hover:border-rose-500/60 transition group shadow-sm dark:shadow-none">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950 text-rose-400 border border-rose-800">LEVEL 5</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-900 border border-rose-300 dark:bg-rose-950 dark:text-rose-400 dark:border-rose-800">LEVEL 5</span>
                             <span class="text-xl">👑</span>
                         </div>
                         <div>
-                            <h4 class="text-base font-bold text-white group-hover:text-rose-300 transition">Strategy Coordinator</h4>
-                            <span class="text-[11px] text-rose-400 font-medium block">戦略コーディネーター (Regional SC)</span>
+                            <h4 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-300 transition">Strategy Coordinator</h4>
+                            <span class="text-[11px] text-rose-700 dark:text-rose-400 font-medium block">戦略コーディネーター (Regional SC)</span>
                         </div>
-                        <p class="text-xs text-slate-300 leading-relaxed">
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                             <strong>Core Focus:</strong> City-wide and regional saturation strategy across all 16 Nagoya wards.
                         </p>
-                        <div class="space-y-1.5 text-[11px] text-slate-400">
-                            <div><strong class="text-slate-200">Tools:</strong> Master Ward Mapping, Unreached Group Mapping, Movement Labs, CPM Summits.</div>
-                            <div><strong class="text-slate-200">Studies:</strong> Aichi Demographics, Luke 10 Macro Strategy, G4 Movements.</div>
-                            <div><strong class="text-slate-200">Progression:</strong> Cast city-wide vision and deploy trainers Until No Place Left.</div>
+                        <div class="space-y-1.5 text-[11px] text-slate-600 dark:text-slate-400">
+                            <div><strong class="text-slate-900 dark:text-slate-200">Tools:</strong> Master Ward Mapping, Unreached Group Mapping, Movement Labs, CPM Summits.</div>
+                            <div><strong class="text-slate-900 dark:text-slate-200">Studies:</strong> Aichi Demographics, Luke 10 Macro Strategy, G4 Movements.</div>
+                            <div><strong class="text-slate-900 dark:text-slate-200">Progression:</strong> Cast city-wide vision and deploy trainers Until No Place Left.</div>
                         </div>
                     </div>
-                    <div class="pt-3 border-t border-slate-800 text-[10px] font-bold text-rose-300 flex items-center justify-between">
+                    <div class="pt-3 border-t border-slate-200 dark:border-slate-800 text-[10px] font-bold text-rose-700 dark:text-rose-300 flex items-center justify-between">
                         <span>Residential: Movement Summit</span>
                         <span>Multiplication: 50x+</span>
                     </div>
@@ -644,31 +644,31 @@
             </div>
 
             <!-- Option B Callout: Dual-Mode Prayer Walking (Solo & Joint MAWL) -->
-            <div class="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4">
+            <div class="p-6 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 shadow-md dark:shadow-xl space-y-4">
                 <div class="flex items-center gap-3">
                     <span class="text-2xl">👣</span>
                     <div>
-                        <h3 class="text-base font-bold text-white">Dual-Mode Prayer Walking & Spiritual Mapping (Option B)</h3>
-                        <span class="text-xs text-emerald-400 font-semibold">Solo Ward Intercession vs. Joint MAWL Walk with a Resident</span>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">Dual-Mode Prayer Walking & Spiritual Mapping (Option B)</h3>
+                        <span class="text-xs text-emerald-700 dark:text-emerald-400 font-semibold">Solo Ward Intercession vs. Joint MAWL Walk with a Resident</span>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300 leading-relaxed">
-                    <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-                        <strong class="text-white block font-semibold flex items-center gap-1.5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2">
+                        <strong class="text-slate-900 dark:text-white block font-semibold flex items-center gap-1.5">
                             <span>🚶</span>
                             <span>Solo Ward-Wide Intercession (No Target NPC)</span>
                         </strong>
                         <p>
-                            Walk through unknown neighborhoods, transit stations, and shrine districts to soften spiritual soil (+2% ward openness). Each walk increases the cumulative probability (base 35% + 15% per walk, up to 90%) of discovering a <strong class="text-blue-300">Luke 10 Person of Peace</strong>.
+                            Walk through unknown neighborhoods, transit stations, and shrine districts to soften spiritual soil (+2% ward openness). Each walk increases the cumulative probability (base 35% + 15% per walk, up to 90%) of discovering a <strong class="text-blue-700 dark:text-blue-300">Luke 10 Person of Peace</strong>.
                         </p>
                     </div>
-                    <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-                        <strong class="text-white block font-semibold flex items-center gap-1.5">
+                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-2">
+                        <strong class="text-slate-900 dark:text-white block font-semibold flex items-center gap-1.5">
                             <span>👥</span>
                             <span>Joint MAWL Prayer Walk (With Target Resident)</span>
                         </strong>
                         <p>
-                            Invite an open contact, seeker, or believer to walk together using <strong class="text-emerald-400">MAWL</strong> (<em>Model, Assist, Watch, Leave</em>). Walking their neighborhood models prayer evangelism directly in their world, surges their personal trust by <strong class="text-emerald-300">+22% to +32%</strong>, and covers their immediate family & coworker <strong class="text-indigo-300">Oikos network (+15% trust)</strong> in intercession!
+                            Invite an open contact, seeker, or believer to walk together using <strong class="text-emerald-700 dark:text-emerald-400">MAWL</strong> (<em>Model, Assist, Watch, Leave</em>). Walking their neighborhood models prayer evangelism directly in their world, surges their personal trust by <strong class="text-emerald-700 dark:text-emerald-300">+22% to +32%</strong>, and covers their immediate family & coworker <strong class="text-indigo-700 dark:text-indigo-300">Oikos network (+15% trust)</strong> in intercession!
                         </p>
                     </div>
                 </div>
@@ -1521,11 +1521,11 @@
                 @endphp
 
                 @foreach($wardPills as $w)
-                    <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-1 hover:border-indigo-500/50 transition">
-                        <span class="text-xs font-bold text-white block">{{ $w['name'] }}</span>
-                        <span class="text-[10px] text-slate-500 block">{{ $w['ja'] }}</span>
-                        <span class="text-[10px] text-indigo-400 block font-semibold truncate">{{ $w['theme'] }}</span>
-                        <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-950 text-emerald-400 border border-slate-800 block">
+                    <div class="p-3 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-1 hover:border-indigo-500/50 transition shadow-xs dark:shadow-none">
+                        <span class="text-xs font-bold text-slate-900 dark:text-white block">{{ $w['name'] }}</span>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 block">{{ $w['ja'] }}</span>
+                        <span class="text-[10px] text-indigo-700 dark:text-indigo-400 block font-semibold truncate">{{ $w['theme'] }}</span>
+                        <span class="text-[10px] px-1.5 py-0.2 rounded bg-emerald-50 dark:bg-slate-950 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-slate-800 block font-medium">
                             {{ $w['open'] }} Open
                         </span>
                     </div>
@@ -1533,15 +1533,15 @@
             </div>
 
             <!-- Home Base & Incarnational Relocation Banner -->
-            <div class="p-5 rounded-3xl bg-gradient-to-r from-emerald-950/60 via-slate-900 to-indigo-950/60 border border-emerald-800/60 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
+            <div class="p-5 rounded-3xl bg-gradient-to-r from-emerald-50 via-white to-indigo-50 dark:from-emerald-950/60 dark:via-slate-900 dark:to-indigo-950/60 border border-emerald-200 dark:border-emerald-800/60 flex flex-col md:flex-row items-center justify-between gap-4 shadow-md dark:shadow-xl">
                 <div class="flex items-center gap-3.5">
                     <span class="text-3xl">🏡</span>
                     <div>
-                        <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                        <h4 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                             <span>Choose Where You Live & Work</span>
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-900/80 text-emerald-300 border border-emerald-700">Incarnational Presence</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/80 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">Incarnational Presence</span>
                         </h4>
-                        <p class="text-xs text-slate-300 mt-0.5 max-w-2xl leading-relaxed">
+                        <p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5 max-w-2xl leading-relaxed">
                             Every missionary needs a physical home base in the city. On your <strong>first visit</strong>, an interactive prompt guides you to choose your starting district, highlighting <strong>Pioneering Frontiers where 0 other co-laborers reside</strong> (Romans 15:20) to blanket the city. Living in your <strong>Home Ward</strong> grants effortless local access: <strong>0 AP transit penalty</strong>, <strong>+25% rapid follow-up trust</strong>, and enhanced prayer walk openness. Traveling across town adds <strong>+1 to +2 AP transit costs</strong>. You can view or change your home base anytime from the top navigation bar or the Action Queue Planner!
                         </p>
                     </div>
@@ -1571,43 +1571,43 @@
                 </p>
             </div>
 
-            <div class="p-8 sm:p-12 rounded-3xl bg-gradient-to-tr from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 shadow-2xl space-y-8">
+            <div class="p-8 sm:p-12 rounded-3xl bg-white dark:bg-gradient-to-tr dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 border border-slate-200 dark:border-slate-800 shadow-md dark:shadow-2xl space-y-8">
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3.5 text-left text-xs">
-                <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-indigo-500/50 space-y-2">
+                <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-indigo-300 dark:border-indigo-500/50 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">1</span>
-                    <strong class="text-white block font-semibold">Profile & Screening Gate</strong>
-                    <span class="text-slate-400 block leading-relaxed">On entry, set your missionary handle, search among <strong>95+ global sending countries</strong> (granting your avatar an authentic flag badge & demographic appearance), and specify your age (&gt; 18 years old). Then complete the 14-question evaluation across <strong class="text-indigo-400">7 missionary dimensions</strong> to gain <strong>Nagoya Deployment Clearance</strong>!</span>
+                    <strong class="text-slate-900 dark:text-white block font-semibold">Profile & Screening Gate</strong>
+                    <span class="text-slate-600 dark:text-slate-400 block leading-relaxed">On entry, set your missionary handle, search among <strong>95+ global sending countries</strong> (granting your avatar an authentic flag badge & demographic appearance), and specify your age (&gt; 18 years old). Then complete the 14-question evaluation across <strong class="text-indigo-700 dark:text-indigo-400">7 missionary dimensions</strong> to gain <strong>Nagoya Deployment Clearance</strong>!</span>
                 </div>
 
-                <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+                <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">2</span>
-                    <strong class="text-white block font-semibold">Choose Home Base &amp; Host Orientation</strong>
-                    <span class="text-slate-400 block leading-relaxed">Select your home base from the 16 wards (+25% trust &amp; 0 AP commute). On arrival, your <strong>Movement Host</strong> delivers your orientation on Japanese group culture (no individualism, relational trust precedes decisions), language reality, and the recommended <strong>70% AP Foundation Strategy (10% NPL First-Level + 60% Language School)</strong> for Months 1 to 4!</span>
+                    <strong class="text-slate-900 dark:text-white block font-semibold">Choose Home Base &amp; Host Orientation</strong>
+                    <span class="text-slate-600 dark:text-slate-400 block leading-relaxed">Select your home base from the 16 wards (+25% trust &amp; 0 AP commute). On arrival, your <strong>Movement Host</strong> delivers your orientation on Japanese group culture (no individualism, relational trust precedes decisions), language reality, and the recommended <strong>70% AP Foundation Strategy (10% NPL First-Level + 60% Language School)</strong> for Months 1 to 4!</span>
                 </div>
 
-                <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+                <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">3</span>
-                    <strong class="text-white block font-semibold">Prayer Walk (Solo/MAWL)</strong>
-                    <span class="text-slate-400 block leading-relaxed">Intercede on ward streets solo or conduct a <strong class="text-emerald-400">Joint MAWL Prayer Walk</strong> with a local resident to soften soil, discover Persons of Peace, and cover their Oikos.</span>
+                    <strong class="text-slate-900 dark:text-white block font-semibold">Prayer Walk (Solo/MAWL)</strong>
+                    <span class="text-slate-600 dark:text-slate-400 block leading-relaxed">Intercede on ward streets solo or conduct a <strong class="text-emerald-700 dark:text-emerald-400">Joint MAWL Prayer Walk</strong> with a local resident to soften soil, discover Persons of Peace, and cover their Oikos.</span>
                 </div>
 
-                <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+                <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">4</span>
-                    <strong class="text-white block font-semibold">Build Relational Trust</strong>
-                    <span class="text-slate-400 block leading-relaxed">Engage in Casual Talk, active listening to corporate burnout, and healing prayer. Elevate trust to 60%+ to open hearts to the Gospel.</span>
+                    <strong class="text-slate-900 dark:text-white block font-semibold">Build Relational Trust</strong>
+                    <span class="text-slate-600 dark:text-slate-400 block leading-relaxed">Engage in Casual Talk, active listening to corporate burnout, and healing prayer. Elevate trust to 60%+ to open hearts to the Gospel.</span>
                 </div>
 
-                <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+                <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">5</span>
-                    <strong class="text-white block font-semibold">Proclaim & Harvest</strong>
-                    <span class="text-slate-400 block leading-relaxed">Share your 15-second testimony and 3 Circles Gospel. Guide seekers through the Prayer of Salvation to become new reproducing believers.</span>
+                    <strong class="text-slate-900 dark:text-white block font-semibold">Proclaim & Harvest</strong>
+                    <span class="text-slate-600 dark:text-slate-400 block leading-relaxed">Share your 15-second testimony and 3 Circles Gospel. Guide seekers through the Prayer of Salvation to become new reproducing believers.</span>
                 </div>
 
-                <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-emerald-600 text-white space-y-2">
+                <div class="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-slate-950/80 border border-emerald-300 dark:border-emerald-600 text-slate-900 dark:text-white space-y-2">
                     <span class="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-[11px]">6</span>
-                    <strong class="text-white block font-semibold">Multiply L1–L5 Movements</strong>
-                    <span class="text-slate-400 block leading-relaxed">Equip with Commands of Christ & 411, form Acts 2 Church Circles, mentor Timothys (L2), sharpen peers via Iron-on-Iron (L3), and launch Swarms (L4/L5) to G4+ victory!</span>
+                    <strong class="text-slate-900 dark:text-white block font-semibold">Multiply L1–L5 Movements</strong>
+                    <span class="text-slate-600 dark:text-slate-400 block leading-relaxed">Equip with Commands of Christ & 411, form Acts 2 Church Circles, mentor Timothys (L2), sharpen peers via Iron-on-Iron (L3), and launch Swarms (L4/L5) to G4+ victory!</span>
                 </div>
             </div>
 
