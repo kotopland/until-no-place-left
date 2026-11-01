@@ -15,27 +15,27 @@
     wire:poll.15s
 >
     <!-- Top Header: Title, Session Context & Quick Actions -->
-    <div class="bg-gradient-to-r from-slate-900 via-indigo-950/80 to-slate-900 border border-slate-800 rounded-3xl p-5 shadow-2xl">
+    <div class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm dark:shadow-2xl">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-2xl shadow-inner shrink-0">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-200 dark:bg-indigo-600/20 dark:border-indigo-500/40 flex items-center justify-center text-2xl shadow-inner shrink-0">
                     💬
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <span class="text-[10px] uppercase tracking-widest font-extrabold text-indigo-400 bg-indigo-950/80 border border-indigo-800/60 px-2 py-0.5 rounded-full">
+                        <span class="text-[10px] uppercase tracking-widest font-extrabold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800/60 px-2 py-0.5 rounded-full">
                             Asynchronous Multiplayer
                         </span>
                         @if($session)
-                            <span class="text-xs font-bold text-slate-300">
+                            <span class="text-xs font-bold text-slate-600 dark:text-slate-300">
                                 {{ $session->monthLabel }}
                             </span>
                         @endif
                     </div>
-                    <h2 class="text-xl font-black text-white tracking-tight mt-0.5">
+                    <h2 class="text-xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
                         Missionary Dispatch &amp; Co-op Chat
                     </h2>
-                    <p class="text-xs text-slate-400">
+                    <p class="text-xs text-slate-600 dark:text-slate-400">
                         Coordinate citywide strategy, share prayer requests, and track local ward dispatches across different real-world schedules.
                     </p>
                 </div>
@@ -48,9 +48,9 @@
                         type="text" 
                         wire:model.live.debounce.300ms="searchQuery"
                         placeholder="Search messages..." 
-                        class="pl-8 pr-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 w-40 sm:w-56"
+                        class="pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 w-40 sm:w-56"
                     />
-                    <svg class="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute left-2.5 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
                 </div>
@@ -58,7 +58,7 @@
                 <button 
                     type="button"
                     wire:click="markAllRead"
-                    class="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 text-xs font-bold text-slate-300 hover:text-white transition cursor-pointer flex items-center gap-1.5"
+                    class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/80 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition cursor-pointer flex items-center gap-1.5"
                     title="Mark all messages in this session as read"
                 >
                     <span>✓✓</span>
@@ -70,16 +70,16 @@
 
     <!-- Pinned Strategic Directives Banner (if any exist) -->
     @if($pinnedMessages->isNotEmpty())
-        <div class="bg-amber-950/30 border border-amber-600/40 rounded-2xl p-3.5 text-xs text-amber-200 flex items-start gap-3 shadow-md" x-data="{ expanded: false }">
+        <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-600/40 rounded-2xl p-3.5 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-3 shadow-sm" x-data="{ expanded: false }">
             <span class="text-lg shrink-0 mt-0.5">📌</span>
             <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between gap-2">
-                    <span class="font-bold uppercase tracking-wider text-[10px] text-amber-400">Pinned Missionary Directive</span>
+                    <span class="font-bold uppercase tracking-wider text-[10px] text-amber-800 dark:text-amber-400">Pinned Missionary Directive</span>
                     @if($pinnedMessages->count() > 1)
                         <button 
                             type="button" 
                             @click="expanded = !expanded" 
-                            class="text-[10px] font-bold text-amber-300 underline hover:text-amber-100"
+                            class="text-[10px] font-bold text-amber-700 dark:text-amber-300 underline hover:text-amber-900 dark:hover:text-amber-100"
                         >
                             <span x-text="expanded ? 'Show Less' : '+{{ $pinnedMessages->count() - 1 }} More Directives'"></span>
                         </button>
@@ -87,19 +87,19 @@
                 </div>
 
                 <!-- First pinned message preview -->
-                <div class="mt-1 font-medium text-amber-100 leading-relaxed">
-                    <span class="font-bold text-white">{{ $pinnedMessages->first()->user?->name }}:</span>
+                <div class="mt-1 font-medium text-amber-950 dark:text-amber-100 leading-relaxed">
+                    <span class="font-bold text-slate-900 dark:text-white">{{ $pinnedMessages->first()->user?->name }}:</span>
                     {{ $pinnedMessages->first()->message }}
-                    <span class="text-[10px] text-amber-400/80 ml-1.5">({{ $pinnedMessages->first()->timeContextLabel }})</span>
+                    <span class="text-[10px] text-amber-700 dark:text-amber-400/80 ml-1.5">({{ $pinnedMessages->first()->timeContextLabel }})</span>
                 </div>
 
                 <!-- Expanded extra pinned messages -->
-                <div x-show="expanded" class="mt-2 space-y-2 border-t border-amber-800/50 pt-2" style="display: none;">
+                <div x-show="expanded" class="mt-2 space-y-2 border-t border-amber-200 dark:border-amber-800/50 pt-2" style="display: none;">
                     @foreach($pinnedMessages->slice(1) as $pinned)
                         <div class="text-[11px] leading-relaxed">
-                            <span class="font-bold text-white">{{ $pinned->user?->name }}:</span>
+                            <span class="font-bold text-slate-900 dark:text-white">{{ $pinned->user?->name }}:</span>
                             {{ $pinned->message }}
-                            <span class="text-[10px] text-amber-400/80 ml-1">({{ $pinned->timeContextLabel }})</span>
+                            <span class="text-[10px] text-amber-700 dark:text-amber-400/80 ml-1">({{ $pinned->timeContextLabel }})</span>
                         </div>
                     @endforeach
                 </div>

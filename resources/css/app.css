@@ -300,16 +300,40 @@ html {
 }
 
 /* Gradients in Light Mode */
+:root:not(.dark) .from-slate-950,
 :root:not(.dark) .from-slate-900 {
     --tw-gradient-from: #ffffff var(--tw-gradient-from-position);
 }
 
-:root:not(.dark) .via-indigo-950\/40,
+:root:not(.dark) .via-slate-950,
+:root:not(.dark) .via-slate-900,
+:root:not(.dark) .via-indigo-950,
+:root:not(.dark) .via-indigo-950\/95,
+:root:not(.dark) .via-indigo-950\/90,
+:root:not(.dark) .via-indigo-950\/80,
+:root:not(.dark) .via-indigo-950\/70,
 :root:not(.dark) .via-indigo-950\/60,
-:root:not(.dark) .via-indigo-950\/70 {
+:root:not(.dark) .via-indigo-950\/50,
+:root:not(.dark) .via-indigo-950\/40,
+:root:not(.dark) .via-indigo-950\/30,
+:root:not(.dark) .via-indigo-950\/20 {
     --tw-gradient-via: rgba(238, 242, 255, 0.7) var(--tw-gradient-via-position);
 }
 
+:root:not(.dark) .via-amber-950,
+:root:not(.dark) .via-amber-950\/95,
+:root:not(.dark) .via-amber-950\/90,
+:root:not(.dark) .via-amber-950\/80,
+:root:not(.dark) .via-amber-950\/70,
+:root:not(.dark) .via-amber-950\/60,
+:root:not(.dark) .via-amber-950\/50,
+:root:not(.dark) .via-amber-950\/40,
+:root:not(.dark) .via-amber-950\/30,
+:root:not(.dark) .via-amber-950\/20 {
+    --tw-gradient-via: rgba(254, 243, 199, 0.7) var(--tw-gradient-via-position);
+}
+
+:root:not(.dark) .to-slate-950,
 :root:not(.dark) .to-slate-900 {
     --tw-gradient-to: #ffffff var(--tw-gradient-to-position);
 }
@@ -537,8 +561,12 @@ html {
 :root:not(.dark) .text-white[class*="bg-emerald-"],
 :root:not(.dark) .text-white[class*="bg-rose-"],
 :root:not(.dark) .text-white[class*="bg-blue-"],
+:root:not(.dark) .text-white[class*="bg-sky-"],
+:root:not(.dark) .text-white[class*="bg-teal-"],
+:root:not(.dark) .text-white[class*="bg-cyan-"],
 :root:not(.dark) .text-white[class*="bg-purple-"],
 :root:not(.dark) .text-white[class*="bg-orange-"],
+:root:not(.dark) .text-white[class*="bg-amber-5"],
 :root:not(.dark) .text-white[class*="bg-amber-6"],
 :root:not(.dark) .text-white[class*="bg-amber-7"],
 :root:not(.dark) .text-white[class*="bg-black"],
@@ -550,7 +578,13 @@ html {
 :root:not(.dark) [class*="bg-rose-6"] .text-white,
 :root:not(.dark) [class*="bg-rose-5"] .text-white,
 :root:not(.dark) [class*="bg-blue-6"] .text-white,
+:root:not(.dark) [class*="bg-blue-5"] .text-white,
+:root:not(.dark) [class*="bg-sky-6"] .text-white,
+:root:not(.dark) [class*="bg-sky-5"] .text-white,
+:root:not(.dark) [class*="bg-teal-6"] .text-white,
+:root:not(.dark) [class*="bg-cyan-6"] .text-white,
 :root:not(.dark) [class*="bg-purple-6"] .text-white,
+:root:not(.dark) [class*="bg-purple-5"] .text-white,
 :root:not(.dark) [class*="bg-orange-5"] .text-white,
 :root:not(.dark) [class*="bg-orange-6"] .text-white,
 :root:not(.dark) [class*="bg-black"] .text-white,
@@ -575,7 +609,11 @@ html {
 :root:not(.dark) button.bg-emerald-500 *,
 :root:not(.dark) a.bg-emerald-600 *,
 :root:not(.dark) button.bg-rose-600 *,
-:root:not(.dark) a.bg-rose-600 * {
+:root:not(.dark) a.bg-rose-600 *,
+:root:not(.dark) button.bg-sky-600 *,
+:root:not(.dark) a.bg-sky-600 *,
+:root:not(.dark) button.bg-purple-600 *,
+:root:not(.dark) a.bg-purple-600 * {
     color: inherit;
 }
 

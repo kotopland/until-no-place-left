@@ -230,7 +230,7 @@
                 <!-- Mobile-Only Logo: Positioned directly above the H1 Title -->
                 <div class="lg:hidden w-full max-w-sm sm:max-w-md mx-auto relative group my-2">
                     <div class="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-amber-500/30 via-emerald-500/30 to-indigo-600/40 blur-xl opacity-75"></div>
-                    <div class="relative rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900/90 backdrop-blur-md p-3">
+                    <div class="relative rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-3">
                         <img 
                             src="{{ asset('images/until-no-place-left-logo.jpeg') }}" 
                             alt="Nagoya Oikos: The Four Fields Official Logo Artwork" 
@@ -239,22 +239,22 @@
                     </div>
                 </div>
 
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.1]">
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1]">
                     Game Overview &amp; <br/>
                     Complete Rules Manual <br/>
-                    <span class="bg-gradient-to-r from-amber-400 via-emerald-400 to-indigo-400 bg-clip-text text-transparent">
+                    <span class="bg-gradient-to-r from-amber-500 via-emerald-600 to-indigo-600 dark:from-amber-400 dark:via-emerald-400 dark:to-indigo-400 bg-clip-text text-transparent">
                         The Four Fields Simulation
                     </span>
                 </h1>
 
-                <p class="text-sm sm:text-base text-slate-300 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                    A comprehensive guide to the spiritual narrative, Four Fields ministry dynamics, and complete game mechanics of Nagoya Oikos. Master your weekly Action Points, understand transit friction, avoid spiritual burnout, screen missionary candidates, and multiply generational Acts 2 church streams until there is <strong class="text-amber-400">No Place Left</strong>.
+                <p class="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                    A comprehensive guide to the spiritual narrative, Four Fields ministry dynamics, and complete game mechanics of Nagoya Oikos. Master your weekly Action Points, understand transit friction, avoid spiritual burnout, screen missionary candidates, and multiply generational Acts 2 church streams until there is <strong class="text-amber-700 dark:text-amber-400">No Place Left</strong>.
                 </p>
 
                 <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3.5 pt-2">
                     <a 
                         href="{{ url('/') }}" 
-                        class="px-5 py-3 rounded-2xl text-sm font-bold bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 hover:text-white transition flex items-center gap-2"
+                        class="px-5 py-3 rounded-2xl text-sm font-bold bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-white transition flex items-center gap-2 shadow-xs"
                     >
                         <span>←</span>
                         <span>Movement Invitation</span>
@@ -278,7 +278,7 @@
                     @endauth
                     <a 
                         href="#rules" 
-                        class="px-5 py-3 rounded-2xl text-sm font-bold bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 transition flex items-center gap-2"
+                        class="px-5 py-3 rounded-2xl text-sm font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-500/15 dark:hover:bg-amber-500/25 dark:border-amber-500/40 dark:text-amber-300 dark:hover:text-amber-200 transition flex items-center gap-2 shadow-xs"
                     >
                         <span>⚡</span>
                         <span>Jump to Rules Matrix</span>
@@ -286,18 +286,18 @@
                 </div>
 
                 <!-- Live Quick Stats Strip -->
-                <div class="grid grid-cols-3 gap-3 pt-6 border-t border-slate-800/80 max-w-md mx-auto lg:mx-0 text-left">
-                    <div class="p-3 rounded-xl bg-slate-900/50 border border-slate-800">
-                        <span class="text-xl font-black text-indigo-400">16</span>
-                        <span class="block text-[11px] text-slate-400 font-medium">Nagoya Wards</span>
+                <div class="grid grid-cols-3 gap-3 pt-6 border-t border-slate-200 dark:border-slate-800/80 max-w-md mx-auto lg:mx-0 text-left">
+                    <div class="p-3 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-xs">
+                        <span class="text-xl font-black text-indigo-600 dark:text-indigo-400">16</span>
+                        <span class="block text-[11px] text-slate-500 dark:text-slate-400 font-medium">Nagoya Wards</span>
                     </div>
-                    <div class="p-3 rounded-xl bg-slate-900/50 border border-slate-800">
-                        <span class="text-xl font-black text-emerald-400">&lt; 0.5%</span>
-                        <span class="block text-[11px] text-slate-400 font-medium">Believers in Japan</span>
+                    <div class="p-3 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-xs">
+                        <span class="text-xl font-black text-emerald-600 dark:text-emerald-400">&lt; 0.5%</span>
+                        <span class="block text-[11px] text-slate-500 dark:text-slate-400 font-medium">Believers in Japan</span>
                     </div>
-                    <div class="p-3 rounded-xl bg-slate-900/50 border border-slate-800">
-                        <span class="text-xl font-black text-amber-400">G1–G4+</span>
-                        <span class="block text-[11px] text-slate-400 font-medium">Church Streams</span>
+                    <div class="p-3 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-xs">
+                        <span class="text-xl font-black text-amber-600 dark:text-amber-400">G1–G4+</span>
+                        <span class="block text-[11px] text-slate-500 dark:text-slate-400 font-medium">Church Streams</span>
                     </div>
                 </div>
             </div>
@@ -305,7 +305,7 @@
             <!-- Desktop-Only Logo Art Card Feature -->
             <div class="hidden lg:block flex-1 w-full max-w-md xl:max-w-lg lg:pt-1 relative group self-start">
                 <div class="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-amber-500/30 via-emerald-500/30 to-indigo-600/40 blur-xl opacity-75 group-hover:opacity-100 transition duration-700"></div>
-                <div class="relative rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900/90 backdrop-blur-md p-3">
+                <div class="relative rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-3">
                     <img 
                         src="{{ asset('images/until-no-place-left-logo.jpeg') }}" 
                         alt="Nagoya Oikos: The Four Fields Official Logo Artwork" 

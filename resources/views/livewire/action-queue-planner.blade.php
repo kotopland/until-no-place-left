@@ -507,15 +507,15 @@
 
             <!-- Active Retreat Notice Banner if currently time-blocked -->
             @if($isDayBlocked && $activeWorkerRhythm)
-                <div class="p-3.5 rounded-xl bg-gradient-to-r from-amber-950/40 via-indigo-950/40 to-slate-900 border border-amber-700/50 flex items-center justify-between gap-3 flex-wrap">
+                <div class="p-3.5 rounded-xl bg-amber-50 dark:bg-gradient-to-r dark:from-amber-950/40 dark:via-indigo-950/40 dark:to-slate-900 border border-amber-200 dark:border-amber-700/50 flex items-center justify-between gap-3 flex-wrap">
                     <div class="flex items-center gap-2.5">
                         <span class="text-2xl">{{ $activeWorkerRhythm->action_type->icon() }}</span>
                         <div>
-                            <div class="text-xs font-bold text-white flex items-center gap-2">
+                            <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                 <span>Currently Active This Week: {{ $activeWorkerRhythm->actionTitle }}</span>
-                                <span class="text-[10px] font-semibold text-emerald-400">+{{ $activeWorkerRhythm->action_type->rhythmPoints() }} pts upon week advance</span>
+                                <span class="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">+{{ $activeWorkerRhythm->action_type->rhythmPoints() }} pts upon week advance</span>
                             </div>
-                            <p class="text-[11px] text-amber-200/90 mt-0.5">
+                            <p class="text-[11px] text-amber-900 dark:text-amber-200/90 mt-0.5">
                                 Week {{ $player?->current_game_week ?? 1 }} is reserved. All other field actions are blocked until this rhythm completes or is cancelled.
                             </p>
                         </div>
@@ -523,7 +523,7 @@
                     <button 
                         type="button" 
                         wire:click="cancelAction({{ $activeWorkerRhythm->id }})"
-                        class="px-3 py-1.5 rounded-lg text-xs font-bold text-rose-300 bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800 transition cursor-pointer"
+                        class="px-3 py-1.5 rounded-lg text-xs font-bold text-rose-700 hover:text-rose-900 bg-rose-100 hover:bg-rose-200 border border-rose-300 dark:text-rose-300 dark:bg-rose-950/60 dark:hover:bg-rose-900/80 dark:border-rose-800 transition cursor-pointer"
                         title="Cancel rhythm and unblock week"
                     >
                         Cancel Rhythm ✕
@@ -633,16 +633,16 @@
     @else
         <!-- Planner Sub-View: Field Actions (Steps 1, 2, 3) -->
         @if($isDayBlocked && $activeWorkerRhythm)
-            <div class="mb-3 p-3 rounded-xl bg-gradient-to-r from-amber-950/40 via-indigo-950/20 to-slate-900 border border-amber-700/60 flex items-center justify-between gap-3 text-xs text-amber-300 flex-wrap">
+            <div class="mb-3 p-3 rounded-xl bg-amber-50 dark:bg-gradient-to-r dark:from-amber-950/40 dark:via-indigo-950/20 dark:to-slate-900 border border-amber-200 dark:border-amber-700/60 flex items-center justify-between gap-3 text-xs text-amber-900 dark:text-amber-300 flex-wrap">
                 <div class="flex items-center gap-2">
                     <span class="text-base">{{ $activeWorkerRhythm->action_type?->icon() ?? '⛔' }}</span>
-                    <span><strong>Week {{ $player?->current_game_week ?? 1 }} is reserved for {{ $activeWorkerRhythm->actionTitle }}.</strong> Field actions cannot be scheduled this week. Advance to the next week to resolve and gain points!</span>
+                    <span><strong class="text-slate-900 dark:text-white">Week {{ $player?->current_game_week ?? 1 }} is reserved for {{ $activeWorkerRhythm->actionTitle }}.</strong> Field actions cannot be scheduled this week. Advance to the next week to resolve and gain points!</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button 
                         type="button" 
                         wire:click="setHqSubView('rhythms')"
-                        class="text-xs font-bold text-amber-200 hover:text-white px-2.5 py-1 rounded-lg bg-amber-900/60 hover:bg-amber-800 transition cursor-pointer"
+                        class="text-xs font-bold text-amber-900 hover:text-amber-950 dark:text-amber-200 dark:hover:text-white px-2.5 py-1 rounded-lg bg-amber-200/80 hover:bg-amber-300 dark:bg-amber-900/60 dark:hover:bg-amber-800 transition cursor-pointer"
                     >
                         View Rhythms ➔
                     </button>

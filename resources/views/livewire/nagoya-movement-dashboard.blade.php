@@ -150,7 +150,7 @@
                 <button
                     type="button"
                     wire:click="toggleShowcaseBar"
-                    class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none {{ $showShowcaseBar ? 'bg-amber-500/20 border-amber-500/70 text-amber-300 shadow-md shadow-amber-500/10 ring-1 ring-amber-400/30' : 'bg-slate-100 dark:bg-slate-950/80 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-amber-500/60 hover:text-amber-600 dark:hover:text-amber-300' }}"
+                    class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none {{ $showShowcaseBar ? 'bg-amber-100 text-amber-900 border-amber-400 dark:bg-amber-500/20 dark:border-amber-500/70 dark:text-amber-300 shadow-md ring-1 ring-amber-400/30' : 'bg-slate-100 dark:bg-slate-950/80 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-amber-500/60 hover:text-amber-700 dark:hover:text-amber-300' }}"
                     title="Open Interactive Time-Stage Showcase (3m, 6m, 1y, 2y, 5y, 10y, 15y)"
                 >
                     <span>⏱️</span>
@@ -167,16 +167,16 @@
                     wire:key="dash-clock-{{ $user?->current_game_month }}-{{ $user?->current_game_week }}-{{ $user?->weeks_processed_this_month }}-{{ $user?->weeks_played_today }}"
                     x-data="digitalClock({{ max(0, $user?->secondsUntilNextWeeklyTick ?? 900) }}, '{{ $user?->next_weekly_tick_at?->toIso8601String() }}', {{ (!($user?->hasReachedDailyPlayLimit ?? false) && ($user?->weeks_processed_this_month ?? 0) < 4) ? 'true' : 'false' }})"
                     x-init="init()"
-                    class="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-950/80 border border-slate-800 shrink-0"
+                    class="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 shrink-0"
                 >
                     <!-- Month & Current Week badge -->
                     <div class="text-right whitespace-nowrap">
-                        <div class="text-[10px] font-bold text-white flex items-center justify-end gap-1">
+                        <div class="text-[10px] font-bold text-slate-800 dark:text-white flex items-center justify-end gap-1">
                             <span>Month {{ $user?->current_game_month ?? 1 }}</span>
-                            <span class="text-slate-500">•</span>
+                            <span class="text-slate-400 dark:text-slate-500">•</span>
                             <span>Week {{ $user?->current_game_week ?? 1 }}</span>
                         </div>
-                        <div class="text-[9px] text-slate-400 uppercase tracking-tighter">
+                        <div class="text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-tighter">
                             {{ ($user?->hasReachedDailyPlayLimit ?? false) ? 'Night Rest' : (($user?->weeks_processed_this_month ?? 0) >= 4 ? 'At Midnight' : 'Next Week In') }}
                         </div>
                     </div>
@@ -219,31 +219,31 @@
 
                         <!-- Hover Popover: Song Title & Controls -->
                         <div 
-                            class="absolute right-0 top-full mt-2 w-64 p-3.5 rounded-2xl bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-xl border border-indigo-500/30 shadow-2xl shadow-black/80 z-50 pointer-events-none opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 transition-all duration-200 origin-top-right space-y-2 text-left"
+                            class="absolute right-0 top-full mt-2 w-64 p-3.5 rounded-2xl bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-indigo-500/30 shadow-2xl shadow-slate-900/10 dark:shadow-black/80 z-50 pointer-events-none opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 transition-all duration-200 origin-top-right space-y-2 text-left"
                         >
-                            <div class="flex items-center justify-between gap-2 border-b border-slate-800 pb-2">
-                                <span class="text-[10px] font-black uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full" :class="$store.audio?.isPlaying ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'"></span>
+                            <div class="flex items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+                                <span class="text-[10px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-400 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full" :class="$store.audio?.isPlaying ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400 dark:bg-slate-500'"></span>
                                     <span x-text="$store.audio?.isPlaying ? 'Now Playing' : 'Background Music'"></span>
                                 </span>
-                                <span class="text-[9px] font-semibold text-slate-300 px-1.5 py-0.5 rounded bg-slate-800/90 border border-slate-700/60" x-text="$store.audio?.isPlaying ? ($store.audio?.currentSongCategory || 'Traditional & Folk') : 'Paused'"></span>
+                                <span class="text-[9px] font-semibold text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/60" x-text="$store.audio?.isPlaying ? ($store.audio?.currentSongCategory || 'Traditional & Folk') : 'Paused'"></span>
                             </div>
 
                             <div x-show="$store.audio?.isPlaying" class="space-y-1">
-                                <div class="text-xs font-bold text-white leading-snug flex items-center gap-1.5">
+                                <div class="text-xs font-bold text-slate-900 dark:text-white leading-snug flex items-center gap-1.5">
                                     <span>🎵</span>
                                     <span x-text="$store.audio?.currentSongEnglish || 'Traditional Melody'"></span>
                                 </div>
-                                <div class="text-[11px] text-indigo-300/90 font-medium pl-5" x-text="$store.audio?.currentSongJapanese || ''"></div>
-                                <div class="text-[10px] text-slate-400 pt-1 border-t border-slate-800/60 flex items-center gap-1">
+                                <div class="text-[11px] text-indigo-700 dark:text-indigo-300/90 font-medium pl-5" x-text="$store.audio?.currentSongJapanese || ''"></div>
+                                <div class="text-[10px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/60 flex items-center gap-1">
                                     <span>💡</span>
                                     <span>Click to mute • Shuffles on next play</span>
                                 </div>
                             </div>
 
                             <div x-show="!$store.audio?.isPlaying" class="space-y-1">
-                                <div class="text-xs font-semibold text-slate-300">Music is muted</div>
-                                <div class="text-[10px] text-slate-400">Click to play famous Japanese melodies (Sakura, Sukiyaki, Furusato, etc.)</div>
+                                <div class="text-xs font-semibold text-slate-700 dark:text-slate-300">Music is muted</div>
+                                <div class="text-[10px] text-slate-500 dark:text-slate-400">Click to play famous Japanese melodies (Sakura, Sukiyaki, Furusato, etc.)</div>
                             </div>
                         </div>
                     </div>
@@ -683,7 +683,7 @@
 
         <!-- Interactive Real-Life Time-Stage Showcase Presenter Panel -->
         @if($showShowcaseBar)
-            <div class="mb-6 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950/90 border border-amber-500/40 shadow-2xl shadow-amber-950/20 p-5 sm:p-6 space-y-5 relative overflow-hidden">
+            <div class="mb-6 rounded-3xl bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-950 dark:to-indigo-950/90 border border-amber-300 dark:border-amber-500/40 shadow-xl dark:shadow-2xl shadow-amber-500/5 dark:shadow-amber-950/20 p-5 sm:p-6 space-y-5 relative overflow-hidden">
                 <!-- Subtle top accent bar -->
                 <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-500 via-emerald-400 to-indigo-500"></div>
 
@@ -691,29 +691,29 @@
                 <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     <div class="space-y-1">
                         <div class="flex flex-wrap items-center gap-2">
-                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1.5">
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40 flex items-center gap-1.5">
                                 <span>⏱️</span>
                                 <span>Live Longitudinal Showcase Mode</span>
                             </span>
                             @if($isGuestShowcase)
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-700/60">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-700/60">
                                     🌐 Shared Guest SQLite DB • Regenerated Once Daily ({{ $guestDatabaseGeneratedDate ?? now()->toDateString() }})
                                 </span>
                             @else
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-700/60">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950/80 dark:text-emerald-300 dark:border-emerald-700/60">
                                     🧪 Isolated Temp SQLite DB • Computer Players Only
                                 </span>
                             @endif
                             @if($showcaseSnapshot)
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-950/90 text-indigo-300 border border-indigo-700/60">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-900 border border-indigo-300 dark:bg-indigo-950/90 dark:text-indigo-300 dark:border-indigo-700/60">
                                     📅 {{ $showcaseSnapshot['calendar_date'] }} • Month {{ $showcaseSnapshot['months'] }}
                                 </span>
                             @endif
                         </div>
-                        <h2 class="text-base sm:text-lg font-black text-white tracking-tight">
+                        <h2 class="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">
                             Demonstrate Nagoya Movement Across Real-Life Time Horizons
                         </h2>
-                        <p class="text-xs text-slate-400">
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                             @if($isGuestShowcase)
                                 Public Simulation for Non-Registered Players: Uses a shared SQLite database regenerated at most once per real-life day to reduce server CPU load. Register a free account to launch your own personal movement!
                             @else
@@ -729,19 +729,19 @@
                                 type="button"
                                 wire:click="regenerateGuestSimulation"
                                 wire:loading.attr="disabled"
-                                class="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition cursor-pointer flex items-center gap-1.5"
+                                class="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-500/20 dark:hover:bg-amber-500/30 dark:text-amber-300 dark:border-amber-500/40 text-xs font-bold transition cursor-pointer flex items-center gap-1.5"
                                 title="Shared guest database can only be regenerated once per real-life day"
                             >
                                 <span>🔄</span>
                                 <span>Regenerate Daily DB</span>
                             </button>
                         @else
-                            <div class="inline-flex items-center p-1 rounded-xl bg-slate-950/90 border border-slate-800 text-[11px] font-bold">
+                            <div class="inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-950/90 border border-slate-200 dark:border-slate-800 text-[11px] font-bold">
                                 <button
                                     type="button"
                                     wire:click="setShowcaseMode('coop')"
                                     wire:loading.attr="disabled"
-                                    class="px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1 {{ $showcaseMode === 'coop' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white' }}"
+                                    class="px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1 {{ $showcaseMode === 'coop' ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
                                     title="Simulate with AI Co-Laborers (Paul, Barnaby & Keiko)"
                                 >
                                     <span>🤝</span>
@@ -751,7 +751,7 @@
                                     type="button"
                                     wire:click="setShowcaseMode('solo')"
                                     wire:loading.attr="disabled"
-                                    class="px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1 {{ $showcaseMode === 'solo' ? 'bg-amber-600 text-white shadow' : 'text-slate-400 hover:text-white' }}"
+                                    class="px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1 {{ $showcaseMode === 'solo' ? 'bg-amber-600 text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}"
                                     title="Simulate as Solo Pioneer Missionary"
                                 >
                                     <span>🧍</span>
@@ -764,7 +764,7 @@
                             type="button"
                             wire:click="openShowcaseComparison(true)"
                             wire:loading.attr="disabled"
-                            class="px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition cursor-pointer flex items-center gap-1.5"
+                            class="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-600/20 dark:hover:bg-emerald-600/30 dark:text-emerald-300 dark:border-emerald-500/40 text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-sm"
                             title="Compare all 7 milestones (3m to 15y) side-by-side"
                         >
                             <span>📊</span>
@@ -784,7 +784,7 @@
                             <button
                                 type="button"
                                 wire:click="exitShowcaseSandbox"
-                                class="px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-rose-950/80 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-700 text-xs font-bold transition cursor-pointer flex items-center gap-1"
+                                class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-200 hover:border-rose-300 dark:bg-slate-800/80 dark:hover:bg-rose-950/80 dark:text-slate-300 dark:hover:text-rose-200 dark:border-slate-700 dark:hover:border-rose-700 text-xs font-bold transition cursor-pointer flex items-center gap-1 shadow-sm"
                                 title="Exit Showcase Sandbox and return to your untouched live game"
                             >
                                 <span>✕</span>
@@ -801,13 +801,13 @@
                         type="button"
                         wire:click="loadShowcaseStage('reset')"
                         wire:loading.attr="disabled"
-                        class="p-2.5 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between {{ $activeShowcaseStage === 'reset' ? 'bg-amber-500/20 border-amber-400 text-white shadow-lg shadow-amber-500/10 ring-1 ring-amber-400/50' : 'bg-slate-900/90 border-slate-800 text-slate-300 hover:border-slate-600 hover:bg-slate-800/70' }}"
+                        class="p-2.5 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between {{ $activeShowcaseStage === 'reset' ? 'bg-amber-100 text-amber-950 border-amber-400 shadow-md ring-2 ring-amber-400/50 dark:bg-amber-500/20 dark:border-amber-400 dark:text-white dark:shadow-amber-500/10' : 'bg-slate-50 dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800/70' }}"
                     >
                         <div class="flex items-center justify-between gap-1">
-                            <span class="text-xs font-black {{ $activeShowcaseStage === 'reset' ? 'text-amber-300' : 'text-white' }}">🌱 Day 1</span>
-                            <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">M1</span>
+                            <span class="text-xs font-black {{ $activeShowcaseStage === 'reset' ? 'text-amber-900 dark:text-amber-300' : 'text-slate-800 dark:text-white' }}">🌱 Day 1</span>
+                            <span class="text-[9px] font-bold px-1.5 py-0.2 rounded {{ $activeShowcaseStage === 'reset' ? 'bg-amber-200 text-amber-950 dark:bg-slate-800 dark:text-slate-300' : 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400' }}">M1</span>
                         </div>
-                        <div class="text-[10px] text-slate-400 mt-1 leading-tight">Arrival &amp; G1 Seed</div>
+                        <div class="text-[10px] {{ $activeShowcaseStage === 'reset' ? 'text-amber-800 dark:text-amber-200 font-semibold' : 'text-slate-500 dark:text-slate-400' }} mt-1 leading-tight">Arrival &amp; G1 Seed</div>
                     </button>
 
                     @php
@@ -827,15 +827,15 @@
                             type="button"
                             wire:click="loadShowcaseStage('{{ $stageKey }}')"
                             wire:loading.attr="disabled"
-                            class="p-2.5 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between {{ $activeShowcaseStage === $stageKey ? 'bg-amber-500/20 border-amber-400 text-white shadow-lg shadow-amber-500/10 ring-1 ring-amber-400/50' : 'bg-slate-900/90 border-slate-800 text-slate-300 hover:border-slate-600 hover:bg-slate-800/70' }}"
+                            class="p-2.5 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between {{ $activeShowcaseStage === $stageKey ? 'bg-amber-100 text-amber-950 border-amber-400 shadow-md ring-2 ring-amber-400/50 dark:bg-amber-500/20 dark:border-amber-400 dark:text-white dark:shadow-amber-500/10' : 'bg-slate-50 dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800/70' }}"
                         >
                             <div class="flex items-center justify-between gap-1">
-                                <span class="text-xs font-black {{ $activeShowcaseStage === $stageKey ? 'text-amber-300' : 'text-white' }}">
+                                <span class="text-xs font-black {{ $activeShowcaseStage === $stageKey ? 'text-amber-900 dark:text-amber-300' : 'text-slate-800 dark:text-white' }}">
                                     {{ $stageKey === '15y' ? '🗾 ' : '' }}{{ $meta['label'] }}
                                 </span>
-                                <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-800 text-slate-400">M{{ $meta['months'] }}</span>
+                                <span class="text-[9px] font-bold px-1.5 py-0.2 rounded {{ $activeShowcaseStage === $stageKey ? 'bg-amber-200 text-amber-950 dark:bg-slate-800 dark:text-slate-300' : 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400' }}">M{{ $meta['months'] }}</span>
                             </div>
-                            <div class="text-[10px] text-slate-400 mt-1 leading-tight">
+                            <div class="text-[10px] {{ $activeShowcaseStage === $stageKey ? 'text-amber-800 dark:text-amber-200 font-semibold' : 'text-slate-500 dark:text-slate-400' }} mt-1 leading-tight">
                                 {{ $stageShortSubtitles[$stageKey] ?? 'Movement Stage' }}
                             </div>
                         </button>
@@ -843,8 +843,8 @@
                 </div>
 
                 <!-- Loading Indicator when simulating -->
-                <div wire:loading.flex wire:target="loadShowcaseStage, setShowcaseMode, openShowcaseComparison" class="items-center justify-center gap-2.5 p-3 rounded-2xl bg-indigo-950/80 border border-indigo-500/40 text-xs font-bold text-indigo-200">
-                    <svg class="w-4 h-4 animate-spin text-amber-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <div wire:loading.flex wire:target="loadShowcaseStage, setShowcaseMode, openShowcaseComparison" class="items-center justify-center gap-2.5 p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-500/40 text-xs font-bold text-indigo-900 dark:text-indigo-200">
+                    <svg class="w-4 h-4 animate-spin text-amber-500 dark:text-amber-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                     </svg>
@@ -860,17 +860,17 @@
                     @endphp
                     <div wire:loading.remove wire:target="loadShowcaseStage, setShowcaseMode" class="space-y-4">
                         <!-- Narrative Card -->
-                        <div class="p-4 rounded-2xl bg-slate-950/85 border border-slate-800/90 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/85 border border-slate-200 dark:border-slate-800/90 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                             <div class="space-y-1.5 max-w-4xl">
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <span class="text-xs font-black uppercase tracking-wider text-amber-400">
+                                    <span class="text-xs font-black uppercase tracking-wider text-amber-700 dark:text-amber-400">
                                         {{ $snap['phase'] }}
                                     </span>
-                                    <span class="text-[11px] font-bold text-slate-400">
+                                    <span class="text-[11px] font-bold text-slate-600 dark:text-slate-400">
                                         ({{ $snap['label'] }} • {{ $snap['calendar_date'] }})
                                     </span>
                                 </div>
-                                <p class="text-xs text-slate-300 leading-relaxed">
+                                <p class="text-xs text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
                                     {{ $snap['reflection'] }}
                                 </p>
                             </div>
@@ -880,7 +880,7 @@
                                 <button
                                     type="button"
                                     wire:click="showcaseJumpToView('map')"
-                                    class="px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'map' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700' }}"
+                                    class="px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'map' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 dark:border-slate-700' }}"
                                 >
                                     <span>🗺️</span>
                                     <span>16-Ward Map ({{ $snap['wards_reached'] }}/16)</span>
@@ -888,7 +888,7 @@
                                 <button
                                     type="button"
                                     wire:click="showcaseJumpToView('churches', 'genmap')"
-                                    class="px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'churches' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700' }}"
+                                    class="px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'churches' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 dark:border-slate-700' }}"
                                 >
                                     <span>⛪</span>
                                     <span>Circles &amp; Gen Map (G1→G{{ $snap['deepest_generation'] }})</span>
@@ -896,7 +896,7 @@
                                 <button
                                     type="button"
                                     wire:click="showcaseJumpToView('leaderboard')"
-                                    class="px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'leaderboard' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700' }}"
+                                    class="px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 {{ $currentTab === 'leaderboard' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 dark:border-slate-700' }}"
                                 >
                                     <span>🏆</span>
                                     <span>Leaderboard</span>
@@ -907,71 +907,71 @@
                         <!-- 6 Key Real-Life Metrics Cards -->
                         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 text-xs">
                             <!-- 1. Ward Saturation -->
-                            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1.5">
-                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Nagoya Wards</div>
+                            <div class="p-3 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-1.5 shadow-xs">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Nagoya Wards</div>
                                 <div class="flex items-baseline justify-between">
-                                    <span class="text-base font-black text-emerald-400">{{ $snap['wards_reached'] }} / {{ $snap['total_wards'] }}</span>
-                                    <span class="text-[11px] font-bold text-emerald-300">{{ $snap['saturation_percent'] }}%</span>
+                                    <span class="text-base font-black text-emerald-700 dark:text-emerald-400">{{ $snap['wards_reached'] }} / {{ $snap['total_wards'] }}</span>
+                                    <span class="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">{{ $snap['saturation_percent'] }}%</span>
                                 </div>
-                                <div class="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                                <div class="w-full h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                                     <div class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full" style="width: {{ max(6, $snap['saturation_percent']) }}%"></div>
                                 </div>
                             </div>
 
                             <!-- 2. Oikos Spiritual Pipeline -->
-                            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Spiritual Pipeline</div>
-                                <div class="text-base font-black text-white">
-                                    {{ $snap['green_believers_count'] }} <span class="text-xs font-bold text-emerald-400">Believers</span>
+                            <div class="p-3 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-1 shadow-xs">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Spiritual Pipeline</div>
+                                <div class="text-base font-black text-slate-900 dark:text-white">
+                                    {{ $snap['green_believers_count'] }} <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400">Believers</span>
                                 </div>
-                                <div class="text-[10px] text-slate-400 flex items-center gap-1.5">
-                                    <span class="text-amber-300 font-semibold">{{ $snap['yellow_seekers_count'] }} Yellow</span>
+                                <div class="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-medium">
+                                    <span class="text-amber-700 dark:text-amber-300 font-semibold">{{ $snap['yellow_seekers_count'] }} Yellow</span>
                                     <span>•</span>
-                                    <span class="text-rose-300">{{ $snap['red_acquaintances_count'] }} Red</span>
+                                    <span class="text-rose-700 dark:text-rose-300 font-semibold">{{ $snap['red_acquaintances_count'] }} Red</span>
                                 </div>
                             </div>
 
                             <!-- 3. Japanese Baptism Cost Journey -->
-                            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Water Baptisms</div>
-                                <div class="text-base font-black text-sky-400">
-                                    💧 {{ $snap['baptized_count'] }} <span class="text-xs font-bold text-slate-300">Baptized</span>
+                            <div class="p-3 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-1 shadow-xs">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Water Baptisms</div>
+                                <div class="text-base font-black text-sky-700 dark:text-sky-400">
+                                    💧 {{ $snap['baptized_count'] }} <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Baptized</span>
                                 </div>
-                                <div class="text-[10px] text-amber-300/90">
+                                <div class="text-[10px] text-amber-800 dark:text-amber-300/90 font-medium">
                                     ⏳ {{ $snap['counting_cost_count'] }} counting cost • {{ $snap['trained_411_count'] }} 411
                                 </div>
                             </div>
 
                             <!-- 4. Generational Church Streams -->
-                            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Acts 2 Churches</div>
+                            <div class="p-3 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-1 shadow-xs">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Acts 2 Churches</div>
                                 <div class="flex items-baseline justify-between">
-                                    <span class="text-base font-black text-indigo-300">⛪ {{ $snap['active_churches_count'] }} Active</span>
-                                    <span class="px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 border border-indigo-700 text-[10px] font-black">G1→G{{ $snap['deepest_generation'] }}</span>
+                                    <span class="text-base font-black text-indigo-700 dark:text-indigo-300">⛪ {{ $snap['active_churches_count'] }} Active</span>
+                                    <span class="px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-900 border border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300 dark:border-indigo-700 text-[10px] font-black">G1→G{{ $snap['deepest_generation'] }}</span>
                                 </div>
-                                <div class="text-[10px] text-slate-400">
+                                <div class="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
                                     G1:{{ $gens[1] }} • G2:{{ $gens[2] }} • G3:{{ $gens[3] }} • G4+:{{ $gens[4] }}
                                 </div>
                             </div>
 
                             <!-- 5. Indigenous 5 Leadership Levels -->
-                            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Japanese Leaders</div>
-                                <div class="text-xs font-black text-purple-300 pt-0.5">
+                            <div class="p-3 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-1 shadow-xs">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Japanese Leaders</div>
+                                <div class="text-xs font-black text-purple-700 dark:text-purple-300 pt-0.5">
                                     L1:{{ $tiers['L1'] }} • L2:{{ $tiers['L2'] }} • L3:{{ $tiers['L3'] }}
                                 </div>
-                                <div class="text-[10px] text-amber-300 font-semibold">
+                                <div class="text-[10px] text-amber-800 dark:text-amber-300 font-semibold">
                                     L4 Trainers: {{ $tiers['L4'] }} • L5 Cat: {{ $tiers['L5'] }}
                                 </div>
                             </div>
 
                             <!-- 6. Real-Life Attrition & Care -->
-                            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-1">
-                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Real-Life Trials</div>
-                                <div class="text-xs font-bold text-slate-200 pt-0.5">
+                            <div class="p-3 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-1 shadow-xs">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Real-Life Trials</div>
+                                <div class="text-xs font-bold text-slate-800 dark:text-slate-200 pt-0.5">
                                     👣 {{ $snap['prayer_walks_count'] }} Prayer Walks
                                 </div>
-                                <div class="text-[10px] text-slate-400">
+                                <div class="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
                                     ⚠️ {{ $snap['dissolved_churches_count'] }} Dissolved • ❤️‍🩹 {{ $snap['cumulative_revitalizations'] }} Restored
                                 </div>
                             </div>
@@ -1000,12 +1000,12 @@
             <!-- Tab 2: Acts 2 Church Circles & Visual Church Generation Map -->
             <div class="space-y-6">
                 <!-- Subview Mode Navigation Switcher -->
-                <div class="flex items-center justify-between gap-3 p-1.5 bg-slate-900/90 border border-slate-800 rounded-2xl">
+                <div class="flex items-center justify-between gap-3 p-1.5 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs">
                     <div class="flex items-center gap-1.5">
                         <button 
                             type="button" 
                             wire:click="setCirclesSubView('genmap')" 
-                            class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer {{ $circlesSubView === 'genmap' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/80' }}"
+                            class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer {{ $circlesSubView === 'genmap' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80' }}"
                         >
                             <span>🌳</span>
                             <span>Visual Generation Map (Gen Map)</span>
@@ -1013,14 +1013,14 @@
                         <button 
                             type="button" 
                             wire:click="setCirclesSubView('inspector')" 
-                            class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer {{ $circlesSubView === 'inspector' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/80' }}"
+                            class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer {{ $circlesSubView === 'inspector' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80' }}"
                         >
                             <span>🔍</span>
                             <span>Single Church Inspector (Acts 2)</span>
                         </button>
                     </div>
 
-                    <span class="text-xs text-slate-400 hidden sm:inline-block pr-3">
+                    <span class="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline-block pr-3 font-medium">
                         Field 4 • Simple Gathering Streams
                     </span>
                 </div>
@@ -1029,28 +1029,28 @@
                     <!-- Visual Church Generation Map -->
                     <livewire:church-generation-map :key="'church-gen-map-'.$session?->id.'-'.$showcaseRevision" />
                 @else
-                    <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm dark:shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div class="space-y-1.5 max-w-2xl">
                             <div class="flex flex-wrap items-center gap-2">
-                                <span class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
                                     <span>⛪</span>
                                     <span>Field 4: The Harvested Field</span>
                                 </span>
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-950 text-indigo-300 border border-indigo-800 flex items-center gap-1 shadow-sm">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-900 border border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300 dark:border-indigo-800 flex items-center gap-1 shadow-sm">
                                     <span>🌐</span>
                                     <span>City-Wide Scope • All 16 Wards</span>
                                 </span>
                                 @if($user?->homeWard)
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-800/90 text-slate-400 border border-slate-700">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800/90 dark:text-slate-400 dark:border-slate-700">
                                         Your Base: {{ $user->homeWard->name }}
                                     </span>
                                 @endif
                             </div>
-                            <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+                            <h2 class="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                                 <span>Nagoya Acts 2 Church Circles</span>
                             </h2>
-                            <p class="text-xs text-slate-400 leading-relaxed">
-                                <strong class="text-slate-200">Nagoya-Wide Network:</strong> This view catalogs all multiplying house churches across every district in Greater Nagoya, not just your local residence in <span class="text-indigo-400 font-semibold">{{ $user?->homeWard?->name ?? 'your home ward' }}</span>. A healthy church practices all 11 core Acts 2 elements.
+                            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                                <strong class="text-slate-900 dark:text-slate-200">Nagoya-Wide Network:</strong> This view catalogs all multiplying house churches across every district in Greater Nagoya, not just your local residence in <span class="text-indigo-700 dark:text-indigo-400 font-semibold">{{ $user?->homeWard?->name ?? 'your home ward' }}</span>. A healthy church practices all 11 core Acts 2 elements.
                             </p>
                         </div>
 
@@ -1061,7 +1061,7 @@
                                     <button 
                                         type="button"
                                         wire:click="selectChurch({{ $ch->id }})"
-                                        class="px-3.5 py-2 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 {{ $activeChurchId === $ch->id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-slate-800 text-slate-300 hover:bg-slate-700' }}"
+                                        class="px-3.5 py-2 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer flex items-center gap-1.5 {{ $activeChurchId === $ch->id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:border-transparent' }}"
                                     >
                                         <span>G{{ $ch->generation }}</span>
                                         <span class="truncate max-w-[140px]">{{ $ch->name }}</span>
@@ -1079,43 +1079,43 @@
                         </div>
 
                         <!-- Generational Stream Details -->
-                        <div class="lg:col-span-6 bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+                        <div class="lg:col-span-6 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm dark:shadow-xl flex flex-col justify-between">
                             <div>
-                                <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
-                                    <h3 class="text-sm font-bold text-white">Generational Lineage Details</h3>
-                                    <span class="px-2 py-0.5 rounded text-xs font-bold bg-indigo-950 text-indigo-300 border border-indigo-800">
+                                <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-4">
+                                    <h3 class="text-sm font-bold text-slate-900 dark:text-white">Generational Lineage Details</h3>
+                                    <span class="px-2 py-0.5 rounded text-xs font-bold bg-indigo-50 text-indigo-900 border border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300 dark:border-indigo-800">
                                         Founded Month {{ $activeChurch->founded_game_month }}
                                     </span>
                                 </div>
 
                                 <div class="space-y-3 text-xs">
-                                    <div class="flex justify-between py-1.5 border-b border-slate-800/60">
-                                        <span class="text-slate-400">Meeting Ward:</span>
-                                        <span class="font-bold text-white">{{ $activeChurch->ward->fullName }}</span>
+                                    <div class="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/60">
+                                        <span class="text-slate-500 dark:text-slate-400">Meeting Ward:</span>
+                                        <span class="font-bold text-slate-900 dark:text-white">{{ $activeChurch->ward->fullName }}</span>
                                     </div>
-                                    <div class="flex justify-between py-1.5 border-b border-slate-800/60">
-                                        <span class="text-slate-400">Pastoral Leader:</span>
-                                        <span class="font-bold text-indigo-400">
+                                    <div class="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/60">
+                                        <span class="text-slate-500 dark:text-slate-400">Pastoral Leader:</span>
+                                        <span class="font-bold text-indigo-700 dark:text-indigo-400">
                                             {{ $activeChurch->leaderNpc?->displayName ?? ($activeChurch->leaderUser?->name ?? 'None') }}
                                         </span>
                                     </div>
-                                    <div class="flex justify-between py-1.5 border-b border-slate-800/60">
-                                        <span class="text-slate-400">Autonomous Status:</span>
-                                        <span class="font-bold {{ $activeChurch->isAutonomous ? 'text-emerald-400' : 'text-blue-400' }}">
+                                    <div class="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/60">
+                                        <span class="text-slate-500 dark:text-slate-400">Autonomous Status:</span>
+                                        <span class="font-bold {{ $activeChurch->isAutonomous ? 'text-emerald-700 dark:text-emerald-400' : 'text-blue-700 dark:text-blue-400' }}">
                                             {{ $activeChurch->isAutonomous ? 'Autonomous Local Leader (Field 5)' : 'Player Missionary-Led (G1)' }}
                                         </span>
                                     </div>
-                                    <div class="flex justify-between py-1.5 border-b border-slate-800/60">
-                                        <span class="text-slate-400">Mother Church:</span>
-                                        <span class="font-medium text-slate-300">
+                                    <div class="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/60">
+                                        <span class="text-slate-500 dark:text-slate-400">Mother Church:</span>
+                                        <span class="font-medium text-slate-700 dark:text-slate-300">
                                             {{ $activeChurch->parentChurch?->name ?? 'Root Seed Church (Nagoya Origin)' }}
                                         </span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 mt-6 text-xs text-slate-400 leading-relaxed">
-                                💡 <strong class="text-white">Field 4 Multiplication Rule:</strong> Once a 3/3rds group practices all essential Acts 2 rhythms, they transition from a dashed circle to a solid line, qualifying as an autonomous healthy church.
+                            <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 mt-6 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                                💡 <strong class="text-slate-900 dark:text-white">Field 4 Multiplication Rule:</strong> Once a 3/3rds group practices all essential Acts 2 rhythms, they transition from a dashed circle to a solid line, qualifying as an autonomous healthy church.
                             </div>
                         </div>
                     </div>
