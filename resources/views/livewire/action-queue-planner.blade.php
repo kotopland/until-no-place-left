@@ -52,32 +52,107 @@
         </div>
     @endif
 
-    <!-- Welcome Guide Banner with Official Logo -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-100 via-indigo-50/60 to-slate-100 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 border border-slate-200 dark:border-slate-800/80 p-4 shadow-sm dark:shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-3.5">
-            <img 
-                src="{{ asset('images/until-no-place-left-logo-small.png') }}" 
-                alt="Nagoya Oikos Logo" 
-                class="w-12 h-12 object-contain rounded-xl border border-indigo-500/30 shadow-md shrink-0"
+    <!-- Welcome Guide Banner with Official Logo (Hideable) -->
+    @if($hideWelcomeGuide)
+        <div class="flex items-center justify-end">
+            <button 
+                type="button" 
+                wire:click="toggleWelcomeGuide"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 bg-slate-100 hover:bg-slate-200 dark:bg-slate-900/60 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition cursor-pointer shadow-sm"
+                title="Show New to Nagoya Oikos guide"
             >
-            <div>
-                <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <span>New to Nagoya Oikos?</span>
-                    <span class="px-1.5 py-0.2 rounded bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-[10px] font-semibold border border-indigo-300 dark:border-indigo-700">Story & Field Guide</span>
-                </h3>
-                <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
-                    Explore the biblical narrative, the 5 Fields of CPM multiplication, and the rules of relational church planting in Japan.
-                </p>
+                <span>📖</span>
+                <span>New to Nagoya Oikos? Show Field Guide</span>
+            </button>
+        </div>
+    @else
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-100 via-indigo-50/60 to-slate-100 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 border border-slate-200 dark:border-slate-800/80 p-4 shadow-sm dark:shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+                <img 
+                    src="{{ asset('images/until-no-place-left-logo-small.png') }}" 
+                    alt="Nagoya Oikos Logo" 
+                    class="w-12 h-12 object-contain rounded-xl border border-indigo-500/30 shadow-md shrink-0"
+                >
+                <div>
+                    <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span>New to Nagoya Oikos?</span>
+                        <span class="px-1.5 py-0.2 rounded bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-[10px] font-semibold border border-indigo-300 dark:border-indigo-700">Story & Field Guide</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
+                        Explore the biblical narrative, the 5 Fields of CPM multiplication, and the rules of relational church planting in Japan.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 self-start sm:self-center shrink-0">
+                <a 
+                    href="{{ route('welcome') }}" 
+                    class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400/40 transition shrink-0 flex items-center gap-1.5 cursor-pointer shadow"
+                >
+                    <span>📖</span>
+                    <span>Read Story & Rules</span>
+                </a>
+                <button 
+                    type="button" 
+                    wire:click="toggleWelcomeGuide"
+                    class="px-2.5 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 transition cursor-pointer"
+                    title="Hide this welcome banner"
+                    aria-label="Hide welcome banner"
+                >
+                    <span class="hidden sm:inline">Hide</span>
+                    <span>✕</span>
+                </button>
             </div>
         </div>
+    @endif
 
-        <a 
-            href="{{ route('welcome') }}" 
-            class="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400/40 transition shrink-0 flex items-center gap-1.5 cursor-pointer self-start sm:self-center shadow"
-        >
-            <span>📖</span>
-            <span>Read Story & Rules</span>
-        </a>
+    <!-- Recent Weekly Developments Banner (Click to open last 4 weeks modal) -->
+    <div 
+        wire:click="openWeeklyDevelopmentsModal"
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-indigo-500/10 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-indigo-950/40 border border-emerald-500/30 dark:border-emerald-500/20 p-4 shadow-sm hover:shadow-md hover:border-emerald-500/50 transition cursor-pointer group"
+        role="button"
+        tabindex="0"
+        wire:keydown.enter="openWeeklyDevelopmentsModal"
+        title="Click to view developments from the last 4 weeks"
+    >
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-xl bg-emerald-500/20 dark:bg-emerald-500/30 border border-emerald-500/40 flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform">
+                    🌱
+                </div>
+                <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h3 class="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors flex items-center gap-1.5">
+                            <span>Recent Weekly Developments</span>
+                        </h3>
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                            Last 4 Weeks
+                        </span>
+                        @if($recentOutcomesCount > 0)
+                            <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700">
+                                {{ $recentOutcomesCount }} {{ Str::plural('outcome', $recentOutcomesCount) }}
+                            </span>
+                        @endif
+                    </div>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 line-clamp-1">
+                        @if($latestWeeklyOutcome)
+                            <span class="font-medium text-emerald-600 dark:text-emerald-400">Latest:</span>
+                            {{ $latestWeeklyOutcome->actionTitle }} in {{ $latestWeeklyOutcome->ward->name }} — {{ Str::limit($latestWeeklyOutcome->outcome_notes, 90) }}
+                        @else
+                            Review field outcomes, fruit, and story updates from across Nagoya • Click to view developments
+                        @endif
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 self-start sm:self-center shrink-0">
+                <span class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 group-hover:bg-emerald-500 text-white border border-emerald-400/40 transition flex items-center gap-1.5 shadow">
+                    <span>📋</span>
+                    <span>View 4-Week Log</span>
+                    <span class="text-[10px] opacity-80 group-hover:translate-x-0.5 transition-transform">→</span>
+                </span>
+            </div>
+        </div>
     </div>
 
     <!-- Header: Time & Energy Bandwidth Status Bar -->
@@ -1621,35 +1696,131 @@
                     </div>
                 </div>
 
-                <!-- Recent Weekly Developments Feed -->
-                @if($recentOutcomes->isNotEmpty())
-                    <div class="pt-2 border-t border-slate-800/80">
-                        <div class="flex items-center justify-between pb-1.5 mb-2">
-                            <h4 class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                                <span>🌱</span>
-                                <span>Recent Weekly Developments</span>
-                            </h4>
-                            <span class="text-[10px] text-slate-500">Last {{ $recentOutcomes->count() }} outcomes</span>
-                        </div>
-
-                        <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
-                            @foreach($recentOutcomes as $outcome)
-                                <div class="p-2.5 rounded-xl bg-slate-950/50 border border-slate-800/80 text-xs space-y-1">
-                                    <div class="flex items-center justify-between text-[10px]">
-                                        <span class="font-bold text-indigo-300">{{ $outcome->actionTitle }}</span>
-                                        <span class="text-slate-400">{{ $outcome->ward->name }} • Day {{ $outcome->game_day }}</span>
-                                    </div>
-                                    <p class="text-[11px] text-slate-300 leading-relaxed">
-                                        {{ $outcome->outcome_notes }}
-                                    </p>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
             </div>
         </div>
     </div>
+    @endif
+
+    <!-- Modal: Recent Weekly Developments (Last 4 Weeks) -->
+    @if($showWeeklyDevelopmentsModal)
+        <div 
+            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+            wire:keydown.escape.window="closeWeeklyDevelopmentsModal"
+        >
+            <div 
+                class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-2xl w-full shadow-2xl relative max-h-[85vh] flex flex-col"
+                @click.outside="$wire.closeWeeklyDevelopmentsModal()"
+            >
+                <!-- Modal Header -->
+                <div class="flex items-start justify-between pb-4 border-b border-slate-800 shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-xl shrink-0">
+                            🌱
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                <span>Recent Weekly Developments</span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950 text-emerald-300 border border-emerald-700">
+                                    Last 4 Weeks
+                                </span>
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-0.5">
+                                Field outcomes and discipleship stories recorded across Nagoya.
+                            </p>
+                        </div>
+                    </div>
+
+                    <button 
+                        type="button" 
+                        wire:click="closeWeeklyDevelopmentsModal"
+                        class="text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-xs transition cursor-pointer"
+                        title="Close modal"
+                        aria-label="Close modal"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <!-- Modal Content (Scrollable) -->
+                <div class="overflow-y-auto py-4 space-y-5 custom-scrollbar grow pr-1">
+                    @forelse($recentWeeksDevelopments as $weekData)
+                        <div class="space-y-2.5">
+                            <div class="flex items-center justify-between pb-1 border-b border-slate-800/60">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">
+                                        📅 {{ $weekData['label'] }}
+                                    </span>
+                                    @if($weekData['is_current'])
+                                        <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-indigo-900/60 text-indigo-300 border border-indigo-700">
+                                            Current Week
+                                        </span>
+                                    @endif
+                                </div>
+                                <span class="text-[10px] text-slate-500 font-medium">
+                                    {{ $weekData['actions']->count() }} {{ Str::plural('development', $weekData['actions']->count()) }}
+                                </span>
+                            </div>
+
+                            @forelse($weekData['actions'] as $outcome)
+                                <div class="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800 hover:border-slate-700/80 transition space-y-2">
+                                    <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold text-indigo-300">{{ $outcome->actionTitle }}</span>
+                                            @if($outcome->targetNpc)
+                                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                                                    👤 {{ $outcome->targetNpc->name }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <div class="flex items-center gap-2 text-[10px] text-slate-400">
+                                            <span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-emerald-400 font-medium">
+                                                📍 {{ $outcome->ward->name }}
+                                            </span>
+                                            @if($outcome->game_day)
+                                                <span>Day {{ $outcome->game_day }}</span>
+                                            @endif
+                                            @if($outcome->ap_cost)
+                                                <span class="text-amber-400 font-semibold">{{ $outcome->ap_cost }} AP</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <p class="text-xs text-slate-300 leading-relaxed bg-slate-900/50 p-2.5 rounded-xl border border-slate-800/50">
+                                        {{ $outcome->outcome_notes }}
+                                    </p>
+                                </div>
+                            @empty
+                                <div class="text-center py-4 px-3 rounded-2xl bg-slate-950/30 border border-slate-800/40 text-slate-500 text-xs italic">
+                                    No actions resolved for this week.
+                                </div>
+                            @endforelse
+                        </div>
+                    @empty
+                        <div class="text-center py-8 px-4 rounded-2xl bg-slate-950/40 border border-slate-800 text-slate-400 space-y-2">
+                            <div class="text-3xl">🌱</div>
+                            <p class="text-sm font-semibold text-white">No Weekly Developments Yet</p>
+                            <p class="text-xs text-slate-400 max-w-sm mx-auto">
+                                Queue your ministry actions using your Action Points bandwidth. When the weekly tick processes, developments from the field will appear here!
+                            </p>
+                        </div>
+                    @endforelse
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="pt-3 border-t border-slate-800 flex items-center justify-between shrink-0">
+                    <span class="text-[11px] text-slate-400">
+                        Showing outcomes from up to the last 4 game weeks.
+                    </span>
+                    <button 
+                        type="button" 
+                        wire:click="closeWeeklyDevelopmentsModal"
+                        class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition cursor-pointer"
+                    >
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
     @endif
 
     <!-- Modal: Action Information & Descriptive Text -->

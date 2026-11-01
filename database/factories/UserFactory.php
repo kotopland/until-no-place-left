@@ -49,6 +49,7 @@ class UserFactory extends Factory
             'screening_score' => 85,
             'screening_profile_title' => 'Cross-Cultural Ambassador',
             'has_seen_host_intro' => true,
+            'hide_welcome_guide' => false,
             'committed_to_language_training' => false,
             'language_training_completed' => true,
         ];

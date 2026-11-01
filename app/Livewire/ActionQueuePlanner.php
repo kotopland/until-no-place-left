@@ -47,6 +47,10 @@ class ActionQueuePlanner extends Component
 
     public bool $showActionInfoModal = false;
 
+    public bool $showWeeklyDevelopmentsModal = false;
+
+    public bool $hideWelcomeGuide = false;
+
     public string $notes = '';
 
     public bool $filterEligibleOnly = false;
@@ -84,6 +88,8 @@ class ActionQueuePlanner extends Component
     {
         $this->boot();
 
+        $this->hideWelcomeGuide = (bool) ($this->player?->hide_welcome_guide ?? session('hide_welcome_guide', false));
+
         // Mark player active (online)
         $this->player?->touchActive();
 
@@ -96,6 +102,37 @@ class ActionQueuePlanner extends Component
     {
         $this->boot();
         $this->selectedActionType = null;
+        $this->hideWelcomeGuide = (bool) ($this->player?->hide_welcome_guide ?? session('hide_welcome_guide', false));
+    }
+
+    public function toggleWelcomeGuide(): void
+    {
+        $this->hideWelcomeGuide = ! $this->hideWelcomeGuide;
+
+        if ($this->player) {
+            $this->player->update(['hide_welcome_guide' => $this->hideWelcomeGuide]);
+        }
+        session()->put('hide_welcome_guide', $this->hideWelcomeGuide);
+    }
+
+    public function dismissWelcomeGuide(): void
+    {
+        $this->hideWelcomeGuide = true;
+
+        if ($this->player) {
+            $this->player->update(['hide_welcome_guide' => true]);
+        }
+        session()->put('hide_welcome_guide', true);
+    }
+
+    public function openWeeklyDevelopmentsModal(): void
+    {
+        $this->showWeeklyDevelopmentsModal = true;
+    }
+
+    public function closeWeeklyDevelopmentsModal(): void
+    {
+        $this->showWeeklyDevelopmentsModal = false;
     }
 
     public function onHomeWardSelected(int $wardId): void
@@ -855,14 +892,54 @@ class ActionQueuePlanner extends Component
             ->latest()
             ->get();
 
-        $recentOutcomes = QueuedMonthlyAction::where('user_id', $this->player?->id)
+        $allProcessedOutcomes = QueuedMonthlyAction::where('user_id', $this->player?->id)
             ->where('status', QueuedActionStatus::Processed)
             ->whereNotNull('outcome_notes')
             ->when($this->session?->id, fn ($q) => $q->where('game_session_id', $this->session->id))
             ->with(['targetNpc', 'ward'])
             ->latest('updated_at')
-            ->take(5)
             ->get();
+
+        $currentMonth = (int) ($this->player?->current_game_month ?: 1);
+        $currentWeek = (int) ($this->player?->current_game_week ?: 1);
+        $currentAbsWeek = ($currentMonth - 1) * 4 + $currentWeek;
+
+        $targetWeeks = [];
+        for ($i = 0; $i < 4; $i++) {
+            $abs = $currentAbsWeek - $i;
+            if ($abs >= 1) {
+                $m = (int) intdiv($abs - 1, 4) + 1;
+                $w = (int) (($abs - 1) % 4) + 1;
+                $targetWeeks[] = [
+                    'month' => $m,
+                    'week' => $w,
+                    'label' => "Month {$m}, Week {$w}",
+                    'is_current' => ($m === $currentMonth && $w === $currentWeek),
+                ];
+            }
+        }
+
+        $recentWeeksDevelopments = [];
+        foreach ($targetWeeks as $target) {
+            $actions = $allProcessedOutcomes->filter(function ($action) use ($target) {
+                $aMonth = $action->game_month ?: 1;
+                $aWeek = $action->game_week ?: ($action->game_day > 4 ? min(4, (int) ceil($action->game_day / 7)) : ($action->game_day ?: 1));
+
+                return $aMonth === $target['month'] && $aWeek === $target['week'];
+            })->values();
+
+            $recentWeeksDevelopments[] = [
+                'month' => $target['month'],
+                'week' => $target['week'],
+                'label' => $target['label'],
+                'is_current' => $target['is_current'],
+                'actions' => $actions,
+            ];
+        }
+
+        $recentOutcomesCount = collect($recentWeeksDevelopments)->sum(fn ($w) => $w['actions']->count());
+        $latestWeeklyOutcome = $allProcessedOutcomes->first();
+        $recentOutcomes = $allProcessedOutcomes->take(5);
 
         $activeCelebrations = MovementCelebration::where('game_session_id', $this->session?->id)
             ->where('is_dismissed', false)
@@ -1093,6 +1170,9 @@ class ActionQueuePlanner extends Component
             'selectedNpc' => $selectedNpc,
             'queuedActions' => $queuedActions,
             'recentOutcomes' => $recentOutcomes,
+            'recentWeeksDevelopments' => $recentWeeksDevelopments,
+            'recentOutcomesCount' => $recentOutcomesCount,
+            'latestWeeklyOutcome' => $latestWeeklyOutcome,
             'actionTypes' => $actionTypes,
             'allActionTypes' => $allFieldActionTypes,
             'recommendedActionType' => $recommendedActionType,

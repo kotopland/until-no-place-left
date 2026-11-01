@@ -52,6 +52,7 @@ use Illuminate\Support\Str;
  * @property array<string, string>|null $screening_answers
  * @property array<string, int>|null $screening_dimension_scores
  * @property int|null $language_training_enrolled_month
+ * @property bool $hide_welcome_guide
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -110,6 +111,7 @@ use Illuminate\Support\Str;
     'screening_profile_title',
     'screening_answers',
     'has_seen_host_intro',
+    'hide_welcome_guide',
     'committed_to_language_training',
     'language_training_enrolled_month',
     'language_training_completed',
@@ -730,6 +732,7 @@ class User extends Authenticatable
             'screening_answers' => 'array',
             'last_read_chat_at' => 'datetime',
             'has_seen_host_intro' => 'boolean',
+            'hide_welcome_guide' => 'boolean',
             'committed_to_language_training' => 'boolean',
             'language_training_enrolled_month' => 'integer',
             'language_training_completed' => 'boolean',
