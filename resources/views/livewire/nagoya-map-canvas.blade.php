@@ -7,6 +7,7 @@
         specialSpots: @js($specialSpots),
         prayerWalks: @js($prayerWalksData),
         houses: @js($housesData),
+        baseMap: @entangle('baseMap').live,
         showHeatmap: @entangle('showHeatmap').live,
         showChurches: @entangle('showChurches').live,
         showOikosLines: @entangle('showOikosLines').live,
@@ -46,8 +47,33 @@
             </div>
         </div>
 
-        <!-- Layer Toggle Pills with Real-Time Alpine & Livewire Integration -->
-        <div class="flex items-center gap-1.5 overflow-x-auto text-xs font-semibold">
+        <!-- Controls: Base Map Switcher & Layer Toggles -->
+        <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
+            <!-- Base Map Direct Switcher (100% Free / Zero API Key Required) -->
+            <div class="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800 shrink-0">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1.5 flex items-center gap-1">
+                    <span>🗺️</span>
+                    <span>Base:</span>
+                </span>
+                @foreach($availableBaseMaps as $item)
+                    <button
+                        type="button"
+                        @click="switchBaseMap('{{ $item['id'] }}')"
+                        class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer flex items-center gap-1.5 border"
+                        :class="currentBaseMap === '{{ $item['id'] }}' 
+                            ? 'bg-indigo-600 text-white border-indigo-400 shadow-md shadow-indigo-950/60 ring-1 ring-indigo-400/40' 
+                            : 'bg-slate-900/60 text-slate-400 border-slate-800/80 hover:text-white hover:bg-slate-800'"
+                        title="{{ $item['name'] }} — {{ $item['subtitle'] }}"
+                    >
+                        <span>{{ $item['icon'] }}</span>
+                        <span>{{ $item['name'] }}</span>
+                    </button>
+                @endforeach
+            </div>
+
+            <!-- Vertical Separator -->
+            <span class="w-px h-6 bg-slate-800 shrink-0 hidden xl:block"></span>
+
             <!-- Heatmap: Emerald -->
             <button 
                 type="button" 
@@ -187,6 +213,48 @@
                 <span class="w-2.5 h-2.5 rounded bg-emerald-500/60 border border-emerald-400/60"></span>
                 <span>🔥 Open Wards</span>
             </div>
+        </div>
+
+        <span class="w-px h-3.5 bg-slate-800"></span>
+
+        <!-- Active Base Map Indicator (Clickable to Cycle) -->
+        <button 
+            type="button" 
+            @click="cycleBaseMap()" 
+            class="flex items-center gap-1.5 text-[10px] text-slate-400 hover:text-white transition cursor-pointer p-0.5 px-2 rounded-lg bg-slate-950/70 hover:bg-slate-800 border border-slate-800/80"
+            title="Click to cycle next base map (Zero API Key)"
+        >
+            <span x-text="getBaseMapMeta().icon">🗺️</span>
+            <span>Base:</span>
+            <span class="text-indigo-400 font-semibold" x-text="getBaseMapMeta().name"></span>
+            <span class="text-[9px] text-slate-500 font-mono">⇄</span>
+        </button>
+    </div>
+
+    <!-- Dedicated Floating Base Map Switcher Dock (Bottom-Right / Above Zoom Controls) -->
+    <div class="absolute bottom-16 right-4 z-20 hidden md:flex flex-col gap-1 p-2 bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-800 shadow-2xl pointer-events-auto">
+        <div class="px-1.5 pb-1 text-[9px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-800/80 flex items-center justify-between gap-3">
+            <span>🗺️ Base Map</span>
+            <span class="text-[8px] text-emerald-400 font-bold">No API Key</span>
+        </div>
+        <div class="flex flex-col gap-0.5">
+            @foreach($availableBaseMaps as $item)
+                <button
+                    type="button"
+                    @click="switchBaseMap('{{ $item['id'] }}')"
+                    class="px-2 py-1 rounded-xl text-[10px] font-semibold transition cursor-pointer flex items-center justify-between gap-3 text-left"
+                    :class="currentBaseMap === '{{ $item['id'] }}'
+                        ? 'bg-indigo-600 text-white font-bold ring-1 ring-indigo-400/50 shadow-sm'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800/80'"
+                    title="{{ $item['subtitle'] }}"
+                >
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs">{{ $item['icon'] }}</span>
+                        <span>{{ $item['name'] }}</span>
+                    </div>
+                    <span x-show="currentBaseMap === '{{ $item['id'] }}'" class="text-[10px] text-indigo-200">✓</span>
+                </button>
+            @endforeach
         </div>
     </div>
 

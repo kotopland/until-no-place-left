@@ -39,11 +39,21 @@ class NagoyaMapCanvas extends Component
 
     public bool $showHouses = true;
 
+    public string $baseMap = 'streets';
+
     /** @var array<string, string> */
     protected $listeners = [
         'map-church-selected' => 'selectChurch',
         'map-ward-selected' => 'selectWard',
+        'map-basemap-changed' => 'setBaseMap',
     ];
+
+    public function setBaseMap(string $baseMap): void
+    {
+        if (in_array($baseMap, ['streets', 'dark', 'satellite', 'topo', 'esri_streets'], true)) {
+            $this->baseMap = $baseMap;
+        }
+    }
 
     public function selectChurch(int $churchId): void
     {
@@ -249,6 +259,51 @@ class NagoyaMapCanvas extends Component
             'housesData' => $housesData,
             'selectedChurch' => $selectedChurch,
             'session' => $session,
+            'availableBaseMaps' => $this->getAvailableBaseMaps(),
         ]);
+    }
+
+    /**
+     * @return array<int, array{id: string, name: string, name_ja: string, icon: string, subtitle: string}>
+     */
+    public function getAvailableBaseMaps(): array
+    {
+        return [
+            [
+                'id' => 'streets',
+                'name' => 'OSM Streets',
+                'name_ja' => '標準地図',
+                'icon' => '🗺️',
+                'subtitle' => 'OpenStreetMap (No API Key)',
+            ],
+            [
+                'id' => 'dark',
+                'name' => 'Dark Canvas',
+                'name_ja' => 'ダーク',
+                'icon' => '🌑',
+                'subtitle' => 'OSM Night Mode (No API Key)',
+            ],
+            [
+                'id' => 'satellite',
+                'name' => 'Satellite',
+                'name_ja' => '航空写真',
+                'icon' => '🛰️',
+                'subtitle' => 'Esri World Imagery (No API Key)',
+            ],
+            [
+                'id' => 'topo',
+                'name' => 'Topographic',
+                'name_ja' => '地形図',
+                'icon' => '🏔️',
+                'subtitle' => 'Esri World Topo (No API Key)',
+            ],
+            [
+                'id' => 'esri_streets',
+                'name' => 'World Streets',
+                'name_ja' => '世界街路図',
+                'icon' => '🏛️',
+                'subtitle' => 'Esri World Streets (No API Key)',
+            ],
+        ];
     }
 }

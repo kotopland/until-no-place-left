@@ -28,6 +28,10 @@ class ExampleTest extends TestCase
         $response->assertOk();
         $response->assertSee('Reach Nagoya with Jesus');
         $response->assertSee('Until There is No Place Left');
+        $response->assertSee('return \'light\';', false);
+        $response->assertDontSee('class="dark scroll-smooth"', false);
+        $response->assertSee('class="scroll-smooth"', false);
+        $response->assertSee('bg-slate-950/80', false);
     }
 
     public function test_welcome_page_returns_a_successful_response(): void
@@ -35,5 +39,9 @@ class ExampleTest extends TestCase
         $response = $this->get('/welcome');
 
         $response->assertOk();
+        $response->assertSee('return \'light\';', false);
+        $response->assertDontSee('class="dark scroll-smooth"', false);
+        $response->assertSee('class="scroll-smooth"', false);
+        $response->assertSee('bg-slate-950/80', false);
     }
 }

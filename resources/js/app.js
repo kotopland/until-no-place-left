@@ -2,12 +2,128 @@
 window.nagoyaMap = function (config) {
     return {
         map: null,
+        baseLayer: null,
         geoJsonLayer: null,
         churchesLayer: null,
         oikosLayer: null,
         spotsLayer: null,
         prayerWalksLayer: null,
         housesLayer: null,
+
+        // Reactive base map state (Defaults to 100% Free OpenStreetMap / Zero API Keys)
+        currentBaseMap: config.baseMap || 'streets',
+
+        availableBaseMaps: [
+            {
+                id: 'streets',
+                name: 'OSM Streets',
+                nameJa: '標準地図',
+                icon: '🗺️',
+                subtitle: 'OpenStreetMap (No API Key)',
+                url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                options: {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" class="text-slate-500 hover:underline">OpenStreetMap</a> contributors'
+                }
+            },
+            {
+                id: 'dark',
+                name: 'Dark Canvas',
+                nameJa: 'ダーク',
+                icon: '🌑',
+                subtitle: 'OSM Night Mode (No API Key)',
+                url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                filterClass: 'tile-filter-dark',
+                options: {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" class="text-slate-500 hover:underline">OpenStreetMap</a> contributors'
+                }
+            },
+            {
+                id: 'satellite',
+                name: 'Satellite',
+                nameJa: '航空写真',
+                icon: '🛰️',
+                subtitle: 'Esri World Imagery (No API Key)',
+                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                options: {
+                    maxZoom: 19,
+                    attribution: 'Tiles &copy; <a href="https://www.esri.com" target="_blank" class="text-slate-500 hover:underline">Esri</a>'
+                }
+            },
+            {
+                id: 'topo',
+                name: 'Topographic',
+                nameJa: '地形図',
+                icon: '🏔️',
+                subtitle: 'Esri World Topo (No API Key)',
+                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+                options: {
+                    maxZoom: 19,
+                    attribution: 'Tiles &copy; <a href="https://www.esri.com" target="_blank" class="text-slate-500 hover:underline">Esri</a>'
+                }
+            },
+            {
+                id: 'esri_streets',
+                name: 'World Streets',
+                nameJa: '世界街路図',
+                icon: '🏛️',
+                subtitle: 'Esri World Streets (No API Key)',
+                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+                options: {
+                    maxZoom: 19,
+                    attribution: 'Tiles &copy; <a href="https://www.esri.com" target="_blank" class="text-slate-500 hover:underline">Esri</a>'
+                }
+            }
+        ],
+
+        getBaseMapMeta(id = null) {
+            const targetId = id || this.currentBaseMap;
+            return this.availableBaseMaps.find(b => b.id === targetId) || this.availableBaseMaps[0];
+        },
+
+        cycleBaseMap() {
+            const currentIndex = this.availableBaseMaps.findIndex(b => b.id === this.currentBaseMap);
+            const nextIndex = (currentIndex + 1) % this.availableBaseMaps.length;
+            this.switchBaseMap(this.availableBaseMaps[nextIndex].id);
+        },
+
+        switchBaseMap(id) {
+            let found = this.availableBaseMaps.find(b => b.id === id);
+            if (!found) {
+                found = this.availableBaseMaps[0];
+                id = found.id;
+            }
+
+            this.currentBaseMap = id;
+            try {
+                localStorage.setItem('nagoya_base_map', id);
+            } catch (e) { }
+
+            if (window.Livewire) {
+                window.Livewire.dispatch('map-basemap-changed', { baseMap: id });
+            }
+
+            const mapEl = document.getElementById('nagoya-leaflet-map');
+            if (mapEl) {
+                if (found.filterClass) {
+                    mapEl.classList.add(found.filterClass);
+                } else {
+                    mapEl.classList.remove('tile-filter-dark');
+                }
+            }
+
+            if (this.map && typeof L !== 'undefined') {
+                if (this.baseLayer) {
+                    this.map.removeLayer(this.baseLayer);
+                    this.baseLayer = null;
+                }
+                this.baseLayer = L.tileLayer(found.url, found.options).addTo(this.map);
+                if (typeof this.baseLayer.bringToBack === 'function') {
+                    this.baseLayer.bringToBack();
+                }
+            }
+        },
 
         // Reactive layer visibility states bound with entangle
         showHeatmap: config.showHeatmap ?? true,
@@ -68,12 +184,16 @@ window.nagoyaMap = function (config) {
 
             L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 
-            // 100% Free OpenStreetMap Tiles (Zero API Keys, Open Source)
-            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" class="text-slate-500 hover:underline">OpenStreetMap</a>'
-            }).addTo(this.map);
+            // Determine initial base map: localStorage preference > config > dark/streets default
+            let initialBase = this.currentBaseMap;
+            try {
+                const saved = localStorage.getItem('nagoya_base_map');
+                if (saved && this.availableBaseMaps.some(b => b.id === saved)) {
+                    initialBase = saved;
+                }
+            } catch (e) { }
 
+            this.switchBaseMap(initialBase);
             this.renderLayers();
 
             // Crucial: invalidateSize after map renders in DOM
@@ -83,6 +203,7 @@ window.nagoyaMap = function (config) {
                 }
             }, 300);
 
+            this.$watch('currentBaseMap', (val) => this.switchBaseMap(val));
             this.$watch('showHeatmap', () => this.renderLayers());
             this.$watch('showChurches', () => this.renderLayers());
             this.$watch('showOikosLines', () => this.renderLayers());
@@ -1179,10 +1300,10 @@ function setupAlpineAudioStore() {
 function setupAlpineThemeStore() {
     if (window.Alpine && !window.Alpine.store('theme')) {
         window.Alpine.store('theme', {
-            mode: (typeof window.__getTheme === 'function' ? window.__getTheme() : (localStorage.getItem('theme') || 'dark')),
+            mode: (typeof window.__getTheme === 'function' ? window.__getTheme() : (localStorage.getItem('theme') || 'light')),
 
             init() {
-                this.mode = (typeof window.__getTheme === 'function' ? window.__getTheme() : (localStorage.getItem('theme') || 'dark'));
+                this.mode = (typeof window.__getTheme === 'function' ? window.__getTheme() : (localStorage.getItem('theme') || 'light'));
                 this.apply();
                 window.addEventListener('theme-changed', (e) => {
                     if (e.detail && e.detail.mode) {
@@ -1194,7 +1315,7 @@ function setupAlpineThemeStore() {
             toggle() {
                 if (typeof window.__toggleTheme === 'function') {
                     window.__toggleTheme();
-                    this.mode = typeof window.__getTheme === 'function' ? window.__getTheme() : (localStorage.getItem('theme') || 'dark');
+                    this.mode = typeof window.__getTheme === 'function' ? window.__getTheme() : (localStorage.getItem('theme') || 'light');
                 } else {
                     this.mode = this.mode === 'dark' ? 'light' : 'dark';
                     localStorage.setItem('theme', this.mode);

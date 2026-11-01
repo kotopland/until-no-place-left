@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark scroll-smooth">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,7 +18,7 @@
             window.__getTheme = function() {
                 var stored = localStorage.getItem('theme');
                 if (stored) return stored;
-                return 'dark';
+                return 'light';
             };
             window.__applyTheme = function(mode) {
                 var isDark = mode === 'dark';
@@ -122,8 +122,8 @@
                     class="flex items-center gap-1.5 p-2 xl:px-3 xl:py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 border-slate-300 dark:border-slate-700/80 text-amber-600 dark:text-amber-300 hover:text-amber-700 dark:hover:text-white"
                     title="Switch Light/Dark Mode"
                 >
-                    <span data-theme-icon>☀️</span>
-                    <span data-theme-label class="hidden xl:inline text-[11px]">Light</span>
+                    <span data-theme-icon>🌙</span>
+                    <span data-theme-label class="hidden xl:inline text-[11px]">Dark</span>
                 </button>
 
                 <!-- Ambient Music Toggle Button with Hover Popover -->

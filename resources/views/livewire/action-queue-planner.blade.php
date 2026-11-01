@@ -423,13 +423,13 @@
     </div>
 
     <!-- Action HQ Mode / Sub-Menu Navigation Switcher -->
-    <div class="flex items-center justify-between gap-3 p-1.5 bg-slate-900/90 border border-slate-800 rounded-2xl mb-4 shadow-md">
+    <div class="flex items-center justify-between gap-3 p-1.5 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl mb-4 shadow-sm">
         <div class="flex items-center gap-1.5 flex-wrap">
             <!-- Sub-tab 1: Field Actions (Steps 1, 2, 3) -->
             <button 
                 type="button" 
                 wire:click="setHqSubView('planner')" 
-                class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer {{ $hqSubView === 'planner' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/80' }}"
+                class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer {{ $hqSubView === 'planner' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400/50' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80' }}"
             >
                 <span>🎯</span>
                 <span>Field Actions (Steps 1–3)</span>
@@ -439,17 +439,17 @@
             <button 
                 type="button" 
                 wire:click="setHqSubView('rhythms')" 
-                class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer {{ $hqSubView === 'rhythms' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/80' }}"
+                class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer {{ $hqSubView === 'rhythms' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400/50' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80' }}"
             >
                 <span>🕊️</span>
                 <span>Spiritual Rhythms &amp; Retreats</span>
                 @if($isDayBlocked)
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1 animate-pulse">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40 flex items-center gap-1 animate-pulse">
                         <span>⛔</span>
                         <span>Active</span>
                     </span>
                 @else
-                    <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-slate-800 text-slate-300">
+                    <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-transparent">
                         4 Rhythms
                     </span>
                 @endif
@@ -743,44 +743,44 @@
     <!-- Desktop 3-Step Guided Workflow Bar (Visible on lg screens) -->
     <div class="hidden lg:grid grid-cols-12 gap-5 mb-1">
         <!-- Step 1: District -->
-        <div class="col-span-3 px-3.5 py-2.5 rounded-2xl bg-slate-900/70 border border-slate-800/90 flex items-center justify-between text-xs">
+        <div class="col-span-3 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/90 flex items-center justify-between text-xs shadow-sm">
             <div class="flex items-center gap-2">
                 <span class="w-5 h-5 rounded-full bg-indigo-600 text-white font-extrabold text-[11px] flex items-center justify-center shadow-sm">1</span>
                 <div>
-                    <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold leading-none">Step 1</span>
-                    <span class="font-bold text-white leading-tight">Pick District</span>
+                    <span class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider block font-semibold leading-none">Step 1</span>
+                    <span class="font-bold text-slate-900 dark:text-white leading-tight">Pick District</span>
                 </div>
             </div>
-            <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-950 text-indigo-300 border border-slate-800 truncate max-w-[100px]">
+            <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 text-indigo-700 border border-slate-200 dark:bg-slate-950 dark:text-indigo-300 dark:border-slate-800 truncate max-w-[100px]">
                 {{ $selectedWard?->name ?? 'Select Ward' }}
             </span>
         </div>
 
         <!-- Step 2: Seeker / Resident -->
-        <div id="step-2-breadcrumb" class="scroll-mt-28 col-span-4 px-3.5 py-2.5 rounded-2xl bg-slate-900/70 border border-slate-800/90 flex items-center justify-between text-xs">
+        <div id="step-2-breadcrumb" class="scroll-mt-28 col-span-4 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/90 flex items-center justify-between text-xs shadow-sm">
             <div class="flex items-center gap-2">
                 <span class="w-5 h-5 rounded-full bg-indigo-600 text-white font-extrabold text-[11px] flex items-center justify-center shadow-sm">2</span>
                 <div>
-                    <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold leading-none">Step 2</span>
-                    <span class="font-bold text-white leading-tight">Pick Resident / Seeker</span>
+                    <span class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider block font-semibold leading-none">Step 2</span>
+                    <span class="font-bold text-slate-900 dark:text-white leading-tight">Pick Resident / Seeker</span>
                 </div>
             </div>
-            <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-950 text-indigo-300 border border-slate-800 truncate max-w-[130px]">
+            <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 text-indigo-700 border border-slate-200 dark:bg-slate-950 dark:text-indigo-300 dark:border-slate-800 truncate max-w-[130px]">
                 {{ $selectedNpc?->displayName ?? 'Ward-wide Action' }}
             </span>
         </div>
 
         <!-- Step 3: Action & Queue -->
-        <div class="col-span-5 px-3.5 py-2.5 rounded-2xl bg-slate-900/70 border border-slate-800/90 flex items-center justify-between text-xs">
+        <div class="col-span-5 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/90 flex items-center justify-between text-xs shadow-sm">
             <div class="flex items-center gap-2">
                 <span class="w-5 h-5 rounded-full bg-indigo-600 text-white font-extrabold text-[11px] flex items-center justify-center shadow-sm">3</span>
                 <div>
-                    <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold leading-none">Step 3 • Action HQ</span>
-                    <span class="font-bold text-white leading-tight">Queue for Week {{ $player?->current_game_week ?? 1 }}</span>
+                    <span class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider block font-semibold leading-none">Step 3 • Action HQ</span>
+                    <span class="font-bold text-slate-900 dark:text-white leading-tight">Queue for Week {{ $player?->current_game_week ?? 1 }}</span>
                 </div>
             </div>
             <div class="flex items-center gap-1.5">
-                <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-950 text-amber-300 border border-slate-800">
+                <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 text-amber-800 border border-slate-200 dark:bg-slate-950 dark:text-amber-300 dark:border-slate-800">
                     ⚡ {{ $player?->action_points ?? 0 }} AP Available
                 </span>
             </div>
@@ -791,22 +791,22 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
         <!-- Column 1: Nagoya 16 Wards (lg:col-span-3) -->
         <div 
-            class="lg:col-span-3 bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 shadow-lg flex-col h-[660px] sm:h-[700px] lg:h-[780px] xl:h-[840px] relative"
+            class="lg:col-span-3 bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 shadow-lg flex-col h-[660px] sm:h-[700px] lg:h-[780px] xl:h-[840px] relative"
             :class="mobileStep === 1 ? 'flex' : 'hidden lg:flex'"
         >
-            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
                 <div class="flex items-center gap-1.5">
                     <span class="text-sm">📍</span>
-                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <h3 class="text-xs font-bold text-slate-800 dark:text-slate-300 uppercase tracking-wider">
                         Nagoya 16 Wards
                     </h3>
                 </div>
                 <div class="flex items-center gap-1.5">
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-950/80 text-indigo-300 border border-indigo-700/60 flex items-center gap-1 shadow-sm">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/80 dark:text-indigo-300 dark:border-indigo-700/60 flex items-center gap-1 shadow-sm">
                         <span class="animate-pulse">↕</span>
                         <span>Scrollable</span>
                     </span>
-                    <span class="text-[11px] text-slate-400 font-medium">{{ $wards->count() }} districts</span>
+                    <span class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">{{ $wards->count() }} districts</span>
                 </div>
             </div>
 
@@ -839,37 +839,37 @@
                             wire:key="ward-btn-{{ $ward->id }}"
                             wire:click="selectWard({{ $ward->id }})"
                             @click="mobileStep = 2"
-                            class="w-full text-left px-3 py-2.5 rounded-xl text-xs transition-all flex items-center justify-between {{ $selectedWardId === $ward->id ? 'bg-indigo-600/30 text-white border border-indigo-500/60 shadow-sm' : 'bg-slate-800/40 text-slate-300 hover:bg-slate-800/70 border border-transparent' }}"
+                            class="w-full text-left px-3 py-2.5 rounded-xl text-xs transition-all flex items-center justify-between {{ $selectedWardId === $ward->id ? 'bg-indigo-100 text-indigo-950 border border-indigo-400 shadow-sm dark:bg-indigo-600/30 dark:text-white dark:border-indigo-500/60' : 'bg-white text-slate-800 hover:bg-slate-100 border border-slate-200 dark:bg-slate-800/40 dark:text-slate-300 dark:hover:bg-slate-800/70 dark:border-transparent' }}"
                         >
                             <div>
                                 <div class="font-semibold flex items-center gap-1.5 flex-wrap">
                                     <span>{{ $ward->name }}</span>
                                     @if($isHome)
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40">
                                             🏡 Home
                                         </span>
                                     @endif
                                     @if($otherMissionariesInWard->isNotEmpty())
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-500/30" title="{{ $otherMissionariesInWard->pluck('name')->join(', ') }}">
+                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-medium bg-indigo-100 text-indigo-900 border border-indigo-300 dark:bg-indigo-500/20 dark:text-indigo-300 dark:border-indigo-500/30" title="{{ $otherMissionariesInWard->pluck('name')->join(', ') }}">
                                             🏠 {{ $otherMissionariesInWard->count() }} co-worker{{ $otherMissionariesInWard->count() > 1 ? 's' : '' }}
                                         </span>
                                     @endif
                                 </div>
-                                <div class="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                                <div class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
                                     <span>{{ $ward->name_ja }}</span>
                                     @if(! $isHome && $player?->home_ward_id)
-                                        <span class="text-[10px] {{ $transitAp > 0 ? 'text-amber-400 font-semibold' : 'text-slate-400' }}">
+                                        <span class="text-[10px] {{ $transitAp > 0 ? 'text-amber-700 dark:text-amber-400 font-semibold' : 'text-slate-500 dark:text-slate-400' }}">
                                             • {{ $distKm }} km {{ $transitAp > 0 ? "(+{$transitAp} AP)" : '' }}
                                         </span>
                                     @endif
                                 </div>
                             </div>
                             <div class="text-right shrink-0">
-                                <span class="text-[10px] font-medium px-1.5 py-0.5 rounded {{ $ward->spiritual_openness >= 40 ? 'bg-emerald-950/70 text-emerald-400' : 'bg-slate-800 text-slate-400' }}">
+                                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded {{ $ward->spiritual_openness >= 40 ? 'bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-400 dark:border-emerald-800/60' : 'bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-transparent' }}">
                                     {{ $ward->spiritual_openness }}% Open
                                 </span>
                                 @if($ward->poverty_need_index >= 50)
-                                    <span class="block text-[9px] text-rose-400 mt-0.5">High Need 🍲</span>
+                                    <span class="block text-[9px] text-rose-600 dark:text-rose-400 mt-0.5">High Need 🍲</span>
                                 @endif
                             </div>
                         </button>
@@ -885,7 +885,7 @@
                     x-transition:leave="transition ease-in duration-150"
                     x-transition:leave-start="opacity-100 translate-y-0"
                     x-transition:leave-end="opacity-0 translate-y-2"
-                    class="pointer-events-none absolute bottom-0 inset-x-0 flex flex-col items-center justify-end pb-1.5 pt-8 bg-gradient-to-t from-slate-900 via-slate-900/90 to-transparent rounded-b-xl"
+                    class="pointer-events-none absolute bottom-0 inset-x-0 flex flex-col items-center justify-end pb-1.5 pt-8 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-slate-900 dark:via-slate-900/90 dark:to-transparent rounded-b-xl"
                 >
                     <button
                         type="button"
@@ -916,36 +916,36 @@
         <!-- Column 2: Ward Residents / NPCs (lg:col-span-4) -->
         <div 
             id="step-2-box"
-            class="scroll-mt-28 lg:col-span-4 bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 shadow-lg flex-col h-[660px] sm:h-[700px] lg:h-[780px] xl:h-[840px] relative"
+            class="scroll-mt-28 lg:col-span-4 bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 shadow-lg flex-col h-[660px] sm:h-[700px] lg:h-[780px] xl:h-[840px] relative"
             :class="mobileStep === 2 ? 'flex' : 'hidden lg:flex'"
         >
-            <div class="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-800">
+            <div class="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-200 dark:border-slate-800">
                 <div>
                     <div class="flex items-center gap-2">
                         <button 
                             type="button" 
                             @click="mobileStep = 1; $wire.setMobileStep(1)"
-                            class="lg:hidden text-indigo-400 hover:text-indigo-300 text-xs font-bold flex items-center gap-0.5"
+                            class="lg:hidden text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 text-xs font-bold flex items-center gap-0.5"
                             title="Switch Ward"
                         >
                             <span>‹</span>
                             <span>Wards</span>
                         </button>
-                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <h3 class="text-xs font-bold text-slate-800 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                             <span>👥</span>
                             <span>{{ $selectedWard?->name ?? 'Ward' }} Residents</span>
                         </h3>
                     </div>
-                    <p class="text-[11px] text-slate-400">{{ $npcs->count() }} simulated residents</p>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ $npcs->count() }} simulated residents</p>
                 </div>
 
                 <div class="flex items-center gap-1.5">
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-950/80 text-indigo-300 border border-indigo-700/60 flex items-center gap-1 shadow-sm">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/80 dark:text-indigo-300 dark:border-indigo-700/60 flex items-center gap-1 shadow-sm">
                         <span class="animate-pulse">↕</span>
                         <span>Scrollable</span>
                     </span>
                     @if($selectedWard && $selectedWard->poverty_need_index >= 50)
-                        <span class="px-2 py-0.5 rounded text-[10px] bg-rose-950 text-rose-300 border border-rose-800">
+                        <span class="px-2 py-0.5 rounded text-[10px] bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800 font-bold">
                             Urgent Mercy Hub
                         </span>
                     @endif
@@ -957,32 +957,32 @@
                 @php
                     $coLaborersInWard = ($residentMissionariesByWard->get($selectedWard->id) ?? collect())->filter(fn($u) => $u->id !== $player?->id);
                 @endphp
-                <div class="mb-2 p-2.5 rounded-xl border {{ $isHomeWard ? 'bg-amber-950/30 border-amber-500/50 text-amber-200' : 'bg-slate-950/60 border-slate-800 text-slate-300' }} text-xs">
+                <div class="mb-2 p-2.5 rounded-xl border {{ $isHomeWard ? 'bg-amber-50 border-amber-300 text-amber-900 dark:bg-amber-950/30 dark:border-amber-500/50 dark:text-amber-200' : 'bg-slate-50 border-slate-200 text-slate-800 dark:bg-slate-950/60 dark:border-slate-800 dark:text-slate-300' }} text-xs">
                     <div class="flex items-center justify-between gap-2">
                         <div class="min-w-0 flex-1">
                             @if($isHomeWard)
-                                <div class="font-bold flex items-center gap-1.5 text-amber-300 text-xs">
+                                <div class="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-300 text-xs">
                                     <span>🏡</span>
                                     <span>Your Home Base & Residence</span>
                                 </div>
-                                <div class="text-[10px] text-amber-400/90 mt-0.5 leading-tight">
+                                <div class="text-[10px] text-amber-800 dark:text-amber-300 mt-0.5 leading-tight">
                                     Embedded Neighbor: 0 min commute • <strong>+25% Trust & Rapid Follow-up Bonus</strong>
                                 </div>
                             @else
-                                <div class="font-semibold flex items-center gap-1.5 text-white text-xs">
+                                <div class="font-semibold flex items-center gap-1.5 text-slate-900 dark:text-white text-xs">
                                     <span>{{ $commuteApCost > 0 ? '🚆' : '🚇' }}</span>
                                     <span>{{ $commuteDistanceKm }} km from Home ({{ $player?->homeWard?->name ?? 'Nagoya' }})</span>
                                     @if($commuteApCost > 0)
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-950 text-amber-400 border border-amber-800">
+                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800">
                                             +{{ $commuteApCost }} AP Commute
                                         </span>
                                     @else
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-medium bg-emerald-950 text-emerald-300 border border-emerald-800">
+                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-medium bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800">
                                             0 AP Commute
                                         </span>
                                     @endif
                                 </div>
-                                <div class="text-[10px] text-slate-400 mt-0.5 leading-tight">
+                                <div class="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5 leading-tight">
                                     ~{{ $commuteMinutes }} min transit • Follow-up: {{ $commuteApCost > 1 ? 'Harder to follow up (-30% trust)' : ($commuteApCost > 0 ? 'Moderate friction (-15% trust)' : 'Standard follow-up') }}
                                 </div>
                             @endif
@@ -1002,47 +1002,47 @@
                     </div>
 
                     @if($coLaborersInWard->isNotEmpty())
-                        <div class="mt-2.5 pt-2 border-t border-slate-700/60 space-y-2.5">
-                            <div class="flex items-center justify-between text-xs font-bold text-indigo-300">
+                        <div class="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-700/60 space-y-2.5">
+                            <div class="flex items-center justify-between text-xs font-bold text-indigo-900 dark:text-indigo-300">
                                 <span class="flex items-center gap-1.5">
                                     <span>🏠</span>
                                     <span><strong>Fellow Missionaries Living Here:</strong></span>
                                 </span>
-                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-100 text-indigo-900 border border-indigo-300 dark:bg-indigo-500/20 dark:text-indigo-300 dark:border-indigo-400/30">
                                     {{ $coLaborersInWard->count() }} {{ Str::plural('Worker', $coLaborersInWard->count()) }}
                                 </span>
                             </div>
                             @foreach($coLaborersInWard as $coLaborer)
-                                <div wire:key="colaborer-{{ $coLaborer->id }}" class="bg-indigo-950/40 border border-indigo-500/30 rounded-2xl p-3 text-xs shadow-sm space-y-2.5">
+                                <div wire:key="colaborer-{{ $coLaborer->id }}" class="bg-indigo-50/70 border border-indigo-200 dark:bg-indigo-950/40 dark:border-indigo-500/30 rounded-2xl p-3 text-xs shadow-sm space-y-2.5">
                                     <div class="flex items-center justify-between gap-3 flex-wrap">
                                         <div class="flex items-center gap-3 min-w-0">
                                             <x-person-avatar :person="$coLaborer" size="md" :showBadges="true" class="shrink-0" />
                                             <div class="min-w-0">
                                                 <div class="flex items-center gap-1.5 flex-wrap">
-                                                    <span class="font-bold text-white text-sm truncate">{{ $coLaborer->name }}</span>
+                                                    <span class="font-bold text-slate-900 dark:text-white text-sm truncate">{{ $coLaborer->name }}</span>
                                                     @if($coLaborer->is_ai_colaborer && $coLaborer->archetypeBadgeLabel)
-                                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-indigo-100 text-indigo-900 border border-indigo-300 dark:bg-indigo-500/20 dark:text-indigo-300 dark:border-indigo-400/30">
                                                             {{ $coLaborer->archetypeBadgeLabel }}
                                                         </span>
                                                     @else
-                                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-indigo-100 text-indigo-900 border border-indigo-300 dark:bg-indigo-500/20 dark:text-indigo-300 dark:border-indigo-400/30">
                                                             Missionary Partner
                                                         </span>
                                                     @endif
                                                 </div>
-                                                <div class="text-[11px] text-slate-300 mt-0.5 flex items-center gap-1.5">
+                                                <div class="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5 flex items-center gap-1.5">
                                                     <span>{{ $coLaborer->nationalityFlag }} {{ $coLaborer->nationality }}</span>
                                                     <span>•</span>
                                                     <span>{{ $coLaborer->genderIcon }} {{ $coLaborer->age }}y</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <span class="text-[11px] text-indigo-300 font-semibold bg-indigo-950/80 px-2 py-1 rounded-lg border border-indigo-500/30 shrink-0">
+                                        <span class="text-[11px] text-indigo-900 dark:text-indigo-300 font-semibold bg-indigo-100 dark:bg-indigo-950/80 px-2 py-1 rounded-lg border border-indigo-300 dark:border-indigo-500/30 shrink-0">
                                             Co-op: {{ $coLaborer->coop_synergy_score }} pts
                                         </span>
                                     </div>
                                     @if($coLaborer->ai_strategy_notes)
-                                        <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-900/60 p-2 rounded-xl border border-indigo-500/20">
+                                        <p class="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed bg-white dark:bg-slate-900/60 p-2 rounded-xl border border-indigo-100 dark:border-indigo-500/20">
                                             {{ $coLaborer->ai_strategy_notes }}
                                         </p>
                                     @endif
@@ -1122,13 +1122,13 @@
                     type="button"
                     wire:click="selectWardPlatformAction('prayer_walk')"
                     @click="mobileStep = 3"
-                    class="w-full py-2 px-3 rounded-xl border border-dashed border-emerald-500/50 bg-emerald-950/20 hover:bg-emerald-950/40 text-emerald-300 text-xs font-semibold flex items-center justify-between transition cursor-pointer"
+                    class="w-full py-2 px-3 rounded-xl border border-dashed border-emerald-400 dark:border-emerald-500/50 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/40 dark:text-emerald-300 text-xs font-semibold flex items-center justify-between transition cursor-pointer"
                 >
                     <span class="flex items-center gap-1.5 truncate">
                         <span>👣</span>
                         <span>Prayer Walk or Event in {{ $selectedWard?->name ?? 'Ward' }}</span>
                     </span>
-                    <span class="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800 shrink-0">
+                    <span class="text-[10px] font-bold text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300 dark:text-emerald-400 dark:bg-emerald-950/80 dark:border-emerald-800 shrink-0">
                         1 AP ➔
                     </span>
                 </button>
@@ -1156,7 +1156,7 @@
                             wire:key="npc-card-{{ $npc->id }}"
                             wire:click="selectNpc({{ $npc->id }})"
                             @click="mobileStep = 3"
-                            class="p-3 rounded-xl border transition-all cursor-pointer {{ $selectedNpcId === $npc->id ? 'bg-indigo-950/40 border-indigo-500 shadow-md ring-1 ring-indigo-500/50' : 'bg-slate-800/40 border-slate-800 hover:border-slate-700' }}"
+                            class="p-3 rounded-xl border transition-all cursor-pointer {{ $selectedNpcId === $npc->id ? 'bg-indigo-50 border-indigo-500 shadow-md ring-1 ring-indigo-500/50 dark:bg-indigo-950/40 dark:border-indigo-500 dark:ring-indigo-500/50' : 'bg-white border-slate-200 hover:border-slate-300 dark:bg-slate-800/40 dark:border-slate-800 dark:hover:border-slate-700' }}"
                         >
                             <div class="flex items-start gap-3">
                                 <!-- Demographic Avatar (Nationality, Gender, Age) -->
@@ -1166,27 +1166,27 @@
                                     <div class="flex items-start justify-between gap-2">
                                         <div class="min-w-0">
                                             <div class="flex items-center gap-1.5 flex-wrap">
-                                                <span class="text-sm font-semibold text-white truncate">{{ $npc->displayName }}</span>
+                                                <span class="text-sm font-semibold text-slate-900 dark:text-white truncate">{{ $npc->displayName }}</span>
                                                 @if($npc->is_person_of_peace)
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-950 text-amber-300 border border-amber-700 font-bold" title="Luke 10 Person of Peace">
+                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700 font-bold" title="Luke 10 Person of Peace">
                                                         PoP ⭐
                                                     </span>
                                                 @endif
                                                 @if($npc->hasPrayedSalvation)
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-700 font-bold" title="Prayed Sinner's Prayer">
+                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-700 font-bold" title="Prayed Sinner's Prayer">
                                                         ✝️ Saved
                                                     </span>
                                                 @endif
                                                 @if($npc->is_baptized)
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-cyan-950 text-cyan-300 border border-cyan-700 font-bold" title="Baptized in Water">
+                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-cyan-100 text-cyan-900 border border-cyan-300 dark:bg-cyan-950 dark:text-cyan-300 dark:border-cyan-700 font-bold" title="Baptized in Water">
                                                         🕊️ Baptized
                                                     </span>
                                                 @elseif(($npc->baptism_status?->value ?? '') === 'committed')
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-blue-950 text-blue-300 border border-blue-700 font-bold" title="Committed to Baptism (Month {{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }} in 6mo-2yr journey)">
+                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-blue-100 text-blue-900 border border-blue-300 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700 font-bold" title="Committed to Baptism (Month {{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }} in 6mo-2yr journey)">
                                                         🌊 Committed ({{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }}m)
                                                     </span>
                                                 @elseif($npc->hasPrayedSalvation)
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-950 text-amber-300 border border-amber-700 font-bold" title="Counting Cost / Family Consideration (Month {{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }} in 6mo-2yr journey)">
+                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700 font-bold" title="Counting Cost / Family Consideration (Month {{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }} in 6mo-2yr journey)">
                                                         💭 Cost ({{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }}m)
                                                     </span>
                                                 @endif
@@ -1195,17 +1195,17 @@
                                                         {{ $npc->leadership_tier->levelCode() }} {{ $npc->leadership_tier->roleTitle() }}
                                                     </span>
                                                 @elseif($npc->trained_411)
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-purple-950 text-purple-300 border border-purple-700 font-bold">
+                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-purple-100 text-purple-900 border border-purple-300 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-700 font-bold">
                                                         L1 Sower
                                                     </span>
                                                 @endif
                                             </div>
-                                            <div class="flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5 flex-wrap">
+                                            <div class="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 flex-wrap">
                                                 <span>{{ $npc->role_archetype->label() }}</span>
-                                                <span class="text-slate-600">•</span>
-                                                <span class="text-slate-300 font-medium" title="{{ $npc->nationality }}">{{ $npc->nationalityFlag }} {{ $npc->nationality }}</span>
-                                                <span class="text-slate-600">•</span>
-                                                <span class="text-slate-300">{{ $npc->genderIcon }} {{ $npc->age }} yrs</span>
+                                                <span class="text-slate-400 dark:text-slate-600">•</span>
+                                                <span class="text-slate-700 dark:text-slate-300 font-medium" title="{{ $npc->nationality }}">{{ $npc->nationalityFlag }} {{ $npc->nationality }}</span>
+                                                <span class="text-slate-400 dark:text-slate-600">•</span>
+                                                <span class="text-slate-700 dark:text-slate-300">{{ $npc->genderIcon }} {{ $npc->age }} yrs</span>
                                             </div>
                                         </div>
 
@@ -1228,11 +1228,11 @@
 
                                     <!-- Trust Progress Bar -->
                                     <div class="mt-2.5">
-                                        <div class="flex justify-between text-[10px] text-slate-400 mb-0.5">
+                                        <div class="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 mb-0.5">
                                             <span>Trust Level</span>
-                                            <span class="font-medium text-slate-300">{{ $npc->trust_level }}%</span>
+                                            <span class="font-medium text-slate-700 dark:text-slate-300">{{ $npc->trust_level }}%</span>
                                         </div>
-                                        <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                        <div class="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                                             <div class="h-full bg-emerald-500 rounded-full transition-all" style="width: {{ $npc->trust_level }}%"></div>
                                         </div>
                                     </div>
@@ -1255,7 +1255,7 @@
                     x-transition:leave="transition ease-in duration-150"
                     x-transition:leave-start="opacity-100 translate-y-0"
                     x-transition:leave-end="opacity-0 translate-y-2"
-                    class="pointer-events-none absolute bottom-0 inset-x-0 flex flex-col items-center justify-end pb-1.5 pt-8 bg-gradient-to-t from-slate-900 via-slate-900/90 to-transparent rounded-b-xl"
+                    class="pointer-events-none absolute bottom-0 inset-x-0 flex flex-col items-center justify-end pb-1.5 pt-8 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-slate-900 dark:via-slate-900/90 dark:to-transparent rounded-b-xl"
                 >
                     <button
                         type="button"
@@ -1276,26 +1276,26 @@
             :class="mobileStep === 3 ? 'flex' : 'hidden lg:flex'"
         >
             <!-- Action Selector Card -->
-            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-lg">
-                <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-800">
+            <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-lg">
+                <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-200 dark:border-slate-800">
                     <div class="flex items-center gap-2">
                         <button 
                             type="button" 
                             @click="mobileStep = 2; $wire.setMobileStep(2)"
-                            class="lg:hidden text-indigo-400 hover:text-indigo-300 text-xs font-bold flex items-center gap-0.5 mr-1"
+                            class="lg:hidden text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 text-xs font-bold flex items-center gap-0.5 mr-1"
                             title="Back to Residents"
                         >
                             <span>‹</span>
                             <span>People</span>
                         </button>
-                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <h3 class="text-xs font-bold text-slate-800 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                             <span>⚡</span>
                             <span>Schedule Relational Action</span>
                         </h3>
                         <button 
                             type="button" 
                             wire:click="openActionInfoModal()"
-                            class="px-2 py-0.5 rounded-lg bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/60 text-indigo-300 text-[10px] font-bold flex items-center gap-1 transition cursor-pointer"
+                            class="px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 dark:bg-indigo-950/80 dark:hover:bg-indigo-900 dark:border-indigo-700/60 dark:text-indigo-300 text-[10px] font-bold flex items-center gap-1 transition cursor-pointer"
                             title="Open detailed guide with descriptive text for all actions"
                         >
                             <span>ℹ️</span>
@@ -1307,23 +1307,23 @@
                             <x-person-avatar :person="$selectedNpc" size="md" :showBadges="true" />
                             <div class="text-right">
                                 <div class="flex items-center justify-end gap-1.5">
-                                    <span class="text-xs text-indigo-400 font-bold block">{{ $selectedNpc->displayName }}</span>
+                                    <span class="text-xs text-indigo-700 dark:text-indigo-400 font-bold block">{{ $selectedNpc->displayName }}</span>
                                     @if($selectedNpc->leadership_tier->level() > 0)
                                         <span class="px-1.5 py-0.2 rounded text-[9px] font-bold border {{ $selectedNpc->leadership_tier->badgeClasses() }}">
                                             {{ $selectedNpc->leadership_tier->levelCode() }}
                                         </span>
                                     @endif
                                 </div>
-                                <div class="text-[10px] text-slate-300">
+                                <div class="text-[10px] text-slate-600 dark:text-slate-300">
                                     <span>{{ $selectedNpc->nationalityFlag }} {{ $selectedNpc->nationality }}</span> • <span>{{ $selectedNpc->genderIcon }} {{ $selectedNpc->age }}y</span>
                                 </div>
-                                <div class="text-[10px] text-slate-400">
+                                <div class="text-[10px] text-slate-500 dark:text-slate-400">
                                     {{ $selectedNpc->leadership_tier->roleTitle() }}
                                 </div>
                                 <button 
                                     type="button" 
                                     @click="mobileStep = 2; $wire.setMobileStep(2)" 
-                                    class="text-[10px] text-slate-400 hover:text-indigo-300 underline lg:hidden"
+                                    class="text-[10px] text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 underline lg:hidden"
                                 >
                                     Change
                                 </button>
@@ -1331,11 +1331,11 @@
                         </div>
                     @else
                         <div class="text-right">
-                            <span class="text-xs text-amber-400 font-semibold block">{{ $selectedWard?->name }} (Ward Action)</span>
+                            <span class="text-xs text-amber-800 dark:text-amber-400 font-semibold block">{{ $selectedWard?->name }} (Ward Action)</span>
                             <button 
                                 type="button" 
                                 @click="mobileStep = 2; $wire.setMobileStep(2)" 
-                                class="text-[10px] text-slate-400 hover:text-amber-300 underline lg:hidden"
+                                class="text-[10px] text-slate-500 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-300 underline lg:hidden"
                             >
                                 Pick Person
                             </button>
@@ -1345,32 +1345,32 @@
 
                 <!-- 5 Levels Ability Banner & Filter Toggle -->
                 @if($selectedNpc)
-                    <div class="mb-3 p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-inner">
+                    <div class="mb-3 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-inner">
                         <div class="min-w-0">
                             <div class="flex items-center gap-1.5 flex-wrap">
-                                <span class="text-slate-400 text-[10px] uppercase font-bold tracking-wider">5 Levels Ability:</span>
+                                <span class="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold tracking-wider">5 Levels Ability:</span>
                                 <span class="px-1.5 py-0.5 rounded text-[10px] font-bold border {{ $selectedNpc->leadership_tier->badgeClasses() }}">
                                     {{ $selectedNpc->leadership_tier->levelCode() }}: {{ $selectedNpc->leadership_tier->roleTitle() }}
                                 </span>
                                 @if($selectedNpc->leadership_tier->level() > 0)
-                                    <span class="text-slate-400 text-[10px]">Toolset: <strong class="text-slate-300">{{ $selectedNpc->leadership_tier->coreToolset() }}</strong></span>
+                                    <span class="text-slate-500 dark:text-slate-400 text-[10px]">Toolset: <strong class="text-slate-700 dark:text-slate-300">{{ $selectedNpc->leadership_tier->coreToolset() }}</strong></span>
                                 @endif
                             </div>
-                            <div class="text-[10px] text-slate-400 mt-0.5 truncate">
+                            <div class="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5 truncate">
                                 {{ $selectedNpc->leadership_tier->coreFocus() }}
                             </div>
                         </div>
                         <button 
                             type="button"
                             wire:click="toggleFilterEligibleOnly"
-                            class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition shrink-0 cursor-pointer flex items-center justify-center gap-1 {{ $filterEligibleOnly ? 'bg-indigo-600 text-white border border-indigo-400 shadow' : 'bg-slate-800 text-slate-300 hover:text-white border border-slate-700' }}"
+                            class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition shrink-0 cursor-pointer flex items-center justify-center gap-1 {{ $filterEligibleOnly ? 'bg-indigo-600 text-white border border-indigo-400 shadow' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white dark:border-slate-700' }}"
                             title="Filter actions matching abilities"
                         >
                             <span>{{ $filterEligibleOnly ? 'Eligible Only' : 'Filter by Ability' }}</span>
                         </button>
                     </div>
                 @else
-                    <div class="mb-3 p-2.5 rounded-xl bg-indigo-950/40 border border-indigo-800/60 text-[11px] text-indigo-300 flex items-center justify-between gap-2 shadow-inner">
+                    <div class="mb-3 p-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-[11px] text-indigo-900 dark:bg-indigo-950/40 dark:border-indigo-800/60 dark:text-indigo-300 flex items-center justify-between gap-2 shadow-inner">
                         <div class="flex items-center gap-2">
                             <span>💡</span>
                             <span><strong>No resident selected:</strong> Pick a person in Step 2 to unlock 1-on-1 ministry actions (Casual Talk, 3 Circles, Discipleship, Mentoring), or choose a Ward Action below like <strong>Prayer Walk</strong> or <strong>Cultural Event</strong>.</span>
@@ -1400,7 +1400,7 @@
                             @if($isEligible)
                                 @click="scrollToQueue()"
                             @endif
-                            class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all relative {{ ! $isEligible ? 'opacity-60 bg-slate-900/40 border-slate-800/60 text-slate-400 cursor-not-allowed' : ($isSelected ? 'bg-slate-800 border-2 border-emerald-400 text-white shadow-lg ring-2 ring-emerald-500/40 cursor-pointer' : 'bg-slate-800/40 border-slate-800 text-slate-300 hover:border-slate-700 cursor-pointer') }}"
+                            class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all relative {{ ! $isEligible ? 'opacity-65 bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed dark:opacity-60 dark:bg-slate-900/40 dark:border-slate-800/60 dark:text-slate-400' : ($isSelected ? 'bg-emerald-50 border-2 border-emerald-500 text-slate-900 shadow-md ring-2 ring-emerald-500/30 cursor-pointer dark:bg-slate-800 dark:border-emerald-400 dark:text-white dark:ring-emerald-500/40' : 'bg-white border-slate-200 text-slate-800 hover:border-slate-300 hover:bg-slate-50 cursor-pointer dark:bg-slate-800/40 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-700') }}"
                             title="{{ $isEligible ? $action->description() : 'Locked: '.$ineligibilityReason }}"
                         >
                             <input 
@@ -1431,44 +1431,44 @@
                                             </span>
                                         @endif
                                         @if($isRecommended && ! $isSelected)
-                                            <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-0.5" title="Recommended action for this person">
+                                            <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40 flex items-center gap-0.5" title="Recommended action for this person">
                                                 <span>💡</span>
                                                 <span>Recommended</span>
                                             </span>
                                         @endif
                                         @if(! $isEligible)
-                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-950/80 text-rose-300 border border-rose-800/60 flex items-center gap-0.5" title="{{ $ineligibilityReason }}">
+                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-800/60 flex items-center gap-0.5" title="{{ $ineligibilityReason }}">
                                                 <span>🔒</span>
                                                 <span>Locked</span>
                                             </span>
                                         @endif
-                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ $isSelected ? 'bg-slate-950 text-amber-300 border border-slate-700' : 'bg-slate-900/90 text-amber-400 border border-slate-700/50' }} flex items-center gap-1">
+                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ $isSelected ? 'bg-slate-900 text-amber-300 border border-slate-800 dark:bg-slate-950 dark:text-amber-300 dark:border-slate-700' : 'bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-900/90 dark:text-amber-400 dark:border-slate-700/50' }} flex items-center gap-1">
                                             <span>{{ $action->apCost() + $commuteApCost }} AP</span>
                                             @if($commuteApCost > 0)
-                                                <span class="text-[9px] text-amber-300 font-normal opacity-90" title="Includes +{{ $commuteApCost }} AP transit cost from your home base">(+{{ $commuteApCost }})</span>
+                                                <span class="text-[9px] text-amber-700 dark:text-amber-300 font-normal" title="Includes +{{ $commuteApCost }} AP transit cost from your home base">(+{{ $commuteApCost }})</span>
                                             @endif
                                         </span>
                                     </div>
                                 </div>
 
                                 @if($action === \App\Enums\MinistryActionType::PrayerWalk && $selectedNpc && $isEligible)
-                                    <div class="text-[10px] text-emerald-400/90 mt-1 leading-tight">
+                                    <div class="text-[10px] text-emerald-700 dark:text-emerald-400/90 mt-1 leading-tight">
                                         👣 Joint harvest prayer walk (MAWL). Builds trust (+25%) & covers their Oikos.
                                     </div>
                                 @endif
 
                                 @if(! $isEligible)
-                                    <div class="text-[10px] text-rose-400/90 mt-1 italic leading-tight">
+                                    <div class="text-[10px] text-rose-700 dark:text-rose-400/90 mt-1 italic leading-tight">
                                         {{ $ineligibilityReason }}
                                     </div>
                                 @endif
 
                                 <div class="flex items-center justify-between gap-1 mt-1.5">
-                                    <span class="text-[10px] text-slate-400 font-medium truncate">{{ $action->fieldName() }}</span>
+                                    <span class="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">{{ $action->fieldName() }}</span>
                                     <button 
                                         type="button" 
                                         wire:click.stop="openActionInfoModal('{{ $action->value }}')" 
-                                        class="px-1.5 py-0.5 rounded bg-slate-900/90 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 text-[9px] font-bold transition cursor-pointer flex items-center gap-1 shrink-0"
+                                        class="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-300 dark:bg-slate-900/90 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-white dark:border-slate-700/60 text-[9px] font-bold transition cursor-pointer flex items-center gap-1 shrink-0"
                                         title="View descriptive text & strategy for {{ $action->label() }}"
                                     >
                                         <span>ℹ️</span>
@@ -1482,21 +1482,21 @@
 
                 <!-- Proximity & Commute Cost Indicator Banner -->
                 @if($isHomeWard)
-                    <div class="mb-3 px-3 py-2 rounded-xl bg-emerald-950/40 border border-emerald-800/60 text-[11px] text-emerald-300 flex items-center justify-between">
+                    <div class="mb-3 px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-300 flex items-center justify-between">
                         <div class="flex items-center gap-1.5">
                             <span>🏡</span>
                             <span><strong>Home Base Advantage:</strong> Local neighbor presence brings <strong>+25% follow-up trust</strong> and 0 AP commute overhead.</span>
                         </div>
                     </div>
                 @elseif($commuteApCost > 0)
-                    <div class="mb-3 px-3 py-2 rounded-xl bg-amber-950/40 border border-amber-800/60 text-[11px] text-amber-300 flex items-center justify-between">
+                    <div class="mb-3 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 dark:bg-amber-950/40 dark:border-amber-800/60 dark:text-amber-300 flex items-center justify-between">
                         <div class="flex items-center gap-1.5">
                             <span>🚇</span>
                             <span><strong>Commute Overhead:</strong> {{ $commuteDistanceKm }} km (~{{ $commuteMinutes }} min). Adds <strong>+{{ $commuteApCost }} AP transit cost</strong> and travel friction on follow-ups.</span>
                         </div>
                     </div>
                 @else
-                    <div class="mb-3 px-3 py-2 rounded-xl bg-slate-950/50 border border-slate-800 text-[11px] text-slate-300 flex items-center justify-between">
+                    <div class="mb-3 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-800 dark:bg-slate-950/50 dark:border-slate-800 dark:text-slate-300 flex items-center justify-between">
                         <div class="flex items-center gap-1.5">
                             <span>🚶</span>
                             <span><strong>Nearby Ward:</strong> {{ $commuteDistanceKm }} km (~{{ $commuteMinutes }} min transit). 0 AP surcharge; standard follow-up pace.</span>
@@ -1505,18 +1505,18 @@
                 @endif
 
                 <!-- Step 3: READY TO QUEUE WEEK X Box (Solid single color, clean section header, scrolls here on action click) -->
-                <div id="ready-to-queue-box" class="mt-4 p-4 rounded-2xl bg-slate-950 border border-slate-800 shadow-lg space-y-3">
+                <div id="ready-to-queue-box" class="mt-4 p-4 rounded-2xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-md space-y-3">
                     <!-- Section Header (Clean header, not styled like a button) -->
-                    <div class="flex items-center justify-between pb-2 border-b border-slate-800">
-                        <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+                        <h3 class="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-2">
                             <span>⚡</span>
                             <span>Ready to Queue • Week {{ $player?->current_game_week ?? 1 }}</span>
                         </h3>
                         @if($selectedActionEnum)
-                            <span class="text-xs font-bold {{ $hasEnoughApForSelected ? 'text-amber-400' : 'text-rose-400' }}">
+                            <span class="text-xs font-bold {{ $hasEnoughApForSelected ? 'text-amber-800 dark:text-amber-400' : 'text-rose-700 dark:text-rose-400' }}">
                                 Cost: {{ $selectedActionCost }} AP
                                 @if($commuteApCost > 0)
-                                    <span class="text-[10px] text-amber-300 font-normal">(+{{ $commuteApCost }} transit)</span>
+                                    <span class="text-[10px] text-amber-700 dark:text-amber-300 font-normal">(+{{ $commuteApCost }} transit)</span>
                                 @endif
                             </span>
                         @else
@@ -1526,11 +1526,11 @@
 
                     @if($isDayBlocked)
                         <!-- Time Blocked Alert Banner for Step 3 -->
-                        <div class="p-3.5 rounded-xl bg-amber-950/40 border border-amber-800/60 text-xs text-amber-300 flex items-start gap-2.5">
+                        <div class="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-300 flex items-start gap-2.5">
                             <span class="text-base shrink-0">⛔</span>
                             <div>
-                                <div class="font-bold text-amber-200">Field Actions Time-Blocked for Week {{ $player?->current_game_week ?? 1 }}</div>
-                                <p class="text-[11px] text-amber-300/90 mt-0.5 leading-relaxed">
+                                <div class="font-bold text-amber-900 dark:text-amber-200">Field Actions Time-Blocked for Week {{ $player?->current_game_week ?? 1 }}</div>
+                                <p class="text-[11px] text-amber-800 dark:text-amber-300/90 mt-0.5 leading-relaxed">
                                     You are participating in <strong>{{ $activeWorkerRhythm?->actionTitle ?? 'a worker spiritual rhythm' }}</strong> this week.
                                     Worker rhythms consume your schedule for this week. Regular field actions cannot be queued. Advance the week to continue, or cancel the retreat in the Queued Actions list.
                                 </p>
@@ -1540,51 +1540,51 @@
 
                     @if($selectedActionEnum)
                         <!-- Selected Action Summary -->
-                        <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                             <div class="flex items-center justify-between gap-2 flex-wrap">
                                 <div class="flex items-center gap-2 truncate">
                                     <span class="text-base">{{ $selectedActionEnum->icon() }}</span>
-                                    <span class="text-xs font-bold text-white truncate">{{ $selectedActionEnum->label() }}</span>
-                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-slate-300 shrink-0">
+                                    <span class="text-xs font-bold text-slate-900 dark:text-white truncate">{{ $selectedActionEnum->label() }}</span>
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-transparent shrink-0">
                                         {{ $selectedActionEnum->fieldName() }}
                                     </span>
                                 </div>
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $hasEnoughApForSelected ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-rose-950 text-rose-300 border border-rose-800' }}">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $hasEnoughApForSelected ? 'bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800' : 'bg-rose-100 text-rose-900 border border-rose-300 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800' }}">
                                     {{ $hasEnoughApForSelected ? 'AP Available' : 'Low AP' }}
                                 </span>
                             </div>
 
-                            <div class="text-[11px] text-slate-300 mt-2 flex items-center gap-2 flex-wrap">
+                            <div class="text-[11px] text-slate-600 dark:text-slate-300 mt-2 flex items-center gap-2 flex-wrap">
                                 <span class="flex items-center gap-1.5">
                                     @if($selectedNpc)
                                         <x-person-avatar :person="$selectedNpc" size="xs" :showBadges="false" class="shrink-0" />
                                     @endif
-                                    <span>🎯 Target: <strong class="text-white">{{ $targetPersonLabel }}</strong></span>
+                                    <span>🎯 Target: <strong class="text-slate-900 dark:text-white">{{ $targetPersonLabel }}</strong></span>
                                 </span>
-                                <span class="text-slate-600">•</span>
-                                <span class="font-bold {{ $hasEnoughApForSelected ? 'text-amber-400' : 'text-rose-400' }}">
+                                <span class="text-slate-400 dark:text-slate-600">•</span>
+                                <span class="font-bold {{ $hasEnoughApForSelected ? 'text-amber-800 dark:text-amber-400' : 'text-rose-700 dark:text-rose-400' }}">
                                     ⚡ {{ $selectedActionCost }} AP
                                     @if($commuteApCost > 0)
-                                        <span class="text-[10px] text-amber-300 font-normal">(+{{ $commuteApCost }} transit)</span>
+                                        <span class="text-[10px] text-amber-700 dark:text-amber-300 font-normal">(+{{ $commuteApCost }} transit)</span>
                                     @endif
                                 </span>
-                                <span class="text-slate-600">•</span>
-                                <span class="text-slate-400 text-[10px]">
-                                    Remaining: <strong class="text-slate-200">{{ $remainingApAfterQueue }} AP</strong>
+                                <span class="text-slate-400 dark:text-slate-600">•</span>
+                                <span class="text-slate-500 dark:text-slate-400 text-[10px]">
+                                    Remaining: <strong class="text-slate-800 dark:text-slate-200">{{ $remainingApAfterQueue }} AP</strong>
                                 </span>
                             </div>
                         </div>
 
                         <!-- Optional Notes -->
                         <div>
-                            <label class="block text-[11px] font-semibold text-slate-400 mb-1">
+                            <label class="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">
                                 Personal / Prayer Notes (Optional):
                             </label>
                             <input 
                                 type="text" 
                                 wire:model="notes" 
                                 placeholder="Add prayer focus or personal notes (optional)..." 
-                                class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                                class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500"
                             >
                         </div>
 
@@ -1655,45 +1655,45 @@
             </div>
 
             <!-- Current Scheduled Actions & Recent Breakthroughs Drawer -->
-            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 shadow-lg flex-1 flex flex-col space-y-4">
+            <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-lg flex-1 flex flex-col space-y-4">
                 <!-- Scheduled for Today -->
                 <div>
-                    <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
+                    <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-200 dark:border-slate-800">
                         <div>
-                            <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <h3 class="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                                 <span>📋</span>
                                 <span>Scheduled for Week {{ $player?->current_game_week ?? 1 }}</span>
                             </h3>
-                            <p class="text-[10px] text-slate-400">Executes immediately when turning to Week {{ min(4, ($player?->current_game_week ?? 1) + 1) }}</p>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400">Executes immediately when turning to Week {{ min(4, ($player?->current_game_week ?? 1) + 1) }}</p>
                         </div>
-                        <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 font-semibold">
+                        <span class="px-2 py-0.5 rounded text-[10px] bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 font-semibold border border-slate-200 dark:border-transparent">
                             {{ $queuedActions->count() }} Pending
                         </span>
                     </div>
 
                     <div class="overflow-y-auto space-y-2 max-h-44 pr-1 custom-scrollbar">
                         @forelse($queuedActions as $queued)
-                            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs">
+                            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 text-xs">
                                 <div class="flex items-center gap-2.5 min-w-0 pr-2">
                                     @if($queued->action_type?->isWorkerRhythm())
-                                        <span class="w-7 h-7 rounded-lg bg-indigo-950/90 border border-indigo-700/60 flex items-center justify-center text-sm shrink-0">
+                                        <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-900 dark:bg-indigo-950/90 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700/60 flex items-center justify-center text-sm shrink-0">
                                             {{ $queued->action_type->icon() }}
                                         </span>
                                     @elseif($queued->targetNpc)
                                         <x-person-avatar :person="$queued->targetNpc" size="xs" :showBadges="true" class="shrink-0" />
                                     @else
-                                        <span class="w-7 h-7 rounded-lg bg-slate-800/90 border border-slate-700/60 flex items-center justify-center text-sm shrink-0">🏛️</span>
+                                        <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 dark:bg-slate-800/90 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60 flex items-center justify-center text-sm shrink-0">🏛️</span>
                                     @endif
                                     <div class="min-w-0">
-                                        <div class="font-semibold text-white flex items-center gap-1.5">
+                                        <div class="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
                                             <span>{{ $queued->actionTitle }}</span>
                                             @if($queued->action_type?->isWorkerRhythm())
-                                                <span class="text-[10px] font-bold text-emerald-400">(Time Blocked • +{{ $queued->action_type->rhythmPoints() }} pts)</span>
+                                                <span class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">(Time Blocked • +{{ $queued->action_type->rhythmPoints() }} pts)</span>
                                             @else
-                                                <span class="text-[10px] font-bold text-amber-400">({{ $queued->ap_cost }} AP)</span>
+                                                <span class="text-[10px] font-bold text-amber-800 dark:text-amber-400">({{ $queued->ap_cost }} AP)</span>
                                             @endif
                                         </div>
-                                        <div class="text-[11px] text-slate-400 mt-0.5 truncate">
+                                        <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                                             @if($queued->action_type?->isWorkerRhythm())
                                                 Worker Rhythm • Spiritual Rest / Strategy
                                             @else
@@ -1706,7 +1706,7 @@
                                 <button 
                                     type="button" 
                                     wire:click="cancelAction({{ $queued->id }})"
-                                    class="text-rose-400 hover:text-rose-300 px-2 py-1 rounded bg-rose-950/50 border border-rose-900 text-[10px] shrink-0 transition cursor-pointer"
+                                    class="text-rose-700 hover:text-rose-900 dark:text-rose-400 dark:hover:text-rose-300 px-2 py-1 rounded bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/50 border border-rose-200 dark:border-rose-900 text-[10px] shrink-0 transition cursor-pointer font-bold"
                                     title="{{ $queued->action_type?->isWorkerRhythm() ? 'Cancel rhythm and unblock week' : 'Cancel and refund AP' }}"
                                 >
                                     {{ $queued->action_type?->isWorkerRhythm() ? 'Cancel Rhythm ✕' : 'Cancel ✕' }}
@@ -1732,23 +1732,23 @@
             wire:keydown.escape.window="closeWeeklyDevelopmentsModal"
         >
             <div 
-                class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-2xl w-full shadow-2xl relative max-h-[85vh] flex flex-col"
+                class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-2xl w-full shadow-2xl relative max-h-[85vh] flex flex-col"
                 @click.outside="$wire.closeWeeklyDevelopmentsModal()"
             >
                 <!-- Modal Header -->
-                <div class="flex items-start justify-between pb-4 border-b border-slate-800 shrink-0">
+                <div class="flex items-start justify-between pb-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-xl shrink-0">
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center text-xl shrink-0">
                             🌱
                         </div>
                         <div>
-                            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                 <span>Recent Weekly Developments</span>
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950 text-emerald-300 border border-emerald-700">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-700">
                                     Last 4 Weeks
                                 </span>
                             </h3>
-                            <p class="text-xs text-slate-400 mt-0.5">
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                                 Field outcomes and discipleship stories recorded across Nagoya.
                             </p>
                         </div>
@@ -1757,7 +1757,7 @@
                     <button 
                         type="button" 
                         wire:click="closeWeeklyDevelopmentsModal"
-                        class="text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-xs transition cursor-pointer"
+                        class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/50 text-xs transition cursor-pointer"
                         title="Close modal"
                         aria-label="Close modal"
                     >
@@ -1769,13 +1769,13 @@
                 <div class="overflow-y-auto py-4 space-y-5 custom-scrollbar grow pr-1">
                     @forelse($recentWeeksDevelopments as $weekData)
                         <div class="space-y-2.5">
-                            <div class="flex items-center justify-between pb-1 border-b border-slate-800/60">
+                            <div class="flex items-center justify-between pb-1 border-b border-slate-200 dark:border-slate-800/60">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">
+                                    <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
                                         📅 {{ $weekData['label'] }}
                                     </span>
                                     @if($weekData['is_current'])
-                                        <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-indigo-900/60 text-indigo-300 border border-indigo-700">
+                                        <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-indigo-100 text-indigo-900 border border-indigo-300 dark:bg-indigo-900/60 dark:text-indigo-300 dark:border-indigo-700">
                                             Current Week
                                         </span>
                                     @endif
@@ -1786,44 +1786,44 @@
                             </div>
 
                             @forelse($weekData['actions'] as $outcome)
-                                <div class="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800 hover:border-slate-700/80 transition space-y-2">
+                                <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700/80 transition space-y-2">
                                     <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
                                         <div class="flex items-center gap-2">
-                                            <span class="font-bold text-indigo-300">{{ $outcome->actionTitle }}</span>
+                                            <span class="font-bold text-indigo-700 dark:text-indigo-300">{{ $outcome->actionTitle }}</span>
                                             @if($outcome->targetNpc)
-                                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
                                                     👤 {{ $outcome->targetNpc->name }}
                                                 </span>
                                             @endif
                                         </div>
-                                        <div class="flex items-center gap-2 text-[10px] text-slate-400">
-                                            <span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-emerald-400 font-medium">
+                                        <div class="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400">
+                                            <span class="px-2 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-emerald-700 dark:text-emerald-400 font-medium">
                                                 📍 {{ $outcome->ward->name }}
                                             </span>
                                             @if($outcome->game_day)
                                                 <span>Day {{ $outcome->game_day }}</span>
                                             @endif
                                             @if($outcome->ap_cost)
-                                                <span class="text-amber-400 font-semibold">{{ $outcome->ap_cost }} AP</span>
+                                                <span class="text-amber-800 dark:text-amber-400 font-semibold">{{ $outcome->ap_cost }} AP</span>
                                             @endif
                                         </div>
                                     </div>
 
-                                    <p class="text-xs text-slate-300 leading-relaxed bg-slate-900/50 p-2.5 rounded-xl border border-slate-800/50">
+                                    <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-white dark:bg-slate-900/50 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800/50">
                                         {{ $outcome->outcome_notes }}
                                     </p>
                                 </div>
                             @empty
-                                <div class="text-center py-4 px-3 rounded-2xl bg-slate-950/30 border border-slate-800/40 text-slate-500 text-xs italic">
+                                <div class="text-center py-4 px-3 rounded-2xl bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800/40 text-slate-500 text-xs italic">
                                     No actions resolved for this week.
                                 </div>
                             @endforelse
                         </div>
                     @empty
-                        <div class="text-center py-8 px-4 rounded-2xl bg-slate-950/40 border border-slate-800 text-slate-400 space-y-2">
+                        <div class="text-center py-8 px-4 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 space-y-2">
                             <div class="text-3xl">🌱</div>
-                            <p class="text-sm font-semibold text-white">No Weekly Developments Yet</p>
-                            <p class="text-xs text-slate-400 max-w-sm mx-auto">
+                            <p class="text-sm font-semibold text-slate-900 dark:text-white">No Weekly Developments Yet</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
                                 Queue your ministry actions using your Action Points bandwidth. When the weekly tick processes, developments from the field will appear here!
                             </p>
                         </div>
@@ -1831,7 +1831,7 @@
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="pt-3 border-t border-slate-800 flex items-center justify-between shrink-0">
+                <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
                     <span class="text-[11px] text-slate-400">
                         Showing outcomes from up to the last 4 game weeks.
                     </span>
@@ -1850,18 +1850,18 @@
     <!-- Modal: Action Information & Descriptive Text -->
     @if($showActionInfoModal && $infoActionEnum)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl relative max-h-[90vh] overflow-y-auto custom-scrollbar">
                 <!-- Modal Header -->
-                <div class="flex items-start justify-between pb-3 border-b border-slate-800">
+                <div class="flex items-start justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
                     <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-2xl bg-indigo-950/80 border border-indigo-500/40 flex items-center justify-center text-2xl shadow-lg">
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-500/40 flex items-center justify-center text-2xl shadow-sm dark:shadow-lg">
                             {{ $infoActionEnum->icon() }}
                         </div>
                         <div>
-                            <h3 class="text-base font-black text-white tracking-tight leading-snug">
+                            <h3 class="text-base font-black text-slate-900 dark:text-white tracking-tight leading-snug">
                                 {{ $infoActionEnum->label() }}
                             </h3>
-                            <div class="text-xs text-indigo-400 font-medium">
+                            <div class="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
                                 {{ $infoActionEnum->labelJa() }}
                             </div>
                         </div>
@@ -1869,7 +1869,7 @@
                     <button 
                         type="button" 
                         wire:click="closeActionInfoModal" 
-                        class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition cursor-pointer text-base"
+                        class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer text-base"
                     >
                         ✕
                     </button>
@@ -1877,40 +1877,40 @@
 
                 <!-- Badges & AP Cost -->
                 <div class="flex flex-wrap items-center gap-2 mt-4">
-                    <span class="px-2.5 py-1 rounded-xl bg-amber-950/60 border border-amber-600/50 text-amber-300 text-xs font-bold flex items-center gap-1">
+                    <span class="px-2.5 py-1 rounded-xl bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:border-amber-600/50 dark:text-amber-300 text-xs font-bold flex items-center gap-1">
                         <span>⚡</span>
                         <span>{{ $infoActionEnum->apCost() }} Action Points</span>
                     </span>
-                    <span class="px-2.5 py-1 rounded-xl bg-emerald-950/60 border border-emerald-600/50 text-emerald-300 text-xs font-bold">
+                    <span class="px-2.5 py-1 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950/60 dark:border-emerald-600/50 dark:text-emerald-300 text-xs font-bold">
                         {{ $infoActionEnum->fieldName() }}
                     </span>
-                    <span class="px-2.5 py-1 rounded-xl bg-purple-950/60 border border-purple-600/50 text-purple-300 text-xs font-bold">
+                    <span class="px-2.5 py-1 rounded-xl bg-purple-100 text-purple-900 border border-purple-300 dark:bg-purple-950/60 dark:border-purple-600/50 dark:text-purple-300 text-xs font-bold">
                         {{ $infoActionEnum->toolboxLevel() }}
                     </span>
                     @if($infoActionEnum->requiresTargetNpc())
-                        <span class="px-2.5 py-1 rounded-xl bg-blue-950/60 border border-blue-600/50 text-blue-300 text-[11px] font-semibold">
+                        <span class="px-2.5 py-1 rounded-xl bg-blue-100 text-blue-900 border border-blue-300 dark:bg-blue-950/60 dark:border-blue-600/50 dark:text-blue-300 text-[11px] font-semibold">
                             🎯 Target Resident
                         </span>
                     @else
-                        <span class="px-2.5 py-1 rounded-xl bg-indigo-950/60 border border-indigo-600/50 text-indigo-300 text-[11px] font-semibold">
+                        <span class="px-2.5 py-1 rounded-xl bg-indigo-100 text-indigo-900 border border-indigo-300 dark:bg-indigo-950/60 dark:border-indigo-600/50 dark:text-indigo-300 text-[11px] font-semibold">
                             🏙️ Ward-Wide Strategic Event
                         </span>
                     @endif
                 </div>
 
                 <!-- Descriptive Content -->
-                <div class="mt-5 space-y-4 text-xs text-slate-300 leading-relaxed">
-                    <div class="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800">
-                        <strong class="text-white block font-bold mb-1 text-[11px] uppercase tracking-wider text-slate-400">
+                <div class="mt-5 space-y-4 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                    <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800">
+                        <strong class="text-slate-500 dark:text-slate-400 block font-bold mb-1 text-[11px] uppercase tracking-wider">
                             Description & Kingdom Practice:
                         </strong>
-                        <p class="text-slate-200 leading-relaxed">
+                        <p class="text-slate-800 dark:text-slate-200 leading-relaxed">
                             {{ $infoActionEnum->description() }}
                         </p>
                     </div>
 
-                    <div class="p-3.5 rounded-2xl bg-indigo-950/30 border border-indigo-900/50 space-y-2">
-                        <strong class="text-indigo-300 block font-bold text-[11px] uppercase tracking-wider">
+                    <div class="p-3.5 rounded-2xl bg-indigo-50 border border-indigo-200 dark:bg-indigo-950/30 dark:border-indigo-900/50 space-y-2">
+                        <strong class="text-indigo-900 dark:text-indigo-300 block font-bold text-[11px] uppercase tracking-wider">
                             💡 Movement Lore & 5 Levels Coaching Strategy:
                         </strong>
                         @if($infoActionEnum === \App\Enums\MinistryActionType::CasualTalk)
@@ -1975,7 +1975,7 @@
 
     <!-- Mobile Sticky Bottom Confirmation Dock (Visible on mobile/tablet in Step 3 when an action is selected) -->
     <div 
-        class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-slate-950 border-t border-slate-800 p-3 shadow-2xl"
+        class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 p-3 shadow-2xl"
         x-show="@js($hqSubView === 'planner') && mobileStep === 3 && @js($selectedActionEnum !== null)"
         x-transition:enter="transition ease-out duration-200"
         x-transition:enter-start="translate-y-full opacity-0"
@@ -1986,18 +1986,18 @@
     >
         <div class="flex items-center justify-between gap-3 max-w-lg mx-auto">
             <div class="min-w-0 flex-1">
-                <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                <div class="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">
                     Ready to Queue • Week {{ $player?->current_game_week ?? 1 }}
                 </div>
-                <div class="text-xs font-bold text-white truncate flex items-center gap-1 mt-0.5">
+                <div class="text-xs font-bold text-slate-900 dark:text-white truncate flex items-center gap-1 mt-0.5">
                     <span>{{ $selectedActionEnum?->icon() ?? '⚡' }}</span>
                     <span>{{ $selectedActionEnum?->label() ?? 'Selected Action' }}</span>
                 </div>
-                <div class="text-[11px] text-slate-300 truncate flex items-center gap-1.5 mt-0.5">
+                <div class="text-[11px] text-slate-600 dark:text-slate-300 truncate flex items-center gap-1.5 mt-0.5">
                     @if($selectedNpc)
                         <x-person-avatar :person="$selectedNpc" size="xs" :showBadges="false" class="shrink-0" />
                     @endif
-                    <span>For <strong class="text-indigo-300">{{ $selectedNpc ? $selectedNpc->displayName : ($selectedWard?->name ?? 'Ward') }}</strong> • <span class="font-bold {{ $hasEnoughApForSelected ? 'text-amber-400' : 'text-rose-400' }}">⚡ {{ $selectedActionCost }} AP</span></span>
+                    <span>For <strong class="text-indigo-700 dark:text-indigo-300">{{ $selectedNpc ? $selectedNpc->displayName : ($selectedWard?->name ?? 'Ward') }}</strong> • <span class="font-bold {{ $hasEnoughApForSelected ? 'text-amber-800 dark:text-amber-400' : 'text-rose-700 dark:text-rose-400' }}">⚡ {{ $selectedActionCost }} AP</span></span>
                 </div>
             </div>
 

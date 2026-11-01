@@ -256,7 +256,7 @@
                         class="flex items-center justify-center p-2 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-amber-600 dark:text-amber-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-amber-700 dark:hover:text-white shadow-sm"
                         title="Switch Light/Dark Mode"
                     >
-                        <span data-theme-icon>☀️</span>
+                        <span data-theme-icon>🌙</span>
                     </button>
 
                     <!-- Notification Bell -->
@@ -627,7 +627,7 @@
                         class="min-w-0 py-2 px-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-[11px] font-semibold text-amber-500 dark:text-amber-400 flex items-center justify-center gap-1 transition cursor-pointer truncate"
                         title="Toggle Light / Dark Mode"
                     >
-                        <span data-theme-icon>☀️</span>
+                        <span data-theme-icon>🌙</span>
                         <span data-theme-label class="truncate">Theme</span>
                     </button>
 

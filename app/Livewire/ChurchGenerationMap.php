@@ -266,8 +266,8 @@ class ChurchGenerationMap extends Component
         $edges = [];
 
         $colWidth = 240;
-        $rowHeight = 270;
-        $topMargin = 70;
+        $rowHeight = 280;
+        $topMargin = 160;
         $leftMargin = 120;
 
         if ($this->viewMode === 'tiers') {
@@ -278,14 +278,14 @@ class ChurchGenerationMap extends Component
             }
 
             $totalWidth = max(900, ($maxGen * 260) + 160);
-            $totalHeight = max(550, ($maxRowInCol * $rowHeight) + 120);
+            $totalHeight = max(650, ($maxRowInCol * $rowHeight) + $topMargin + 100);
 
             foreach ($byGen as $gen => $list) {
                 $genInt = (int) $gen;
                 $colX = $leftMargin + (($genInt - 1) * 260);
 
                 foreach ($list->values() as $index => $church) {
-                    $posY = $topMargin + ($index * $rowHeight) + 50;
+                    $posY = $topMargin + ($index * $rowHeight) + 20;
                     $nodePositions[$church->id] = ['x' => $colX, 'y' => $posY];
 
                     $nodes[$church->id] = [
@@ -306,7 +306,7 @@ class ChurchGenerationMap extends Component
 
             $maxNodesInTier = max(1, ...array_values($tierCounts));
             $totalWidth = max(950, ($maxNodesInTier * 260) + 200);
-            $totalHeight = max(650, (count($byGen) * $rowHeight) + 140);
+            $totalHeight = max(700, (count($byGen) * $rowHeight) + $topMargin + 100);
 
             foreach ($genTiers as $g) {
                 $churchesInTier = ($byGen->get($g) ?? collect())->values();

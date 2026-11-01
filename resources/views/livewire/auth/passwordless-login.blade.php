@@ -34,8 +34,8 @@
                 class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition cursor-pointer select-none bg-slate-100 dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-amber-600 dark:text-amber-300 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-amber-700 dark:hover:text-white"
                 title="Switch Light/Dark Mode"
             >
-                <span data-theme-icon>☀️</span>
-                <span data-theme-label class="hidden sm:inline text-[11px]">Light</span>
+                <span data-theme-icon>🌙</span>
+                <span data-theme-label class="hidden sm:inline text-[11px]">Dark</span>
             </button>
 
             <a 
