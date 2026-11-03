@@ -875,6 +875,22 @@ class ActionQueuePlanner extends Component
             return;
         }
 
+        // Automatic ticks must never advance an empty week if the player has no pending queued actions
+        if (! $isManual) {
+            $hasPendingActions = QueuedMonthlyAction::where('user_id', $this->player->id)
+                ->where('game_month', $this->player->current_game_month ?: 1)
+                ->where('status', QueuedActionStatus::Pending)
+                ->where(function ($q): void {
+                    $q->where('game_week', '<=', $this->player->current_game_week ?: 1)
+                        ->orWhere('game_day', '<=', $this->player->current_game_day ?: 1);
+                })
+                ->exists();
+
+            if (! $hasPendingActions) {
+                return;
+            }
+        }
+
         // Check if player has reached the 4-week limit for this real-life day
         if ($this->player->weeks_played_today >= 4 || $this->player->days_played_today >= 30) {
             if ($isManual) {
@@ -987,6 +1003,11 @@ class ActionQueuePlanner extends Component
         $currentMonth = (int) ($this->player?->current_game_month ?: 1);
         $currentWeek = (int) ($this->player?->current_game_week ?: 1);
         $currentAbsWeek = ($currentMonth - 1) * 4 + $currentWeek;
+
+        $hasPendingActionsThisWeek = $queuedActions->where('status', QueuedActionStatus::Pending)
+            ->contains(function (QueuedMonthlyAction $a) use ($currentWeek): bool {
+                return ($a->game_week ?: 1) <= $currentWeek || ($a->game_day ?: 1) <= $currentWeek;
+            });
 
         $targetWeeks = [];
         for ($i = 0; $i < 4; $i++) {
@@ -1280,6 +1301,7 @@ class ActionQueuePlanner extends Component
             'workerRhythmStatuses' => $workerRhythmStatuses,
             'activeWorkerRhythm' => $activeWorkerRhythm,
             'isDayBlocked' => $isDayBlocked,
+            'hasPendingActionsThisWeek' => $hasPendingActionsThisWeek,
             'hqSubView' => $this->hqSubView,
             'activeCelebration' => $activeCelebrations->first(),
             'totalCelebrations' => $activeCelebrations->count(),

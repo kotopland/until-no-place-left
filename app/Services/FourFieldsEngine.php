@@ -229,12 +229,27 @@ class FourFieldsEngine
             ->where('last_active_at', '>=', now()->subMinutes(15))
             ->get();
 
+        $gameMonth = $session->current_game_month ?: 1;
+
         if ($force) {
             $eligibleUsers = $onlineUsers->isEmpty()
                 ? User::where('current_game_session_id', $session->id)->get()
                 : $onlineUsers;
         } else {
-            $eligibleUsers = $onlineUsers->filter(fn (User $user) => ! $user->hasReachedDailyPlayLimit && $user->weeks_processed_this_month < 4);
+            $eligibleUsers = $onlineUsers->filter(function (User $user) use ($gameMonth): bool {
+                if ($user->is_ai_colaborer || $user->hasReachedDailyPlayLimit || $user->weeks_processed_this_month >= 4) {
+                    return false;
+                }
+
+                return QueuedMonthlyAction::where('user_id', $user->id)
+                    ->where('game_month', $user->current_game_month ?: $gameMonth)
+                    ->where('status', QueuedActionStatus::Pending)
+                    ->where(function ($q) use ($user): void {
+                        $q->where('game_week', '<=', $user->current_game_week ?: 1)
+                            ->orWhere('game_day', '<=', $user->current_game_day ?: 1);
+                    })
+                    ->exists();
+            });
 
             if ($eligibleUsers->isEmpty()) {
                 return null;
@@ -531,6 +546,20 @@ class FourFieldsEngine
             $attritionData = $this->simulateChurchAttrition($session, $gameMonth);
             $autonomousHighlights = array_merge($autonomousHighlights, $attritionData['highlights']);
 
+            // 3c. Simulate remaining turns for AI co-laborers if in co-op mode
+            if ($session->isCoopMode) {
+                $aiService = app(AiColaborerService::class);
+                $weeksProcessed = $session->weeks_processed_this_month ?: 0;
+                for ($w = $weeksProcessed + 1; $w <= 4; $w++) {
+                    $aiOutcomes = $aiService->simulateDailyTurn($session, $w);
+                    foreach ($aiOutcomes as $turn) {
+                        if (! empty($turn['narrative'])) {
+                            $autonomousHighlights[] = "🤝 [{$turn['user_name']}] {$turn['action_label']}: {$turn['narrative']}";
+                        }
+                    }
+                }
+            }
+
             // Merge autonomous generational scores
             foreach ($multiplicationData['player_scores'] as $pId => $pts) {
                 $playerScoreGains[$pId] = ($playerScoreGains[$pId] ?? 0) + $pts;
@@ -611,7 +640,7 @@ class FourFieldsEngine
                 $newGenScore = $user->total_generational_score + $scoreGain;
                 $newCoopScore = $user->coop_synergy_score ?? 0;
 
-                if (! $user->is_ai_colaborer && ! $playedThisMonth && $consecutiveInactiveMonths >= User::INACTIVITY_DECAY_MONTHS_THRESHOLD) {
+                if (! $user->is_ai_colaborer && $user->email !== 'coach@nagoyaharvest.jp' && ! $playedThisMonth && $consecutiveInactiveMonths >= User::INACTIVITY_DECAY_MONTHS_THRESHOLD) {
                     $decay = $user->calculateInactivityScoreDecay($newGenScore, $newCoopScore);
                     $newGenScore = $decay['new_generational_score'];
                     $newCoopScore = $decay['new_coop_score'];
@@ -858,7 +887,7 @@ class FourFieldsEngine
             $newGenScore = $user->total_generational_score + $totalScoreGain;
             $newCoopScore = $user->coop_synergy_score ?? 0;
 
-            if (! $user->is_ai_colaborer && ! $playedThisMonth && $consecutiveInactiveMonths >= User::INACTIVITY_DECAY_MONTHS_THRESHOLD) {
+            if (! $user->is_ai_colaborer && $user->email !== 'coach@nagoyaharvest.jp' && ! $playedThisMonth && $consecutiveInactiveMonths >= User::INACTIVITY_DECAY_MONTHS_THRESHOLD) {
                 $decay = $user->calculateInactivityScoreDecay($newGenScore, $newCoopScore);
                 $newGenScore = $decay['new_generational_score'];
                 $newCoopScore = $decay['new_coop_score'];

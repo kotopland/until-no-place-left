@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Enums\MinistryActionType;
+use App\Enums\QueuedActionStatus;
 use App\Livewire\ActionQueuePlanner;
 use App\Livewire\NagoyaMovementDashboard;
 use App\Models\GameSession;
+use App\Models\QueuedMonthlyAction;
 use App\Models\User;
 use App\Models\Ward;
 use App\Services\FourFieldsEngine;
@@ -135,6 +138,18 @@ test('auto day tick triggered after countdown passes successfully without manual
         'daily_action_points' => 20,
     ]);
 
+    QueuedMonthlyAction::create([
+        'game_session_id' => $session->id,
+        'user_id' => $user->id,
+        'ward_id' => Ward::first()->id,
+        'action_type' => MinistryActionType::PrayerWalk,
+        'status' => QueuedActionStatus::Pending,
+        'game_month' => 1,
+        'game_week' => 3,
+        'game_day' => 3,
+        'ap_cost' => 1,
+    ]);
+
     Livewire::actingAs($user)
         ->test(ActionQueuePlanner::class)
         ->call('advanceDay', false)
@@ -146,6 +161,53 @@ test('auto day tick triggered after countdown passes successfully without manual
     expect($session->current_game_day)->toBe(4)
         ->and($session->days_processed_this_month)->toBe(3)
         ->and($user->days_played_today)->toBe(3);
+});
+
+test('automatic advanceDay in ActionQueuePlanner does not advance if player has no pending actions queued', function () {
+    $session = GameSession::create([
+        'name' => 'Auto Tick Empty Session',
+        'code' => 'adv-empty',
+        'current_game_month' => 1,
+        'current_game_week' => 3,
+        'current_game_day' => 3,
+        'weeks_processed_this_month' => 2,
+        'days_processed_this_month' => 2,
+        'calendar_date' => '2026-04-01',
+        'month_duration_minutes' => 720,
+        'next_tick_at' => now()->addHours(12),
+        'next_daily_tick_at' => now()->subSecond(),
+        'is_active' => true,
+    ]);
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'current_game_week' => 3,
+        'current_game_day' => 3,
+        'weeks_processed_this_month' => 2,
+        'days_processed_this_month' => 2,
+        'last_active_at' => now(),
+        'weeks_played_today' => 2,
+        'days_played_today' => 2,
+        'last_played_real_date' => now()->startOfDay(),
+        'action_points' => 4,
+        'max_action_points' => 26,
+        'weekly_action_points' => 20,
+        'daily_action_points' => 20,
+    ]);
+
+    // No queued actions: automatic tick should be safely ignored!
+    Livewire::actingAs($user)
+        ->test(ActionQueuePlanner::class)
+        ->call('advanceDay', false);
+
+    $session->refresh();
+    $user->refresh();
+
+    expect($session->current_game_day)->toBe(3)
+        ->and($session->days_processed_this_month)->toBe(2)
+        ->and($user->current_game_week)->toBe(3)
+        ->and($user->weeks_processed_this_month)->toBe(2)
+        ->and($user->days_played_today)->toBe(2);
 });
 
 test('player is prevented from playing more than 30 days per real life day', function () {

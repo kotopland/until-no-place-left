@@ -178,15 +178,29 @@ class GameSession extends Model
     }
 
     /**
-     * Check if this session has online users who haven't reached their 30-day daily limit.
+     * Check if this session has online users with pending actions for the current week.
      */
     public function hasOnlineActiveUsers(int $thresholdMinutes = 15): bool
     {
         return $this->users()
             ->whereNotNull('last_active_at')
             ->where('last_active_at', '>=', now()->subMinutes($thresholdMinutes))
+            ->where('is_ai_colaborer', false)
             ->get()
-            ->contains(fn (User $user) => ! $user->hasReachedDailyPlayLimit);
+            ->contains(function (User $user): bool {
+                if ($user->hasReachedDailyPlayLimit || $user->hasCompletedMonth) {
+                    return false;
+                }
+
+                return QueuedMonthlyAction::where('user_id', $user->id)
+                    ->where('game_month', $user->current_game_month ?: 1)
+                    ->where('status', QueuedActionStatus::Pending)
+                    ->where(function ($q) use ($user): void {
+                        $q->where('game_week', '<=', $user->current_game_week ?: 1)
+                            ->orWhere('game_day', '<=', $user->current_game_day ?: 1);
+                    })
+                    ->exists();
+            });
     }
 
     /**

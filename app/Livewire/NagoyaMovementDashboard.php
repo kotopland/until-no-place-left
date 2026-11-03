@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Enums\QueuedActionStatus;
 use App\Models\Church;
 use App\Models\GameSession;
 use App\Models\MonthlyReport;
 use App\Models\MovementCelebration;
+use App\Models\QueuedMonthlyAction;
 use App\Models\User;
 use App\Models\Ward;
 use App\Services\FourFieldsEngine;
@@ -792,6 +794,22 @@ class NagoyaMovementDashboard extends Component
             return;
         }
 
+        // Automatic ticks must never advance an empty week if the player has no pending queued actions
+        if (! $isManual) {
+            $hasPendingActions = QueuedMonthlyAction::where('user_id', $user->id)
+                ->where('game_month', $user->current_game_month ?: 1)
+                ->where('status', QueuedActionStatus::Pending)
+                ->where(function ($q) use ($user): void {
+                    $q->where('game_week', '<=', $user->current_game_week ?: 1)
+                        ->orWhere('game_day', '<=', $user->current_game_day ?: 1);
+                })
+                ->exists();
+
+            if (! $hasPendingActions) {
+                return;
+            }
+        }
+
         if ($user->weeks_played_today >= 4 || $user->days_played_today >= 30) {
             if ($isManual) {
                 $this->dispatch('notify', [
@@ -915,11 +933,21 @@ class NagoyaMovementDashboard extends Component
 
         $unreadChatCount = (! $isShowcase && $user) ? $user->unreadChatCount($session?->id) : 0;
 
+        $hasPendingActionsThisWeek = $user ? QueuedMonthlyAction::where('user_id', $user->id)
+            ->where('game_month', $user->current_game_month ?: 1)
+            ->where('status', QueuedActionStatus::Pending)
+            ->where(function ($q) use ($user): void {
+                $q->where('game_week', '<=', $user->current_game_week ?: 1)
+                    ->orWhere('game_day', '<=', $user->current_game_day ?: 1);
+            })
+            ->exists() : false;
+
         return view('livewire.nagoya-movement-dashboard', [
             'user' => $user,
             'session' => $session,
             'unreadReportsCount' => $unreadReportsCount,
             'unreadChatCount' => $unreadChatCount,
+            'hasPendingActionsThisWeek' => $hasPendingActionsThisWeek,
             'churches' => $churches,
             'activeChurch' => $activeChurch,
             'allWards' => $allWards,

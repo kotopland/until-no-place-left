@@ -202,6 +202,13 @@ class AiColaborerService
             $apCost = max(1, $aiUser->commuteApCostForWard($targetWard) + 2);
             $aiUser->decrement('action_points', min($aiUser->action_points, $apCost));
 
+            if ($outcome->pointsAwarded > 0) {
+                $aiUser->increment('total_generational_score', $outcome->pointsAwarded);
+            }
+            if ($outcome->coopPointsAwarded > 0) {
+                $aiUser->increment('coop_synergy_score', $outcome->coopPointsAwarded);
+            }
+
             $turnOutcomes[] = [
                 'user_id' => $aiUser->id,
                 'user_name' => $aiUser->name,

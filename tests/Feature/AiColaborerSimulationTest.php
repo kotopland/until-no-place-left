@@ -14,6 +14,7 @@ use App\Models\Npc;
 use App\Models\User;
 use App\Models\Ward;
 use App\Services\AiColaborerService;
+use App\Services\FourFieldsEngine;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -669,4 +670,56 @@ test('action queue planner enforces iron on iron day caps for co-laborers and re
 
             return ($data['type'] ?? '') === 'error' && str_contains($data['message'] ?? '', 'max 3 sessions allowed per day');
         });
+});
+
+test('monthly resolution simulates unplayed AI turns and exempts missionary coach from inactivity decay', function () {
+    $session = GameSession::create([
+        'name' => 'Monthly Coop Resolution Session',
+        'code' => 'm-res-coop',
+        'current_game_month' => 6,
+        'current_game_week' => 1,
+        'weeks_processed_this_month' => 0,
+        'current_game_day' => 1,
+        'days_processed_this_month' => 0,
+        'is_active' => true,
+        'settings' => ['coop_team_mode' => true],
+    ]);
+
+    Ward::create([
+        'game_session_id' => $session->id,
+        'name' => 'Chikusa-ku',
+        'name_ja' => '千種区',
+        'slug' => 'chikusa-ku',
+        'latitude' => 35.1667,
+        'longitude' => 136.9667,
+        'population' => 165000,
+        'spiritual_openness' => 30,
+    ]);
+
+    $coach = User::create([
+        'name' => 'Missionary Coach',
+        'email' => 'coach@nagoyaharvest.jp',
+        'password' => 'secret',
+        'current_game_session_id' => $session->id,
+        'is_ai_colaborer' => false,
+        'consecutive_inactive_months' => 6,
+        'total_generational_score' => 60,
+    ]);
+
+    $service = app(AiColaborerService::class);
+    $service->ensureAiColaborers($session);
+
+    $sarah = User::where('email', 'sarah.jenkins@nagoyaharvest.jp')->first();
+
+    $engine = app(FourFieldsEngine::class);
+    $result = $engine->resolveGameMonth($session);
+
+    // Coach should NOT suffer inactivity decay
+    $coach->refresh();
+    expect($coach->total_generational_score)->toBe(60)
+        ->and(collect($result->autonomousHighlights)->filter(fn ($h) => str_contains($h, 'Missionary Coach has not played')))->toBeEmpty();
+
+    // AI co-laborers should have simulated their turns and had highlights logged
+    $aiHighlights = collect($result->autonomousHighlights)->filter(fn ($h) => str_contains($h, 'Sarah Jenkins') || str_contains($h, 'Marcus Silva') || str_contains($h, 'Kenji Yamada'));
+    expect($aiHighlights)->not->toBeEmpty();
 });

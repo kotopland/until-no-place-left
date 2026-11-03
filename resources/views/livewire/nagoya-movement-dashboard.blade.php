@@ -165,7 +165,7 @@
                 <!-- Month, Week & Digital Clock -->
                 <div 
                     wire:key="dash-clock-{{ $user?->current_game_month }}-{{ $user?->current_game_week }}-{{ $user?->weeks_processed_this_month }}-{{ $user?->weeks_played_today }}"
-                    x-data="digitalClock({{ max(0, $user?->secondsUntilNextWeeklyTick ?? 900) }}, '{{ $user?->next_weekly_tick_at?->toIso8601String() }}', {{ (!($user?->hasReachedDailyPlayLimit ?? false) && ($user?->weeks_processed_this_month ?? 0) < 4) ? 'true' : 'false' }})"
+                    x-data="digitalClock({{ max(0, $user?->secondsUntilNextWeeklyTick ?? 900) }}, '{{ $user?->next_weekly_tick_at?->toIso8601String() }}', {{ (!($user?->hasReachedDailyPlayLimit ?? false) && ($user?->weeks_processed_this_month ?? 0) < 4 && ($hasPendingActionsThisWeek ?? false)) ? 'true' : 'false' }})"
                     x-init="init()"
                     class="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 shrink-0"
                 >
