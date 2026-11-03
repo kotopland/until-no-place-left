@@ -458,14 +458,14 @@
 
         @if($isDayBlocked)
             <!-- Compact Active Retreat Indicator in Sub-Menu -->
-            <div class="hidden sm:flex items-center gap-2 px-3 py-1 rounded-xl bg-amber-950/60 border border-amber-800/60 text-xs text-amber-300">
+            <div class="hidden sm:flex items-center gap-2 px-3 py-1 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 dark:bg-amber-950/60 dark:border-amber-800/60 dark:text-amber-300 text-xs">
                 <span>{{ $activeWorkerRhythm?->action_type?->icon() ?? '🕊️' }}</span>
                 <span class="font-bold truncate max-w-[200px]">Today: {{ $activeWorkerRhythm?->actionTitle ?? 'Worker Rhythm' }}</span>
                 @if($hqSubView === 'planner')
                     <button 
                         type="button" 
                         wire:click="setHqSubView('rhythms')" 
-                        class="text-[11px] underline font-bold hover:text-white cursor-pointer ml-1"
+                        class="text-[11px] underline font-bold hover:text-amber-950 dark:hover:text-white cursor-pointer ml-1"
                     >
                         Details →
                     </button>
@@ -476,20 +476,20 @@
 
     @if($hqSubView === 'rhythms')
         <!-- Dedicated Sub-View: Worker Spiritual Rhythms & Movement Retreats -->
-        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl mb-4 transition-all space-y-4">
-            <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-slate-800/80">
+        <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm dark:shadow-xl mb-4 transition-all space-y-4">
+            <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-slate-200 dark:border-slate-800/80">
                 <div class="flex items-center gap-2.5">
                     <span class="text-2xl">🕊️</span>
                     <div>
                         <div class="flex items-center gap-2">
-                            <h3 class="text-sm font-black text-white uppercase tracking-wider">
+                            <h3 class="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
                                 Worker Spiritual Rhythms &amp; Strategy Retreats
                             </h3>
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-950/90 text-indigo-300 border border-indigo-700/60">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-300 dark:bg-indigo-950/90 dark:text-indigo-300 dark:border-indigo-700/60">
                                 Time-Blocking Rest &amp; Strategy
                             </span>
                         </div>
-                        <p class="text-xs text-slate-400 mt-0.5">
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
                             Gain points and spiritual renewal through mentoring, sabbath, fasting retreats, and NPL mid-level strategy conferences. These activities block time for all other actions.
                         </p>
                     </div>
@@ -550,26 +550,26 @@
                     @php
                         $actionEnum = $status['actionType'];
                     @endphp
-                    <div class="p-4 rounded-2xl border flex flex-col justify-between transition-all {{ $status['active'] ? 'bg-indigo-950/40 border-indigo-500/60 shadow-lg ring-1 ring-indigo-500/40' : 'bg-slate-950/60 border-slate-800 hover:border-slate-700' }}">
+                    <div class="p-4 rounded-2xl border flex flex-col justify-between transition-all {{ $status['active'] ? 'bg-indigo-50 border-2 border-indigo-400 dark:bg-indigo-950/40 dark:border-indigo-500/60 shadow-md ring-1 ring-indigo-400/50 dark:ring-indigo-500/40' : 'bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-sm' }}">
                         <div>
                             <div class="flex items-start justify-between gap-2">
                                 <div class="flex items-center gap-2">
                                     <span class="text-2xl">{{ $actionEnum->icon() }}</span>
                                     <div>
-                                        <h4 class="text-xs font-bold text-white leading-tight">
+                                        <h4 class="text-xs font-bold text-slate-950 dark:text-white leading-tight">
                                             {{ $actionEnum->label() }}
                                         </h4>
-                                        <span class="text-[10px] text-slate-400 block">
+                                        <span class="text-[10px] text-slate-600 dark:text-slate-400 font-medium block">
                                             {{ $actionEnum->labelJa() }}
                                         </span>
                                     </div>
                                 </div>
                                 @if(($status['ap_cost'] ?? 0) > 0)
-                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 {{ $status['active'] ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-amber-950/70 text-amber-300 border border-amber-800/60' }}">
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 {{ $status['active'] ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800' : 'bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-800/60' }}">
                                         ⚡ {{ $status['ap_cost'] }} AP
                                     </span>
                                 @else
-                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 {{ $status['active'] ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-indigo-950/70 text-indigo-300 border border-indigo-800/60' }}">
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 {{ $status['active'] ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800' : 'bg-indigo-100 text-indigo-800 border border-indigo-300 dark:bg-indigo-950/70 dark:text-indigo-300 dark:border-indigo-800/60' }}">
                                         1 Week Block
                                     </span>
                                 @endif
@@ -577,28 +577,28 @@
 
                             <!-- Rewards & Duration Pills -->
                             <div class="flex items-center gap-1.5 mt-2.5 flex-wrap">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/70 text-emerald-300 border border-emerald-800/60">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-800/60">
                                     🏆 +{{ $status['points'] }} Points
                                 </span>
                                 @if($key === 'sabbath_rest')
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950/70 text-amber-300 border border-amber-800/60">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-800/60">
                                         🛡️ Clears Exhaustion
                                     </span>
                                 @elseif($key === 'receive_mentoring')
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-950/70 text-indigo-300 border border-indigo-800/60">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-300 dark:bg-indigo-950/70 dark:text-indigo-300 dark:border-indigo-800/60">
                                         🤝 Senior Debrief
                                     </span>
                                 @elseif($key === 'supporter_letter_admin')
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-950/70 text-cyan-300 border border-cyan-800/60">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-100 text-cyan-800 border border-cyan-300 dark:bg-cyan-950/70 dark:text-cyan-300 dark:border-cyan-800/60">
                                         ✉️ Supporter Care &amp; Admin
                                     </span>
                                 @endif
-                                <span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-900 text-slate-400 border border-slate-800">
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-300 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800">
                                     {{ in_array($key, ['fasting_retreat', 'midlevel_conference']) ? 'Max 1/mo' : 'Max 1/wk' }}
                                 </span>
                             </div>
 
-                            <p class="text-[11px] text-slate-300/90 mt-2.5 leading-relaxed">
+                            <p class="text-[11px] text-slate-700 dark:text-slate-300 mt-2.5 leading-relaxed font-normal">
                                 @if($key === 'midlevel_conference')
                                     A problem-solving and strategy retreat for active movement practitioners rather than an introductory training session.
                                 @else
@@ -607,9 +607,9 @@
                             </p>
                         </div>
 
-                        <div class="mt-3.5 pt-2.5 border-t border-slate-800/80">
+                        <div class="mt-3.5 pt-2.5 border-t border-slate-200 dark:border-slate-800/80">
                             @if($status['active'])
-                                <div class="w-full py-1.5 px-3 rounded-lg text-center text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800 flex items-center justify-center gap-1.5">
+                                <div class="w-full py-1.5 px-3 rounded-lg text-center text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800 flex items-center justify-center gap-1.5">
                                     <span>✓</span>
                                     <span>Scheduled for This Week</span>
                                 </div>
@@ -618,7 +618,7 @@
                                     type="button" 
                                     wire:click="scheduleWorkerRhythm('{{ $actionEnum->value }}')"
                                     wire:loading.attr="disabled"
-                                    class="w-full py-2 px-3 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white shadow-md shadow-indigo-950 transition cursor-pointer flex items-center justify-center gap-1.5"
+                                    class="w-full py-2 px-3 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white shadow-md shadow-indigo-600/20 dark:shadow-indigo-950 transition cursor-pointer flex items-center justify-center gap-1.5"
                                 >
                                     <span wire:loading.remove wire:target="scheduleWorkerRhythm('{{ $actionEnum->value }}')">
                                         <span>🗓️</span>
@@ -650,7 +650,7 @@
                                     <button 
                                         type="button" 
                                         disabled
-                                        class="w-full py-1.5 px-3 rounded-lg text-[11px] font-medium bg-slate-900 text-slate-500 border border-slate-800/80 cursor-not-allowed text-center truncate"
+                                        class="w-full py-1.5 px-3 rounded-lg text-[11px] font-medium bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-900 dark:text-slate-500 dark:border-slate-800/80 cursor-not-allowed text-center truncate"
                                         title="{{ $status['reason'] }}"
                                     >
                                         {{ $status['reason'] ?? 'Unavailable' }}
@@ -681,7 +681,7 @@
                     <button 
                         type="button" 
                         wire:click="cancelAction({{ $activeWorkerRhythm->id }})"
-                        class="text-xs font-bold text-rose-300 hover:text-rose-200 px-2.5 py-1 rounded-lg bg-rose-950/60 hover:bg-rose-900 transition cursor-pointer"
+                        class="text-xs font-bold text-rose-700 hover:text-rose-900 px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 border border-rose-300 dark:border-rose-800 dark:text-rose-300 dark:bg-rose-950/60 dark:hover:bg-rose-900 transition cursor-pointer"
                     >
                         Cancel Rhythm ✕
                     </button>
@@ -936,8 +936,8 @@
             </div>
 
             <!-- Mobile Quick Advance Footer -->
-            <div class="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs lg:hidden">
-                <span class="text-[11px] text-slate-400 truncate">Selected: <strong class="text-white">{{ $selectedWard?->name }}</strong></span>
+            <div class="mt-3 pt-2 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-xs lg:hidden">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400 truncate">Selected: <strong class="text-slate-900 dark:text-white">{{ $selectedWard?->name }}</strong></span>
                 <button 
                     type="button"
                     @click="mobileStep = 2; $wire.setMobileStep(2)"
@@ -1098,12 +1098,12 @@
                                             <button 
                                                 type="button"
                                                 disabled
-                                                class="px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-400 font-bold text-xs cursor-not-allowed opacity-75 flex items-center gap-1.5 border border-slate-700/60"
+                                                class="px-2.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 font-bold text-xs cursor-not-allowed flex items-center gap-1.5 border border-slate-300 dark:border-slate-700/60 shadow-xs"
                                                 title="{{ $jointWalkStatus['reason'] ?? 'Joint Prayer Walk limit reached.' }}"
                                             >
                                                 <span>👣</span>
-                                                <span>Joint Prayer Walk (2 AP)</span>
-                                                <span class="text-[10px] {{ ($jointWalkStatus['walks_today'] ?? 0) >= 1 ? 'text-amber-400' : 'text-rose-400' }}">({{ ($jointWalkStatus['walks_today'] ?? 0) >= 1 ? '1/day cap' : '3/wk cap' }})</span>
+                                                <span class="text-slate-800 dark:text-slate-200">Joint Prayer Walk (2 AP)</span>
+                                                <span class="text-[10px] font-bold {{ ($jointWalkStatus['walks_today'] ?? 0) >= 1 ? 'text-amber-800 dark:text-amber-400' : 'text-rose-800 dark:text-rose-400' }}">({{ ($jointWalkStatus['walks_today'] ?? 0) >= 1 ? '1/day cap' : '3/wk cap' }})</span>
                                             </button>
                                         @endif
                                         @php
@@ -1119,29 +1119,29 @@
                                             >
                                                 <span>⚔️</span>
                                                 <span>Iron-on-Iron (+2 AP)</span>
-                                                <span class="text-[10px] text-indigo-200 opacity-90 font-medium">({{ $remainingIoIToday ?? 3 }}/3 left)</span>
+                                                <span class="text-[10px] text-indigo-100 opacity-90 font-medium">({{ $remainingIoIToday ?? 3 }}/3 left)</span>
                                             </button>
                                         @elseif($isCoLaborerDoneToday)
                                             <button 
                                                 type="button"
                                                 disabled
-                                                class="px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-400 font-bold text-xs cursor-not-allowed opacity-75 flex items-center gap-1.5 border border-slate-700/60"
+                                                class="px-2.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 font-bold text-xs cursor-not-allowed flex items-center gap-1.5 border border-slate-300 dark:border-slate-700/60 shadow-xs"
                                                 title="You have already conducted Iron on Iron with {{ $coLaborer->name }} today (max 1 per person per day)."
                                             >
                                                 <span>⚔️</span>
-                                                <span>Iron-on-Iron (+2 AP)</span>
-                                                <span class="text-[10px] text-amber-400 font-medium">(Done today)</span>
+                                                <span class="text-slate-800 dark:text-slate-200">Iron-on-Iron (+2 AP)</span>
+                                                <span class="text-[10px] font-bold text-amber-800 dark:text-amber-400">(Done today)</span>
                                             </button>
                                         @else
                                             <button 
                                                 type="button"
                                                 disabled
-                                                class="px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-400 font-bold text-xs cursor-not-allowed opacity-75 flex items-center gap-1.5 border border-slate-700/60"
+                                                class="px-2.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 font-bold text-xs cursor-not-allowed flex items-center gap-1.5 border border-slate-300 dark:border-slate-700/60 shadow-xs"
                                                 title="Daily Iron on Iron limit reached: max 3 sessions allowed per day (3/3 used today)."
                                             >
                                                 <span>⚔️</span>
-                                                <span>Iron-on-Iron (+2 AP)</span>
-                                                <span class="text-[10px] text-rose-400 font-medium">(3/day cap)</span>
+                                                <span class="text-slate-800 dark:text-slate-200">Iron-on-Iron (+2 AP)</span>
+                                                <span class="text-[10px] font-bold text-rose-800 dark:text-rose-400">(3/day cap)</span>
                                             </button>
                                         @endif
                                     </div>
@@ -1436,7 +1436,7 @@
                             @if($isEligible)
                                 @click="scrollToQueue()"
                             @endif
-                            class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all relative {{ ! $isEligible ? 'opacity-65 bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed dark:opacity-60 dark:bg-slate-900/40 dark:border-slate-800/60 dark:text-slate-400' : ($isSelected ? 'bg-emerald-50 border-2 border-emerald-500 text-slate-900 shadow-md ring-2 ring-emerald-500/30 cursor-pointer dark:bg-slate-800 dark:border-emerald-400 dark:text-white dark:ring-emerald-500/40' : 'bg-white border-slate-200 text-slate-800 hover:border-slate-300 hover:bg-slate-50 cursor-pointer dark:bg-slate-800/40 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-700') }}"
+                            class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all relative {{ ! $isEligible ? 'bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-900/40 dark:border-slate-800/60 dark:text-slate-400 cursor-not-allowed' : ($isSelected ? 'bg-emerald-50 border-2 border-emerald-500 text-slate-900 shadow-md ring-2 ring-emerald-500/30 cursor-pointer dark:bg-slate-800 dark:border-emerald-400 dark:text-white dark:ring-emerald-500/40' : 'bg-white border-slate-200 text-slate-800 hover:border-slate-300 hover:bg-slate-50 cursor-pointer dark:bg-slate-800/40 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-700') }}"
                             title="{{ $isEligible ? $action->description() : 'Locked: '.$ineligibilityReason }}"
                         >
                             <input 
@@ -1449,7 +1449,7 @@
                             >
                             <div class="min-w-0 flex-1">
                                 <div class="flex items-start justify-between gap-1.5">
-                                    <span class="text-xs font-semibold leading-snug break-words flex items-center gap-1">
+                                    <span class="text-xs font-bold leading-snug break-words flex items-center gap-1 {{ ! $isEligible ? 'text-slate-800 dark:text-slate-200' : 'text-slate-950 dark:text-white' }}">
                                         <span>{{ $action->icon() }}</span>
                                         <span>
                                             @if($action === \App\Enums\MinistryActionType::PrayerWalk && $selectedNpc)
@@ -1494,13 +1494,13 @@
                                 @endif
 
                                 @if(! $isEligible)
-                                    <div class="text-[10px] text-rose-700 dark:text-rose-400/90 mt-1 italic leading-tight">
+                                    <div class="text-[10px] text-rose-800 dark:text-rose-400 mt-1 font-semibold leading-tight">
                                         {{ $ineligibilityReason }}
                                     </div>
                                 @endif
 
                                 <div class="flex items-center justify-between gap-1 mt-1.5">
-                                    <span class="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">{{ $action->fieldName() }}</span>
+                                    <span class="text-[10px] text-slate-600 dark:text-slate-400 font-semibold truncate">{{ $action->fieldName() }}</span>
                                     <button 
                                         type="button" 
                                         wire:click.stop="openActionInfoModal('{{ $action->value }}')" 
@@ -1844,7 +1844,7 @@
                                         </span>
                                     @endif
                                 </div>
-                                <span class="text-[10px] text-slate-500 font-medium">
+                                <span class="text-[10px] text-slate-600 dark:text-slate-400 font-semibold">
                                     {{ $weekData['actions']->count() }} {{ Str::plural('development', $weekData['actions']->count()) }}
                                 </span>
                             </div>
@@ -1878,16 +1878,16 @@
                                     </p>
                                 </div>
                             @empty
-                                <div class="text-center py-4 px-3 rounded-2xl bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800/40 text-slate-500 text-xs italic">
+                                <div class="text-center py-4 px-3 rounded-2xl bg-slate-100/90 dark:bg-slate-950/40 border border-slate-300 dark:border-slate-800/50 text-slate-700 dark:text-slate-300 text-xs font-semibold italic">
                                     No actions resolved for this week.
                                 </div>
                             @endforelse
                         </div>
                     @empty
-                        <div class="text-center py-8 px-4 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 space-y-2">
+                        <div class="text-center py-8 px-4 rounded-2xl bg-slate-100/80 dark:bg-slate-950/40 border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 space-y-2">
                             <div class="text-3xl">🌱</div>
                             <p class="text-sm font-semibold text-slate-900 dark:text-white">No Weekly Developments Yet</p>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                            <p class="text-xs text-slate-600 dark:text-slate-400 max-w-sm mx-auto">
                                 Queue your ministry actions using your Action Points bandwidth. When the weekly tick processes, developments from the field will appear here!
                             </p>
                         </div>
@@ -1896,13 +1896,13 @@
 
                 <!-- Modal Footer -->
                 <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
-                    <span class="text-[11px] text-slate-400">
+                    <span class="text-[11px] text-slate-600 dark:text-slate-400 font-medium">
                         Showing outcomes from up to the last 4 game weeks.
                     </span>
                     <button 
                         type="button" 
                         wire:click="closeWeeklyDevelopmentsModal"
-                        class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition cursor-pointer"
+                        class="px-5 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white transition cursor-pointer shadow-sm"
                     >
                         Close
                     </button>
@@ -2016,11 +2016,11 @@
                 </div>
 
                 <!-- Modal Actions -->
-                <div class="mt-6 flex items-center justify-between gap-3 pt-3 border-t border-slate-800">
+                <div class="mt-6 flex items-center justify-between gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
                     <button 
                         type="button" 
                         wire:click="closeActionInfoModal" 
-                        class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-800 transition cursor-pointer"
+                        class="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 border border-slate-300 dark:border-transparent dark:bg-slate-800/80 dark:hover:bg-slate-800 transition cursor-pointer"
                     >
                         Close
                     </button>

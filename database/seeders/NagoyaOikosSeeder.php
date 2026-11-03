@@ -2,11 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Enums\BaptismStatus;
 use App\Enums\ChurchElement;
-use App\Enums\LeadershipTier;
-use App\Enums\NpcNeedState;
-use App\Enums\NpcRoleArchetype;
 use App\Enums\ReceptivityStatus;
 use App\Enums\RelationshipType;
 use App\Models\Church;
@@ -16,6 +12,7 @@ use App\Models\OikosRelationship;
 use App\Models\User;
 use App\Models\Ward;
 use App\Services\AiColaborerService;
+use App\Services\JapaneseNameRegistry;
 use App\Services\NagoyaGeoJsonService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
@@ -291,329 +288,9 @@ class NagoyaOikosSeeder extends Seeder
             $player->update($playerUpdates);
         }
 
-        // 4. Seed Archetypal Nagoya NPCs
-        $npcsData = [
-            // --- EXISTING BELIEVER (Field 3/5 Multiplication Catalyst) ---
-            'daisuke_kato' => [
-                'game_session_id' => $session->id,
-                'ward_id' => $wards['meito-ku']->id,
-                'name' => 'Daisuke Kato',
-                'name_ja' => '加藤 大輔',
-                'gender' => 'male',
-                'age' => 32,
-                'nationality' => 'Japanese',
-                'role_archetype' => NpcRoleArchetype::ExistingBeliever,
-                'need_state' => NpcNeedState::None,
-                'status' => ReceptivityStatus::Green,
-                'prayed_salvation' => true,
-                'trust_level' => 65,
-                'is_person_of_peace' => false,
-                'is_baptized' => true,
-                'baptism_status' => BaptismStatus::Baptized,
-                'trained_411' => false, // Needs Field 3 411 Training to activate!
-                'leadership_tier' => LeadershipTier::Apprentice,
-                'generation' => 1,
-                'discipler_user_id' => $player->id,
-                'lat' => 35.1680,
-                'lng' => 136.9980,
-                'backstory' => 'High school English teacher in Meito-ku. Attends a traditional Sunday service passively but has never been trained in simple, reproducible disciple-making. Yearns to reach his students and coworkers.',
-                'spiritual_journal' => [
-                    ['month' => 0, 'entry' => 'Met player at Fujigaoka station cafe. Shared that he wants to witness to fellow teachers but feels unprepared.'],
-                ],
-            ],
-
-            // --- PERSON OF PEACE (Luke 10: Osu Market Merchant) ---
-            'kenji_tanaka' => [
-                'game_session_id' => $session->id,
-                'ward_id' => $wards['naka-ku']->id,
-                'name' => 'Kenji Tanaka',
-                'name_ja' => '田中 健二',
-                'gender' => 'male',
-                'age' => 48,
-                'nationality' => 'Japanese',
-                'role_archetype' => NpcRoleArchetype::Shopkeeper,
-                'need_state' => NpcNeedState::None,
-                'status' => ReceptivityStatus::Yellow,
-                'trust_level' => 55,
-                'is_person_of_peace' => true, // Classic Luke 10 PoP!
-                'is_baptized' => false,
-                'trained_411' => false,
-                'leadership_tier' => LeadershipTier::None,
-                'generation' => 0,
-                'lat' => 35.1585,
-                'lng' => 136.9045,
-                'backstory' => 'Charismatic owner of a vintage clothing shop in Osu Shopping Arcade. Generous and hospitable; knows every merchant and youth in the street. Deeply interested in spiritual matters and Western morality.',
-                'spiritual_journal' => [
-                    ['month' => 0, 'entry' => 'Welcomed player into his shop for green tea. Shared how he loves gathering people together.'],
-                ],
-            ],
-
-            // --- KENJI'S WIFE (Oikos Family Node) ---
-            'tomoko_tanaka' => [
-                'game_session_id' => $session->id,
-                'ward_id' => $wards['naka-ku']->id,
-                'name' => 'Tomoko Tanaka',
-                'name_ja' => '田中 智子',
-                'gender' => 'female',
-                'age' => 45,
-                'nationality' => 'Japanese',
-                'role_archetype' => NpcRoleArchetype::Shopkeeper,
-                'need_state' => NpcNeedState::None,
-                'status' => ReceptivityStatus::Red,
-                'trust_level' => 40,
-                'is_person_of_peace' => false,
-                'is_baptized' => false,
-                'trained_411' => false,
-                'leadership_tier' => LeadershipTier::None,
-                'generation' => 0,
-                'lat' => 35.1588,
-                'lng' => 136.9048,
-                'backstory' => 'Kenji\'s devoted wife who manages their shop bookkeeping. Respects Kenji\'s decisions; initially cautious about Christianity but trusts Kenji deeply.',
-                'spiritual_journal' => [],
-            ],
-
-            // --- WORKPLACE BURNOUT / EMOTIONAL CRISIS (Receptive to Deep Talk) ---
-            'hiroshi_sato' => [
-                'game_session_id' => $session->id,
-                'ward_id' => $wards['naka-ku']->id,
-                'name' => 'Hiroshi Sato',
-                'name_ja' => '佐藤 浩',
-                'gender' => 'male',
-                'age' => 34,
-                'nationality' => 'Japanese',
-                'role_archetype' => NpcRoleArchetype::Salaryman,
-                'need_state' => NpcNeedState::EmotionalCrisis,
-                'status' => ReceptivityStatus::Red,
-                'trust_level' => 20,
-                'is_person_of_peace' => false,
-                'is_baptized' => false,
-                'trained_411' => false,
-                'leadership_tier' => LeadershipTier::None,
-                'generation' => 0,
-                'lat' => 35.1712,
-                'lng' => 136.9075,
-                'backstory' => 'IT Project Lead in Sakae. Works 75 hours a week, suffering chronic insomnia, panic attacks, and loneliness. Direct cold preaching will make him withdraw, but patient active listening (Deep Talk) touches his heart.',
-                'spiritual_journal' => [
-                    ['month' => 0, 'entry' => 'Sitting alone on a bench in Hisaya-odori Park late at night, visibly stressed.'],
-                ],
-            ],
-
-            // --- SICK / PHYSICAL CRISIS (Catalyst for Healing Prayer) ---
-            'keiko_yamamoto' => [
-                'game_session_id' => $session->id,
-                'ward_id' => $wards['showa-ku']->id,
-                'name' => 'Keiko Yamamoto',
-                'name_ja' => '山本 恵子',
-                'gender' => 'female',
-                'age' => 64,
-                'nationality' => 'Japanese',
-                'role_archetype' => NpcRoleArchetype::ElderlyResident,
-                'need_state' => NpcNeedState::SickNeedsHealing,
-                'status' => ReceptivityStatus::Red,
-                'trust_level' => 30,
-                'is_person_of_peace' => false,
-                'is_baptized' => false,
-                'trained_411' => false,
-                'leadership_tier' => LeadershipTier::None,
-                'generation' => 0,
-                'lat' => 35.1520,
-                'lng' => 136.9350,
-                'backstory' => '64-year-old grandmother in Gokiso struggling with acute spinal inflammation and severe mobility pain. Devoutly looks after her family. Sincere prayer in Jesus\' name offers an immediate emotional and spiritual breakthrough.',
-                'spiritual_journal' => [],
-            ],
-
-            // --- KEIKO'S DAUGHTER (Family Oikos Node) ---
-            'aoi_yamamoto' => [
-                'game_session_id' => $session->id,
-                'ward_id' => $wards['showa-ku']->id,
-                'name' => 'Aoi Yamamoto',
-                'name_ja' => '山本 葵',
-                'gender' => 'female',
-                'age' => 32,
-                'nationality' => 'Japanese',
-                'role_archetype' => NpcRoleArchetype::SingleParent,
-                'need_state' => NpcNeedState::EmotionalCrisis,
-                'status' => ReceptivityStatus::Unreached,
-                'trust_level' => 25,
-                'is_person_of_peace' => false,
-                'is_baptized' => false,
-                'trained_411' => false,
-                'leadership_tier' => LeadershipTier::None,
-                'generation' => 0,
-                'lat' => 35.1525,
-                'lng' => 136.9355,
-                'backstory' => 'Keiko\'s adult daughter, raising a young child alone while balancing a nursing shift. Deeply concerned about her mother\'s health.',
-                'spiritual_journal' => [],
-            ],
-
-            // --- HOMELESS / MATERIAL NEED (Word + Deed Mercy Outreach) ---
-            'masao_suzuki' => [
-                'game_session_id' => $session->id,
-                'ward_id' => $wards['naka-ku']->id,
-                'name' => 'Masao Suzuki (Masa-san)',
-                'name_ja' => '鈴木 正雄（マサさん）',
-                'gender' => 'male',
-                'age' => 58,
-                'nationality' => 'Japanese',
-                'role_archetype' => NpcRoleArchetype::HomelessIndividual,
-                'need_state' => NpcNeedState::HomelessOrMaterialNeed,
-                'status' => ReceptivityStatus::Red,
-                'trust_level' => 20,
-                'is_person_of_peace' => false,
-                'is_baptized' => false,
-                'trained_411' => false,
-                'leadership_tier' => LeadershipTier::None,
-                'generation' => 0,
-                'lat' => 35.1630,
-                'lng' => 136.8990,
-                'backstory' => 'Unhoused gentleman living under the canopy around Shirakawa Park. Lost his small manufacturing business 6 years ago. Hungry and accustomed to cold rejection from passersby. Responds deeply to hot meals, dignity, and personal prayers.',
-                'spiritual_journal' => [],
-            ],
-
-            // --- FELLOW UNHOUSED FRIEND (Park Oikos Node) ---
-            'goro_kondo' => [
-                'game_session_id' => $session->id,
-                'ward_id' => $wards['naka-ku']->id,
-                'name' => 'Goro Kondo',
-                'name_ja' => '近藤 五郎',
-                'gender' => 'male',
-                'age' => 55,
-                'nationality' => 'Japanese',
-                'role_archetype' => NpcRoleArchetype::HomelessIndividual,
-                'need_state' => NpcNeedState::HomelessOrMaterialNeed,
-                'status' => ReceptivityStatus::Unreached,
-                'trust_level' => 15,
-                'is_person_of_peace' => false,
-                'is_baptized' => false,
-                'trained_411' => false,
-                'leadership_tier' => LeadershipTier::None,
-                'generation' => 0,
-                'lat' => 35.1635,
-                'lng' => 136.8995,
-                'backstory' => 'Masa-san\'s trusted camp neighbor in Shirakawa Park. Collects aluminum cans for survival.',
-                'spiritual_journal' => [],
-            ],
-
-            // --- UNIVERSITY STUDENT / SEEKER (Receptive to International Events) ---
-            'linh_nguyen' => [
-                'game_session_id' => $session->id,
-                'ward_id' => $wards['tempaku-ku']->id,
-                'name' => 'Linh Nguyen',
-                'name_ja' => 'リン・グエン',
-                'gender' => 'female',
-                'age' => 21,
-                'nationality' => 'Vietnamese',
-                'role_archetype' => NpcRoleArchetype::InternationalExpat,
-                'need_state' => NpcNeedState::SeekingCommunity,
-                'status' => ReceptivityStatus::Yellow,
-                'trust_level' => 50,
-                'is_person_of_peace' => true,
-                'is_baptized' => false,
-                'trained_411' => false,
-                'leadership_tier' => LeadershipTier::None,
-                'generation' => 0,
-                'lat' => 35.1380,
-                'lng' => 136.9790,
-                'backstory' => '21-year-old Vietnamese undergraduate at Meijo University studying computer engineering. Eager to practice Japanese and English, actively seeking authentic friendships and open to Christian faith.',
-                'spiritual_journal' => [],
-            ],
-
-            // --- JAPANESE STUDENT FRIEND (Campus Oikos Node) ---
-            'yuki_kobayashi' => [
-                'game_session_id' => $session->id,
-                'ward_id' => $wards['chikusa-ku']->id,
-                'name' => 'Yuki Kobayashi',
-                'name_ja' => '小林 由紀',
-                'gender' => 'female',
-                'age' => 21,
-                'nationality' => 'Japanese',
-                'role_archetype' => NpcRoleArchetype::UniversityStudent,
-                'need_state' => NpcNeedState::SeekingCommunity,
-                'status' => ReceptivityStatus::Yellow,
-                'trust_level' => 45,
-                'is_person_of_peace' => false,
-                'is_baptized' => false,
-                'trained_411' => false,
-                'leadership_tier' => LeadershipTier::None,
-                'generation' => 0,
-                'lat' => 35.1650,
-                'lng' => 136.9550,
-                'backstory' => 'Nagoya University literature junior. Studied abroad in Canada for 6 months and misses deep spiritual conversations and multicultural gatherings.',
-                'spiritual_journal' => [],
-            ],
-
-            // --- MEIEKI CORPORATE COMMUTER (Nakamura-ku) ---
-            'sayaka_ito' => [
-                'game_session_id' => $session->id,
-                'ward_id' => $wards['nakamura-ku']->id,
-                'name' => 'Sayaka Ito',
-                'name_ja' => '伊藤 さやか',
-                'gender' => 'female',
-                'age' => 26,
-                'nationality' => 'Japanese',
-                'role_archetype' => NpcRoleArchetype::Salaryman,
-                'need_state' => NpcNeedState::Lonely,
-                'status' => ReceptivityStatus::Red,
-                'trust_level' => 20,
-                'is_person_of_peace' => false,
-                'is_baptized' => false,
-                'trained_411' => false,
-                'leadership_tier' => LeadershipTier::None,
-                'generation' => 0,
-                'lat' => 35.1720,
-                'lng' => 136.8840,
-                'backstory' => 'Moved from Shizuoka to work in Meieki marketing firm. Has no friends in Nagoya, spending every weekend alone in her apartment.',
-                'spiritual_journal' => [],
-            ],
-
-            // --- PORT WORKER (Minato-ku) ---
-            'carlos_santos' => [
-                'game_session_id' => $session->id,
-                'ward_id' => $wards['minato-ku']->id,
-                'name' => 'Carlos Santos',
-                'name_ja' => 'カルロス・サントス',
-                'gender' => 'male',
-                'age' => 32,
-                'nationality' => 'Brazilian',
-                'role_archetype' => NpcRoleArchetype::InternationalExpat,
-                'need_state' => NpcNeedState::SeekingCommunity,
-                'status' => ReceptivityStatus::Yellow,
-                'trust_level' => 40,
-                'is_person_of_peace' => true,
-                'is_baptized' => false,
-                'trained_411' => false,
-                'leadership_tier' => LeadershipTier::None,
-                'generation' => 0,
-                'lat' => 35.0920,
-                'lng' => 136.8710,
-                'backstory' => 'Second-generation Brazilian-Japanese forklift operator at the Port of Nagoya container terminal. Connected with hundreds of overseas workers.',
-                'spiritual_journal' => [],
-            ],
-
-            // --- DAISUKE'S BROTHER (Meito-ku Oikos Family Node) ---
-            'kenichi_kato' => [
-                'game_session_id' => $session->id,
-                'ward_id' => $wards['meito-ku']->id,
-                'name' => 'Kenichi Kato',
-                'name_ja' => '加藤 健一',
-                'gender' => 'male',
-                'age' => 30,
-                'nationality' => 'Japanese',
-                'role_archetype' => NpcRoleArchetype::Salaryman,
-                'need_state' => NpcNeedState::SeekingCommunity,
-                'status' => ReceptivityStatus::Yellow,
-                'trust_level' => 52,
-                'is_person_of_peace' => false,
-                'is_baptized' => false,
-                'trained_411' => false,
-                'leadership_tier' => LeadershipTier::None,
-                'generation' => 0,
-                'lat' => 35.1685,
-                'lng' => 136.9995,
-                'backstory' => 'Daisuke\'s younger brother living in Meito-ku. Works in automotive logistics. Respects Daisuke deeply and is open to spiritual conversations with family.',
-                'spiritual_journal' => [],
-            ],
-        ];
+        // 4. Seed Archetypal Nagoya NPCs across all 16 Wards
+        // Sourced from JapaneseNameRegistry ensuring 100% unique names and a realistic Luke 10 PoP ratio (~9%).
+        $npcsData = app(JapaneseNameRegistry::class)->getSeedWardsData($session, $wards, $player);
 
         $npcs = [];
         foreach ($npcsData as $key => $data) {
@@ -681,6 +358,52 @@ class NagoyaOikosSeeder extends Seeder
                 'relationship_type' => RelationshipType::Neighbor,
                 'trust_level' => 45,
                 'notes' => 'Live in neighboring apartment complexes in Fujigaoka.',
+            ],
+            [
+                'npc_id' => $npcs['daisuke_kato']->id,
+                'related_npc_id' => $npcs['misaki_nonaka']->id,
+                'relationship_type' => RelationshipType::Neighbor,
+                'trust_level' => 50,
+                'notes' => 'Fellow educators living in Fujigaoka.',
+            ],
+            // Tempaku-ku Campus Network
+            [
+                'npc_id' => $npcs['linh_nguyen']->id,
+                'related_npc_id' => $npcs['soichiro_hayakawa']->id,
+                'relationship_type' => RelationshipType::Friend,
+                'trust_level' => 60,
+                'notes' => 'Fellow university students in Tempaku-ku.',
+            ],
+            // Kita-ku Person of Peace Network
+            [
+                'npc_id' => $npcs['ren_takahashi']->id,
+                'related_npc_id' => $npcs['chiyo_okada']->id,
+                'relationship_type' => RelationshipType::Neighbor,
+                'trust_level' => 75,
+                'notes' => 'Cafe regular whom Ren checks on weekly.',
+            ],
+            // Minato-ku Port Worker Network
+            [
+                'npc_id' => $npcs['carlos_santos']->id,
+                'related_npc_id' => $npcs['rosa_morales']->id,
+                'relationship_type' => RelationshipType::Friend,
+                'trust_level' => 70,
+                'notes' => 'Connects weekly at Latin American import grocery in Minato.',
+            ],
+            [
+                'npc_id' => $npcs['carlos_santos']->id,
+                'related_npc_id' => $npcs['mai_ishida']->id,
+                'relationship_type' => RelationshipType::Coworker,
+                'trust_level' => 55,
+                'notes' => 'Port logistics colleagues at container pier.',
+            ],
+            // Midori-ku Community Network
+            [
+                'npc_id' => $npcs['naomi_fujiwara']->id,
+                'related_npc_id' => $npcs['daiki_yoshikawa']->id,
+                'relationship_type' => RelationshipType::Neighbor,
+                'trust_level' => 60,
+                'notes' => 'Suburban neighborhood committee and school PTA connections.',
             ],
         ];
 

@@ -667,18 +667,23 @@
             x-transition:leave="transition ease-in duration-200"
             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
             x-transition:leave-end="opacity-0 translate-y-3 scale-95"
-            class="fixed bottom-5 right-5 z-50 p-4 rounded-2xl shadow-2xl border flex items-center gap-3 text-xs font-bold max-w-md pointer-events-auto backdrop-blur-md"
+            class="fixed bottom-5 right-5 z-50 p-4 rounded-2xl shadow-2xl border flex items-center gap-3 text-xs font-bold max-w-md pointer-events-auto backdrop-blur-md transition-colors"
             :class="{
-                'bg-emerald-950/95 text-emerald-200 border-emerald-600 shadow-emerald-950/50': type === 'success',
-                'bg-rose-950/95 text-rose-200 border-rose-600 shadow-rose-950/50': type === 'error',
-                'bg-amber-950/95 text-amber-200 border-amber-600 shadow-amber-950/50': type === 'warning',
-                'bg-indigo-950/95 text-indigo-200 border-indigo-600 shadow-indigo-950/50': type === 'info'
+                'bg-emerald-100 text-emerald-950 border-emerald-400 shadow-emerald-900/15 dark:bg-emerald-950 dark:text-emerald-100 dark:border-emerald-600 dark:shadow-emerald-950/50': type === 'success',
+                'bg-rose-100 text-rose-950 border-rose-400 shadow-rose-900/15 dark:bg-rose-950 dark:text-rose-100 dark:border-rose-600 dark:shadow-rose-950/50': type === 'error',
+                'bg-amber-100 text-amber-950 border-amber-400 shadow-amber-900/15 dark:bg-amber-950 dark:text-amber-100 dark:border-amber-600 dark:shadow-amber-950/50': type === 'warning',
+                'bg-indigo-100 text-indigo-950 border-indigo-400 shadow-indigo-900/15 dark:bg-indigo-950 dark:text-indigo-100 dark:border-indigo-600 dark:shadow-indigo-950/50': type === 'info'
             }"
             style="display: none;"
         >
             <span class="text-base shrink-0" x-text="type === 'success' ? '✅' : (type === 'error' ? '❌' : (type === 'warning' ? '⚠️' : 'ℹ️'))"></span>
-            <span class="leading-snug" x-text="message"></span>
-            <button type="button" @click="show = false" class="ml-2 text-slate-400 hover:text-white text-xs opacity-70 hover:opacity-100 cursor-pointer">✕</button>
+            <span class="leading-snug font-bold" :class="{
+                'text-emerald-950 dark:text-emerald-100': type === 'success',
+                'text-rose-950 dark:text-rose-100': type === 'error',
+                'text-amber-950 dark:text-amber-100': type === 'warning',
+                'text-indigo-950 dark:text-indigo-100': type === 'info'
+            }" x-text="message"></span>
+            <button type="button" @click="show = false" class="ml-2 text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white text-xs opacity-75 hover:opacity-100 cursor-pointer font-bold shrink-0">✕</button>
         </div>
 
         <!-- Interactive Real-Life Time-Stage Showcase Presenter Panel -->

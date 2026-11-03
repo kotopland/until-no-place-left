@@ -12,7 +12,6 @@ use App\Enums\ContributionRole;
 use App\Enums\LeadershipTier;
 use App\Enums\MinistryActionType;
 use App\Enums\NpcNeedState;
-use App\Enums\NpcRoleArchetype;
 use App\Enums\QueuedActionStatus;
 use App\Enums\ReceptivityStatus;
 use App\Models\Church;
@@ -2121,52 +2120,106 @@ class FourFieldsEngine
         }
 
         // Solo Ward-wide Prayer Walk: progressive Luke 10 Person of Peace discovery
-        $popChance = min(90, 35 + ($previousWardWalks * 15));
-        $popDiscovered = rand(1, 100) <= $popChance;
+        // A ward should have some Persons of Peace, but not every single contact.
+        // Cap PoPs at 2-3 per ward (or max 50% of the ward contacts).
+        $wardNpcs = Npc::where('game_session_id', $action->game_session_id)
+            ->where('ward_id', $ward->id)
+            ->get();
+        $currentWardPops = $wardNpcs->where('is_person_of_peace', true)->count();
+        $totalWardNpcs = $wardNpcs->count();
+        $isPopSaturated = ($currentWardPops >= 3) || ($totalWardNpcs > 0 && ($currentWardPops / $totalWardNpcs) >= 0.50);
+
         $discoveredNpc = null;
         $points = 15;
+        $popDiscovered = false;
 
-        if ($popDiscovered) {
-            // Find existing non-PoP resident in this ward, or spawn a new archetypal Japanese seeker
-            $discoveredNpc = Npc::where('game_session_id', $action->game_session_id)
+        if ($isPopSaturated) {
+            // Ward already has a healthy number of Persons of Peace. Do NOT convert more PoPs in this ward.
+            // Prayer walking deepens rapport with existing unreached/yellow seekers or discovers normal neighbors.
+            $unreachedNpc = Npc::where('game_session_id', $action->game_session_id)
                 ->where('ward_id', $ward->id)
                 ->where('is_person_of_peace', false)
+                ->where('status', ReceptivityStatus::Unreached)
                 ->inRandomOrder()
                 ->first();
 
-            if ($discoveredNpc) {
-                $updates = ['is_person_of_peace' => true];
-                if ($discoveredNpc->status === ReceptivityStatus::Unreached) {
-                    $updates['status'] = ReceptivityStatus::Yellow;
-                    $updates['yellow_since_game_month'] = $gameMonth;
-                    $updates['seeking_months'] = 0;
-                }
-                $discoveredNpc->update($updates);
-                $discoveredNpc->increment('trust_level', rand(18, 26));
+            if ($unreachedNpc) {
+                $unreachedNpc->update([
+                    'status' => ReceptivityStatus::Yellow,
+                    'yellow_since_game_month' => $gameMonth,
+                    'seeking_months' => 0,
+                ]);
+                $unreachedNpc->increment('trust_level', rand(14, 22));
+                $discoveredNpc = $unreachedNpc;
+                $narrative = "Engaged local resident {$discoveredNpc->displayName} during prayer walk along {$routeName} in {$ward->name}. Spiritual soil softened as they opened up about their life.";
             } else {
-                $midCoord = $pathCoords[intdiv(count($pathCoords), 2)] ?? [(float) $ward->center_lat, (float) $ward->center_lng];
-                $discoveredNpc = $this->spawnPersonOfPeaceResident((int) $action->game_session_id, $ward, $midCoord);
+                // If there are few residents, spawn a normal non-PoP Japanese resident with a guaranteed unique name
+                $residentCount = Npc::where('game_session_id', $action->game_session_id)
+                    ->where('ward_id', $ward->id)
+                    ->count();
+
+                if ($residentCount < 5) {
+                    $midCoord = $pathCoords[intdiv(count($pathCoords), 2)] ?? [(float) $ward->center_lat, (float) $ward->center_lng];
+                    $discoveredNpc = app(JapaneseNameRegistry::class)->spawnResident(
+                        (int) $action->game_session_id,
+                        $ward,
+                        $midCoord,
+                        isPersonOfPeace: false,
+                        status: ReceptivityStatus::Yellow
+                    );
+                    $narrative = "Met a new seeker, {$discoveredNpc->displayName}, during prayer walk along {$routeName} in {$ward->name}. Friendly conversation built initial trust (+{$discoveredNpc->trust_level}%).";
+                } else {
+                    $nextChance = min(90, 35 + (($previousWardWalks + 1) * 15));
+                    $narrative = "Interceded on foot along {$routeName} in {$ward->name}. Spiritual ground softened across the ward (Openness +2%).";
+                }
             }
-
-            // Record pioneer sowing contribution
-            NpcContribution::create([
-                'game_session_id' => $action->game_session_id,
-                'npc_id' => $discoveredNpc->id,
-                'user_id' => $user->id,
-                'action_type' => MinistryActionType::PrayerWalk,
-                'contribution_role' => ContributionRole::PioneerSower,
-                'game_month' => $gameMonth,
-                'trust_gained' => 20,
-                'points_awarded' => 35,
-                'triggered_breakthrough' => true,
-                'notes' => "Discovered Person of Peace ({$discoveredNpc->displayName}) during prayer walk on {$routeName} in {$ward->name}.",
-            ]);
-
-            $points = 35;
-            $narrative = "Divine appointment during prayer walk along {$routeName} in {$ward->name}! Discovered {$discoveredNpc->displayName}, a Luke 10 Person of Peace receptive to spiritual conversation. Spiritual openness increased to ".min(100, $ward->spiritual_openness + 4).'%.';
         } else {
-            $nextChance = min(90, 35 + (($previousWardWalks + 1) * 15));
-            $narrative = "Interceded on foot along {$routeName} in {$ward->name}. Spiritual ground softened (Openness +2%). Prayer walk count in {$ward->name} is now ".($previousWardWalks + 1).", raising Person of Peace discovery chance to {$nextChance}%!";
+            // Ward has capacity for a Person of Peace. Apply progressive Luke 10 discovery chance.
+            $popChance = min(90, 35 + ($previousWardWalks * 15));
+            $popDiscovered = rand(1, 100) <= $popChance;
+
+            if ($popDiscovered) {
+                // Reveal an existing non-PoP resident as a Person of Peace, or spawn one if needed
+                $discoveredNpc = Npc::where('game_session_id', $action->game_session_id)
+                    ->where('ward_id', $ward->id)
+                    ->where('is_person_of_peace', false)
+                    ->inRandomOrder()
+                    ->first();
+
+                if ($discoveredNpc) {
+                    $updates = ['is_person_of_peace' => true];
+                    if ($discoveredNpc->status === ReceptivityStatus::Unreached) {
+                        $updates['status'] = ReceptivityStatus::Yellow;
+                        $updates['yellow_since_game_month'] = $gameMonth;
+                        $updates['seeking_months'] = 0;
+                    }
+                    $discoveredNpc->update($updates);
+                    $discoveredNpc->increment('trust_level', rand(18, 26));
+                } else {
+                    $midCoord = $pathCoords[intdiv(count($pathCoords), 2)] ?? [(float) $ward->center_lat, (float) $ward->center_lng];
+                    $discoveredNpc = $this->spawnPersonOfPeaceResident((int) $action->game_session_id, $ward, $midCoord);
+                }
+
+                // Record pioneer sowing contribution
+                NpcContribution::create([
+                    'game_session_id' => $action->game_session_id,
+                    'npc_id' => $discoveredNpc->id,
+                    'user_id' => $user->id,
+                    'action_type' => MinistryActionType::PrayerWalk,
+                    'contribution_role' => ContributionRole::PioneerSower,
+                    'game_month' => $gameMonth,
+                    'trust_gained' => 20,
+                    'points_awarded' => 35,
+                    'triggered_breakthrough' => true,
+                    'notes' => "Discovered Person of Peace ({$discoveredNpc->displayName}) during prayer walk on {$routeName} in {$ward->name}.",
+                ]);
+
+                $points = 35;
+                $narrative = "Divine appointment during prayer walk along {$routeName} in {$ward->name}! Discovered {$discoveredNpc->displayName}, a Luke 10 Person of Peace receptive to spiritual conversation. Spiritual openness increased to ".min(100, $ward->spiritual_openness + 4).'%.';
+            } else {
+                $nextChance = min(90, 35 + (($previousWardWalks + 1) * 15));
+                $narrative = "Interceded on foot along {$routeName} in {$ward->name}. Spiritual ground softened (Openness +2%). Prayer walk count in {$ward->name} is now ".($previousWardWalks + 1).", raising Person of Peace discovery chance to {$nextChance}%!";
+            }
         }
 
         // Soften ward atmosphere and increment openness (+1 extra boost when interceding in your home base!)
@@ -2519,42 +2572,19 @@ class FourFieldsEngine
 
     /**
      * Spawn an archetypal Japanese resident in a ward who is a Luke 10 Person of Peace.
+     * Guarantees 100% unique names in the game session via JapaneseNameRegistry.
      *
      * @param  array<int, float>  $coord
      */
     protected function spawnPersonOfPeaceResident(int $gameSessionId, Ward $ward, array $coord): Npc
     {
-        $namesPool = [
-            ['name' => 'Satoshi Yamada', 'name_ja' => '山田 聡', 'role' => NpcRoleArchetype::Shopkeeper, 'need' => NpcNeedState::EmotionalCrisis, 'gender' => 'male', 'age' => 44, 'nationality' => 'Japanese'],
-            ['name' => 'Yuka Shibata', 'name_ja' => '柴田 優香', 'role' => NpcRoleArchetype::InternationalExpat, 'need' => NpcNeedState::Lonely, 'gender' => 'female', 'age' => 29, 'nationality' => 'Japanese'],
-            ['name' => 'Kazuo Kondo', 'name_ja' => '近藤 一男', 'role' => NpcRoleArchetype::ElderlyResident, 'need' => NpcNeedState::Lonely, 'gender' => 'male', 'age' => 72, 'nationality' => 'Japanese'],
-            ['name' => 'Mari Ishikawa', 'name_ja' => '石川 まり', 'role' => NpcRoleArchetype::SingleParent, 'need' => NpcNeedState::EmotionalCrisis, 'gender' => 'female', 'age' => 36, 'nationality' => 'Japanese'],
-            ['name' => 'Takumi Ogawa', 'name_ja' => '小川 拓海', 'role' => NpcRoleArchetype::UniversityStudent, 'need' => NpcNeedState::SeekingCommunity, 'gender' => 'male', 'age' => 20, 'nationality' => 'Japanese'],
-            ['name' => 'Emi Suzuki', 'name_ja' => '鈴木 恵美', 'role' => NpcRoleArchetype::Salaryman, 'need' => NpcNeedState::EmotionalCrisis, 'gender' => 'female', 'age' => 28, 'nationality' => 'Japanese'],
-        ];
-
-        $existingCount = Npc::where('game_session_id', $gameSessionId)->count();
-        $profile = $namesPool[$existingCount % count($namesPool)];
-
-        return Npc::create([
-            'game_session_id' => $gameSessionId,
-            'ward_id' => $ward->id,
-            'name' => $profile['name'],
-            'name_ja' => $profile['name_ja'],
-            'gender' => $profile['gender'],
-            'age' => $profile['age'],
-            'nationality' => $profile['nationality'],
-            'role_archetype' => $profile['role'],
-            'need_state' => $profile['need'],
-            'status' => ReceptivityStatus::Yellow,
-            'yellow_since_game_month' => 1,
-            'seeking_months' => 0,
-            'trust_level' => rand(35, 50),
-            'is_person_of_peace' => true,
-            'lat' => $coord[0] ?? (float) $ward->center_lat,
-            'lng' => $coord[1] ?? (float) $ward->center_lng,
-            'backstory' => "Surfaced as a Person of Peace through prayer walking in {$ward->name}. Receptive and welcoming to community believers.",
-        ]);
+        return app(JapaneseNameRegistry::class)->spawnResident(
+            $gameSessionId,
+            $ward,
+            $coord,
+            isPersonOfPeace: true,
+            status: ReceptivityStatus::Yellow
+        );
     }
 
     /**

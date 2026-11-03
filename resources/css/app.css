@@ -352,6 +352,9 @@ html {
     background-color: #e0e7ff;
 }
 
+:root:not(.dark) .text-indigo-200,
+:root:not(.dark) .text-indigo-200\/90,
+:root:not(.dark) .text-indigo-200\/80,
 :root:not(.dark) .text-indigo-300,
 :root:not(.dark) .text-indigo-400,
 :root:not(.dark) .text-indigo-300\/90,
@@ -377,6 +380,9 @@ html {
     background-color: #d1fae5;
 }
 
+:root:not(.dark) .text-emerald-200,
+:root:not(.dark) .text-emerald-200\/90,
+:root:not(.dark) .text-emerald-200\/80,
 :root:not(.dark) .text-emerald-300,
 :root:not(.dark) .text-emerald-400,
 :root:not(.dark) .text-emerald-300\/90,
@@ -402,6 +408,9 @@ html {
     background-color: #fef3c7;
 }
 
+:root:not(.dark) .text-amber-200,
+:root:not(.dark) .text-amber-200\/90,
+:root:not(.dark) .text-amber-200\/80,
 :root:not(.dark) .text-amber-300,
 :root:not(.dark) .text-amber-400,
 :root:not(.dark) .text-amber-300\/90,
@@ -430,6 +439,9 @@ html {
     background-color: #ffe4e6;
 }
 
+:root:not(.dark) .text-rose-200,
+:root:not(.dark) .text-rose-200\/90,
+:root:not(.dark) .text-rose-200\/80,
 :root:not(.dark) .text-rose-300,
 :root:not(.dark) .text-rose-400,
 :root:not(.dark) .text-rose-300\/90,
@@ -455,6 +467,9 @@ html {
     background-color: #f3e8ff;
 }
 
+:root:not(.dark) .text-purple-200,
+:root:not(.dark) .text-purple-200\/90,
+:root:not(.dark) .text-purple-200\/80,
 :root:not(.dark) .text-purple-300,
 :root:not(.dark) .text-purple-400,
 :root:not(.dark) .text-purple-300\/90,
@@ -480,6 +495,9 @@ html {
     background-color: #cffafe;
 }
 
+:root:not(.dark) .text-cyan-200,
+:root:not(.dark) .text-cyan-200\/90,
+:root:not(.dark) .text-cyan-200\/80,
 :root:not(.dark) .text-cyan-300,
 :root:not(.dark) .text-cyan-400,
 :root:not(.dark) .text-cyan-300\/90,
@@ -505,6 +523,9 @@ html {
     background-color: #dbeafe;
 }
 
+:root:not(.dark) .text-blue-200,
+:root:not(.dark) .text-blue-200\/90,
+:root:not(.dark) .text-blue-200\/80,
 :root:not(.dark) .text-blue-300,
 :root:not(.dark) .text-blue-400,
 :root:not(.dark) .text-blue-300\/90,

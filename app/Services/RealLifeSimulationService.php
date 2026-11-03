@@ -10,7 +10,6 @@ use App\Enums\ContributionRole;
 use App\Enums\LeadershipTier;
 use App\Enums\MinistryActionType;
 use App\Enums\NpcNeedState;
-use App\Enums\NpcRoleArchetype;
 use App\Enums\ReceptivityStatus;
 use App\Enums\RelationshipType;
 use App\Models\Church;
@@ -1857,23 +1856,8 @@ class RealLifeSimulationService
         $this->spawnCounter++;
         $idx = $this->spawnCounter;
 
-        $profiles = [
-            ['name' => 'Takashi Watanabe', 'name_ja' => '渡辺 隆', 'gender' => 'male', 'age' => 38, 'nat' => 'Japanese', 'role' => NpcRoleArchetype::Salaryman, 'need' => NpcNeedState::EmotionalCrisis],
-            ['name' => 'Megumi Sato', 'name_ja' => '佐藤 恵', 'gender' => 'female', 'age' => 34, 'nat' => 'Japanese', 'role' => NpcRoleArchetype::SingleParent, 'need' => NpcNeedState::Lonely],
-            ['name' => 'Haruto Takahashi', 'name_ja' => '高橋 陽翔', 'gender' => 'male', 'age' => 21, 'nat' => 'Japanese', 'role' => NpcRoleArchetype::UniversityStudent, 'need' => NpcNeedState::SeekingCommunity],
-            ['name' => 'Yui Nakamura', 'name_ja' => '中村 結衣', 'gender' => 'female', 'age' => 27, 'nat' => 'Japanese', 'role' => NpcRoleArchetype::Salaryman, 'need' => NpcNeedState::Lonely],
-            ['name' => 'Osamu Yoshida', 'name_ja' => '吉田 修', 'gender' => 'male', 'age' => 68, 'nat' => 'Japanese', 'role' => NpcRoleArchetype::ElderlyResident, 'need' => NpcNeedState::SickNeedsHealing],
-            ['name' => 'Sakura Yamada', 'name_ja' => '山田 さくら', 'gender' => 'female', 'age' => 20, 'nat' => 'Japanese', 'role' => NpcRoleArchetype::UniversityStudent, 'need' => NpcNeedState::SeekingCommunity],
-            ['name' => 'Ryoichi Mori', 'name_ja' => '森 良一', 'gender' => 'male', 'age' => 46, 'nat' => 'Japanese', 'role' => NpcRoleArchetype::Shopkeeper, 'need' => NpcNeedState::None],
-            ['name' => 'Kana Inoue', 'name_ja' => '井上 香奈', 'gender' => 'female', 'age' => 31, 'nat' => 'Japanese', 'role' => NpcRoleArchetype::SingleParent, 'need' => NpcNeedState::EmotionalCrisis],
-            ['name' => 'Maria Oliveira', 'name_ja' => 'マリア・オリベイラ', 'gender' => 'female', 'age' => 29, 'nat' => 'Brazilian', 'role' => NpcRoleArchetype::InternationalExpat, 'need' => NpcNeedState::SeekingCommunity],
-            ['name' => 'Tatsuya Kimura', 'name_ja' => '木村 達也', 'gender' => 'male', 'age' => 41, 'nat' => 'Japanese', 'role' => NpcRoleArchetype::Salaryman, 'need' => NpcNeedState::EmotionalCrisis],
-            ['name' => 'Sachiko Hayashi', 'name_ja' => '林 幸子', 'gender' => 'female', 'age' => 71, 'nat' => 'Japanese', 'role' => NpcRoleArchetype::ElderlyResident, 'need' => NpcNeedState::SickNeedsHealing],
-            ['name' => 'Kaito Shimizu', 'name_ja' => '清水 海斗', 'gender' => 'male', 'age' => 23, 'nat' => 'Japanese', 'role' => NpcRoleArchetype::UniversityStudent, 'need' => NpcNeedState::SeekingCommunity],
-        ];
-
-        $profile = $profiles[$idx % count($profiles)];
-        $isJapanese = $profile['nat'] === 'Japanese';
+        $profile = app(JapaneseNameRegistry::class)->generateUniqueResidentProfile((int) $session->id, $ward);
+        $isJapanese = ($profile['nationality'] ?? 'Japanese') === 'Japanese';
 
         // Realistic Japanese seeking (4–8 months) and baptism cost-counting (6–12 months) durations
         $targetSeekingMonths = $isJapanese ? (4 + ($idx % 4)) : 2;
@@ -1885,11 +1869,11 @@ class RealLifeSimulationService
         return Npc::create([
             'game_session_id' => $session->id,
             'ward_id' => $ward->id,
-            'name' => "{$profile['name']} #{$idx}",
+            'name' => $profile['name'],
             'name_ja' => $profile['name_ja'],
             'gender' => $profile['gender'],
             'age' => $profile['age'],
-            'nationality' => $profile['nat'],
+            'nationality' => $profile['nationality'] ?? 'Japanese',
             'role_archetype' => $profile['role'],
             'need_state' => $profile['need'],
             'status' => ($idx % 3 === 0) ? ReceptivityStatus::Red : ReceptivityStatus::Unreached,
@@ -1898,7 +1882,7 @@ class RealLifeSimulationService
             'seeking_months' => 0,
             'yellow_since_game_month' => null,
             'target_seeking_months' => $targetSeekingMonths,
-            'is_person_of_peace' => ($idx % 6 === 0),
+            'is_person_of_peace' => ($idx % 8 === 0), // Realistic rare PoP frequency (~12%)
             'is_baptized' => false,
             'baptism_status' => BaptismStatus::Uncommitted,
             'baptism_cost_months' => 0,
@@ -1909,7 +1893,7 @@ class RealLifeSimulationService
             'discipler_npc_id' => $anchorNpc?->id,
             'lat' => round((float) $ward->center_lat + $latOffset, 6),
             'lng' => round((float) $ward->center_lng + $lngOffset, 6),
-            'backstory' => "Resident in {$ward->name} ({$ward->name_ja}) connected through relational Oikos outreach in Month {$gameMonth}.",
+            'backstory' => $profile['backstory'] ?? "Resident in {$ward->name} ({$ward->name_ja}) connected through relational Oikos outreach in Month {$gameMonth}.",
         ]);
     }
 
