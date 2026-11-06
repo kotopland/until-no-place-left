@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\QueuedActionStatus;
 use App\Services\PersonAvatarService;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -610,18 +611,47 @@ class User extends Authenticatable
     {
         $today = now()->startOfDay();
         $isNewRealDay = ! $this->isPlayedToday();
+        $needsTickReset = ($this->next_weekly_tick_at === null || $this->next_weekly_tick_at->isPast());
 
         // Throttle updates: avoid redundant database write queries if touched within the last 15 seconds
-        if (! $isNewRealDay && $this->last_active_at && $this->last_active_at->diffInSeconds(now()) < 15) {
+        if (! $isNewRealDay && ! $needsTickReset && $this->last_active_at && $this->last_active_at->diffInSeconds(now()) < 15) {
             return;
         }
 
-        $this->update([
+        $updates = [
             'last_active_at' => now(),
             'last_played_real_date' => $today,
             'weeks_played_today' => $isNewRealDay ? 0 : $this->weeks_played_today,
             'days_played_today' => $isNewRealDay ? 0 : $this->days_played_today,
-        ]);
+        ];
+
+        // If the player's weekly tick timestamp is unset or in the past,
+        // and they have no pending actions waiting to be processed,
+        // start a fresh 15-minute countdown for their current week.
+        if ($needsTickReset) {
+            $hasPendingActions = QueuedMonthlyAction::where('user_id', $this->id)
+                ->where('game_month', $this->current_game_month ?: 1)
+                ->where('status', QueuedActionStatus::Pending)
+                ->where(function ($q): void {
+                    $q->where('game_week', '<=', $this->current_game_week ?: 1)
+                        ->orWhere('game_day', '<=', $this->current_game_day ?: 1);
+                })
+                ->exists();
+
+            if (! $hasPendingActions) {
+                $updates['next_weekly_tick_at'] = now()->addMinutes(15);
+                $this->next_weekly_tick_at = $updates['next_weekly_tick_at'];
+
+                if ($this->currentGameSession && ($this->currentGameSession->next_weekly_tick_at === null || $this->currentGameSession->next_weekly_tick_at->isPast() || $this->currentGameSession->next_daily_tick_at?->isPast())) {
+                    $this->currentGameSession->update([
+                        'next_weekly_tick_at' => now()->addMinutes(15),
+                        'next_daily_tick_at' => now()->addMinutes(15),
+                    ]);
+                }
+            }
+        }
+
+        $this->update($updates);
     }
 
     /**

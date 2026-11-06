@@ -7,6 +7,7 @@ namespace App\Livewire;
 use App\Enums\ChurchElement;
 use App\Enums\LeadershipTier;
 use App\Enums\MinistryActionType;
+use App\Enums\QueuedActionStatus;
 use App\Models\Church;
 use App\Models\GameSession;
 use App\Models\Npc;
@@ -203,11 +204,24 @@ class ChurchGenerationMap extends Component
             return;
         }
 
-        $user->update([
+        $userUpdates = [
             'action_points' => max(0, $user->action_points - $totalApCost),
             'consecutive_inactive_months' => 0,
             'last_played_game_month' => $user->current_game_month ?: 1,
-        ]);
+        ];
+
+        if ($user->next_weekly_tick_at === null || $user->next_weekly_tick_at->isPast()) {
+            $userUpdates['next_weekly_tick_at'] = now()->addMinutes(15);
+            $session = $user->currentGameSession;
+            if ($session && ($session->next_weekly_tick_at === null || $session->next_weekly_tick_at->isPast() || $session->next_daily_tick_at?->isPast())) {
+                $session->update([
+                    'next_weekly_tick_at' => now()->addMinutes(15),
+                    'next_daily_tick_at' => now()->addMinutes(15),
+                ]);
+            }
+        }
+
+        $user->update($userUpdates);
         $user->refresh();
 
         $targetWeek = $user->current_game_day > 4 ? min(4, (int) ceil($user->current_game_day / 7)) : ($user->current_game_week ?: 1);
@@ -222,7 +236,7 @@ class ChurchGenerationMap extends Component
             'action_type' => MinistryActionType::ChurchCircles,
             'target_npc_id' => $leaderNpc->id,
             'ap_cost' => $totalApCost,
-            'status' => 'pending',
+            'status' => QueuedActionStatus::Pending,
             'notes' => "Coaching {$church->name} (Gen {$church->generation}) in 3/3rds health and Acts 2 functions",
         ]);
 

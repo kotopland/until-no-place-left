@@ -210,6 +210,74 @@ test('automatic advanceDay in ActionQueuePlanner does not advance if player has 
         ->and($user->days_played_today)->toBe(2);
 });
 
+test('queuing an action when weekly tick timestamp was in the past resets 15-minute countdown and does not immediately auto-advance week', function () {
+    $session = GameSession::create([
+        'name' => 'Past Tick Session',
+        'code' => 'adv-past',
+        'current_game_month' => 1,
+        'current_game_week' => 1,
+        'current_game_day' => 1,
+        'weeks_processed_this_month' => 0,
+        'days_processed_this_month' => 0,
+        'calendar_date' => '2026-04-01',
+        'month_duration_minutes' => 720,
+        'next_tick_at' => now()->addHours(12),
+        'next_weekly_tick_at' => now()->subHours(2),
+        'is_active' => true,
+    ]);
+
+    $ward = Ward::first();
+
+    $user = User::factory()->create([
+        'current_game_session_id' => $session->id,
+        'home_ward_id' => $ward->id,
+        'current_game_month' => 1,
+        'current_game_week' => 1,
+        'current_game_day' => 1,
+        'weeks_processed_this_month' => 0,
+        'days_processed_this_month' => 0,
+        'last_active_at' => now(),
+        'weeks_played_today' => 0,
+        'days_played_today' => 0,
+        'last_played_real_date' => now()->startOfDay(),
+        'next_weekly_tick_at' => now()->subHours(2),
+        'action_points' => 26,
+        'max_action_points' => 26,
+        'weekly_action_points' => 20,
+        'daily_action_points' => 20,
+    ]);
+
+    // When mounting or active, countdown is refreshed
+    $user->touchActive();
+    expect($user->next_weekly_tick_at->isFuture())->toBeTrue()
+        ->and($user->isWeeklyTickDue)->toBeFalse();
+
+    // Now test scheduling a prayer walk in ActionQueuePlanner
+    $component = Livewire::actingAs($user)
+        ->test(ActionQueuePlanner::class)
+        ->set('selectedWardId', $ward->id)
+        ->call('selectWardPlatformAction', 'prayer_walk')
+        ->call('queueAction');
+
+    $user->refresh();
+
+    // 1 AP consumed for prayer walk, 25 AP remaining
+    expect($user->action_points)->toBe(25)
+        ->and($user->current_game_week)->toBe(1)
+        ->and($user->weeks_processed_this_month)->toBe(0)
+        ->and($user->next_weekly_tick_at->isFuture())->toBeTrue()
+        ->and($user->isWeeklyTickDue)->toBeFalse();
+
+    // An automatic tick call should NOT advance the week because the 15-minute window is active
+    $component->call('advanceWeek', false);
+
+    $user->refresh();
+
+    expect($user->current_game_week)->toBe(1)
+        ->and($user->weeks_processed_this_month)->toBe(0)
+        ->and($user->action_points)->toBe(25);
+});
+
 test('player is prevented from playing more than 30 days per real life day', function () {
     $session = GameSession::create([
         'name' => 'Daily Cap Session',

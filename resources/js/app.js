@@ -531,6 +531,10 @@ window.digitalClock = function (initialSeconds, nextTickIso, canAutoTick) {
 
         init() {
             this.recalcSeconds();
+            if (this.secondsLeft <= 0 && !this.canAutoTick) {
+                this.secondsLeft = 900;
+                this.nextTickTarget = Date.now() + 900000;
+            }
             this.timer = setInterval(() => {
                 this.tick();
             }, 1000);
@@ -546,16 +550,20 @@ window.digitalClock = function (initialSeconds, nextTickIso, canAutoTick) {
         tick() {
             this.recalcSeconds();
 
-            if (!this.canAutoTick) return;
-
             if (this.secondsLeft <= 0) {
-                // Countdown reached 00:00! Trigger automatic week tick (15 minutes)
-                this.secondsLeft = 900;
-                this.nextTickTarget = Date.now() + 900000;
-                if (this.$wire && typeof this.$wire.advanceWeek === 'function') {
-                    this.$wire.advanceWeek(false);
-                } else if (this.$wire && typeof this.$wire.advanceDay === 'function') {
-                    this.$wire.advanceDay(false);
+                if (this.canAutoTick) {
+                    // Countdown reached 00:00 with pending actions! Trigger automatic week tick (15 minutes)
+                    this.secondsLeft = 900;
+                    this.nextTickTarget = Date.now() + 900000;
+                    if (this.$wire && typeof this.$wire.advanceWeek === 'function') {
+                        this.$wire.advanceWeek(false);
+                    } else if (this.$wire && typeof this.$wire.advanceDay === 'function') {
+                        this.$wire.advanceDay(false);
+                    }
+                } else {
+                    // Reached 00:00 without pending actions: cycle into fresh 15-minute window rather than freezing at 00:00
+                    this.secondsLeft = 900;
+                    this.nextTickTarget = Date.now() + 900000;
                 }
             }
         },

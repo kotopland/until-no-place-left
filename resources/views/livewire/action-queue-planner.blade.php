@@ -288,7 +288,7 @@
 
                 <!-- Digital Clock Visualizer (15m Countdown) -->
                 <div 
-                    wire:key="digital-clock-{{ $player?->current_game_week }}-{{ $player?->weeks_processed_this_month }}-{{ $player?->weeks_played_today }}"
+                    wire:key="digital-clock-{{ $player?->current_game_week }}-{{ $player?->weeks_processed_this_month }}-{{ $player?->weeks_played_today }}-{{ ($hasPendingActionsThisWeek ?? false) ? 'pending' : 'idle' }}"
                     x-data="digitalClock({{ max(0, $player?->secondsUntilNextWeeklyTick ?? 900) }}, '{{ $player?->next_weekly_tick_at?->toIso8601String() }}', {{ (!($player?->hasReachedDailyPlayLimit ?? false) && ($player?->weeks_processed_this_month ?? 0) < 4 && ($hasPendingActionsThisWeek ?? false)) ? 'true' : 'false' }})"
                     x-init="init()"
                     class="border-l border-slate-200 dark:border-slate-800 pl-4 flex items-center gap-3"
