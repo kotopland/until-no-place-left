@@ -221,6 +221,12 @@
         </div>
     </header>
 
+    <!-- Educational & Entertainment Game Disclaimer Banner -->
+    <div class="bg-indigo-950/70 dark:bg-slate-900/90 border-b border-indigo-500/20 px-4 py-2.5 text-center text-xs text-slate-300 flex items-center justify-center gap-2">
+        <span>🎮</span>
+        <span><strong>Game Notice:</strong> This is simply a game for entertainment and educational purposes.</span>
+    </div>
+
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-24">
 
         <!-- HERO SECTION: Complete Game Overview & Rules Guide -->
@@ -1640,6 +1646,10 @@
         <div class="flex items-center justify-center gap-2">
             <img src="{{ asset('images/until-no-place-left-logo-small.png') }}" alt="Logo" class="w-6 h-6 rounded-lg object-contain">
             <span class="text-slate-300 font-bold">Nagoya Oikos: The Four Fields</span>
+        </div>
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-[11px] text-indigo-300 font-medium">
+            <span>🎮</span>
+            <span>This is simply a game for entertainment and educational purposes.</span>
         </div>
         <p>A multi-player movement simulation based on the Four Fields framework and Acts 2 Church Circles.</p>
         <p class="text-[11px] text-slate-600">Romans 15:23 • Mark 4:26-29 • 2 Timothy 2:2 • Matthew 28:18-20</p>

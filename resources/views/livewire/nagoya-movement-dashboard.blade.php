@@ -646,6 +646,12 @@
         </div>
     </header>
 
+    <!-- Educational & Entertainment Game Disclaimer Banner -->
+    <div class="bg-indigo-950/70 dark:bg-slate-900/90 border-b border-indigo-500/20 px-4 py-2 text-center text-xs text-slate-300 flex items-center justify-center gap-2">
+        <span>🎮</span>
+        <span><strong>Game Notice:</strong> This is simply a game for entertainment and educational purposes.</span>
+    </div>
+
     <!-- Main Content Area -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
         <!-- Toast Notification Listener -->
@@ -1141,6 +1147,21 @@
             <livewire:game-chat :key="'chat-'.$session?->id.'-'.$showcaseRevision" />
         @endif
     </main>
+
+    <!-- Persistent Game Disclaimer Footer -->
+    <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-950/60 py-4 px-4 text-center text-xs text-slate-500 dark:text-slate-400">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px]">
+            <div class="flex items-center gap-2">
+                <span>🎮</span>
+                <span class="font-medium text-slate-700 dark:text-slate-300">
+                    <strong>Game Notice:</strong> This is simply a game for entertainment and educational purposes.
+                </span>
+            </div>
+            <div class="text-slate-400 dark:text-slate-500">
+                Nagoya Oikos: The Four Fields Simulation • Until No Place Left
+            </div>
+        </div>
+    </footer>
 
     <!-- Modal: 7-Stage Real-Life Longitudinal Showcase Comparison Table -->
     @if($showShowcaseComparisonModal)

@@ -205,6 +205,12 @@
         </div>
     </header>
 
+    <!-- Educational & Entertainment Game Disclaimer Banner -->
+    <div class="bg-indigo-950/70 dark:bg-slate-900/90 border-b border-indigo-500/20 px-4 py-2.5 text-center text-xs text-slate-300 flex items-center justify-center gap-2">
+        <span>🎮</span>
+        <span><strong>Game Notice:</strong> This is simply a game for entertainment and educational purposes.</span>
+    </div>
+
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-24">
 
         <!-- ========================================== -->
@@ -764,14 +770,19 @@
                 </div>
             </div>
 
-            <div class="flex flex-wrap items-center justify-center gap-4 text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                <a href="{{ url('/') }}" class="hover:text-slate-900 dark:hover:text-white transition">Root Invitation</a>
-                <span class="text-slate-300 dark:text-slate-700">&bull;</span>
-                <a href="{{ route('welcome') }}" class="hover:text-cyan-600 dark:hover:text-cyan-400 transition">Game Overview &amp; Rules</a>
-                <span class="text-slate-300 dark:text-slate-700">&bull;</span>
-                <a href="{{ route('simulate') }}" class="hover:text-amber-600 dark:hover:text-amber-400 transition">15-Year Simulation</a>
-                <span class="text-slate-300 dark:text-slate-700">&bull;</span>
-                <a href="{{ route('login') }}" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">Sign In / Join</a>
+            <div class="flex flex-col sm:flex-row items-center gap-4">
+                <div class="flex flex-wrap items-center justify-center gap-4 text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                    <a href="{{ url('/') }}" class="hover:text-slate-900 dark:hover:text-white transition">Root Invitation</a>
+                    <span class="text-slate-300 dark:text-slate-700">&bull;</span>
+                    <a href="{{ route('welcome') }}" class="hover:text-cyan-600 dark:hover:text-cyan-400 transition">Game Overview &amp; Rules</a>
+                    <span class="text-slate-300 dark:text-slate-700">&bull;</span>
+                    <a href="{{ route('simulate') }}" class="hover:text-amber-600 dark:hover:text-amber-400 transition">15-Year Simulation</a>
+                    <span class="text-slate-300 dark:text-slate-700">&bull;</span>
+                    <a href="{{ route('login') }}" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">Sign In / Join</a>
+                </div>
+                <span class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] text-indigo-600 dark:text-indigo-400 font-medium whitespace-nowrap">
+                    🎮 Game for entertainment &amp; educational purposes
+                </span>
             </div>
         </div>
     </footer>

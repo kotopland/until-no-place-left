@@ -67,6 +67,11 @@
                 <span>Return to Nagoya Movement</span>
             </a>
         </div>
+
+        <div class="pt-2 text-center text-[11px] text-slate-500 flex items-center justify-center gap-1.5 border-t border-slate-800/80">
+            <span>🎮</span>
+            <span>This is simply a game for entertainment and educational purposes.</span>
+        </div>
     </div>
 </body>
 </html>

@@ -266,7 +266,8 @@ test('emails sent to players contain the unsubscribe from all email notification
     $monthlyHtml = (string) $monthlyMail->render();
 
     expect($monthlyHtml)->toContain('Unsubscribe from all email notifications')
-        ->and($monthlyHtml)->toContain($signedOptOutUrl);
+        ->and($monthlyHtml)->toContain($signedOptOutUrl)
+        ->and($monthlyHtml)->toContain('simply a game for entertainment and educational purposes');
 
     // 2. Player Inactivity Reminder Notification
     $inactivityNotif = new PlayerInactivityReminderNotification(2);
@@ -274,7 +275,8 @@ test('emails sent to players contain the unsubscribe from all email notification
     $inactivityHtml = (string) $inactivityMail->render();
 
     expect($inactivityHtml)->toContain('Unsubscribe from all email notifications')
-        ->and($inactivityHtml)->toContain($signedOptOutUrl);
+        ->and($inactivityHtml)->toContain($signedOptOutUrl)
+        ->and($inactivityHtml)->toContain('simply a game for entertainment and educational purposes');
 
     // 3. Magic Login Link Notification
     $magicNotif = new MagicLoginLinkNotification(url('/auth/magic-link?test=1'), $player->name);
@@ -282,7 +284,8 @@ test('emails sent to players contain the unsubscribe from all email notification
     $magicHtml = (string) $magicMail->render();
 
     expect($magicHtml)->toContain('Unsubscribe from all email notifications')
-        ->and($magicHtml)->toContain($signedOptOutUrl);
+        ->and($magicHtml)->toContain($signedOptOutUrl)
+        ->and($magicHtml)->toContain('simply a game for entertainment and educational purposes');
 });
 
 test('player can opt out of email notifications via POST request for one-click unsubscribe', function () {
@@ -302,4 +305,35 @@ test('player can opt out of email notifications via POST request for one-click u
 
     $player->refresh();
     expect($player->notify_email)->toBeFalse();
+});
+
+test('web pages clearly state that this is simply a game for entertainment and educational purposes', function () {
+    // 1. Root Invitation Page
+    $this->get(route('invitation'))
+        ->assertOk()
+        ->assertSee('simply a game for entertainment and educational purposes');
+
+    // 2. Rules / Welcome Page
+    $this->get(route('welcome'))
+        ->assertOk()
+        ->assertSee('simply a game for entertainment and educational purposes');
+
+    // 3. Login / Register Page
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertSee('simply a game for entertainment and educational purposes');
+
+    // 4. Opt-Out Page
+    $player = User::factory()->create([
+        'current_game_session_id' => $this->session->id,
+    ]);
+    $this->get($player->signedNotificationOptOutUrl())
+        ->assertOk()
+        ->assertSee('simply a game for entertainment and educational purposes');
+
+    // 5. Dashboard (authenticated)
+    $this->actingAs($player)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee('simply a game for entertainment and educational purposes');
 });

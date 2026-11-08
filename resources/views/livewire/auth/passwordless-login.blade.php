@@ -152,9 +152,15 @@
                 <div class="space-y-6">
                     <!-- Header -->
                     <div class="text-center space-y-2">
-                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-800 text-[11px] font-bold text-indigo-400 mb-1">
-                            <span>🔑</span>
-                            <span>Passwordless Authentication</span>
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/90 border border-slate-700/70 text-[11px] font-medium text-slate-300 mb-1">
+                            <span>🎮</span>
+                            <span>This is simply a game for entertainment and educational purposes.</span>
+                        </div>
+                        <div>
+                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-800 text-[11px] font-bold text-indigo-400 mb-1">
+                                <span>🔑</span>
+                                <span>Passwordless Authentication</span>
+                            </div>
                         </div>
                         <h2 class="text-2xl font-black text-white tracking-tight">
                             {{ $isExistingUser ? 'Welcome Back, Disciple' : 'Create Your Player Name' }}
@@ -329,6 +335,11 @@
                     </div>
                 </div>
             @endif
+        </div>
+
+        <div class="text-center mt-6 text-xs text-slate-500 flex items-center justify-center gap-2">
+            <span>🎮</span>
+            <span>This is simply a game for entertainment and educational purposes.</span>
         </div>
     </div>
 </div>
