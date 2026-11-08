@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\MonthlyReport;
+use App\Notifications\Concerns\AttachesUnsubscribeButton;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -11,6 +12,7 @@ use Illuminate\Notifications\Notification;
 
 class MonthlyMovementReportNotification extends Notification implements ShouldQueue
 {
+    use AttachesUnsubscribeButton;
     use Queueable;
 
     /**
@@ -78,9 +80,10 @@ class MonthlyMovementReportNotification extends Notification implements ShouldQu
             }
         }
 
-        return $mail
-            ->action('Open Nagoya Movement HQ', url('/'))
-            ->line('Your 12 monthly Action Points (Time & Energy Bandwidth) have been fully restored. Plan your next month of relational sowing now!');
+        $mail->action('Open Nagoya Movement HQ', url('/'))
+            ->line('Your Action Points (Time & Energy Bandwidth) have been fully restored. Plan your next month of relational sowing now!');
+
+        return $this->attachUnsubscribeButton($mail, $notifiable, 'monthly movement reports');
     }
 
     /**

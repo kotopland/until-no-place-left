@@ -5,8 +5,11 @@ declare(strict_types=1);
 use App\Console\Commands\SendInactivityRemindersCommand;
 use App\Livewire\NagoyaMovementDashboard;
 use App\Models\GameSession;
+use App\Models\MonthlyReport;
 use App\Models\User;
 use App\Models\Ward;
+use App\Notifications\MagicLoginLinkNotification;
+use App\Notifications\MonthlyMovementReportNotification;
 use App\Notifications\PlayerInactivityReminderNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -231,4 +234,72 @@ test('player can toggle notification preferences from livewire dashboard profile
 
     $player->refresh();
     expect($player->notify_email)->toBeTrue();
+});
+
+test('emails sent to players contain the unsubscribe from all email notifications button and signed link', function () {
+    $player = User::factory()->create([
+        'name' => 'Paul Missionary',
+        'email' => 'paul@example.com',
+        'notify_email' => true,
+        'current_game_session_id' => $this->session->id,
+    ]);
+
+    $report = MonthlyReport::create([
+        'user_id' => $player->id,
+        'game_session_id' => $this->session->id,
+        'game_month' => 1,
+        'summary_title' => 'Month 1 Movement Report',
+        'generational_score_gained' => 50,
+        'total_generational_score' => 50,
+        'disciples_multiplied_count' => 1,
+        'churches_planted_count' => 0,
+        'answered_prayers_json' => ['count' => 0],
+        'highlights_json' => ['First seeker gathering started'],
+        'coach_tips_json' => [['tip' => 'Keep prayer walks active']],
+    ]);
+
+    $signedOptOutUrl = $player->signedNotificationOptOutUrl();
+
+    // 1. Monthly Movement Report Notification
+    $monthlyNotif = new MonthlyMovementReportNotification($report);
+    $monthlyMail = $monthlyNotif->toMail($player);
+    $monthlyHtml = (string) $monthlyMail->render();
+
+    expect($monthlyHtml)->toContain('Unsubscribe from all email notifications')
+        ->and($monthlyHtml)->toContain($signedOptOutUrl);
+
+    // 2. Player Inactivity Reminder Notification
+    $inactivityNotif = new PlayerInactivityReminderNotification(2);
+    $inactivityMail = $inactivityNotif->toMail($player);
+    $inactivityHtml = (string) $inactivityMail->render();
+
+    expect($inactivityHtml)->toContain('Unsubscribe from all email notifications')
+        ->and($inactivityHtml)->toContain($signedOptOutUrl);
+
+    // 3. Magic Login Link Notification
+    $magicNotif = new MagicLoginLinkNotification(url('/auth/magic-link?test=1'), $player->name);
+    $magicMail = $magicNotif->toMail($player);
+    $magicHtml = (string) $magicMail->render();
+
+    expect($magicHtml)->toContain('Unsubscribe from all email notifications')
+        ->and($magicHtml)->toContain($signedOptOutUrl);
+});
+
+test('player can opt out of email notifications via POST request for one-click unsubscribe', function () {
+    $player = User::factory()->create([
+        'name' => 'Barnabas',
+        'email' => 'barnabas@example.com',
+        'notify_email' => true,
+        'current_game_session_id' => $this->session->id,
+    ]);
+
+    $signedOptOutUrl = $player->signedNotificationOptOutUrl();
+
+    $response = $this->post($signedOptOutUrl);
+
+    $response->assertOk();
+    $response->assertSee('Opted Out');
+
+    $player->refresh();
+    expect($player->notify_email)->toBeFalse();
 });

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Models\User;
+use App\Notifications\Concerns\AttachesUnsubscribeButton;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\URL;
 
 class PlayerInactivityReminderNotification extends Notification implements ShouldQueue
 {
+    use AttachesUnsubscribeButton;
     use Queueable;
 
     /**
@@ -70,12 +72,11 @@ class PlayerInactivityReminderNotification extends Notification implements Shoul
             ? route('login')
             : url('/');
 
-        return $mail
-            ->line('Your **20 Action Points (AP)** are ready to steward into prayer walking, sharing the 3 Circles Gospel, and discipling local Japanese seekers.')
+        $mail->line('Your **20 Action Points (AP)** are ready to steward into prayer walking, sharing the 3 Circles Gospel, and discipling local Japanese seekers.')
             ->action('⚡ Return to Nagoya Action HQ', $actionUrl)
-            ->line('*"The harvest is plentiful, but the workers are few. Therefore pray earnestly to the Lord of the harvest to send out workers into His harvest." — Matthew 9:37-38*')
-            ->line('---')
-            ->line("Prefer not to receive these movement reminder emails? You can [opt out of email notifications]({$optOutUrl}) at any time.");
+            ->line('*"The harvest is plentiful, but the workers are few. Therefore pray earnestly to the Lord of the harvest to send out workers into His harvest." — Matthew 9:37-38*');
+
+        return $this->attachUnsubscribeButton($mail, $notifiable, 'movement reminder emails');
     }
 
     /**

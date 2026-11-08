@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
 /**
@@ -707,6 +708,14 @@ class User extends Authenticatable
         }
 
         return true;
+    }
+
+    /**
+     * Get the cryptographically signed URL to opt out of all email notifications.
+     */
+    public function signedNotificationOptOutUrl(): string
+    {
+        return URL::signedRoute('notifications.opt-out', ['user' => $this->id]);
     }
 
     /**

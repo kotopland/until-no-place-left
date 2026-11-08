@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -14,11 +15,18 @@ class NotificationPreferenceController extends Controller
     /**
      * Opt out of all email notifications via signed link.
      */
-    public function optOut(Request $request, User $user): View
+    public function optOut(Request $request, User $user): View|JsonResponse
     {
         $user->update([
             'notify_email' => false,
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Successfully opted out of all email notifications.',
+            ]);
+        }
 
         return view('notifications.opt-out-confirmed', [
             'user' => $user,

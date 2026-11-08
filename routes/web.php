@@ -30,7 +30,7 @@ Route::middleware('guest')->group(function (): void {
 Route::get('/auth/magic-link', [PasswordlessAuthController::class, 'verify'])->name('auth.magic-link');
 
 // Notification Opt-Out & Opt-In (Cryptographically Signed Links)
-Route::get('/notifications/opt-out/{user}', [NotificationPreferenceController::class, 'optOut'])
+Route::match(['get', 'post'], '/notifications/opt-out/{user}', [NotificationPreferenceController::class, 'optOut'])
     ->name('notifications.opt-out')
     ->middleware('signed');
 

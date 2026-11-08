@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\AttachesUnsubscribeButton;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class MagicLoginLinkNotification extends Notification
 {
+    use AttachesUnsubscribeButton;
     use Queueable;
 
     /**
@@ -49,10 +51,11 @@ class MagicLoginLinkNotification extends Notification
             $mail->line('We received a request to access your Nagoya Oikos mission dashboard.');
         }
 
-        return $mail
-            ->line('Click the secure button below to instantly sign in to your mission headquarters without passwords:')
+        $mail->line('Click the secure button below to instantly sign in to your mission headquarters without passwords:')
             ->action('⚡ Enter Nagoya Mission', $this->url)
             ->line('**Security Notice:** This link is cryptographically signed, valid for 30 minutes, and can only be used by you.')
             ->line('If you did not request this link, you can safely disregard this email.');
+
+        return $this->attachUnsubscribeButton($mail, $notifiable, 'emails from Nagoya Oikos');
     }
 }

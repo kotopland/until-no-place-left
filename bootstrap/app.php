@@ -16,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             AddMailPreviewOverlayToResponse::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            'notifications/opt-out/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
