@@ -565,8 +565,6 @@ html {
 :root:not(.dark) button.bg-purple-600,
 :root:not(.dark) button.bg-orange-500,
 :root:not(.dark) button.bg-orange-600,
-:root:not(.dark) button.bg-slate-900,
-:root:not(.dark) button.bg-slate-800,
 :root:not(.dark) button.bg-gradient-to-r,
 :root:not(.dark) button.bg-gradient-to-tr,
 :root:not(.dark) a.bg-indigo-600,
@@ -614,6 +612,25 @@ html {
 :root:not(.dark) a .text-white,
 :root:not(.dark) button.text-white,
 :root:not(.dark) a.text-white,
+:root:not(.dark) .keep-white,
+:root:not(.dark) .keep-white *,
+:root:not(.dark) .led-display,
+:root:not(.dark) .led-display * {
+    color: inherit;
+}
+
+:root:not(.dark) .text-emerald-400.led-digit {
+    color: #34d399 !important;
+}
+
+:root:not(.dark) .text-amber-400.led-digit {
+    color: #fbbf24 !important;
+}
+
+:root:not(.dark) .text-indigo-400.led-digit {
+    color: #818cf8 !important;
+}
+
 :root:not(.dark) .keep-white,
 :root:not(.dark) .keep-white * {
     color: #ffffff !important;

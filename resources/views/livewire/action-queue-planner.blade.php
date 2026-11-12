@@ -300,17 +300,17 @@
                         </div>
                         
                         <!-- Digital LED Clock Face -->
-                        <div class="bg-black/95 border border-slate-800/90 rounded-xl px-2.5 py-1 flex items-center justify-center shadow-[inset_0_2px_6px_rgba(0,0,0,0.9)]">
+                        <div class="led-display bg-black/95 border border-slate-800/90 rounded-xl px-2.5 py-1 flex items-center justify-center shadow-[inset_0_2px_6px_rgba(0,0,0,0.9)]">
                             @if($player?->hasReachedDailyPlayLimit ?? false)
-                                <div class="font-mono text-base font-black tracking-widest text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]">
+                                <div class="font-mono text-base font-black tracking-widest text-amber-400 led-digit drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]">
                                     <span>4</span><span class="font-bold">:</span><span>4</span>
                                 </div>
                             @elseif(($player?->weeks_processed_this_month ?? 0) >= 4)
-                                <div class="font-mono text-base font-black tracking-widest text-indigo-400 drop-shadow-[0_0_6px_rgba(129,140,248,0.6)]">
+                                <div class="font-mono text-base font-black tracking-widest text-indigo-400 led-digit drop-shadow-[0_0_6px_rgba(129,140,248,0.6)]">
                                     <span>MONTH</span>
                                 </div>
                             @else
-                                <div class="font-mono text-base font-black tracking-widest text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.7)] flex items-center">
+                                <div class="font-mono text-base font-black tracking-widest text-emerald-400 led-digit drop-shadow-[0_0_8px_rgba(52,211,153,0.7)] flex items-center">
                                     <span class="tabular-nums" x-text="minutes">14</span>
                                     <span class="font-bold animate-pulse text-emerald-300">:</span>
                                     <span class="tabular-nums" x-text="seconds">59</span>
@@ -423,34 +423,39 @@
     </div>
 
     <!-- Action HQ Mode / Sub-Menu Navigation Switcher -->
-    <div class="flex items-center justify-between gap-3 p-1.5 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl mb-4 shadow-sm">
-        <div class="flex items-center gap-1.5 flex-wrap">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl mb-4 shadow-sm">
+        <div class="flex items-center gap-2 flex-wrap">
             <!-- Sub-tab 1: Field Actions (Steps 1, 2, 3) -->
             <button 
                 type="button" 
                 wire:click="setHqSubView('planner')" 
-                class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer {{ $hqSubView === 'planner' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400/50' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80' }}"
+                class="px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer {{ $hqSubView === 'planner' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 ring-2 ring-indigo-400/40' : 'bg-white dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/80' }}"
             >
-                <span>🎯</span>
-                <span>Field Actions (Steps 1–3)</span>
+                <span class="text-base">🎯</span>
+                <span class="tracking-wide">Field Actions (Steps 1–3)</span>
+                @if($queuedActions->count() > 0)
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black {{ $hqSubView === 'planner' ? 'bg-indigo-800 text-white' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300' }}">
+                        {{ $queuedActions->count() }} queued
+                    </span>
+                @endif
             </button>
 
             <!-- Sub-tab 2: Spiritual Rhythms & Movement Retreats -->
             <button 
                 type="button" 
                 wire:click="setHqSubView('rhythms')" 
-                class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer {{ $hqSubView === 'rhythms' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400/50' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80' }}"
+                class="px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer {{ $hqSubView === 'rhythms' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 ring-2 ring-indigo-400/40' : 'bg-white dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/80' }}"
             >
-                <span>🕊️</span>
-                <span>Spiritual Rhythms &amp; Retreats</span>
+                <span class="text-base">🕊️</span>
+                <span class="tracking-wide">Spiritual Rhythms &amp; Retreats</span>
                 @if($isDayBlocked)
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40 flex items-center gap-1 animate-pulse">
                         <span>⛔</span>
                         <span>Active</span>
                     </span>
                 @else
-                    <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-transparent">
-                        4 Rhythms
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold {{ $hqSubView === 'rhythms' ? 'bg-indigo-800 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300' }}">
+                        5 Rhythms
                     </span>
                 @endif
             </button>
@@ -690,17 +695,17 @@
         @endif
 
     <!-- Mobile Step Funnel Navigation Bar (Visible only on mobile/tablet, hidden on lg screens) -->
-    <div class="block lg:hidden bg-slate-900/90 border border-slate-800 rounded-2xl p-2 shadow-lg mb-2">
+    <div class="block lg:hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-2 shadow-md mb-2">
         <div class="flex items-center justify-between gap-1.5">
             <!-- Step 1 Button: Ward -->
             <button 
                 type="button" 
                 @click="mobileStep = 1; $wire.setMobileStep(1)"
                 class="flex-1 py-2 px-1.5 rounded-xl text-center transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer"
-                :class="mobileStep === 1 ? 'bg-indigo-600 text-white shadow-md font-bold ring-1 ring-indigo-400' : 'bg-slate-800/60 text-slate-400 hover:text-white'"
+                :class="mobileStep === 1 ? 'bg-indigo-600 text-white shadow-md font-bold ring-2 ring-indigo-400' : 'bg-white dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white border border-slate-200 dark:border-slate-700'"
             >
-                <span class="text-[9px] uppercase tracking-wider flex items-center gap-1 opacity-80">
-                    <span class="w-3.5 h-3.5 rounded-full bg-white/20 inline-flex items-center justify-center text-[8px] font-bold">1</span>
+                <span class="text-[9px] uppercase tracking-wider flex items-center gap-1 opacity-90">
+                    <span class="w-3.5 h-3.5 rounded-full inline-flex items-center justify-center text-[8px] font-bold" :class="mobileStep === 1 ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'">1</span>
                     <span>Ward</span>
                 </span>
                 <span class="text-xs font-bold truncate max-w-[95px]">
@@ -708,17 +713,17 @@
                 </span>
             </button>
 
-            <span class="text-slate-600 text-xs">➔</span>
+            <span class="text-slate-400 dark:text-slate-600 text-xs font-bold">➔</span>
 
             <!-- Step 2 Button: Residents -->
             <button 
                 type="button" 
                 @click="mobileStep = 2; $wire.setMobileStep(2)"
                 class="flex-1 py-2 px-1.5 rounded-xl text-center transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer"
-                :class="mobileStep === 2 ? 'bg-indigo-600 text-white shadow-md font-bold ring-1 ring-indigo-400' : 'bg-slate-800/60 text-slate-400 hover:text-white'"
+                :class="mobileStep === 2 ? 'bg-indigo-600 text-white shadow-md font-bold ring-2 ring-indigo-400' : 'bg-white dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white border border-slate-200 dark:border-slate-700'"
             >
-                <span class="text-[9px] uppercase tracking-wider flex items-center gap-1 opacity-80">
-                    <span class="w-3.5 h-3.5 rounded-full bg-white/20 inline-flex items-center justify-center text-[8px] font-bold">2</span>
+                <span class="text-[9px] uppercase tracking-wider flex items-center gap-1 opacity-90">
+                    <span class="w-3.5 h-3.5 rounded-full inline-flex items-center justify-center text-[8px] font-bold" :class="mobileStep === 2 ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'">2</span>
                     <span>People</span>
                 </span>
                 <span class="text-xs font-bold truncate max-w-[95px]">
@@ -730,20 +735,20 @@
                 </span>
             </button>
 
-            <span class="text-slate-600 text-xs">➔</span>
+            <span class="text-slate-400 dark:text-slate-600 text-xs font-bold">➔</span>
 
             <!-- Step 3 Button: Action & Queue -->
             <button 
                 type="button" 
                 @click="mobileStep = 3; $wire.setMobileStep(3)"
                 class="flex-1 py-2 px-1.5 rounded-xl text-center transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer"
-                :class="mobileStep === 3 ? 'bg-indigo-600 text-white shadow-md font-bold ring-1 ring-indigo-400' : 'bg-slate-800/60 text-slate-400 hover:text-white'"
+                :class="mobileStep === 3 ? 'bg-indigo-600 text-white shadow-md font-bold ring-2 ring-indigo-400' : 'bg-white dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white border border-slate-200 dark:border-slate-700'"
             >
                 <span class="text-[9px] uppercase tracking-wider flex items-center gap-1 opacity-90">
-                    <span class="w-3.5 h-3.5 rounded-full bg-white/20 inline-flex items-center justify-center text-[8px] font-bold">3</span>
+                    <span class="w-3.5 h-3.5 rounded-full inline-flex items-center justify-center text-[8px] font-bold" :class="mobileStep === 3 ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'">3</span>
                     <span>Queue</span>
                 </span>
-                <span class="text-xs font-bold truncate max-w-[95px] text-amber-300">
+                <span class="text-xs font-bold truncate max-w-[95px]" :class="mobileStep === 3 ? 'text-amber-200' : 'text-amber-600 dark:text-amber-400'">
                     {{ $player->action_points ?? 12 }} AP left
                 </span>
             </button>
@@ -1414,106 +1419,205 @@
                     </div>
                 @endif
 
-                <!-- Action Type Selector -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3">
-                    @foreach($actionTypes as $action)
-                        @php
-                            $isEligible = $action->isEligibleFor($selectedNpc);
-                            $ineligibilityReason = $action->ineligibilityReason($selectedNpc);
-                            if ($action === \App\Enums\MinistryActionType::IronOnIron && $isEligible) {
-                                if (($totalIoIToday ?? 0) >= 3) {
-                                    $isEligible = false;
-                                    $ineligibilityReason = 'Daily Iron on Iron limit reached: max 3 sessions allowed per day (3/3 used today).';
-                                } elseif ($selectedNpc && in_array($selectedNpc->id, $doneNpcIdsToday ?? [], true)) {
-                                    $isEligible = false;
-                                    $ineligibilityReason = 'You have already scheduled Iron on Iron with '.$selectedNpc->displayName.' today (max 1 per person per day).';
-                                }
+                <!-- Action Type Selector with Progressive Disclosure -->
+                @php
+                    $eligibleActionList = [];
+                    $lockedActionList = [];
+                    foreach ($actionTypes as $action) {
+                        $isEligible = $action->isEligibleFor($selectedNpc);
+                        if ($action === \App\Enums\MinistryActionType::IronOnIron && $isEligible) {
+                            if (($totalIoIToday ?? 0) >= 3 || ($selectedNpc && in_array($selectedNpc->id, $doneNpcIdsToday ?? [], true))) {
+                                $isEligible = false;
                             }
-                            $isSelected = $selectedActionType === $action->value;
-                            $isRecommended = $selectedNpc && ($recommendedActionType === $action->value);
-                        @endphp
-                        <label 
-                            @if($isEligible)
-                                @click="scrollToQueue()"
+                        }
+                        if ($isEligible) {
+                            $eligibleActionList[] = $action;
+                        } else {
+                            $lockedActionList[] = $action;
+                        }
+                    }
+                @endphp
+
+                <div x-data="{ showFutureActions: false }" class="mb-3">
+                    <!-- Available Actions Grid (Immediately available to play) -->
+                    <div class="mb-2">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                <span>⚡</span>
+                                <span>Available Actions ({{ count($eligibleActionList) }})</span>
+                            </span>
+                            @if(count($lockedActionList) > 0)
+                                <button 
+                                    type="button" 
+                                    @click="showFutureActions = !showFutureActions" 
+                                    class="text-xs font-bold text-indigo-700 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 flex items-center gap-1 cursor-pointer"
+                                >
+                                    <span x-text="showFutureActions ? 'Hide Locked Actions' : 'Show Future Actions (' + {{ count($lockedActionList) }} + ')'">Show Future Actions ({{ count($lockedActionList) }})</span>
+                                    <span x-text="showFutureActions ? '▲' : '▼'">▼</span>
+                                </button>
                             @endif
-                            class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all relative {{ ! $isEligible ? 'bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-900/40 dark:border-slate-800/60 dark:text-slate-400 cursor-not-allowed' : ($isSelected ? 'bg-emerald-50 border-2 border-emerald-500 text-slate-900 shadow-md ring-2 ring-emerald-500/30 cursor-pointer dark:bg-slate-800 dark:border-emerald-400 dark:text-white dark:ring-emerald-500/40' : 'bg-white border-slate-200 text-slate-800 hover:border-slate-300 hover:bg-slate-50 cursor-pointer dark:bg-slate-800/40 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-700') }}"
-                            title="{{ $isEligible ? $action->description() : 'Locked: '.$ineligibilityReason }}"
-                        >
-                            <input 
-                                type="radio" 
-                                name="action_type" 
-                                value="{{ $action->value }}" 
-                                wire:model.live="selectedActionType"
-                                @disabled(! $isEligible)
-                                class="mt-1 text-emerald-500 focus:ring-emerald-500 disabled:opacity-40"
-                            >
-                            <div class="min-w-0 flex-1">
-                                <div class="flex items-start justify-between gap-1.5">
-                                    <span class="text-xs font-bold leading-snug break-words flex items-center gap-1 {{ ! $isEligible ? 'text-slate-800 dark:text-slate-200' : 'text-slate-950 dark:text-white' }}">
-                                        <span>{{ $action->icon() }}</span>
-                                        <span>
-                                            @if($action === \App\Enums\MinistryActionType::PrayerWalk && $selectedNpc)
-                                                Prayer Walk together with {{ $selectedNpc->displayName }}
-                                            @else
-                                                {{ $action->label() }}
-                                            @endif
-                                        </span>
-                                    </span>
-                                    <div class="flex items-center gap-1 shrink-0 flex-wrap justify-end">
-                                        @if($isSelected && $isEligible)
-                                            <span class="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-emerald-500 text-slate-950 shadow-sm flex items-center gap-0.5">
-                                                <span>✓</span>
-                                                <span>SELECTED</span>
-                                            </span>
-                                        @endif
-                                        @if($isRecommended && ! $isSelected)
-                                            <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40 flex items-center gap-0.5" title="Recommended action for this person">
-                                                <span>💡</span>
-                                                <span>Recommended</span>
-                                            </span>
-                                        @endif
-                                        @if(! $isEligible)
-                                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-800/60 flex items-center gap-0.5" title="{{ $ineligibilityReason }}">
-                                                <span>🔒</span>
-                                                <span>Locked</span>
-                                            </span>
-                                        @endif
-                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ $isSelected ? 'bg-slate-900 text-amber-300 border border-slate-800 dark:bg-slate-950 dark:text-amber-300 dark:border-slate-700' : 'bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-900/90 dark:text-amber-400 dark:border-slate-700/50' }} flex items-center gap-1">
-                                            <span>{{ $action->apCost() + $commuteApCost }} AP</span>
-                                            @if($commuteApCost > 0)
-                                                <span class="text-[9px] text-amber-700 dark:text-amber-300 font-normal" title="Includes +{{ $commuteApCost }} AP transit cost from your home base">(+{{ $commuteApCost }})</span>
-                                            @endif
-                                        </span>
-                                    </div>
-                                </div>
+                        </div>
 
-                                @if($action === \App\Enums\MinistryActionType::PrayerWalk && $selectedNpc && $isEligible)
-                                    <div class="text-[10px] text-emerald-700 dark:text-emerald-400/90 mt-1 leading-tight">
-                                        👣 Joint harvest prayer walk (MAWL). Builds trust (+25%) & covers their Oikos.
-                                    </div>
-                                @endif
-
-                                @if(! $isEligible)
-                                    <div class="text-[10px] text-rose-800 dark:text-rose-400 mt-1 font-semibold leading-tight">
-                                        {{ $ineligibilityReason }}
-                                    </div>
-                                @endif
-
-                                <div class="flex items-center justify-between gap-1 mt-1.5">
-                                    <span class="text-[10px] text-slate-600 dark:text-slate-400 font-semibold truncate">{{ $action->fieldName() }}</span>
-                                    <button 
-                                        type="button" 
-                                        wire:click.stop="openActionInfoModal('{{ $action->value }}')" 
-                                        class="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-300 dark:bg-slate-900/90 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-white dark:border-slate-700/60 text-[9px] font-bold transition cursor-pointer flex items-center gap-1 shrink-0"
-                                        title="View descriptive text & strategy for {{ $action->label() }}"
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            @foreach($eligibleActionList as $action)
+                                @php
+                                    $isSelected = $selectedActionType === $action->value;
+                                    $isRecommended = $selectedNpc && ($recommendedActionType === $action->value);
+                                @endphp
+                                <label 
+                                    @click="scrollToQueue()"
+                                    class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all relative {{ $isSelected ? 'bg-emerald-50 border-2 border-emerald-500 text-slate-900 shadow-md ring-2 ring-emerald-500/30 cursor-pointer dark:bg-slate-800 dark:border-emerald-400 dark:text-white dark:ring-emerald-500/40' : 'bg-white border-slate-200 text-slate-800 hover:border-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer dark:bg-slate-800/40 dark:border-slate-800 dark:text-slate-300 dark:hover:border-slate-700' }}"
+                                    title="{{ $action->description() }}"
+                                >
+                                    <input 
+                                        type="radio" 
+                                        name="action_type" 
+                                        value="{{ $action->value }}" 
+                                        wire:model.live="selectedActionType"
+                                        class="mt-1 text-emerald-500 focus:ring-emerald-500"
                                     >
-                                        <span>ℹ️</span>
-                                        <span>Info</span>
-                                    </button>
-                                </div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-start justify-between gap-1.5">
+                                            <span class="text-xs font-bold leading-snug break-words flex items-center gap-1 text-slate-950 dark:text-white">
+                                                <span>{{ $action->icon() }}</span>
+                                                <span>
+                                                    @if($action === \App\Enums\MinistryActionType::PrayerWalk && $selectedNpc)
+                                                        Prayer Walk together with {{ $selectedNpc->displayName }}
+                                                    @else
+                                                        {{ $action->label() }}
+                                                    @endif
+                                                </span>
+                                            </span>
+                                            <div class="flex items-center gap-1 shrink-0 flex-wrap justify-end">
+                                                @if($isSelected)
+                                                    <span class="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-emerald-500 text-slate-950 shadow-sm flex items-center gap-0.5">
+                                                        <span>✓</span>
+                                                        <span>SELECTED</span>
+                                                    </span>
+                                                @endif
+                                                @if($isRecommended && ! $isSelected)
+                                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40 flex items-center gap-0.5" title="Recommended action for this person">
+                                                        <span>💡</span>
+                                                        <span>Recommended</span>
+                                                    </span>
+                                                @endif
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold {{ $isSelected ? 'bg-slate-900 text-amber-300 border border-slate-800 dark:bg-slate-950 dark:text-amber-300 dark:border-slate-700' : 'bg-slate-100 text-slate-800 border border-slate-300 dark:bg-slate-900/90 dark:text-amber-400 dark:border-slate-700/50' }} flex items-center gap-1">
+                                                    <span>{{ $action->apCost() + $commuteApCost }} AP</span>
+                                                    @if($commuteApCost > 0)
+                                                        <span class="text-[9px] text-amber-700 dark:text-amber-300 font-normal" title="Includes +{{ $commuteApCost }} AP transit cost from your home base">(+{{ $commuteApCost }})</span>
+                                                    @endif
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        @if($action === \App\Enums\MinistryActionType::PrayerWalk && $selectedNpc)
+                                            <div class="text-[10px] text-emerald-700 dark:text-emerald-400/90 mt-1 leading-tight">
+                                                👣 Joint harvest prayer walk (MAWL). Builds trust (+25%) & covers their Oikos.
+                                            </div>
+                                        @endif
+
+                                        <div class="flex items-center justify-between gap-1 mt-1.5">
+                                            <span class="text-[10px] text-slate-600 dark:text-slate-400 font-semibold truncate">{{ $action->fieldName() }}</span>
+                                            <button 
+                                                type="button" 
+                                                wire:click.stop="openActionInfoModal('{{ $action->value }}')" 
+                                                class="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-300 dark:bg-slate-900/90 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-white dark:border-slate-700/60 text-[9px] font-bold transition cursor-pointer flex items-center gap-1 shrink-0"
+                                                title="View descriptive text & strategy for {{ $action->label() }}"
+                                            >
+                                                <span>ℹ️</span>
+                                                <span>Info</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- Locked / Future Actions Section (Expandable Drawer) -->
+                    @if(count($lockedActionList) > 0)
+                        <div class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+                            <button 
+                                type="button" 
+                                @click="showFutureActions = !showFutureActions" 
+                                class="w-full py-2.5 px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900/60 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between transition cursor-pointer"
+                            >
+                                <span class="flex items-center gap-2">
+                                    <span>🔒</span>
+                                    <span>Future &amp; Locked Actions ({{ count($lockedActionList) }})</span>
+                                    <span class="text-[10px] font-normal text-slate-500 dark:text-slate-400">— View progression &amp; unlock requirements</span>
+                                </span>
+                                <span class="flex items-center gap-1 text-[11px] font-bold text-indigo-700 dark:text-indigo-400">
+                                    <span x-text="showFutureActions ? 'Collapse' : 'Expand Roadmap'">Expand Roadmap</span>
+                                    <span x-text="showFutureActions ? '▲' : '▼'">▼</span>
+                                </span>
+                            </button>
+
+                            <!-- Hidden by default, expandable so players can see future actions -->
+                            <div x-show="showFutureActions" x-cloak class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-2.5">
+                                @foreach($lockedActionList as $action)
+                                    @php
+                                        $ineligibilityReason = $action->ineligibilityReason($selectedNpc);
+                                        if ($action === \App\Enums\MinistryActionType::IronOnIron) {
+                                            if (($totalIoIToday ?? 0) >= 3) {
+                                                $ineligibilityReason = 'Daily Iron on Iron limit reached: max 3 sessions allowed per day (3/3 used today).';
+                                            } elseif ($selectedNpc && in_array($selectedNpc->id, $doneNpcIdsToday ?? [], true)) {
+                                                $ineligibilityReason = 'You have already scheduled Iron on Iron with '.$selectedNpc->displayName.' today (max 1 per person per day).';
+                                            }
+                                        }
+                                        $isSelected = $selectedActionType === $action->value;
+                                    @endphp
+                                    <label 
+                                        class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all relative bg-slate-50 border-slate-300 text-slate-700 dark:bg-slate-900/40 dark:border-slate-800/60 dark:text-slate-400 cursor-not-allowed opacity-90"
+                                        title="Locked: {{ $ineligibilityReason }}"
+                                    >
+                                        <input 
+                                            type="radio" 
+                                            name="action_type" 
+                                            value="{{ $action->value }}" 
+                                            wire:model.live="selectedActionType"
+                                            disabled
+                                            class="mt-1 text-slate-400 opacity-40 cursor-not-allowed"
+                                        >
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex items-start justify-between gap-1.5">
+                                                <span class="text-xs font-bold leading-snug break-words flex items-center gap-1 text-slate-800 dark:text-slate-200">
+                                                    <span>{{ $action->icon() }}</span>
+                                                    <span>{{ $action->label() }}</span>
+                                                </span>
+                                                <div class="flex items-center gap-1 shrink-0 flex-wrap justify-end">
+                                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-100 text-rose-800 border border-rose-300 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-800/60 flex items-center gap-0.5" title="{{ $ineligibilityReason }}">
+                                                        <span>🔒</span>
+                                                        <span>Locked</span>
+                                                    </span>
+                                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-300 dark:bg-slate-900/90 dark:text-slate-400 dark:border-slate-800 flex items-center gap-1">
+                                                        <span>{{ $action->apCost() + $commuteApCost }} AP</span>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="text-[10px] text-rose-800 dark:text-rose-400 mt-1 font-semibold leading-tight">
+                                                {{ $ineligibilityReason }}
+                                            </div>
+
+                                            <div class="flex items-center justify-between gap-1 mt-1.5">
+                                                <span class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold truncate">{{ $action->fieldName() }}</span>
+                                                <button 
+                                                    type="button" 
+                                                    wire:click.stop="openActionInfoModal('{{ $action->value }}')" 
+                                                    class="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-300 dark:bg-slate-900/90 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-white dark:border-slate-700/60 text-[9px] font-bold transition cursor-pointer flex items-center gap-1 shrink-0"
+                                                    title="View descriptive text & strategy for {{ $action->label() }}"
+                                                >
+                                                    <span>ℹ️</span>
+                                                    <span>Info</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </label>
+                                @endforeach
                             </div>
-                        </label>
-                    @endforeach
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Proximity & Commute Cost Indicator Banner -->
@@ -1632,7 +1736,7 @@
                             @click="scrollToStep2()"
                             wire:loading.attr="disabled"
                             @disabled($isDayBlocked || ! $hasEnoughApForSelected || ($player?->is_burned_out ?? false) || ($player?->hasCompletedMonth ?? false) || ($player?->hasReachedDailyPlayLimit ?? false))
-                            class="w-full py-3 px-4 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-[0.99] {{ ($hasEnoughApForSelected && ! $isDayBlocked && ! ($player?->is_burned_out ?? false) && ! ($player?->hasCompletedMonth ?? false) && ! ($player?->hasReachedDailyPlayLimit ?? false)) ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950 ring-2 ring-emerald-400/50 hover:scale-[1.01]' : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60' }}"
+                            class="w-full py-3 px-4 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-[0.99] {{ ($hasEnoughApForSelected && ! $isDayBlocked && ! ($player?->is_burned_out ?? false) && ! ($player?->hasCompletedMonth ?? false) && ! ($player?->hasReachedDailyPlayLimit ?? false)) ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950 ring-2 ring-emerald-400/50 hover:scale-[1.01]' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-700 cursor-not-allowed opacity-80' }}"
                         >
                             @if($player?->is_burned_out)
                                 <span class="flex items-center gap-1.5 text-rose-300">
@@ -1667,11 +1771,11 @@
                         </button>
                     @else
                         <!-- No Action Selected Prompt -->
-                        <div class="p-3.5 rounded-xl bg-slate-900/60 border border-dashed border-slate-800 text-center">
-                            <p class="text-xs text-slate-300 font-medium">
+                        <div class="p-3.5 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-dashed border-slate-300 dark:border-slate-800 text-center">
+                            <p class="text-xs text-slate-800 dark:text-slate-300 font-bold">
                                 No action selected yet
                             </p>
-                            <p class="text-[11px] text-slate-400 mt-1">
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                                 Click an action from the list above to schedule it for Week {{ $player?->current_game_week ?? 1 }}.
                             </p>
                         </div>
@@ -1680,7 +1784,7 @@
                             id="queue-action-button-placeholder"
                             type="button" 
                             disabled 
-                            class="w-full py-3 px-4 rounded-xl font-bold text-xs bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed opacity-60"
+                            class="w-full py-3 px-4 rounded-xl font-bold text-xs bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-700 cursor-not-allowed opacity-80"
                         >
                             @if($player?->hasCompletedMonth)
                                 Month {{ $player?->current_game_month ?? 1 }} Complete • All 4 Weeks Resolved
