@@ -14,6 +14,7 @@ use App\Enums\MinistryActionType;
 use App\Enums\NpcNeedState;
 use App\Enums\QueuedActionStatus;
 use App\Enums\ReceptivityStatus;
+use App\Enums\RelationshipType;
 use App\Models\Church;
 use App\Models\GameSession;
 use App\Models\MonthlyReport;
@@ -2319,6 +2320,7 @@ class FourFieldsEngine
         if ($anchorNpc && $discoveredNpc && $anchorNpc->id !== $discoveredNpc->id) {
             OikosRelationship::firstOrCreate(
                 [
+                    'game_session_id' => $action->game_session_id,
                     'npc_id' => $anchorNpc->id,
                     'related_npc_id' => $discoveredNpc->id,
                 ],

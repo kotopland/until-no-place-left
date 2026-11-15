@@ -109,6 +109,13 @@ it('resolves oikos mapping to surface yellow seekers and grow local churches', f
         'action_points' => 20,
     ]);
 
+    $anchorBeliever = Npc::factory()->create([
+        'game_session_id' => $this->session->id,
+        'ward_id' => $this->ward->id,
+        'status' => ReceptivityStatus::Green,
+        'trust_level' => 80,
+    ]);
+
     $unreachedNpc = Npc::factory()->create([
         'game_session_id' => $this->session->id,
         'ward_id' => $this->ward->id,
