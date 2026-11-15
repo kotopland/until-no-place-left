@@ -76,7 +76,9 @@ class MagicLoginLinkNotification extends Notification
             $mail->line('We received a request to access your Nagoya Oikos mission dashboard.');
         }
 
-        $mail->line($visuals->renderWardMapHtml(
+        $mail->line('Click the secure button below to instantly sign in to your mission headquarters without passwords:')
+            ->action('⚡ Enter Nagoya Mission', $this->url)
+            ->line($visuals->renderWardMapHtml(
             focusWard: $focusWard,
             accentHex: '#6366f1',
             title: $focusWard ? "Nagoya: {$focusWard->name}" : 'Nagoya • 16 Wards',
@@ -84,8 +86,6 @@ class MagicLoginLinkNotification extends Notification
                 ? "Your mission base in {$focusWard->name} ({$focusWard->name_ja}) is ready."
                 : '2.3 million people across 16 wards in Nagoya, Japan.'
         ))
-            ->line('Click the secure button below to instantly sign in to your mission headquarters without passwords:')
-            ->action('⚡ Enter Nagoya Mission', $this->url)
             ->line('**Security Notice:** This link is cryptographically signed, valid for 30 minutes, and can only be used by you.')
             ->line('If you did not request this link, you can safely disregard this email.');
 
