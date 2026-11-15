@@ -21,6 +21,88 @@ class NagoyaMiniMapService
     ) {}
 
     /**
+     * Return projected SVG polygon data and centroids for each ward so Blade/Livewire
+     * can render an interactive clickable Nagoya ward picker map.
+     *
+     * @param  Collection<int, Ward>  $wards
+     * @return array{
+     *     width: int,
+     *     height: int,
+     *     wards: array<int, array{
+     *         id: int,
+     *         name: string,
+     *         name_ja: string,
+     *         slug: string,
+     *         openness: int,
+     *         poverty: int,
+     *         cx: float,
+     *         cy: float,
+     *         polygons: array<int, string>
+     *     }>
+     * }
+     */
+    public function getInteractiveWardMapData(Collection $wards, int $width = 360, int $height = 380, int $padding = 14): array
+    {
+        $geometry = $this->getSimplifiedGeometry();
+        $bounds = $geometry['bounds'];
+
+        $polyBySlug = [];
+        $polyByName = [];
+        foreach ($geometry['wards'] as $wardPoly) {
+            if ($wardPoly['slug']) {
+                $polyBySlug[$wardPoly['slug']] = $wardPoly['rings'];
+            }
+            $polyByName[$wardPoly['name']] = $wardPoly['rings'];
+        }
+
+        $items = [];
+        foreach ($wards as $ward) {
+            $rings = $polyBySlug[$ward->slug] ?? $polyByName[$ward->name] ?? [];
+
+            if ($rings === []) {
+                // Fallback diamond around ward center if no GeoJSON polygon matched
+                $d = 0.015;
+                $lat = (float) $ward->center_lat;
+                $lng = (float) $ward->center_lng;
+                $rings = [[
+                    [$lng - $d, $lat - $d * 0.8],
+                    [$lng + $d, $lat - $d * 0.8],
+                    [$lng + $d * 1.1, $lat + $d * 0.8],
+                    [$lng - $d * 0.8, $lat + $d],
+                ]];
+            }
+
+            $polygons = [];
+            foreach ($rings as $ring) {
+                $pts = $this->projectRingToSvgPoints($ring, $bounds, $width, $height, $padding);
+                if ($pts !== '') {
+                    $polygons[] = $pts;
+                }
+            }
+
+            [$cx, $cy] = $this->projectPoint((float) $ward->center_lat, (float) $ward->center_lng, $bounds, $width, $height, $padding);
+
+            $items[] = [
+                'id' => $ward->id,
+                'name' => $ward->name,
+                'name_ja' => $ward->name_ja,
+                'slug' => $ward->slug,
+                'openness' => (int) $ward->spiritual_openness,
+                'poverty' => (int) $ward->poverty_need_index,
+                'cx' => round($cx, 1),
+                'cy' => round($cy, 1),
+                'polygons' => $polygons,
+            ];
+        }
+
+        return [
+            'width' => $width,
+            'height' => $height,
+            'wards' => $items,
+        ];
+    }
+
+    /**
      * Render a crisp, self-contained SVG mini-map of Nagoya's 16 wards with highlighted ward(s) and markers.
      *
      * @param  array<int, array{lat: float, lng: float, label?: string, type?: string, color?: string}>  $markers

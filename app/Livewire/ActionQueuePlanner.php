@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Models\Ward;
 use App\Services\AiColaborerService;
 use App\Services\FourFieldsEngine;
+use App\Services\NagoyaMiniMapService;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
@@ -1068,15 +1069,88 @@ class ActionQueuePlanner extends Component
 
         $wards = Ward::orderBy('name')->get();
         $selectedWard = Ward::find($this->selectedWardId);
+        $wardMapData = app(NagoyaMiniMapService::class)->getInteractiveWardMapData($wards, 340, 360);
 
         $npcs = $this->selectedWardId
             ? Npc::where('game_session_id', $this->session?->id)
                 ->where('ward_id', $this->selectedWardId)
-                ->with(['oikosConnections.relatedNpc'])
+                ->with([
+                    'oikosConnections.relatedNpc',
+                    'church',
+                    'ledChurches' => fn ($q) => $q->where('is_dissolved', false),
+                ])
                 ->orderByDesc('is_person_of_peace')
                 ->orderByDesc('trust_level')
                 ->get()
             : collect();
+
+        $leadingGroupNpcs = collect();
+        $inGroupNpcs = collect();
+        $acceptedJesusNpcs = collect();
+        $yellowNpcs = collect();
+        $redNpcs = collect();
+
+        foreach ($npcs as $npcItem) {
+            if ($npcItem->ledChurches->isNotEmpty()) {
+                $leadingGroupNpcs->push($npcItem);
+            } elseif ($npcItem->church_id !== null && $npcItem->church && ! $npcItem->church->is_dissolved) {
+                $inGroupNpcs->push($npcItem);
+            } elseif ($npcItem->hasPrayedSalvation || $npcItem->status === ReceptivityStatus::Green) {
+                $acceptedJesusNpcs->push($npcItem);
+            } elseif ($npcItem->status === ReceptivityStatus::Yellow) {
+                $yellowNpcs->push($npcItem);
+            } else {
+                $redNpcs->push($npcItem);
+            }
+        }
+
+        $hasNonRedNpcs = $leadingGroupNpcs->isNotEmpty()
+            || $inGroupNpcs->isNotEmpty()
+            || $acceptedJesusNpcs->isNotEmpty()
+            || $yellowNpcs->isNotEmpty();
+
+        $npcGroups = [
+            [
+                'key' => 'leading_groups',
+                'label' => 'Leading Group(s)',
+                'icon' => '⛪',
+                'badgeClasses' => 'bg-indigo-100 text-indigo-900 border-indigo-300 dark:bg-indigo-950/70 dark:text-indigo-300 dark:border-indigo-700/60',
+                'defaultOpen' => true,
+                'npcs' => $leadingGroupNpcs,
+            ],
+            [
+                'key' => 'in_group',
+                'label' => 'In a Group',
+                'icon' => '👥',
+                'badgeClasses' => 'bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-950/70 dark:text-purple-300 dark:border-purple-700/60',
+                'defaultOpen' => true,
+                'npcs' => $inGroupNpcs,
+            ],
+            [
+                'key' => 'accepted_jesus',
+                'label' => 'Accepted Jesus',
+                'icon' => '✝️',
+                'badgeClasses' => 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-700/60',
+                'defaultOpen' => true,
+                'npcs' => $acceptedJesusNpcs,
+            ],
+            [
+                'key' => 'yellow',
+                'label' => 'Yellow (Seeking)',
+                'icon' => '🟡',
+                'badgeClasses' => 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-700/60',
+                'defaultOpen' => true,
+                'npcs' => $yellowNpcs,
+            ],
+            [
+                'key' => 'red',
+                'label' => 'Red (Not Yet Seeking)',
+                'icon' => '🔴',
+                'badgeClasses' => 'bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-950/70 dark:text-rose-300 dark:border-rose-700/60',
+                'defaultOpen' => ! $hasNonRedNpcs || $redNpcs->contains('id', $this->selectedNpcId),
+                'npcs' => $redNpcs,
+            ],
+        ];
 
         $selectedNpc = $this->selectedNpcId ? Npc::with(['oikosConnections.relatedNpc', 'ward'])->find($this->selectedNpcId) : null;
 
@@ -1392,8 +1466,10 @@ class ActionQueuePlanner extends Component
 
         return view('livewire.action-queue-planner', [
             'wards' => $wards,
+            'wardMapData' => $wardMapData,
             'selectedWard' => $selectedWard,
             'npcs' => $npcs,
+            'npcGroups' => $npcGroups,
             'selectedNpc' => $selectedNpc,
             'queuedActions' => $queuedActions,
             'recentOutcomes' => $recentOutcomes,

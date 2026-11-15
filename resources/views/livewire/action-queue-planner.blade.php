@@ -830,113 +830,220 @@
 
     <!-- Main Planning Grid (3 Columns on Desktop, Step-Focused on Mobile) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <!-- Column 1: Nagoya 16 Wards (lg:col-span-3) -->
+        <!-- Column 1: Nagoya 16 Wards Interactive Map (lg:col-span-3) -->
         <div 
             class="lg:col-span-3 bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 shadow-lg flex-col h-[660px] sm:h-[700px] lg:h-[780px] xl:h-[840px] relative"
             :class="mobileStep === 1 ? 'flex' : 'hidden lg:flex'"
+            x-data="{ hoveredWard: null }"
         >
-            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
+            <div class="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-200 dark:border-slate-800">
                 <div class="flex items-center gap-1.5">
-                    <span class="text-sm">📍</span>
+                    <span class="text-sm">🗺️</span>
                     <h3 class="text-xs font-bold text-slate-800 dark:text-slate-300 uppercase tracking-wider">
-                        Nagoya 16 Wards
+                        Pick District Map
                     </h3>
                 </div>
-                <div class="flex items-center gap-1.5">
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/80 dark:text-indigo-300 dark:border-indigo-700/60 flex items-center gap-1 shadow-sm">
-                        <span class="animate-pulse">↕</span>
-                        <span>Scrollable</span>
-                    </span>
-                    <span class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">{{ $wards->count() }} districts</span>
+                <span class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">{{ $wards->count() }} wards</span>
+            </div>
+
+            <!-- Interactive Nagoya 16-Ward Clickable SVG Map -->
+            <div class="relative flex-1 min-h-0 rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-inner flex items-center justify-center p-1.5">
+                <svg
+                    viewBox="0 0 {{ $wardMapData['width'] }} {{ $wardMapData['height'] }}"
+                    class="w-full h-full select-none"
+                    role="img"
+                    aria-label="Interactive Nagoya 16 Wards District Picker Map"
+                >
+                    <defs>
+                        <filter id="selectedWardGlow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur"/>
+                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                    </defs>
+
+                    <!-- Subtle background grid -->
+                    @for($gx = 40; $gx < $wardMapData['width']; $gx += 48)
+                        <line x1="{{ $gx }}" y1="0" x2="{{ $gx }}" y2="{{ $wardMapData['height'] }}" stroke="#1e293b" stroke-width="0.6" stroke-dasharray="3,4" />
+                    @endfor
+                    @for($gy = 40; $gy < $wardMapData['height']; $gy += 48)
+                        <line x1="0" y1="{{ $gy }}" x2="{{ $wardMapData['width'] }}" y2="{{ $gy }}" stroke="#1e293b" stroke-width="0.6" stroke-dasharray="3,4" />
+                    @endfor
+
+                    @php
+                        $wardsById = $wards->keyBy('id');
+                    @endphp
+
+                    @foreach($wardMapData['wards'] as $w)
+                        @php
+                            $wardModel = $wardsById->get($w['id']);
+                            $isSelected = $selectedWardId === $w['id'];
+                            $isHome = $player && $player->home_ward_id === $w['id'];
+                            $hasCoworkers = ($residentMissionariesByWard->get($w['id']) ?? collect())->contains(fn($u) => $u->id !== $player?->id);
+                            $isOpen = $w['openness'] >= 40;
+                            $fill = $isSelected
+                                ? '#4f46e5'
+                                : ($isOpen ? '#065f46' : '#1e293b');
+                            $stroke = $isSelected
+                                ? '#a5b4fc'
+                                : ($isOpen ? '#10b981' : '#475569');
+                            $shortName = str_replace('-ku', '', $w['name']);
+                        @endphp
+                        <g
+                            wire:key="ward-map-poly-{{ $w['id'] }}"
+                            wire:click="selectWard({{ $w['id'] }})"
+                            @click="mobileStep = 2"
+                            @mouseenter="hoveredWard = {{ \Illuminate\Support\Js::from([
+                                'name' => $w['name'],
+                                'name_ja' => $w['name_ja'],
+                                'openness' => $w['openness'],
+                                'poverty' => $w['poverty'],
+                                'isHome' => $isHome,
+                                'distKm' => ($player && $wardModel) ? $player->distanceToWard($wardModel) : 0,
+                                'transitAp' => ($player && $wardModel) ? $player->commuteApCostForWard($wardModel) : 0,
+                            ]) }}"
+                            @mouseleave="hoveredWard = null"
+                            class="cursor-pointer transition-opacity duration-150 hover:opacity-95"
+                            @if($isSelected) filter="url(#selectedWardGlow)" @endif
+                        >
+                            @foreach($w['polygons'] as $polyPoints)
+                                <polygon
+                                    points="{{ $polyPoints }}"
+                                    fill="{{ $fill }}"
+                                    fill-opacity="{{ $isSelected ? '0.88' : '0.68' }}"
+                                    stroke="{{ $stroke }}"
+                                    stroke-width="{{ $isSelected ? '2.2' : '1.1' }}"
+                                    stroke-linejoin="round"
+                                    class="transition-all duration-150 hover:fill-indigo-500/80 hover:stroke-indigo-300"
+                                />
+                            @endforeach
+
+                            <text
+                                x="{{ $w['cx'] }}"
+                                y="{{ $w['cy'] }}"
+                                text-anchor="middle"
+                                dominant-baseline="middle"
+                                font-family="ui-sans-serif, system-ui, sans-serif"
+                                font-size="{{ $isSelected ? '9.5' : '8' }}"
+                                font-weight="{{ $isSelected ? '800' : '700' }}"
+                                fill="{{ $isSelected ? '#ffffff' : '#e2e8f0' }}"
+                                class="pointer-events-none"
+                            >
+                                {{ $shortName }}
+                            </text>
+
+                            @if($isHome)
+                                <text
+                                    x="{{ $w['cx'] }}"
+                                    y="{{ $w['cy'] - 10 }}"
+                                    text-anchor="middle"
+                                    font-size="9"
+                                    class="pointer-events-none"
+                                >🏡</text>
+                            @elseif($hasCoworkers)
+                                <circle
+                                    cx="{{ $w['cx'] }}"
+                                    cy="{{ $w['cy'] - 9 }}"
+                                    r="3"
+                                    fill="#818cf8"
+                                    stroke="#ffffff"
+                                    stroke-width="0.9"
+                                    class="pointer-events-none"
+                                />
+                            @endif
+                        </g>
+                    @endforeach
+                </svg>
+
+                <!-- Floating Map Legend -->
+                <div class="pointer-events-none absolute top-2 left-2 flex flex-col gap-1 bg-slate-900/85 backdrop-blur px-2 py-1.5 rounded-xl border border-slate-800 text-[9px] text-slate-300">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-sm bg-indigo-600 border border-indigo-300 inline-block"></span>
+                        <span>Selected</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-sm bg-emerald-800 border border-emerald-500 inline-block"></span>
+                        <span>40%+ Open</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span>🏡</span>
+                        <span>Home</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Scrollable Wards Container with Interactive Scroll Indicator -->
-            <div 
-                x-data="{
-                    canScrollDown: true,
-                    checkScroll(el) {
-                        if (!el) return;
-                        this.canScrollDown = (el.scrollHeight - el.scrollTop) > (el.clientHeight + 16);
-                    }
-                }"
-                x-init="$nextTick(() => checkScroll($refs.wardsScroll))"
-                class="relative flex-1 min-h-0 flex flex-col"
-            >
-                <div 
-                    x-ref="wardsScroll"
-                    @scroll.passive="checkScroll($event.target)"
-                    class="overflow-y-auto space-y-1.5 pr-1.5 flex-1 custom-scrollbar pb-8"
-                >
-                    @foreach($wards as $ward)
-                        @php
-                            $isHome = $player && $player->home_ward_id === $ward->id;
-                            $distKm = $player ? $player->distanceToWard($ward) : 0.0;
-                            $transitAp = $player ? $player->commuteApCostForWard($ward) : 0;
-                            $otherMissionariesInWard = ($residentMissionariesByWard->get($ward->id) ?? collect())->filter(fn($u) => $u->id !== $player?->id);
-                        @endphp
-                        <button 
-                            type="button"
-                            wire:key="ward-btn-{{ $ward->id }}"
-                            wire:click="selectWard({{ $ward->id }})"
-                            @click="mobileStep = 2"
-                            class="w-full text-left px-3 py-2.5 rounded-xl text-xs transition-all flex items-center justify-between {{ $selectedWardId === $ward->id ? 'bg-indigo-100 text-indigo-950 border border-indigo-400 shadow-sm dark:bg-indigo-600/30 dark:text-white dark:border-indigo-500/60' : 'bg-white text-slate-800 hover:bg-slate-100 border border-slate-200 dark:bg-slate-800/40 dark:text-slate-300 dark:hover:bg-slate-800/70 dark:border-transparent' }}"
-                        >
-                            <div>
-                                <div class="font-semibold flex items-center gap-1.5 flex-wrap">
-                                    <span>{{ $ward->name }}</span>
-                                    @if($isHome)
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40">
-                                            🏡 Home
-                                        </span>
-                                    @endif
-                                    @if($otherMissionariesInWard->isNotEmpty())
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-medium bg-indigo-100 text-indigo-900 border border-indigo-300 dark:bg-indigo-500/20 dark:text-indigo-300 dark:border-indigo-500/30" title="{{ $otherMissionariesInWard->pluck('name')->join(', ') }}">
-                                            🏠 {{ $otherMissionariesInWard->count() }} co-worker{{ $otherMissionariesInWard->count() > 1 ? 's' : '' }}
-                                        </span>
+            <!-- Hovered / Selected Ward Details Card -->
+            @php
+                $selectedIsHome = $player && $selectedWard && $player->home_ward_id === $selectedWard->id;
+                $selectedDistKm = ($player && $selectedWard) ? $player->distanceToWard($selectedWard) : 0.0;
+                $selectedTransitAp = ($player && $selectedWard) ? $player->commuteApCostForWard($selectedWard) : 0;
+                $selectedCoworkers = $selectedWard
+                    ? ($residentMissionariesByWard->get($selectedWard->id) ?? collect())->filter(fn($u) => $u->id !== $player?->id)
+                    : collect();
+            @endphp
+
+            <div class="mt-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 text-xs space-y-1.5">
+                <template x-if="hoveredWard">
+                    <div>
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="font-bold text-indigo-700 dark:text-indigo-300" x-text="hoveredWard.name + ' (' + hoveredWard.name_ja + ')'"></span>
+                            <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900 dark:bg-emerald-950/80 dark:text-emerald-300" x-text="hoveredWard.openness + '% Open'"></span>
+                        </div>
+                        <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2">
+                            <span x-show="hoveredWard.isHome">🏡 Your Home Base</span>
+                            <span x-show="!hoveredWard.isHome" x-text="hoveredWard.distKm + ' km' + (hoveredWard.transitAp > 0 ? ' (+' + hoveredWard.transitAp + ' AP)' : ' (0 AP)')"></span>
+                            <span x-show="hoveredWard.poverty >= 50" class="text-rose-600 dark:text-rose-400 font-semibold">• High Need 🍲</span>
+                        </div>
+                    </div>
+                </template>
+
+                <template x-if="!hoveredWard">
+                    <div>
+                        @if($selectedWard)
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap">
+                                    <span>📍 {{ $selectedWard->name }}</span>
+                                    <span class="text-slate-500 dark:text-slate-400 font-normal text-[11px]">({{ $selectedWard->name_ja }})</span>
+                                    @if($selectedIsHome)
+                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-500/20 dark:text-amber-300">🏡 Home</span>
                                     @endif
                                 </div>
-                                <div class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
-                                    <span>{{ $ward->name_ja }}</span>
-                                    @if(! $isHome && $player?->home_ward_id)
-                                        <span class="text-[10px] {{ $transitAp > 0 ? 'text-amber-700 dark:text-amber-400 font-semibold' : 'text-slate-500 dark:text-slate-400' }}">
-                                            • {{ $distKm }} km {{ $transitAp > 0 ? "(+{$transitAp} AP)" : '' }}
-                                        </span>
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="text-right shrink-0">
-                                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded {{ $ward->spiritual_openness >= 40 ? 'bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-400 dark:border-emerald-800/60' : 'bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-transparent' }}">
-                                    {{ $ward->spiritual_openness }}% Open
+                                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded {{ $selectedWard->spiritual_openness >= 40 ? 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950/70 dark:text-emerald-400' : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300' }}">
+                                    {{ $selectedWard->spiritual_openness }}% Open
                                 </span>
-                                @if($ward->poverty_need_index >= 50)
-                                    <span class="block text-[9px] text-rose-600 dark:text-rose-400 mt-0.5">High Need 🍲</span>
+                            </div>
+                            <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2 flex-wrap">
+                                @if(! $selectedIsHome && $player?->home_ward_id)
+                                    <span>{{ $selectedDistKm }} km {{ $selectedTransitAp > 0 ? "(+{$selectedTransitAp} AP)" : '(0 AP)' }}</span>
+                                @endif
+                                @if($selectedCoworkers->isNotEmpty())
+                                    <span class="text-indigo-600 dark:text-indigo-300 font-semibold">🏠 {{ $selectedCoworkers->count() }} co-worker{{ $selectedCoworkers->count() > 1 ? 's' : '' }}</span>
+                                @endif
+                                @if($selectedWard->poverty_need_index >= 50)
+                                    <span class="text-rose-600 dark:text-rose-400 font-semibold">High Need 🍲</span>
                                 @endif
                             </div>
-                        </button>
-                    @endforeach
-                </div>
+                        @else
+                            <div class="text-slate-500 dark:text-slate-400">Click any ward on the map to select it.</div>
+                        @endif
+                    </div>
+                </template>
 
-                <!-- Floating Bottom Scroll Indicator -->
-                <div 
-                    x-show="canScrollDown"
-                    x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 translate-y-2"
-                    x-transition:enter-end="opacity-100 translate-y-0"
-                    x-transition:leave="transition ease-in duration-150"
-                    x-transition:leave-start="opacity-100 translate-y-0"
-                    x-transition:leave-end="opacity-0 translate-y-2"
-                    class="pointer-events-none absolute bottom-0 inset-x-0 flex flex-col items-center justify-end pb-1.5 pt-8 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-slate-900 dark:via-slate-900/90 dark:to-transparent rounded-b-xl"
-                >
-                    <button
-                        type="button"
-                        @click="$refs.wardsScroll.scrollBy({ top: 140, behavior: 'smooth' })"
-                        class="pointer-events-auto cursor-pointer px-2.5 py-1 rounded-full text-[10px] font-bold bg-indigo-600/95 hover:bg-indigo-500 text-white shadow-lg border border-indigo-400/50 flex items-center gap-1.5 backdrop-blur transition active:scale-95 animate-bounce"
-                        title="Click to scroll down"
+                <!-- Quick Ward Select Dropdown for precision / accessibility -->
+                <div class="pt-1.5 border-t border-slate-200/80 dark:border-slate-800/80">
+                    <select
+                        aria-label="Quick select Nagoya ward"
+                        wire:change="selectWard($event.target.value)"
+                        class="w-full rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-[11px] font-medium text-slate-800 dark:text-slate-200 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" /></svg>
-                        <span>Scroll for more wards</span>
-                    </button>
+                        @foreach($wards as $ward)
+                            @php
+                                $wardCoworkersCount = ($residentMissionariesByWard->get($ward->id) ?? collect())->filter(fn($u) => $u->id !== $player?->id)->count();
+                            @endphp
+                            <option value="{{ $ward->id }}" @selected($selectedWardId === $ward->id)>
+                                {{ $ward->name }} ({{ $ward->name_ja }}) — {{ $ward->spiritual_openness }}% Open{{ $wardCoworkersCount > 0 ? " • 🏠 {$wardCoworkersCount} ".Str::plural('co-worker', $wardCoworkersCount) : '' }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
 
@@ -1175,7 +1282,7 @@
                 </button>
             </div>
 
-            <!-- Scrollable Residents Container with Interactive Scroll Indicator -->
+            <!-- Scrollable Grouped Residents Container -->
             <div 
                 x-data="{
                     canScrollDown: true,
@@ -1187,104 +1294,216 @@
                 x-init="$nextTick(() => checkScroll($refs.residentsScroll))"
                 class="relative flex-1 min-h-0 flex flex-col"
             >
+                @if($npcs->isNotEmpty())
+                    <div class="flex items-center justify-between gap-2 mb-2 px-1">
+                        <span class="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                            Grouped by spiritual journey
+                        </span>
+                        <div class="flex items-center gap-1.5 text-[10px] font-bold">
+                            <button
+                                type="button"
+                                @click="$dispatch('npc-groups-toggle', true)"
+                                class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition cursor-pointer"
+                            >
+                                Expand All
+                            </button>
+                            <button
+                                type="button"
+                                @click="$dispatch('npc-groups-toggle', false)"
+                                class="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition cursor-pointer"
+                            >
+                                Collapse All
+                            </button>
+                        </div>
+                    </div>
+                @endif
+
                 <div 
                     x-ref="residentsScroll"
                     @scroll.passive="checkScroll($event.target)"
                     class="overflow-y-auto space-y-2.5 pr-1.5 flex-1 custom-scrollbar pb-8"
                 >
-                    @forelse($npcs as $npc)
-                        <div 
-                            wire:key="npc-card-{{ $npc->id }}"
-                            wire:click="selectNpc({{ $npc->id }})"
-                            @click="mobileStep = 3"
-                            class="p-3 rounded-xl border transition-all cursor-pointer {{ $selectedNpcId === $npc->id ? 'bg-indigo-50 border-indigo-500 shadow-md ring-1 ring-indigo-500/50 dark:bg-indigo-950/40 dark:border-indigo-500 dark:ring-indigo-500/50' : 'bg-white border-slate-200 hover:border-slate-300 dark:bg-slate-800/40 dark:border-slate-800 dark:hover:border-slate-700' }}"
-                        >
-                            <div class="flex items-start gap-3">
-                                <!-- Demographic Avatar (Nationality, Gender, Age) -->
-                                <x-person-avatar :person="$npc" size="md" :showBadges="true" class="shrink-0" />
-
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-start justify-between gap-2">
-                                        <div class="min-w-0">
-                                            <div class="flex items-center gap-1.5 flex-wrap">
-                                                <span class="text-sm font-semibold text-slate-900 dark:text-white truncate">{{ $npc->displayName }}</span>
-                                                @if($npc->is_person_of_peace)
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700 font-bold" title="Luke 10 Person of Peace">
-                                                        PoP ⭐
-                                                    </span>
-                                                @endif
-                                                @if($npc->hasPrayedSalvation)
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-700 font-bold" title="Prayed Sinner's Prayer">
-                                                        ✝️ Saved
-                                                    </span>
-                                                @endif
-                                                @if($npc->is_baptized)
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-cyan-100 text-cyan-900 border border-cyan-300 dark:bg-cyan-950 dark:text-cyan-300 dark:border-cyan-700 font-bold" title="Baptized in Water">
-                                                        🕊️ Baptized
-                                                    </span>
-                                                @elseif(($npc->baptism_status?->value ?? '') === 'committed')
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-blue-100 text-blue-900 border border-blue-300 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700 font-bold" title="Committed to Baptism (Month {{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }} in 6mo-2yr journey)">
-                                                        🌊 Committed ({{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }}m)
-                                                    </span>
-                                                @elseif($npc->hasPrayedSalvation)
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700 font-bold" title="Counting Cost / Family Consideration (Month {{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }} in 6mo-2yr journey)">
-                                                        💭 Cost ({{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }}m)
-                                                    </span>
-                                                @endif
-                                                @if($npc->leadership_tier->level() > 0)
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-bold border {{ $npc->leadership_tier->badgeClasses() }}" title="{{ $npc->leadership_tier->label() }}: {{ $npc->leadership_tier->coreFocus() }}">
-                                                        {{ $npc->leadership_tier->levelCode() }} {{ $npc->leadership_tier->roleTitle() }}
-                                                    </span>
-                                                @elseif($npc->trained_411)
-                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-purple-100 text-purple-900 border border-purple-300 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-700 font-bold">
-                                                        L1 Sower
-                                                    </span>
-                                                @endif
-                                            </div>
-                                            <div class="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 flex-wrap">
-                                                <span>{{ $npc->role_archetype->label() }}</span>
-                                                <span class="text-slate-400 dark:text-slate-600">•</span>
-                                                <span class="text-slate-700 dark:text-slate-300 font-medium" title="{{ $npc->nationality }}">{{ $npc->nationalityFlag }} {{ $npc->nationality }}</span>
-                                                <span class="text-slate-400 dark:text-slate-600">•</span>
-                                                <span class="text-slate-700 dark:text-slate-300">{{ $npc->genderIcon }} {{ $npc->age }} yrs</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Traffic Light Status -->
-                                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold border shrink-0 {{ $npc->status->badgeClasses() }}" title="{{ $npc->status === \App\Enums\ReceptivityStatus::Yellow ? "Seeking for {$npc->seeking_months} of {$npc->target_seeking_months} months (gradual conversion journey in Japan)" : $npc->status->value }}">
-                                            {{ $npc->status->icon() }} {{ $npc->status->value }}
-                                            @if($npc->status === \App\Enums\ReceptivityStatus::Yellow)
-                                                <span class="text-[9px] font-normal opacity-90">({{ $npc->seeking_months }}/{{ $npc->target_seeking_months }}m)</span>
-                                            @endif
-                                        </span>
-                                    </div>
-
-                                    <!-- Need State Badge -->
-                                    @if($npc->need_state !== \App\Enums\NpcNeedState::None)
-                                        <div class="mt-2 flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border {{ $npc->need_state->badgeClasses() }}">
-                                            <span>{{ $npc->need_state->icon() }}</span>
-                                            <span class="font-medium truncate">{{ $npc->need_state->label() }}</span>
-                                        </div>
-                                    @endif
-
-                                    <!-- Trust Progress Bar -->
-                                    <div class="mt-2.5">
-                                        <div class="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 mb-0.5">
-                                            <span>Trust Level</span>
-                                            <span class="font-medium text-slate-700 dark:text-slate-300">{{ $npc->trust_level }}%</span>
-                                        </div>
-                                        <div class="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                                            <div class="h-full bg-emerald-500 rounded-full transition-all" style="width: {{ $npc->trust_level }}%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    @empty
+                    @if($npcs->isEmpty())
                         <div class="text-center py-12 text-slate-500 text-xs">
                             No residents surfaced yet in this ward.<br>Host an International Event or Prayer Walk to discover seekers!
                         </div>
-                    @endforelse
+                    @else
+                        @php
+                            $selectedActionEnum = $selectedActionType ? \App\Enums\MinistryActionType::tryFrom($selectedActionType) : null;
+                        @endphp
+
+                        @foreach($npcGroups as $group)
+                            @php
+                                $groupCount = $group['npcs']->count();
+                            @endphp
+                            <div
+                                wire:key="npc-group-{{ $group['key'] }}"
+                                x-data="{ open: {{ $group['defaultOpen'] ? 'true' : 'false' }} }"
+                                @npc-groups-toggle.window="open = $event.detail"
+                                class="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-950/40 overflow-hidden"
+                            >
+                                <!-- Collapsible Group Header -->
+                                <button
+                                    type="button"
+                                    @click="open = !open"
+                                    class="w-full px-3 py-2 flex items-center justify-between gap-2 text-left hover:bg-slate-100/80 dark:hover:bg-slate-800/50 transition cursor-pointer"
+                                >
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <span class="text-sm">{{ $group['icon'] }}</span>
+                                        <span class="text-xs font-extrabold text-slate-800 dark:text-slate-200 truncate">{{ $group['label'] }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black border {{ $group['badgeClasses'] }}">
+                                            {{ $groupCount }} {{ Str::plural('person', $groupCount) }}
+                                        </span>
+                                        <svg
+                                            class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 transition-transform duration-150"
+                                            :class="open ? 'rotate-180' : ''"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </button>
+
+                                <!-- Group Members -->
+                                <div x-show="open" x-collapse.duration.150ms class="px-2 pb-2 space-y-2">
+                                    @forelse($group['npcs'] as $npc)
+                                        @php
+                                            $npcQueuedActions = $queuedActions->where('target_npc_id', $npc->id);
+                                            $isNpcSelected = $selectedNpcId === $npc->id;
+                                        @endphp
+                                        <div 
+                                            wire:key="npc-card-{{ $npc->id }}"
+                                            wire:click="selectNpc({{ $npc->id }})"
+                                            @click="mobileStep = 3"
+                                            class="p-3 rounded-xl border transition-all cursor-pointer {{ $isNpcSelected ? 'bg-indigo-50 border-indigo-500 shadow-md ring-1 ring-indigo-500/50 dark:bg-indigo-950/40 dark:border-indigo-500 dark:ring-indigo-500/50' : 'bg-white border-slate-200 hover:border-slate-300 dark:bg-slate-800/40 dark:border-slate-800 dark:hover:border-slate-700' }}"
+                                        >
+                                            <div class="flex items-start gap-3">
+                                                <!-- Demographic Avatar (Nationality, Gender, Age) -->
+                                                <x-person-avatar :person="$npc" size="md" :showBadges="true" class="shrink-0" />
+
+                                                <div class="flex-1 min-w-0">
+                                                    <div class="flex items-start justify-between gap-2">
+                                                        <div class="min-w-0">
+                                                            <div class="flex items-center gap-1.5 flex-wrap">
+                                                                <span class="text-sm font-semibold text-slate-900 dark:text-white truncate">{{ $npc->displayName }}</span>
+                                                                @if($npc->is_person_of_peace)
+                                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700 font-bold" title="Luke 10 Person of Peace">
+                                                                        PoP ⭐
+                                                                    </span>
+                                                                @endif
+                                                                @if($npc->hasPrayedSalvation)
+                                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-700 font-bold" title="Prayed Sinner's Prayer">
+                                                                        ✝️ Saved
+                                                                    </span>
+                                                                @endif
+                                                                @if($npc->is_baptized)
+                                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-cyan-100 text-cyan-900 border border-cyan-300 dark:bg-cyan-950 dark:text-cyan-300 dark:border-cyan-700 font-bold" title="Baptized in Water">
+                                                                        🕊️ Baptized
+                                                                    </span>
+                                                                @elseif(($npc->baptism_status?->value ?? '') === 'committed')
+                                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-blue-100 text-blue-900 border border-blue-300 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700 font-bold" title="Committed to Baptism (Month {{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }} in 6mo-2yr journey)">
+                                                                        🌊 Committed ({{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }}m)
+                                                                    </span>
+                                                                @elseif($npc->hasPrayedSalvation)
+                                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700 font-bold" title="Counting Cost / Family Consideration (Month {{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }} in 6mo-2yr journey)">
+                                                                        💭 Cost ({{ $npc->baptism_cost_months }}/{{ $npc->target_baptism_months }}m)
+                                                                    </span>
+                                                                @endif
+                                                                @if($npc->leadership_tier->level() > 0)
+                                                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-bold border {{ $npc->leadership_tier->badgeClasses() }}" title="{{ $npc->leadership_tier->label() }}: {{ $npc->leadership_tier->coreFocus() }}">
+                                                                        {{ $npc->leadership_tier->levelCode() }} {{ $npc->leadership_tier->roleTitle() }}
+                                                                    </span>
+                                                                @elseif($npc->trained_411)
+                                                                    <span class="px-1.5 py-0.2 rounded text-[9px] bg-purple-100 text-purple-900 border border-purple-300 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-700 font-bold">
+                                                                        L1 Sower
+                                                                    </span>
+                                                                @endif
+                                                            </div>
+                                                            <div class="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 flex-wrap">
+                                                                <span>{{ $npc->role_archetype->label() }}</span>
+                                                                <span class="text-slate-400 dark:text-slate-600">•</span>
+                                                                <span class="text-slate-700 dark:text-slate-300 font-medium" title="{{ $npc->nationality }}">{{ $npc->nationalityFlag }} {{ $npc->nationality }}</span>
+                                                                <span class="text-slate-400 dark:text-slate-600">•</span>
+                                                                <span class="text-slate-700 dark:text-slate-300">{{ $npc->genderIcon }} {{ $npc->age }} yrs</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Traffic Light Status -->
+                                                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold border shrink-0 {{ $npc->status->badgeClasses() }}" title="{{ $npc->status === \App\Enums\ReceptivityStatus::Yellow ? "Seeking for {$npc->seeking_months} of {$npc->target_seeking_months} months (gradual conversion journey in Japan)" : $npc->status->value }}">
+                                                            {{ $npc->status->icon() }} {{ $npc->status->value }}
+                                                            @if($npc->status === \App\Enums\ReceptivityStatus::Yellow)
+                                                                <span class="text-[9px] font-normal opacity-90">({{ $npc->seeking_months }}/{{ $npc->target_seeking_months }}m)</span>
+                                                            @endif
+                                                        </span>
+                                                    </div>
+
+                                                    <!-- Group / Church Affiliation Pill -->
+                                                    @if($npc->ledChurches->isNotEmpty())
+                                                        <div class="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-indigo-800 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 px-2 py-0.5 rounded-md w-fit max-w-full">
+                                                            <span>⛪</span>
+                                                            <span class="truncate">Leading: {{ $npc->ledChurches->pluck('name')->join(', ') }}</span>
+                                                        </div>
+                                                    @elseif($npc->church && ! $npc->church->is_dissolved)
+                                                        <div class="mt-1.5 flex items-center gap-1 text-[10px] font-semibold text-purple-800 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800/60 px-2 py-0.5 rounded-md w-fit max-w-full">
+                                                            <span>👥</span>
+                                                            <span class="truncate">Group: {{ $npc->church->name }}</span>
+                                                        </div>
+                                                    @endif
+
+                                                    <!-- Need State Badge -->
+                                                    @if($npc->need_state !== \App\Enums\NpcNeedState::None)
+                                                        <div class="mt-2 flex items-center gap-1 text-[11px] px-2 py-0.5 rounded border {{ $npc->need_state->badgeClasses() }}">
+                                                            <span>{{ $npc->need_state->icon() }}</span>
+                                                            <span class="font-medium truncate">{{ $npc->need_state->label() }}</span>
+                                                        </div>
+                                                    @endif
+
+                                                    <!-- Trust Progress Bar -->
+                                                    <div class="mt-2.5">
+                                                        <div class="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 mb-0.5">
+                                                            <span>Trust Level</span>
+                                                            <span class="font-medium text-slate-700 dark:text-slate-300">{{ $npc->trust_level }}%</span>
+                                                        </div>
+                                                        <div class="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                                                            <div class="h-full bg-emerald-500 rounded-full transition-all" style="width: {{ $npc->trust_level }}%"></div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Selected / Queued Action Indicator under person's avatar/name and info -->
+                                                    @if(($isNpcSelected && $selectedActionEnum) || $npcQueuedActions->isNotEmpty())
+                                                        <div class="mt-2.5 pt-2 border-t border-slate-200/80 dark:border-slate-700/60 flex flex-wrap items-center gap-1.5">
+                                                            @if($isNpcSelected && $selectedActionEnum)
+                                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-black bg-indigo-600 text-white shadow-xs">
+                                                                    <span>⚡ Selected Action:</span>
+                                                                    <span>{{ $selectedActionEnum->icon() }} {{ $selectedActionEnum->label() }}</span>
+                                                                    <span class="opacity-85">({{ $selectedActionEnum->apCost() + $commuteApCost }} AP)</span>
+                                                                </span>
+                                                            @endif
+
+                                                            @foreach($npcQueuedActions as $qAction)
+                                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-700/60">
+                                                                    <span>📋 Queued (W{{ $qAction->game_week ?: 1 }}):</span>
+                                                                    <span>{{ $qAction->action_type->icon() }} {{ $qAction->action_type->label() }}</span>
+                                                                </span>
+                                                            @endforeach
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <div class="px-3 py-2 text-[11px] text-slate-400 dark:text-slate-500 italic">
+                                            No people in this category yet.
+                                        </div>
+                                    @endforelse
+                                </div>
+                            </div>
+                        @endforeach
+                    @endif
                 </div>
 
                 <!-- Floating Bottom Scroll Indicator for Residents -->
@@ -1318,25 +1537,27 @@
         >
             <!-- Action Selector Card -->
             <div class="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-lg">
-                <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-200 dark:border-slate-800">
-                    <div class="flex items-center gap-2">
-                        <button 
-                            type="button" 
-                            @click="mobileStep = 2; $wire.setMobileStep(2)"
-                            class="lg:hidden text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 text-xs font-bold flex items-center gap-0.5 mr-1"
-                            title="Back to Residents"
-                        >
-                            <span>‹</span>
-                            <span>People</span>
-                        </button>
-                        <h3 class="text-xs font-bold text-slate-800 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                            <span>⚡</span>
-                            <span>Schedule Relational Action</span>
-                        </h3>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 mb-3 border-b border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center justify-between sm:justify-start gap-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <button 
+                                type="button" 
+                                @click="mobileStep = 2; $wire.setMobileStep(2)"
+                                class="lg:hidden text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 text-xs font-bold flex items-center gap-0.5 shrink-0"
+                                title="Back to Residents"
+                            >
+                                <span>‹</span>
+                                <span>People</span>
+                            </button>
+                            <h3 class="text-xs font-bold text-slate-800 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5 truncate">
+                                <span>⚡</span>
+                                <span class="truncate">Schedule Relational Action</span>
+                            </h3>
+                        </div>
                         <button 
                             type="button" 
                             wire:click="openActionInfoModal()"
-                            class="px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 dark:bg-indigo-950/80 dark:hover:bg-indigo-900 dark:border-indigo-700/60 dark:text-indigo-300 text-[10px] font-bold flex items-center gap-1 transition cursor-pointer"
+                            class="px-2 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 dark:bg-indigo-950/80 dark:hover:bg-indigo-900 dark:border-indigo-700/60 dark:text-indigo-300 text-[10px] font-bold flex items-center gap-1 transition cursor-pointer shrink-0"
                             title="Open detailed guide with descriptive text for all actions"
                         >
                             <span>ℹ️</span>
@@ -1344,39 +1565,41 @@
                         </button>
                     </div>
                     @if($selectedNpc)
-                        <div class="flex items-center gap-2.5">
-                            <x-person-avatar :person="$selectedNpc" size="md" :showBadges="true" />
-                            <div class="text-right">
-                                <div class="flex items-center justify-end gap-1.5">
-                                    <span class="text-xs text-indigo-700 dark:text-indigo-400 font-bold block">{{ $selectedNpc->displayName }}</span>
-                                    @if($selectedNpc->leadership_tier->level() > 0)
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-bold border {{ $selectedNpc->leadership_tier->badgeClasses() }}">
-                                            {{ $selectedNpc->leadership_tier->levelCode() }}
-                                        </span>
-                                    @endif
+                        <div class="flex items-center justify-between sm:justify-end gap-3 p-2.5 sm:p-0 rounded-xl sm:rounded-none bg-slate-50 dark:bg-slate-950/60 sm:bg-transparent dark:sm:bg-transparent border border-slate-200/80 dark:border-slate-800/80 sm:border-0">
+                            <div class="flex items-center gap-2.5 min-w-0 sm:flex-row-reverse">
+                                <x-person-avatar :person="$selectedNpc" size="md" :showBadges="true" class="shrink-0" />
+                                <div class="min-w-0 text-left sm:text-right">
+                                    <div class="flex items-center sm:justify-end gap-1.5 flex-wrap">
+                                        <span class="text-xs text-indigo-700 dark:text-indigo-400 font-bold break-words">{{ $selectedNpc->displayName }}</span>
+                                        @if($selectedNpc->leadership_tier->level() > 0)
+                                            <span class="px-1.5 py-0.2 rounded text-[9px] font-bold border {{ $selectedNpc->leadership_tier->badgeClasses() }}">
+                                                {{ $selectedNpc->leadership_tier->levelCode() }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div class="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">
+                                        <span>{{ $selectedNpc->nationalityFlag }} {{ $selectedNpc->nationality }}</span> • <span>{{ $selectedNpc->genderIcon }} {{ $selectedNpc->age }}y</span>
+                                    </div>
+                                    <div class="text-[10px] text-slate-500 dark:text-slate-400">
+                                        {{ $selectedNpc->leadership_tier->roleTitle() }}
+                                    </div>
                                 </div>
-                                <div class="text-[10px] text-slate-600 dark:text-slate-300">
-                                    <span>{{ $selectedNpc->nationalityFlag }} {{ $selectedNpc->nationality }}</span> • <span>{{ $selectedNpc->genderIcon }} {{ $selectedNpc->age }}y</span>
-                                </div>
-                                <div class="text-[10px] text-slate-500 dark:text-slate-400">
-                                    {{ $selectedNpc->leadership_tier->roleTitle() }}
-                                </div>
-                                <button 
-                                    type="button" 
-                                    @click="mobileStep = 2; $wire.setMobileStep(2)" 
-                                    class="text-[10px] text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 underline lg:hidden"
-                                >
-                                    Change
-                                </button>
                             </div>
-                        </div>
-                    @else
-                        <div class="text-right">
-                            <span class="text-xs text-amber-800 dark:text-amber-400 font-semibold block">{{ $selectedWard?->name }} (Ward Action)</span>
                             <button 
                                 type="button" 
                                 @click="mobileStep = 2; $wire.setMobileStep(2)" 
-                                class="text-[10px] text-slate-500 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-300 underline lg:hidden"
+                                class="px-2.5 py-1 rounded-lg bg-slate-200/80 dark:bg-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-300 lg:hidden shrink-0"
+                            >
+                                Change
+                            </button>
+                        </div>
+                    @else
+                        <div class="flex items-center justify-between sm:justify-end gap-2 p-2.5 sm:p-0 rounded-xl sm:rounded-none bg-slate-50 dark:bg-slate-950/60 sm:bg-transparent dark:sm:bg-transparent border border-slate-200/80 dark:border-slate-800/80 sm:border-0">
+                            <span class="text-xs text-amber-800 dark:text-amber-400 font-semibold">{{ $selectedWard?->name }} (Ward Action)</span>
+                            <button 
+                                type="button" 
+                                @click="mobileStep = 2; $wire.setMobileStep(2)" 
+                                class="px-2.5 py-1 rounded-lg bg-slate-200/80 dark:bg-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:text-amber-700 dark:hover:text-amber-300 lg:hidden shrink-0"
                             >
                                 Pick Person
                             </button>
