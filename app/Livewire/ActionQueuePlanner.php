@@ -138,6 +138,59 @@ class ActionQueuePlanner extends Component
         $this->showWeeklyDevelopmentsModal = false;
     }
 
+    /**
+     * Accept an active No Place Left training invite (Level 1, 2, or 3), deducting AP and unlocking its actions.
+     */
+    public function acceptTrainingInvite(int $level): void
+    {
+        $this->boot();
+
+        if (! $this->player) {
+            return;
+        }
+
+        if (! $this->player->isEligibleForTrainingInvite($level)) {
+            $this->dispatch('notify', [
+                'type' => 'warning',
+                'message' => 'You are not currently eligible for this training invite.',
+            ]);
+
+            return;
+        }
+
+        $details = User::trainingInviteDetails($level);
+        $apCost = $details['ap_cost'];
+
+        if ($this->player->action_points < $apCost) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => "Insufficient Action Points! Attending {$details['title']} requires {$apCost} AP (you have {$this->player->action_points} AP).",
+            ]);
+
+            return;
+        }
+
+        $this->player->decrement('action_points', $apCost);
+        $this->player->training_level = $level;
+
+        if ($level === 1) {
+            $this->player->level_1_completed_month = $this->player->current_game_month;
+        } elseif ($level === 2) {
+            $this->player->level_2_completed_month = $this->player->current_game_month;
+        } elseif ($level === 3) {
+            $this->player->level_3_completed_month = $this->player->current_game_month;
+        }
+
+        $this->player->save();
+        $this->player->refresh();
+
+        $this->dispatch('day-advanced');
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => "🎓 Completed Level {$level}: {$details['title']} (-{$apCost} AP)! New No Place Left actions are now unlocked.",
+        ]);
+    }
+
     public function onHomeWardSelected(int $wardId): void
     {
         $this->refreshPlayerState();
@@ -423,6 +476,16 @@ class ActionQueuePlanner extends Component
             return;
         }
 
+        if (! $actionEnum->isUnlockedFor($this->player)) {
+            $lockReason = $actionEnum->trainingLockReason($this->player) ?? 'Requires additional training.';
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => "Training Required: {$lockReason}",
+            ]);
+
+            return;
+        }
+
         $baseApCost = $actionEnum->apCost();
         $targetWard = Ward::find($this->selectedWardId);
         $commuteApCost = $this->player->commuteApCostForWard($targetWard);
@@ -610,6 +673,16 @@ class ActionQueuePlanner extends Component
             $this->dispatch('notify', [
                 'type' => 'error',
                 'message' => 'Invalid spiritual rhythm or retreat selected.',
+            ]);
+
+            return;
+        }
+
+        if (! $rhythmEnum->isUnlockedFor($this->player)) {
+            $lockReason = $rhythmEnum->trainingLockReason($this->player) ?? 'Requires additional training.';
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => "Training Required: {$lockReason}",
             ]);
 
             return;
@@ -1082,7 +1155,10 @@ class ActionQueuePlanner extends Component
         ));
 
         $actionTypes = ($this->filterEligibleOnly && $selectedNpc)
-            ? array_values(array_filter($allFieldActionTypes, fn (MinistryActionType $action) => $action->isEligibleFor($selectedNpc)))
+            ? array_values(array_filter(
+                $allFieldActionTypes,
+                fn (MinistryActionType $action) => $action->isUnlockedFor($this->player) && $action->isEligibleFor($selectedNpc)
+            ))
             : $allFieldActionTypes;
 
         $recommendedActionType = null;
@@ -1280,9 +1356,11 @@ class ActionQueuePlanner extends Component
                 'active' => $activeWorkerRhythm?->action_type === MinistryActionType::MidLevelConference,
                 'hasExistingActions' => $hasExistingActionsThisWeek,
                 'isMonthComplete' => $hasCompletedMonth,
-                'eligible' => ! $isDayBlocked && ! $hasCompletedMonth && ! $hasMidLevelThisMonth && ! $hasExistingActionsThisWeek,
-                'allowed' => ! $isDayBlocked && ! $hasCompletedMonth && ! $hasMidLevelThisMonth && ! $hasExistingActionsThisWeek,
-                'reason' => $isDayBlocked ? 'Worker is already on a retreat/activity this week.' : ($hasCompletedMonth ? 'All 4 weeks of Month '.$currentMonth.' have been completed.' : ($hasExistingActionsThisWeek ? "Week {$currentWeek} already has scheduled actions. Conference requires a dedicated, empty week." : ($hasMidLevelThisMonth ? 'NPL Mid-Level Conference can only be joined once per month.' : null))),
+                'eligible' => MinistryActionType::MidLevelConference->isUnlockedFor($this->player) && ! $isDayBlocked && ! $hasCompletedMonth && ! $hasMidLevelThisMonth && ! $hasExistingActionsThisWeek,
+                'allowed' => MinistryActionType::MidLevelConference->isUnlockedFor($this->player) && ! $isDayBlocked && ! $hasCompletedMonth && ! $hasMidLevelThisMonth && ! $hasExistingActionsThisWeek,
+                'reason' => ! MinistryActionType::MidLevelConference->isUnlockedFor($this->player)
+                    ? MinistryActionType::MidLevelConference->trainingLockReason($this->player)
+                    : ($isDayBlocked ? 'Worker is already on a retreat/activity this week.' : ($hasCompletedMonth ? 'All 4 weeks of Month '.$currentMonth.' have been completed.' : ($hasExistingActionsThisWeek ? "Week {$currentWeek} already has scheduled actions. Conference requires a dedicated, empty week." : ($hasMidLevelThisMonth ? 'NPL Mid-Level Conference can only be joined once per month.' : null)))),
             ],
             MinistryActionType::SupporterLetterAndAdmin->value => [
                 'actionType' => MinistryActionType::SupporterLetterAndAdmin,
@@ -1297,6 +1375,19 @@ class ActionQueuePlanner extends Component
                 'reason' => $isDayBlocked ? 'Worker is already on a dedicated retreat this week.' : ($hasCompletedMonth ? "Month {$currentMonth} has completed all 4 weeks." : ($recentSupporterLetter ? 'Supporter prayer letter & admin has already been scheduled for this week.' : ($playerAp < 2 ? "Requires 2 AP bandwidth (you have {$playerAp} AP)." : null))),
             ],
         ];
+
+        $trainingLevel = (int) ($this->player?->training_level ?? 0);
+        $availableTrainingInvite = $this->player?->nextAvailableTrainingInvite();
+        $availableTrainingInviteDetails = $availableTrainingInvite ? User::trainingInviteDetails($availableTrainingInvite) : null;
+        $nextTrainingMilestoneHint = null;
+        if (! $availableTrainingInvite && $this->player) {
+            if ($trainingLevel === 1 && $this->player->level_1_completed_month !== null) {
+                $unlocksMonth = $this->player->level_1_completed_month + 2;
+                $nextTrainingMilestoneHint = "Level 2 Invite (Gospel Conversations / Four Fields • 12 AP) will arrive in Month {$unlocksMonth} (2 months after Level 1).";
+            } elseif ($trainingLevel === 2) {
+                $nextTrainingMilestoneHint = 'Level 3 Invite (Mid-Level / Strategy Training • 12 AP) unlocks once you start a Three Third (3/3rds) group (Church Circles).';
+            }
+        }
 
         return view('livewire.action-queue-planner', [
             'wards' => $wards,
@@ -1330,6 +1421,10 @@ class ActionQueuePlanner extends Component
             'hqSubView' => $this->hqSubView,
             'activeCelebration' => $activeCelebrations->first(),
             'totalCelebrations' => $activeCelebrations->count(),
+            'trainingLevel' => $trainingLevel,
+            'availableTrainingInvite' => $availableTrainingInvite,
+            'availableTrainingInviteDetails' => $availableTrainingInviteDetails,
+            'nextTrainingMilestoneHint' => $nextTrainingMilestoneHint,
         ]);
     }
 }

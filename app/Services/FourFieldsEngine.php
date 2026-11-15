@@ -2268,6 +2268,124 @@ class FourFieldsEngine
     }
 
     /**
+     * Resolve Oikos Mapping: maps relational spheres (8-15 people across family, work, school, neighbors, hobbies)
+     * to surface new Yellow seekers and grow local churches.
+     */
+    protected function resolveOikosMapping(QueuedMonthlyAction $action, int $gameMonth): ActionResolutionOutcome
+    {
+        $user = $action->user;
+        $ward = $action->ward ?? Ward::find($action->ward_id) ?? Ward::first();
+        $targetNpc = $action->targetNpc;
+
+        $discoveredNpc = null;
+        $oikosUnlocked = false;
+        $points = 25;
+
+        // 1. Surface a new Yellow seeker in the ward (convert an unreached contact or spawn a new Yellow resident)
+        $unreachedNpc = Npc::where('game_session_id', $action->game_session_id)
+            ->where('ward_id', $ward->id)
+            ->where('status', ReceptivityStatus::Unreached)
+            ->inRandomOrder()
+            ->first();
+
+        if ($unreachedNpc) {
+            $unreachedNpc->update([
+                'status' => ReceptivityStatus::Yellow,
+                'yellow_since_game_month' => $gameMonth,
+                'seeking_months' => 0,
+            ]);
+            $unreachedNpc->increment('trust_level', rand(12, 20));
+            $discoveredNpc = $unreachedNpc;
+            $oikosUnlocked = true;
+        } else {
+            $coord = [(float) $ward->center_lat, (float) $ward->center_lng];
+            $discoveredNpc = app(JapaneseNameRegistry::class)->spawnResident(
+                (int) $action->game_session_id,
+                $ward,
+                $coord,
+                isPersonOfPeace: false,
+                status: ReceptivityStatus::Yellow
+            );
+            $oikosUnlocked = true;
+        }
+
+        // 2. Link relational Oikos connection if a target NPC or existing believer/seeker exists
+        $anchorNpc = $targetNpc ?? Npc::where('game_session_id', $action->game_session_id)
+            ->where('ward_id', $ward->id)
+            ->where('id', '!=', $discoveredNpc->id)
+            ->inRandomOrder()
+            ->first();
+
+        if ($anchorNpc && $discoveredNpc && $anchorNpc->id !== $discoveredNpc->id) {
+            OikosRelationship::firstOrCreate(
+                [
+                    'npc_id' => $anchorNpc->id,
+                    'related_npc_id' => $discoveredNpc->id,
+                ],
+                [
+                    'relationship_type' => RelationshipType::Friend,
+                    'trust_level' => 45,
+                ]
+            );
+        }
+
+        // 3. Grow an active church in the ward as Oikos networks connect into church life
+        $wardChurch = Church::where('game_session_id', $action->game_session_id)
+            ->where('ward_id', $ward->id)
+            ->where('is_dissolved', false)
+            ->inRandomOrder()
+            ->first();
+
+        $churchGrowthNote = '';
+        if ($wardChurch) {
+            $attenderGain = rand(1, 2);
+            $wardChurch->increment('attenders_count', $attenderGain);
+            $wardChurch->update(['health_score' => min(100, $wardChurch->health_score + 2)]);
+            $churchGrowthNote = " {$wardChurch->name} grew by +{$attenderGain} attender(s) through new Oikos connections!";
+            $points += 10;
+        }
+
+        // 4. Soften ward atmosphere and record contribution
+        $opennessGain = 2 + ($user->home_ward_id === $ward->id ? 1 : 0);
+        $ward->increment('spiritual_openness', $opennessGain);
+
+        NpcContribution::create([
+            'game_session_id' => $action->game_session_id,
+            'npc_id' => $discoveredNpc->id,
+            'user_id' => $user->id,
+            'action_type' => MinistryActionType::OikosMapping,
+            'contribution_role' => ContributionRole::PioneerSower,
+            'game_month' => $gameMonth,
+            'trust_gained' => 15,
+            'points_awarded' => $points,
+            'triggered_breakthrough' => true,
+            'notes' => "Oikos Mapping in {$ward->name} surfaced Yellow seeker {$discoveredNpc->displayName}.{$churchGrowthNote}",
+        ]);
+
+        $narrative = "Mapped your Oikos relational sphere in {$ward->name}! Surfaced new Yellow seeker {$discoveredNpc->displayName} (Trust {$discoveredNpc->trust_level}%).{$churchGrowthNote}";
+
+        return new ActionResolutionOutcome(
+            actionId: $action->id,
+            actionType: $action->action_type,
+            userId: $user->id,
+            targetNpcId: $discoveredNpc->id,
+            wardId: $ward->id,
+            trustChange: 15,
+            newTrustLevel: $discoveredNpc->trust_level,
+            previousStatus: ReceptivityStatus::Unreached,
+            newStatus: $discoveredNpc->status,
+            statusChanged: true,
+            pointsAwarded: $points,
+            coopPointsAwarded: $wardChurch ? 10 : 5,
+            roleAssigned: ContributionRole::PioneerSower,
+            collaboratorsImpacted: [],
+            narrativeOutcome: $narrative,
+            pedagogicalTip: '411 Oikos Mapping: "Oikos" means household or extended relational sphere—the 8 to 15 people God has already placed around you (family, work, school, neighbors, hobbies).',
+            newOikosUnlocked: $oikosUnlocked,
+        );
+    }
+
+    /**
      * Resolves ward-wide Swarm Training platform action (Field 5: Movement Strategy).
      */
     protected function resolveSwarmTrainingPlatform(QueuedMonthlyAction $action, int $gameMonth): ActionResolutionOutcome

@@ -410,7 +410,7 @@
                         </p>
                     </div>
                     <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800/80 text-[11px] text-blue-700 dark:text-blue-300">
-                        ⚡ Actions: Prayer Walking (Solo/Joint), Casual Talk, Deep Listening, Healing Prayer, Mercy Outreach, International Cafe.
+                        ⚡ Actions: Prayer Walking (Solo/Joint), Oikos Mapping (L1 411), Casual Talk, Deep Listening, Healing Prayer, Mercy Outreach, International Cafe.
                     </div>
                 </div>
 
@@ -512,7 +512,7 @@
                     "Lead from one level ahead of wherever the leader is who you are with! Once your leaders are confident and competent with the tools for their current level, begin equipping them with tools from 1 level above!"
                 </blockquote>
                 <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                    In the simulation, every resident's spiritual readiness and leadership tier are tracked in real-time. The system strictly guards against pedagogical mismatches: <em>people who have never heard about Jesus cannot be assigned Timothy Mentoring or Swarm Training</em>.
+                    In the simulation, every resident's spiritual readiness and leadership tier are tracked in real-time. Players also progress through three active <strong>No Place Left Training Invites</strong> before advanced actions unlock: <strong>Level 1: 411 Training (2 AP)</strong> unlocks Oikos Mapping, 15-Sec Testimony, 3 Circles, Prayer of Salvation, and 411 Equipping; <strong>Level 2: Gospel Conversations / Four Fields (12 AP, 2 months after Level 1)</strong> unlocks Baptism Commitment, Commands of Christ, SWORD Bible Study, and 3/3rds Church Circles; <strong>Level 3: Mid-Level / Strategy Training (12 AP, after starting a 3/3rds group)</strong> unlocks Timothy Mentoring, Iron on Iron, Swarm Training, and the NPL Mid-Level Conference.
                 </p>
             </div>
 

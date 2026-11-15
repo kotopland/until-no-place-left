@@ -1419,12 +1419,57 @@
                     </div>
                 @endif
 
+                <!-- NPL Training Progression & Invite Banner -->
+                @if(!empty($availableTrainingInviteDetails))
+                    <div class="mb-3 p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50 via-cyan-50 to-emerald-50 dark:from-indigo-950/70 dark:via-cyan-950/60 dark:to-emerald-950/50 border border-indigo-200 dark:border-indigo-700/60 shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-indigo-600 text-white">
+                                        📩 Training Invite • Level {{ $availableTrainingInviteDetails['level'] }}
+                                    </span>
+                                    <span class="text-xs font-extrabold text-slate-900 dark:text-white">
+                                        {{ $availableTrainingInviteDetails['title'] }}
+                                    </span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-700">
+                                        {{ $availableTrainingInviteDetails['ap_cost'] }} AP
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed">
+                                    {{ $availableTrainingInviteDetails['description'] }}
+                                </p>
+                                <div class="flex flex-wrap gap-1 pt-0.5">
+                                    @foreach($availableTrainingInviteDetails['unlocks'] as $unlockedLabel)
+                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-white/80 dark:bg-slate-900/70 text-indigo-800 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/60">
+                                            🔓 {{ $unlockedLabel }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                wire:click="acceptTrainingInvite({{ $availableTrainingInviteDetails['level'] }})"
+                                wire:loading.attr="disabled"
+                                class="shrink-0 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold shadow-sm transition cursor-pointer disabled:opacity-50"
+                            >
+                                🎓 Accept Invite ({{ $availableTrainingInviteDetails['ap_cost'] }} AP)
+                            </button>
+                        </div>
+                    </div>
+                @elseif(!empty($nextTrainingMilestoneHint))
+                    <div class="mb-3 px-3 py-2 rounded-xl bg-slate-100/90 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <span>🔒</span>
+                        <span><strong>Training Level {{ $trainingLevel }}/3:</strong> {{ $nextTrainingMilestoneHint }}</span>
+                    </div>
+                @endif
+
                 <!-- Action Type Selector with Progressive Disclosure -->
                 @php
                     $eligibleActionList = [];
                     $lockedActionList = [];
                     foreach ($actionTypes as $action) {
-                        $isEligible = $action->isEligibleFor($selectedNpc);
+                        $isUnlocked = $action->isUnlockedFor($this->player);
+                        $isEligible = $isUnlocked && $action->isEligibleFor($selectedNpc);
                         if ($action === \App\Enums\MinistryActionType::IronOnIron && $isEligible) {
                             if (($totalIoIToday ?? 0) >= 3 || ($selectedNpc && in_array($selectedNpc->id, $doneNpcIdsToday ?? [], true))) {
                                 $isEligible = false;
@@ -1557,8 +1602,9 @@
                             <div x-show="showFutureActions" x-cloak class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-2.5">
                                 @foreach($lockedActionList as $action)
                                     @php
-                                        $ineligibilityReason = $action->ineligibilityReason($selectedNpc);
-                                        if ($action === \App\Enums\MinistryActionType::IronOnIron) {
+                                        $trainingLockReason = $action->trainingLockReason($this->player);
+                                        $ineligibilityReason = $trainingLockReason ?? $action->ineligibilityReason($selectedNpc);
+                                        if (! $trainingLockReason && $action === \App\Enums\MinistryActionType::IronOnIron) {
                                             if (($totalIoIToday ?? 0) >= 3) {
                                                 $ineligibilityReason = 'Daily Iron on Iron limit reached: max 3 sessions allowed per day (3/3 used today).';
                                             } elseif ($selectedNpc && in_array($selectedNpc->id, $doneNpcIdsToday ?? [], true)) {

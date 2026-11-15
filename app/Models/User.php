@@ -1098,7 +1098,7 @@ class User extends Authenticatable
 
         return QueuedMonthlyAction::where('user_id', $this->id)
             ->where('action_type', MinistryActionType::ChurchCircles)
-            ->where('status', QueuedActionStatus::Resolved)
+            ->where('status', QueuedActionStatus::Processed)
             ->exists();
     }
 
