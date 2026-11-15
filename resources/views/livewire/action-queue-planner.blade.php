@@ -1421,7 +1421,7 @@
 
                 <!-- NPL Training Progression & Invite Banner -->
                 @if(!empty($availableTrainingInviteDetails))
-                    <div class="mb-3 p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50 via-cyan-50 to-emerald-50 dark:from-indigo-950/70 dark:via-cyan-950/60 dark:to-emerald-950/50 border border-indigo-200 dark:border-indigo-700/60 shadow-sm">
+                    <div class="mb-3 p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50 via-cyan-50 to-emerald-50 dark:bg-slate-900 dark:from-indigo-950/90 dark:via-slate-900 dark:to-emerald-950/80 border border-indigo-200 dark:border-indigo-700/60 shadow-sm">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div class="space-y-1">
                                 <div class="flex items-center gap-2 flex-wrap">
