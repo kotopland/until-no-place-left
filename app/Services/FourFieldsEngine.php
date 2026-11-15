@@ -1086,6 +1086,10 @@ class FourFieldsEngine
             return $this->resolvePrayerWalk($action, $gameMonth);
         }
 
+        if ($action->action_type === MinistryActionType::OikosMapping) {
+            return $this->resolveOikosMapping($action, $gameMonth);
+        }
+
         if ($action->action_type === MinistryActionType::SwarmTraining && ! $npc) {
             return $this->resolveSwarmTrainingPlatform($action, $gameMonth);
         }

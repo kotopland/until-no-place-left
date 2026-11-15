@@ -3,6 +3,7 @@
 namespace App\Enums;
 
 use App\Models\Npc;
+use App\Models\User;
 
 enum MinistryActionType: string
 {
@@ -13,6 +14,7 @@ enum MinistryActionType: string
     case MercyCareFoodBible = 'mercy_care_food_bible';
     case InternationalEvent = 'international_event';
     case PrayerWalk = 'prayer_walk';
+    case OikosMapping = 'oikos_mapping';
 
     // Field 2: Gospel Presentation & Decision
     case Share15SecTestimony = 'share_15sec_testimony';
@@ -52,6 +54,7 @@ enum MinistryActionType: string
             self::MercyCareFoodBible => 'Mercy Care (Food, Practical Aid & Bible)',
             self::InternationalEvent => 'Host International / Cultural Event',
             self::PrayerWalk => 'Prayer Walking & Spiritual Mapping',
+            self::OikosMapping => 'Oikos Mapping (Relational Sphere)',
             self::Share15SecTestimony => 'Share 15-Second Testimony',
             self::Share3Circles => 'Share 3 Circles Gospel Presentation',
             self::PraySalvation => "Prayer of Salvation / Sinner's Prayer",
@@ -83,6 +86,7 @@ enum MinistryActionType: string
             self::MercyCareFoodBible => '愛の奉仕（炊き出し・支援・聖書贈呈）',
             self::InternationalEvent => '国際交流イベント・英会話カフェ開催',
             self::PrayerWalk => '祈りの行進（プレイヤーウォーク・霊的マッピング）',
+            self::OikosMapping => 'オイコス・マッピング（人間関係ネットワーク整理）',
             self::Share15SecTestimony => '15秒証しを分かち合う',
             self::Share3Circles => '3サークル福音提示',
             self::PraySalvation => '救いの祈り・罪人の祈り（信仰告白）',
@@ -108,7 +112,7 @@ enum MinistryActionType: string
     public function field(): int
     {
         return match ($this) {
-            self::CasualTalk, self::InternationalEvent, self::PrayerWalk => 1, // Field 1: Entry Strategy
+            self::CasualTalk, self::InternationalEvent, self::PrayerWalk, self::OikosMapping => 1, // Field 1: Entry Strategy
             self::DeepTalk, self::PrayerForHealing => 1,    // Field 1: Heart Preparation / Sowing Pre-Gospel
             self::MercyCareFoodBible => 1,                  // Field 1 & 4: Compassion / Kingdom Platform
             self::Share15SecTestimony, self::Share3Circles, self::PraySalvation => 2, // Field 2: Gospel Sowing & Decision
@@ -127,6 +131,7 @@ enum MinistryActionType: string
     {
         return match ($this) {
             self::PrayerWalk => 'Field 1: Entry / Prayer Walk',
+            self::OikosMapping => 'Field 1: Entry / Oikos Mapping',
             self::ChurchCircles => 'Field 4: Healthy Church Formation',
             self::MentorTimothy => 'Field 5: Leadership Multiplication (L1 -> L2)',
             self::IronOnIron => 'Field 5: Iron on Iron Peer Coaching (L2 -> L3)',
@@ -154,7 +159,7 @@ enum MinistryActionType: string
     {
         return match ($this) {
             self::CasualTalk, self::DeepTalk, self::PrayerForHealing, self::MercyCareFoodBible,
-            self::InternationalEvent, self::PrayerWalk, self::Share15SecTestimony, self::Share3Circles,
+            self::InternationalEvent, self::PrayerWalk, self::OikosMapping, self::OikosMapping, self::Share15SecTestimony, self::Share3Circles,
             self::PraySalvation, self::Train411 => 'L1: Seed Sower',
             self::CommitToBaptism, self::CommandsOfChrist, self::SwordBibleStudy, self::ChurchCircles => 'L2: Church Planter',
             self::MentorTimothy, self::IronOnIron => 'L3: Church Plant Multiplier',
@@ -173,7 +178,7 @@ enum MinistryActionType: string
     public function apCost(): int
     {
         return match ($this) {
-            self::CasualTalk, self::PrayerWalk => 1,
+            self::CasualTalk, self::PrayerWalk, self::OikosMapping => 1,
             self::DeepTalk => 2,
             self::PrayerForHealing => 1,
             self::MercyCareFoodBible => 2,
@@ -216,6 +221,7 @@ enum MinistryActionType: string
             self::MercyCareFoodBible => 'Provide nutritious hot meals, basic dignity, warm fellowship, and Scripture portions to unhoused and vulnerable neighbors around Nagoya hubs.',
             self::InternationalEvent => 'Organize a cultural exchange, cooking class, or English cafe in a ward. Attracts groups of seekers and rapidly surfaces Persons of Peace.',
             self::PrayerWalk => 'Intercede on site through neighborhood streets, stations, and shrines. Traces street prayer lines on the Nagoya map and unlocks increased probability of discovering a Person of Peace (Luke 10).',
+            self::OikosMapping => 'Oikos is a Greek word meaning "house," "household," or "extended family." Map your natural relational sphere—typically 8 to 15 people across family, work, school, neighbors, or hobbies—to discover new Yellow seekers and grow local churches.',
             self::Share15SecTestimony => 'Share how you transitioned from brokenness to rest and restoration in Jesus in just two simple sentences.',
             self::Share3Circles => 'A clear visual presentation: God’s Design -> Brokenness -> Gospel Rescue -> Repent & Believe -> Recover & Pursue.',
             self::PraySalvation => 'Lead an open seeker in a heartfelt prayer of repentance and receiving Jesus Christ as Lord and Savior (Romans 10:9-10).',
@@ -247,6 +253,7 @@ enum MinistryActionType: string
             self::MercyCareFoodBible => '🍲',
             self::InternationalEvent => '🎉',
             self::PrayerWalk => '🚶',
+            self::OikosMapping => '🏡',
             self::Share15SecTestimony => '⏱️',
             self::Share3Circles => '⭕',
             self::PraySalvation => '✝️',
@@ -272,7 +279,7 @@ enum MinistryActionType: string
     public function requiresTargetNpc(): bool
     {
         return match ($this) {
-            self::InternationalEvent, self::PrayerWalk,
+            self::InternationalEvent, self::PrayerWalk, self::OikosMapping,
             self::ReceiveMentoring, self::SabbathRest, self::FastingRetreat, self::MidLevelConference, self::SupporterLetterAndAdmin => false,
             default => true,
         };
@@ -302,6 +309,9 @@ enum MinistryActionType: string
 
             // Field 1 & MAWL: Prayer Walk (Solo in ward, or Joint with acquaintance/seeker/believer)
             self::PrayerWalk => $npc->is_person_of_peace || $isBeliever || $npc->status === ReceptivityStatus::Yellow || $npc->trust_level >= 20,
+
+            // Field 1 & 411: Oikos Mapping (Open to any ward or resident)
+            self::OikosMapping => true,
 
             // Field 2 Gospel: Unreached or Red or Yellow
             self::Share15SecTestimony, self::Share3Circles => true,
@@ -402,6 +412,70 @@ enum MinistryActionType: string
     public function durationWeeks(): int
     {
         return 1;
+    }
+
+    /**
+     * Training invite level required to unlock this action (0 = available from start, 1 = 411 Training, 2 = Gospel Conversations / Four Fields, 3 = Mid-Level / Strategy Training)
+     */
+    public function requiredTrainingLevel(): int
+    {
+        return match ($this) {
+            self::CasualTalk,
+            self::DeepTalk,
+            self::PrayerForHealing,
+            self::MercyCareFoodBible,
+            self::InternationalEvent,
+            self::PrayerWalk,
+            self::SabbathRest,
+            self::FastingRetreat,
+            self::ReceiveMentoring,
+            self::SupporterLetterAndAdmin => 0,
+
+            self::OikosMapping,
+            self::Share15SecTestimony,
+            self::Share3Circles,
+            self::PraySalvation,
+            self::Train411 => 1,
+
+            self::CommitToBaptism,
+            self::CommandsOfChrist,
+            self::SwordBibleStudy,
+            self::ChurchCircles => 2,
+
+            self::MentorTimothy,
+            self::IronOnIron,
+            self::SwarmTraining,
+            self::MidLevelConference => 3,
+        };
+    }
+
+    /**
+     * Whether the player has completed the required training invite for this action
+     */
+    public function isUnlockedFor(?User $user): bool
+    {
+        if (! $user) {
+            return true;
+        }
+
+        return (int) ($user->training_level ?? 0) >= $this->requiredTrainingLevel();
+    }
+
+    /**
+     * Human-friendly explanation when an action is locked behind a training invite
+     */
+    public function trainingLockReason(?User $user): ?string
+    {
+        if ($this->isUnlockedFor($user)) {
+            return null;
+        }
+
+        return match ($this->requiredTrainingLevel()) {
+            1 => 'Requires Level 1 Invite: "411 Training" (2 AP) to unlock.',
+            2 => 'Requires Level 2 Invite: "Gospel Conversations / Four Fields" (12 AP, unlocks 2 months after Level 1).',
+            3 => 'Requires Level 3 Invite: "Mid-Level / Strategy Training" (12 AP, unlocks after starting a Three Third group).',
+            default => 'Requires additional No Place Left training.',
+        };
     }
 
     /**

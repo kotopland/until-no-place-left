@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\MinistryActionType;
 use App\Enums\QueuedActionStatus;
 use App\Services\PersonAvatarService;
 use Database\Factories\UserFactory;
@@ -117,6 +118,10 @@ use Illuminate\Support\Str;
     'committed_to_language_training',
     'language_training_enrolled_month',
     'language_training_completed',
+    'training_level',
+    'level_1_completed_month',
+    'level_2_completed_month',
+    'level_3_completed_month',
     'last_prayer_letter_game_month',
     'consecutive_admin_neglect_months',
     'active_prayer_focus',
@@ -807,6 +812,10 @@ class User extends Authenticatable
             'committed_to_language_training' => 'boolean',
             'language_training_enrolled_month' => 'integer',
             'language_training_completed' => 'boolean',
+            'training_level' => 'integer',
+            'level_1_completed_month' => 'integer',
+            'level_2_completed_month' => 'integer',
+            'level_3_completed_month' => 'integer',
             'last_prayer_letter_game_month' => 'integer',
             'consecutive_admin_neglect_months' => 'integer',
             'active_prayer_focus' => 'string',
@@ -1074,6 +1083,124 @@ class User extends Authenticatable
             $km <= 5.0 => "🚇 Nearby Ward ({$km} km)",
             $km <= 10.0 => "🚆 Moderate Commute ({$km} km • +1 AP)",
             default => "⚠️ Distant Commute ({$km} km • +2 AP)",
+        };
+    }
+
+    /**
+     * Whether the player has started at least one Three Third (3/3rds) group (Bible study or church).
+     */
+    public function hasStartedThreeThirdGroup(): bool
+    {
+        $leadsChurch = Church::where('leader_user_id', $this->id)->exists();
+        if ($leadsChurch) {
+            return true;
+        }
+
+        return QueuedMonthlyAction::where('user_id', $this->id)
+            ->where('action_type', MinistryActionType::ChurchCircles)
+            ->where('status', QueuedActionStatus::Resolved)
+            ->exists();
+    }
+
+    /**
+     * Determine whether the player is currently eligible to receive and accept a given training invite level (1-3).
+     */
+    public function isEligibleForTrainingInvite(int $level): bool
+    {
+        $currentLevel = (int) ($this->training_level ?? 0);
+
+        return match ($level) {
+            1 => $currentLevel === 0,
+            2 => $currentLevel === 1
+                && $this->level_1_completed_month !== null
+                && $this->current_game_month >= ($this->level_1_completed_month + 2),
+            3 => $currentLevel === 2 && $this->hasStartedThreeThirdGroup(),
+            default => false,
+        };
+    }
+
+    /**
+     * Return the next training invite level (1, 2, or 3) currently available to the player, or null.
+     */
+    public function nextAvailableTrainingInvite(): ?int
+    {
+        foreach ([1, 2, 3] as $level) {
+            if ($this->isEligibleForTrainingInvite($level)) {
+                return $level;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Whether the player has unlocked a given ministry action via their training level.
+     */
+    public function hasUnlockedAction(MinistryActionType $action): bool
+    {
+        return $action->isUnlockedFor($this);
+    }
+
+    /**
+     * Metadata for a given training invite level (1, 2, or 3).
+     *
+     * @return array{level: int, title: string, subtitle: string, ap_cost: int, description: string, prerequisite: string, unlocks: array<int, string>}
+     */
+    public static function trainingInviteDetails(int $level): array
+    {
+        return match ($level) {
+            1 => [
+                'level' => 1,
+                'title' => '411 Training',
+                'subtitle' => 'Level 1 Invite • Seed Sower Equipping',
+                'ap_cost' => 2,
+                'description' => 'You are invited to attend a 411 Training! Learn the 4 foundational questions: Why make disciples? Who to reach (Oikos Mapping)? What to say (15-Sec Testimony & 3 Circles)? When to start?',
+                'prerequisite' => 'Available immediately to start equipping as an L1 Seed Sower.',
+                'unlocks' => [
+                    'Oikos Mapping (Relational Sphere)',
+                    'Share 15-Second Testimony',
+                    'Share 3 Circles Gospel Presentation',
+                    'Prayer of Salvation / Sinner\'s Prayer',
+                    'Equip with 411 Discipleship Training',
+                ],
+            ],
+            2 => [
+                'level' => 2,
+                'title' => 'Gospel Conversations / Four Fields',
+                'subtitle' => 'Level 2 Invite • Church Planter Equipping',
+                'ap_cost' => 12,
+                'description' => 'Two months after completing 411, you are invited into Gospel Conversations / Four Fields training—equipping you to walk believers into baptism, lead Commands of Christ & SWORD studies, and plant 3/3rds Church Circles.',
+                'prerequisite' => 'Unlocks 2 months after completing Level 1 (411 Training).',
+                'unlocks' => [
+                    'Commitment to Baptism & Cost of Discipleship',
+                    'Commands of Christ (& Hand Motions)',
+                    'SWORD Bible Study Discovery',
+                    'Acts 2 Church Circles (3/3 Pattern)',
+                ],
+            ],
+            3 => [
+                'level' => 3,
+                'title' => 'Mid-Level / Strategy Training',
+                'subtitle' => 'Level 3 Invite • Multiplier & Movement Strategy',
+                'ap_cost' => 12,
+                'description' => 'Because you have started a Three Third (3/3rds) group, you are invited to Mid-Level / Strategy Training! Learn generational mapping, Timothy mentoring, Iron-on-Iron peer coaching, Swarm Training, and NPL strategy retreats.',
+                'prerequisite' => 'Only for practitioners who have started a Three Third (3/3rds) group (Bible study or church).',
+                'unlocks' => [
+                    'Mentor Timothy Leader (Field 5 Multiplication)',
+                    'Generational Mapping & Iron on Iron (IoI)',
+                    'Swarm Training & Movement Catalyzing',
+                    '3-Day NPL Mid-Level Strategy Conference',
+                ],
+            ],
+            default => [
+                'level' => 0,
+                'title' => 'Pre-Training',
+                'subtitle' => 'Entry & Worker Rhythms',
+                'ap_cost' => 0,
+                'description' => 'Relational entry and personal missionary rhythms.',
+                'prerequisite' => 'None',
+                'unlocks' => [],
+            ],
         };
     }
 

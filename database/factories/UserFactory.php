@@ -52,6 +52,10 @@ class UserFactory extends Factory
             'hide_welcome_guide' => false,
             'committed_to_language_training' => false,
             'language_training_completed' => true,
+            'training_level' => 3,
+            'level_1_completed_month' => 1,
+            'level_2_completed_month' => 3,
+            'level_3_completed_month' => 4,
         ];
     }
 
@@ -76,6 +80,26 @@ class UserFactory extends Factory
             'has_seen_host_intro' => false,
             'committed_to_language_training' => false,
             'language_training_completed' => false,
+        ]);
+    }
+
+    public function untrained(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'training_level' => 0,
+            'level_1_completed_month' => null,
+            'level_2_completed_month' => null,
+            'level_3_completed_month' => null,
+        ]);
+    }
+
+    public function withTrainingLevel(int $level, ?int $level1Month = null): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'training_level' => $level,
+            'level_1_completed_month' => $level >= 1 ? ($level1Month ?? 1) : null,
+            'level_2_completed_month' => $level >= 2 ? ($level1Month ? $level1Month + 2 : 3) : null,
+            'level_3_completed_month' => $level >= 3 ? ($level1Month ? $level1Month + 3 : 4) : null,
         ]);
     }
 
