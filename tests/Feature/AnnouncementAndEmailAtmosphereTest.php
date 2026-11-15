@@ -243,6 +243,8 @@ test('emails include avatar and nagoya ward map images', function (): void {
     expect($monthlyHtml)
         ->toContain('/media/logo.png')
         ->not->toContain('laravel.com/img/notification-logo')
+        ->not->toContain('&lt;div')
+        ->not->toContain('&lt;img')
         ->toContain('/media/avatar.png')
         ->toContain('/media/ward-map.png')
         ->toContain('Sarah Missionary')
@@ -252,6 +254,8 @@ test('emails include avatar and nagoya ward map images', function (): void {
     expect($inactivityHtml)
         ->toContain('/media/logo.png')
         ->not->toContain('laravel.com/img/notification-logo')
+        ->not->toContain('&lt;div')
+        ->not->toContain('&lt;img')
         ->toContain('/media/avatar.png')
         ->toContain('/media/ward-map.png')
         ->toContain('Sarah Missionary')
@@ -260,11 +264,13 @@ test('emails include avatar and nagoya ward map images', function (): void {
     $magicHtml = (string) (new MagicLoginLinkNotification(
         url: 'http://example.test/auth/magic-link?test=1',
         name: 'Sarah Missionary',
-        isNewUser: false,
+        isNewUser: true,
     ))->toMail($player)->render();
     expect($magicHtml)
         ->toContain('/media/logo.png')
         ->not->toContain('laravel.com/img/notification-logo')
+        ->not->toContain('&lt;div')
+        ->not->toContain('&lt;img')
         ->toContain('/media/avatar.png')
         ->toContain('/media/ward-map.png')
         ->toContain('Sarah Missionary');

@@ -105,31 +105,25 @@ class EmailVisualService
             $badge = ! empty($person['badge']) ? '<div style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:999px;background:#eef2ff;color:#4338ca;font-size:10px;font-weight:700;">'.e($person['badge']).'</div>' : '';
             $url = e($person['avatarUrl']);
 
-            $cells[] = <<<HTML
-                <td align="center" valign="top" style="padding:8px 10px;width:130px;">
-                    <img src="{$url}" alt="{$name}" width="88" height="88" style="display:block;width:88px;height:88px;border-radius:18px;border:3px solid #6366f1;background:#0f172a;margin:0 auto 8px auto;" />
-                    <div style="font-size:13px;font-weight:800;color:#0f172a;line-height:1.25;">{$name}</div>
-                    {$subtitle}
-                    {$badge}
-                </td>
-            HTML;
+            $cells[] = '<td align="center" valign="top" style="padding:8px 10px;width:130px;">'
+                .'<img src="'.$url.'" alt="'.$name.'" width="88" height="88" style="display:block;width:88px;height:88px;border-radius:18px;border:3px solid #6366f1;background:#0f172a;margin:0 auto 8px auto;" />'
+                .'<div style="font-size:13px;font-weight:800;color:#0f172a;line-height:1.25;">'.$name.'</div>'
+                .$subtitle
+                .$badge
+                .'</td>';
         }
 
-        $cellsHtml = implode("\n", $cells);
+        $cellsHtml = implode('', $cells);
         $safeHeading = e($heading);
 
-        $html = <<<HTML
-            <div style="margin:18px 0;padding:14px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;">
-                <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#475569;text-align:center;margin-bottom:8px;">
-                    👥 {$safeHeading}
-                </div>
-                <table align="center" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;border-collapse:collapse;">
-                    <tr>
-                        {$cellsHtml}
-                    </tr>
-                </table>
-            </div>
-        HTML;
+        $html = '<div style="margin:18px 0;padding:14px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;">'
+            .'<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#475569;text-align:center;margin-bottom:8px;">'
+            .'👥 '.$safeHeading
+            .'</div>'
+            .'<table align="center" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;border-collapse:collapse;">'
+            .'<tr>'.$cellsHtml.'</tr>'
+            .'</table>'
+            .'</div>';
 
         return new HtmlString($html);
     }
@@ -154,12 +148,10 @@ class EmailVisualService
             ? '<div style="font-size:12px;color:#cbd5e1;padding:8px 12px 10px 12px;text-align:center;">'.e($caption).'</div>'
             : '';
 
-        $html = <<<HTML
-            <div style="margin:18px 0;background:#0f172a;border:1px solid #334155;border-radius:14px;overflow:hidden;text-align:center;">
-                <img src="{$mapUrl}" alt="{$alt}" width="520" style="display:block;width:100%;max-width:520px;height:auto;margin:0 auto;" />
-                {$captionHtml}
-            </div>
-        HTML;
+        $html = '<div style="margin:18px 0;background:#0f172a;border:1px solid #334155;border-radius:14px;overflow:hidden;text-align:center;">'
+            .'<img src="'.$mapUrl.'" alt="'.$alt.'" width="520" style="display:block;width:100%;max-width:520px;height:auto;margin:0 auto;" />'
+            .$captionHtml
+            .'</div>';
 
         return new HtmlString($html);
     }
