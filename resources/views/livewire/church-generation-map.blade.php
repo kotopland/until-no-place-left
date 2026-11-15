@@ -58,6 +58,8 @@
                     </span>
                 </div>
                 <div class="flex items-center gap-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                    <span class="px-1.5 py-0.5 rounded bg-slate-800 text-white dark:bg-slate-700">G0</span>
+                    <span>→</span>
                     <span class="px-1.5 py-0.5 rounded {{ $deepestGeneration >= 1 ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' }}">G1</span>
                     <span>→</span>
                     <span class="px-1.5 py-0.5 rounded {{ $deepestGeneration >= 2 ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' }}">G2</span>
@@ -225,6 +227,13 @@
                 <!-- Generational Column Labels (Visible in Tiers mode) -->
                 @if($viewMode === 'tiers')
                     <div class="absolute top-0 left-0 right-0 flex gap-12 pl-24 pointer-events-none pb-4 border-b border-slate-200 dark:border-slate-800/40">
+                        @if(!empty($playerNodes))
+                            <div class="w-60 text-center">
+                                <span class="px-3 py-1 rounded-xl text-xs font-black bg-slate-200 text-slate-900 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 shadow-sm">
+                                    Gen 0 • Active Players
+                                </span>
+                            </div>
+                        @endif
                         <div class="w-60 text-center">
                             <span class="px-3 py-1 rounded-xl text-xs font-black bg-blue-100 text-blue-900 border border-blue-300 dark:bg-blue-950/80 dark:text-blue-300 dark:border-blue-800 shadow-sm">
                                 Gen 1 • Pioneer Mother Groups
@@ -280,6 +289,45 @@
                         />
                     @endforeach
                 </svg>
+
+                <!-- Gen 0: Active Player Nodes (Real & Computer Players) -->
+                @foreach($playerNodes as $playerId => $playerNode)
+                    @php
+                        /** @var \App\Models\User $player */
+                        $player = $playerNode['user'];
+                        $pX = $playerNode['x'];
+                        $pY = $playerNode['y'];
+                        $isCurrentUser = $playerNode['is_current_user'];
+                        $isAi = $playerNode['is_ai'];
+                    @endphp
+
+                    <div
+                        wire:key="player-node-{{ $player->id }}"
+                        style="left: {{ $pX }}px; top: {{ $pY }}px;"
+                        class="absolute -translate-x-1/2 -translate-y-1/2 interactive-node select-none transition-all duration-200"
+                    >
+                        <div class="flex flex-col items-center">
+                            <span class="mb-1.5 px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide shadow-sm {{ $isCurrentUser ? 'bg-indigo-600 text-white ring-2 ring-indigo-300 dark:ring-indigo-500/40' : ($isAi ? 'bg-slate-700 text-slate-100 dark:bg-slate-800 dark:text-slate-200' : 'bg-emerald-600 text-white') }}">
+                                {{ $playerNode['label'] }}
+                            </span>
+
+                            <div class="w-20 h-20 rounded-full flex items-center justify-center shadow-lg border-2 {{ $isCurrentUser ? 'bg-indigo-50 border-indigo-500 ring-4 ring-indigo-400/30 dark:bg-indigo-950/90 dark:border-indigo-400' : ($isAi ? 'bg-slate-100 border-slate-400 dark:bg-slate-900 dark:border-slate-600' : 'bg-emerald-50 border-emerald-500 dark:bg-emerald-950/90 dark:border-emerald-400') }}">
+                                <span class="text-2xl" title="{{ $player->name }}">
+                                    {{ $isAi ? '🤖' : '🙌' }}
+                                </span>
+                            </div>
+
+                            <div class="mt-1.5 text-center max-w-[150px] mx-auto">
+                                <h4 class="text-xs font-black truncate leading-tight {{ $isCurrentUser ? 'text-indigo-800 dark:text-indigo-300' : 'text-slate-900 dark:text-white' }}">
+                                    {{ $player->name }}
+                                </h4>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                                    {{ $player->homeWard?->name ?? 'Greater Nagoya' }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
 
                 <!-- Church Circles Nodes -->
                 @forelse($nodes as $id => $node)
@@ -469,11 +517,13 @@
                         </div>
                     </div>
                 @empty
-                    <div class="flex flex-col items-center justify-center h-96 text-slate-400">
-                        <span class="text-4xl mb-2">⛪</span>
-                        <h4 class="text-base font-bold text-slate-800 dark:text-slate-200">No Church Circles Found</h4>
-                        <p class="text-xs text-slate-500 mt-1">Try clearing your search query or status filter.</p>
-                    </div>
+                    @if(empty($playerNodes))
+                        <div class="flex flex-col items-center justify-center h-96 text-slate-400">
+                            <span class="text-4xl mb-2">⛪</span>
+                            <h4 class="text-base font-bold text-slate-800 dark:text-slate-200">No Church Circles Found</h4>
+                            <p class="text-xs text-slate-500 mt-1">Try clearing your search query or status filter.</p>
+                        </div>
+                    @endif
                 @endforelse
             </div>
         </div>

@@ -253,17 +253,22 @@ class ChurchGenerationMap extends Component
      * Compute node positions and connection edges for the Generation Map.
      *
      * @param  Collection<int, Church>  $churches
+     * @param  Collection<int, User>|null  $players
      * @return array{
+     *     playerNodes: array<int, array<string, mixed>>,
      *     nodes: array<int, array<string, mixed>>,
      *     edges: array<int, array<string, mixed>>,
      *     totalWidth: int,
      *     totalHeight: int
      * }
      */
-    protected function computeTreeLayout(Collection $churches): array
+    protected function computeTreeLayout(Collection $churches, ?Collection $players = null, ?User $currentUser = null): array
     {
-        if ($churches->isEmpty()) {
+        $players = $players ?? collect();
+
+        if ($churches->isEmpty() && $players->isEmpty()) {
             return [
+                'playerNodes' => [],
                 'nodes' => [],
                 'edges' => [],
                 'totalWidth' => 800,
@@ -274,7 +279,10 @@ class ChurchGenerationMap extends Component
         // Group by generation tiers
         $byGen = $churches->groupBy(fn (Church $c) => min(4, $c->generation));
         $maxGen = (int) max($churches->pluck('generation')->all() ?: [1]);
+        $hasPlayers = $players->isNotEmpty();
 
+        $playerNodes = [];
+        $playerPositions = []; // user_id => [x, y]
         $nodes = [];
         $nodePositions = []; // church_id => [x, y]
         $edges = [];
@@ -285,18 +293,39 @@ class ChurchGenerationMap extends Component
         $leftMargin = 120;
 
         if ($this->viewMode === 'tiers') {
-            // Horizontal Generational Columns: Gen 1 | Gen 2 | Gen 3 | Gen 4+
-            $maxRowInCol = 1;
+            // Horizontal Generational Columns: Gen 0 | Gen 1 | Gen 2 | Gen 3 | Gen 4+
+            $maxRowInCol = max(1, $players->count());
             foreach ($byGen as $gen => $list) {
                 $maxRowInCol = max($maxRowInCol, $list->count());
             }
 
-            $totalWidth = max(900, ($maxGen * 260) + 160);
+            $totalCols = max($maxGen, 4) + ($hasPlayers ? 1 : 0);
+            $totalWidth = max(1160, ($totalCols * 260) + 160);
             $totalHeight = max(650, ($maxRowInCol * $rowHeight) + $topMargin + 100);
+
+            if ($hasPlayers) {
+                foreach ($players->values() as $index => $player) {
+                    $posY = $topMargin + ($index * $rowHeight) + 20;
+                    $playerPositions[$player->id] = ['x' => $leftMargin, 'y' => $posY];
+                    $isCurrentUser = $currentUser !== null && $player->id === $currentUser->id;
+
+                    $playerNodes[$player->id] = [
+                        'user' => $player,
+                        'x' => $leftMargin,
+                        'y' => $posY,
+                        'is_current_user' => $isCurrentUser,
+                        'is_ai' => (bool) $player->is_ai_colaborer,
+                        'label' => $isCurrentUser
+                            ? 'Gen 0: You'
+                            : ($player->is_ai_colaborer ? 'Gen 0: AI Co-Laborer' : 'Gen 0: Co-Laborer'),
+                    ];
+                }
+            }
 
             foreach ($byGen as $gen => $list) {
                 $genInt = (int) $gen;
-                $colX = $leftMargin + (($genInt - 1) * 260);
+                $colOffset = $hasPlayers ? $genInt : ($genInt - 1);
+                $colX = $leftMargin + ($colOffset * 260);
 
                 foreach ($list->values() as $index => $church) {
                     $posY = $topMargin + ($index * $rowHeight) + 20;
@@ -310,17 +339,39 @@ class ChurchGenerationMap extends Component
                 }
             }
         } else {
-            // Hierarchical Vertical Tree: Gen 1 on top, branching downwards
-            // Calculate column positions per tier
+            // Hierarchical Vertical Tree: Gen 0 (Players) on top, branching downwards to Gen 1..4+
             $genTiers = [1, 2, 3, 4];
             $tierCounts = [];
             foreach ($genTiers as $g) {
                 $tierCounts[$g] = ($byGen->get($g) ?? collect())->count();
             }
 
-            $maxNodesInTier = max(1, ...array_values($tierCounts));
+            $maxNodesInTier = max(1, $players->count(), ...array_values($tierCounts));
+            $activeTierRows = count($byGen) + ($hasPlayers ? 1 : 0);
             $totalWidth = max(950, ($maxNodesInTier * 260) + 200);
-            $totalHeight = max(700, (count($byGen) * $rowHeight) + $topMargin + 100);
+            $totalHeight = max(700, ($activeTierRows * $rowHeight) + $topMargin + 100);
+
+            if ($hasPlayers) {
+                $count = $players->count();
+                $spacing = $totalWidth / ($count + 1);
+
+                foreach ($players->values() as $index => $player) {
+                    $posX = (int) round($spacing * ($index + 1));
+                    $playerPositions[$player->id] = ['x' => $posX, 'y' => $topMargin];
+                    $isCurrentUser = $currentUser !== null && $player->id === $currentUser->id;
+
+                    $playerNodes[$player->id] = [
+                        'user' => $player,
+                        'x' => $posX,
+                        'y' => $topMargin,
+                        'is_current_user' => $isCurrentUser,
+                        'is_ai' => (bool) $player->is_ai_colaborer,
+                        'label' => $isCurrentUser
+                            ? 'Gen 0: You'
+                            : ($player->is_ai_colaborer ? 'Gen 0: AI Co-Laborer' : 'Gen 0: Co-Laborer'),
+                    ];
+                }
+            }
 
             foreach ($genTiers as $g) {
                 $churchesInTier = ($byGen->get($g) ?? collect())->values();
@@ -329,7 +380,8 @@ class ChurchGenerationMap extends Component
                     continue;
                 }
 
-                $tierY = $topMargin + (($g - 1) * $rowHeight);
+                $tierRow = $hasPlayers ? $g : ($g - 1);
+                $tierY = $topMargin + ($tierRow * $rowHeight);
                 $spacing = $totalWidth / ($count + 1);
 
                 foreach ($churchesInTier as $index => $church) {
@@ -345,7 +397,12 @@ class ChurchGenerationMap extends Component
             }
         }
 
-        // Generate connecting edges (parent church -> daughter church)
+        // Build lookup by player name for G1 churches without leader_user_id
+        $playerIdByName = $players
+            ->mapWithKeys(fn (User $p) => [mb_strtolower($p->name) => $p->id])
+            ->all();
+
+        // Generate connecting edges (Gen 0 player -> G1 church, and parent church -> daughter church)
         foreach ($churches as $church) {
             if ($church->parent_church_id && isset($nodePositions[$church->parent_church_id], $nodePositions[$church->id])) {
                 $from = $nodePositions[$church->parent_church_id];
@@ -363,10 +420,30 @@ class ChurchGenerationMap extends Component
                     'to_y' => $to['y'] - 55, // Top of daughter circle
                     'is_dissolved' => $isDissolvedEdge,
                 ];
+            } elseif (! $church->parent_church_id && $church->generation === 1 && isset($nodePositions[$church->id])) {
+                $parentUserId = ($church->leader_user_id && isset($playerPositions[$church->leader_user_id]))
+                    ? $church->leader_user_id
+                    : ($church->started_by_name ? ($playerIdByName[mb_strtolower($church->started_by_name)] ?? null) : null);
+
+                if ($parentUserId !== null && isset($playerPositions[$parentUserId])) {
+                    $from = $playerPositions[$parentUserId];
+                    $to = $nodePositions[$church->id];
+
+                    $edges[] = [
+                        'from_id' => "user-{$parentUserId}",
+                        'to_id' => $church->id,
+                        'from_x' => $from['x'],
+                        'from_y' => $from['y'] + 42, // Bottom of Gen 0 player circle
+                        'to_x' => $to['x'],
+                        'to_y' => $to['y'] - 55, // Top of G1 circle
+                        'is_dissolved' => (bool) $church->is_dissolved,
+                    ];
+                }
             }
         }
 
         return [
+            'playerNodes' => $playerNodes,
             'nodes' => $nodes,
             'edges' => $edges,
             'totalWidth' => $totalWidth,
@@ -405,6 +482,41 @@ class ChurchGenerationMap extends Component
 
         $allChurches = $query->orderBy('generation')->orderBy('id')->get();
 
+        // Active players (both real players and computer AI co-laborers) on Gen 0
+        $sessionPlayers = $session
+            ? User::where('current_game_session_id', $session->id)
+                ->with('homeWard')
+                ->orderBy('is_ai_colaborer')
+                ->orderBy('id')
+                ->get()
+            : collect();
+
+        if ($sessionPlayers->isEmpty() && $user) {
+            $sessionPlayers = collect([$user->loadMissing('homeWard')]);
+        }
+
+        if (! empty($this->searchQuery)) {
+            $searchLower = mb_strtolower(trim($this->searchQuery));
+            $sessionPlayers = $sessionPlayers->filter(function (User $player) use ($searchLower, $allChurches): bool {
+                if (str_contains(mb_strtolower($player->name), $searchLower)) {
+                    return true;
+                }
+
+                if ($player->homeWard && (
+                    str_contains(mb_strtolower($player->homeWard->name), $searchLower)
+                    || str_contains(mb_strtolower((string) $player->homeWard->name_ja), $searchLower)
+                )) {
+                    return true;
+                }
+
+                return $allChurches->contains(fn (Church $church) => ! $church->parent_church_id
+                    && $church->generation === 1
+                    && ($church->leader_user_id === $player->id
+                        || ($church->leader_user_id === null && $church->started_by_name === $player->name))
+                );
+            })->values();
+        }
+
         // Selected church model
         $selectedChurch = $this->selectedChurchId
             ? Church::with(['ward', 'leaderNpc', 'leaderUser', 'parentChurch', 'daughterChurches', 'members'])->find($this->selectedChurchId)
@@ -421,7 +533,7 @@ class ChurchGenerationMap extends Component
         $totalBelievers = $allSessionChurches->where('is_dissolved', false)->sum('believers_count');
         $totalBaptized = $allSessionChurches->where('is_dissolved', false)->sum('baptized_count');
 
-        $layoutData = $this->computeTreeLayout($allChurches);
+        $layoutData = $this->computeTreeLayout($allChurches, $sessionPlayers, $user);
 
         // Core 11 elements catalog
         $allElements = [
@@ -441,6 +553,7 @@ class ChurchGenerationMap extends Component
         return view('livewire.church-generation-map', [
             'churches' => $allChurches,
             'selectedChurch' => $selectedChurch,
+            'playerNodes' => $layoutData['playerNodes'],
             'nodes' => $layoutData['nodes'],
             'edges' => $layoutData['edges'],
             'canvasWidth' => $layoutData['totalWidth'],

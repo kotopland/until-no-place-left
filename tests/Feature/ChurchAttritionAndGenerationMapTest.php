@@ -639,3 +639,59 @@ test('simulation initializes distinct g1 churches for all co-laborers in coop mo
 
     app(ShowcaseSandboxService::class)->deactivate();
 });
+
+test('church generation map renders real and computer players on gen 0 connected to g1 churches', function () {
+    $humanColaborer = User::factory()->create([
+        'name' => 'Missionary Kenji',
+        'current_game_session_id' => $this->session->id,
+        'home_ward_id' => $this->ward->id,
+        'is_ai_colaborer' => false,
+    ]);
+
+    $aiPlayer = User::factory()->create([
+        'name' => 'Sarah Tanaka (AI)',
+        'current_game_session_id' => $this->session->id,
+        'home_ward_id' => $this->ward->id,
+        'is_ai_colaborer' => true,
+    ]);
+
+    $aiG1Church = Church::create([
+        'game_session_id' => $this->session->id,
+        'ward_id' => $this->ward->id,
+        'name' => 'Sarah Chikusa Circle (G1)',
+        'parent_church_id' => null,
+        'leader_user_id' => $aiPlayer->id,
+        'generation' => 1,
+        'elements_json' => [ChurchElement::RepentanceBelief->value, ChurchElement::Word->value],
+        'is_healthy_church' => false,
+        'health_score' => 70,
+        'attenders_count' => 6,
+        'believers_count' => 4,
+        'baptized_count' => 2,
+        'is_dissolved' => false,
+        'started_by_name' => $aiPlayer->name,
+        'lat' => 35.1675,
+        'lng' => 136.9990,
+        'founded_game_month' => 1,
+    ]);
+
+    Livewire::actingAs($this->user)
+        ->test(ChurchGenerationMap::class)
+        ->assertSee('Gen 0: You')
+        ->assertSee('Missionary John')
+        ->assertSee('Gen 0: Co-Laborer')
+        ->assertSee('Missionary Kenji')
+        ->assertSee('Gen 0: AI Co-Laborer')
+        ->assertSee('Sarah Tanaka (AI)')
+        ->assertViewHas('edges', function (array $edges) use ($aiPlayer, $aiG1Church): bool {
+            $hasUserEdge = collect($edges)->contains(fn (array $edge) => $edge['from_id'] === "user-{$this->user->id}"
+                && $edge['to_id'] === $this->g1Church->id);
+            $hasAiEdge = collect($edges)->contains(fn (array $edge) => $edge['from_id'] === "user-{$aiPlayer->id}"
+                && $edge['to_id'] === $aiG1Church->id);
+
+            return $hasUserEdge && $hasAiEdge;
+        })
+        ->call('setViewMode', 'tiers')
+        ->assertSee('Gen 0 • Active Players')
+        ->assertSee('Gen 0: You');
+});
