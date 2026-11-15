@@ -52,11 +52,11 @@ test('confirming starting ward transitions candidate directly to game host welco
         ->assertSee('Kenjiro Sato')
         ->assertSee('The Japanese Language Reality')
         ->assertSee('Group Culture & Relational-Based Decisions')
-        ->assertSee('First-Level NPL Training + Japanese Language School')
+        ->assertSee('The Best Strategy: Japanese Language School')
         ->assertSee('70% AP Bandwidth Investment Rule')
-        ->assertSee('60% AP')
-        ->assertSee('10% AP')
-        ->assertSee('30% AP');
+        ->assertSee('70% AP')
+        ->assertSee('30% AP')
+        ->assertDontSee('NPL First-Level Training');
 
     expect($user->fresh()->home_ward_id)->toBe($ward->id);
 });
@@ -128,6 +128,7 @@ test('choosing recommended language and training strategy dedicates 70 percent A
     Livewire::test(NagoyaMovementDashboard::class)
         ->set('onboardingStage', 'host_welcome')
         ->call('chooseRecommendedLanguageStrategy')
+        ->assertDispatched('day-advanced')
         ->assertSet('showOnboardingModal', false);
 
     $refreshed = $user->fresh();

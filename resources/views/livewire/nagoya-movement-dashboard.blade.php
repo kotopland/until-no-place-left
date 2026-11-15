@@ -2051,43 +2051,28 @@
                                     <span class="text-2xl">⚡</span>
                                     <div>
                                         <h3 class="text-sm font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                                            <span>The Best Strategy: First-Level NPL Training + Japanese Language School</span>
+                                            <span>The Best Strategy: Japanese Language School</span>
                                             <span class="text-xs font-semibold text-emerald-600 dark:text-emerald-400">(最善の戦略基盤)</span>
                                         </h3>
                                         <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                                            Proven Movement Pathway: 70% AP Allocation in Months 1 &amp; 2
+                                            Proven Movement Pathway: 70% AP Allocation in Months 1 to 4
                                         </span>
                                     </div>
                                 </div>
 
                                 <div class="text-xs text-slate-700 dark:text-slate-300 space-y-2 leading-relaxed">
                                     <p>
-                                        My strongest counsel as your game host is to establish a solid foundation immediately upon arrival. Do not attempt unguided pioneering alone. Instead, pursue this dual foundation:
+                                        My strongest counsel as your game host is to establish a solid language and cultural foundation immediately upon arrival. Do not attempt unguided pioneering alone. Instead, commit to:
                                     </p>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                                        <div class="p-3 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-indigo-200 dark:border-indigo-800/80 space-y-1">
-                                            <div class="flex items-center justify-between">
-                                                <span class="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 text-xs">
-                                                    <span>1️⃣</span>
-                                                    <span>NPL First-Level Training</span>
-                                                </span>
-                                                <span class="text-[10px] font-black px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
-                                                    10% AP
-                                                </span>
-                                            </div>
-                                            <p class="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
-                                                Receive simple, reproducible training from seasoned No Place Left co-workers in Nagoya (L1: Seed Sower, 411 foundational tool: 4 questions, 1 sheet of paper, 1 hour; 15-second testimony; 3 Circles gospel).
-                                            </p>
-                                        </div>
-
+                                    <div class="pt-1">
                                         <div class="p-3 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-emerald-200 dark:border-emerald-800/80 space-y-1">
                                             <div class="flex items-center justify-between">
                                                 <span class="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 text-xs">
-                                                    <span>2️⃣</span>
+                                                    <span>📚</span>
                                                     <span>Japanese Language School</span>
                                                 </span>
                                                 <span class="text-[10px] font-black px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400">
-                                                    60% AP
+                                                    70% AP
                                                 </span>
                                             </div>
                                             <p class="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
@@ -2107,14 +2092,10 @@
                                                  Months 1 to 4
                                              </span>
                                          </div>
-                                         <div class="grid grid-cols-3 gap-2 text-center text-[11px]">
+                                         <div class="grid grid-cols-2 gap-2 text-center text-[11px]">
                                              <div class="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800">
-                                                 <div class="font-black text-indigo-600 dark:text-indigo-400 text-sm">60% AP</div>
-                                                 <div class="text-[10px] text-slate-600 dark:text-slate-400">Language School ({{ (int) round(($user?->weekly_action_points ?? 20) * 0.60) }} AP/wk)</div>
-                                             </div>
-                                             <div class="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800">
-                                                 <div class="font-black text-emerald-600 dark:text-emerald-400 text-sm">10% AP</div>
-                                                 <div class="text-[10px] text-slate-600 dark:text-slate-400">First-Level NPL ({{ (int) round(($user?->weekly_action_points ?? 20) * 0.10) }} AP/wk)</div>
+                                                 <div class="font-black text-indigo-600 dark:text-indigo-400 text-sm">70% AP</div>
+                                                 <div class="text-[10px] text-slate-600 dark:text-slate-400">Language School ({{ (int) round(($user?->weekly_action_points ?? 20) * 0.70) }} AP/wk)</div>
                                              </div>
                                              <div class="p-2 rounded-lg bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800">
                                                  <div class="font-black text-purple-600 dark:text-purple-400 text-sm">30% AP</div>
@@ -2122,7 +2103,7 @@
                                              </div>
                                          </div>
                                          <p class="text-[11px] text-slate-600 dark:text-slate-400 italic">
-                                             💡 Choosing this strategy reserves 70% of your AP during Months 1 to 4. After Month 4, you graduate with permanent cultural trust bonuses, First-Level certification, and 100% of your AP bandwidth is restored!
+                                             💡 Choosing this strategy reserves 70% of your AP during Months 1 to 4. After Month 4, you graduate with permanent cultural trust bonuses and 100% of your AP bandwidth is restored!
                                          </p>
                                          <p class="text-[11px] text-amber-700 dark:text-amber-400 font-semibold pt-1 border-t border-slate-200 dark:border-slate-800">
                                              ⚠️ <strong>Bypassing Strategy Handicap:</strong> If you proceed independently without foundational training, you will incur the <strong>Language &amp; Cultural Barrier Handicap</strong>, receiving only <strong>14 AP / week</strong> (-6 AP effort friction penalty) because every interaction requires extra energy without language tools.
@@ -2197,7 +2178,7 @@
                                 wire:loading.attr="disabled"
                                 class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 shadow-emerald-600/30 transition cursor-pointer flex items-center justify-center gap-2"
                             >
-                                <span wire:loading.remove wire:target="chooseRecommendedLanguageStrategy">⭐ Commit to Language &amp; L1 Training (70% AP) ➔</span>
+                                <span wire:loading.remove wire:target="chooseRecommendedLanguageStrategy">⭐ Commit to Japanese Language School (70% AP) ➔</span>
                                 <span wire:loading wire:target="chooseRecommendedLanguageStrategy" class="flex items-center gap-1.5">
                                     <span class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                                     <span>Enrolling...</span>

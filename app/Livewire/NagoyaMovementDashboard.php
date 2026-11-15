@@ -695,9 +695,10 @@ class NagoyaMovementDashboard extends Component
         $this->showOnboardingModal = false;
         $wardName = $ward->name ?? 'Nagoya';
 
+        $this->dispatch('day-advanced');
         $this->dispatch('notify', [
             'type' => 'success',
-            'message' => "🗾 Strategy Confirmed: Enrolled in Japanese Language School (60% AP) & NPL First-Level Training (10% AP) in {$wardName}! Remaining 30% AP ({$user->action_points} AP) available for field actions.",
+            'message' => "🗾 Strategy Confirmed: Enrolled in Japanese Language School (70% AP) in {$wardName}! Remaining 30% AP ({$user->action_points} AP) available for field actions.",
         ]);
     }
 
@@ -734,6 +735,7 @@ class NagoyaMovementDashboard extends Component
         $this->showOnboardingModal = false;
         $wardName = $ward->name ?? 'Nagoya';
 
+        $this->dispatch('day-advanced');
         $this->dispatch('notify', [
             'type' => 'warning',
             'message' => "🗾 Independent Strategy Confirmed: Operating in {$wardName} with Language & Cultural Barrier Handicap ({$user->action_points} AP/week received due to -6 AP effort friction). You may commit to training at any time via Host Field Orientation.",
