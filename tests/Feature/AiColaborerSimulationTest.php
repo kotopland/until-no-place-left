@@ -128,13 +128,13 @@ test('simulateDailyTurn executes autonomous actions for AI co-laborers', functio
     $service->ensureAiColaborers($session);
 
     $sarah = User::where('email', User::SARAH_EMAIL)->first();
-    expect($sarah->action_points)->toBe(20);
+    expect($sarah->action_points)->toBe(21);
 
     $outcomes = $service->simulateDailyTurn($session, 1);
 
     expect($outcomes)->not->toBeEmpty();
     $sarah->refresh();
-    expect($sarah->action_points)->toBeLessThan(20);
+    expect($sarah->action_points)->toBeLessThan(21);
 });
 
 test('joint prayer walk awards co-op synergy points and extra spiritual softening', function () {

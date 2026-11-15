@@ -105,11 +105,9 @@ class FourFieldsEngine
                 $burnoutCount = $lockedUser->burnout_count;
 
                 $baseWeeklyAp = $lockedUser->availableFieldWeeklyAp;
-                $maxAp = $lockedUser->isLanguageTrainingActive
-                    ? max(6, (int) round(($lockedUser->max_action_points ?: 26) * 0.30))
-                    : ($lockedUser->hasLanguageBarrierHandicap
-                        ? max(6, ($lockedUser->max_action_points ?: 26) - User::LANGUAGE_BARRIER_AP_PENALTY)
-                        : ($lockedUser->max_action_points ?: 26));
+                $maxAp = ($lockedUser->isLanguageTrainingActive || $lockedUser->hasLanguageBarrierHandicap)
+                    ? $baseWeeklyAp
+                    : ($lockedUser->max_action_points ?: 24);
 
                 if ($isBurnedOut) {
                     if ($burnedOutUntilMonth !== null && $lockedUser->current_game_month >= $burnedOutUntilMonth) {
@@ -320,11 +318,9 @@ class FourFieldsEngine
                 $burnoutCount = $user->burnout_count;
 
                 $baseWeeklyAp = $user->availableFieldWeeklyAp;
-                $maxAp = $user->isLanguageTrainingActive
-                    ? max(6, (int) round(($user->max_action_points ?: 26) * 0.30))
-                    : ($user->hasLanguageBarrierHandicap
-                        ? max(6, ($user->max_action_points ?: 26) - User::LANGUAGE_BARRIER_AP_PENALTY)
-                        : ($user->max_action_points ?: 26));
+                $maxAp = ($user->isLanguageTrainingActive || $user->hasLanguageBarrierHandicap)
+                    ? $baseWeeklyAp
+                    : ($user->max_action_points ?: 24);
 
                 if ($isBurnedOut) {
                     if ($burnedOutUntilMonth !== null && $user->current_game_month >= $burnedOutUntilMonth) {
@@ -625,11 +621,11 @@ class FourFieldsEngine
                         }
                         $actionPoints = $user->max_action_points;
                         $scoreGain += 40;
-                        $autonomousHighlights[] = "🎓 [FOUNDATION GRADUATION] {$user->name} has completed 4 intensive months of Japanese Language School & First-Level NPL Training! Full weekly Action Points restored (+40 Generational Points, 'Language & L1 Certified' awarded).";
+                        $autonomousHighlights[] = "🎓 [FOUNDATION GRADUATION] {$user->name} has completed 4 intensive months of Japanese Language School! Full weekly Action Points restored (+40 Generational Points, 'Language & L1 Certified' awarded).";
                     } else {
                         $actionPoints = $user->availableFieldWeeklyAp;
                         $currentTrainingMonth = ($nextMonth - $enrolledMonth) + 1;
-                        $autonomousHighlights[] = "📚 [LANGUAGE & L1 FOUNDATION] {$user->name} has advanced into Month {$currentTrainingMonth} of Japanese Language School (60% AP) and First-Level NPL Training (10% AP). 30% AP available for field actions.";
+                        $autonomousHighlights[] = "📚 [LANGUAGE FOUNDATION] {$user->name} has advanced into Month {$currentTrainingMonth} of Japanese Language School (15 AP / 70%). 30% AP available for field actions.";
                     }
                 } else {
                     $actionPoints = $user->hasLanguageBarrierHandicap
@@ -872,11 +868,11 @@ class FourFieldsEngine
                     }
                     $actionPoints = $user->max_action_points;
                     $totalScoreGain += 40;
-                    $autonomousHighlights[] = "🎓 [FOUNDATION GRADUATION] {$user->name} has completed 4 intensive months of Japanese Language School & First-Level NPL Training! Full weekly Action Points restored (+40 Generational Points, 'Language & L1 Certified' awarded).";
+                    $autonomousHighlights[] = "🎓 [FOUNDATION GRADUATION] {$user->name} has completed 4 intensive months of Japanese Language School! Full weekly Action Points restored (+40 Generational Points, 'Language & L1 Certified' awarded).";
                 } else {
                     $actionPoints = $user->availableFieldWeeklyAp;
                     $currentTrainingMonth = ($newMonth - $enrolledMonth) + 1;
-                    $autonomousHighlights[] = "📚 [LANGUAGE & L1 FOUNDATION] {$user->name} has advanced into Month {$currentTrainingMonth} of Japanese Language School (60% AP) and First-Level NPL Training (10% AP). 30% AP available for field actions.";
+                    $autonomousHighlights[] = "📚 [LANGUAGE FOUNDATION] {$user->name} has advanced into Month {$currentTrainingMonth} of Japanese Language School (15 AP / 70%). 30% AP available for field actions.";
                 }
             } else {
                 $actionPoints = $user->hasLanguageBarrierHandicap

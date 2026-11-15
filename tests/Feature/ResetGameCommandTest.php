@@ -112,9 +112,9 @@ test('game:reset command resets game session to month 1 day 1 and re-seeds initi
         ->and(MonthlyReport::where('game_session_id', $session->id)->count())->toBe(0)
         ->and(Church::where('name', 'Advanced G3 Discovery Church')->count())->toBe(0);
 
-    // Verify player is preserved and AP restored to 20
+    // Verify player is preserved and AP restored to 21
     $user->refresh();
-    expect($user->action_points)->toBe(20)
+    expect($user->action_points)->toBe(21)
         ->and($user->days_played_today)->toBe(0)
         ->and($user->total_generational_score)->toBe(0)
         ->and($user->email)->toBe('active@example.com');
@@ -179,7 +179,7 @@ test('game:reset with --wipe-players removes non-coach players and keeps coach',
     $coach->refresh();
     expect($coach->current_game_month)->toBe(1)
         ->and($coach->current_game_day)->toBe(1)
-        ->and($coach->action_points)->toBe(20)
+        ->and($coach->action_points)->toBe(21)
         ->and($coach->is_ai_colaborer)->toBeTrue()
         ->and($coach->home_ward_id)->not->toBeNull();
 });

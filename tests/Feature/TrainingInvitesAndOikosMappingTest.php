@@ -253,7 +253,7 @@ it('advances simulated ai co-laborers through npl training levels and records oi
         $simulator = app(RealLifeSimulationService::class);
         $simulator->simulate(
             session: $session,
-            targetMonths: 3,
+            targetMonths: 5,
             mode: 'coop',
             resetFirst: true,
             rngSeed: 20260401,
@@ -266,10 +266,10 @@ it('advances simulated ai co-laborers through npl training levels and records oi
             $expectedLevel = $aiPlayer->hasStartedThreeThirdGroup() ? 3 : 2;
             expect($aiPlayer->training_level)->toBe($expectedLevel)
                 ->and($aiPlayer->level_1_completed_month)->toBe(1)
-                ->and($aiPlayer->level_2_completed_month)->toBe(3);
+                ->and($aiPlayer->level_2_completed_month)->toBe(4);
 
             if ($expectedLevel === 3) {
-                expect($aiPlayer->level_3_completed_month)->toBe(3);
+                expect($aiPlayer->level_3_completed_month)->toBe(4);
             }
         }
 
@@ -281,4 +281,50 @@ it('advances simulated ai co-laborers through npl training levels and records oi
     } finally {
         $sandbox->deactivate();
     }
+});
+
+it('blocks level 2 and level 3 training invites while player is in language school', function () {
+    $player = User::factory()->withTrainingLevel(1, level1Month: 1)->create([
+        'current_game_session_id' => $this->session->id,
+        'home_ward_id' => $this->ward->id,
+        'current_game_month' => 3,
+        'committed_to_language_training' => true,
+        'language_training_enrolled_month' => 1,
+        'language_training_completed' => false,
+        'action_points' => 6,
+    ]);
+
+    Church::create([
+        'game_session_id' => $this->session->id,
+        'ward_id' => $this->ward->id,
+        'name' => 'Language School Group',
+        'leader_user_id' => $player->id,
+        'generation' => 1,
+        'elements_json' => ['word', 'prayer'],
+        'is_healthy_church' => false,
+        'health_score' => 55,
+        'attenders_count' => 3,
+        'believers_count' => 3,
+        'baptized_count' => 1,
+        'lat' => 35.1681,
+        'lng' => 136.9066,
+        'founded_game_month' => 2,
+    ]);
+
+    // Blocked while Language School is active
+    expect($player->isLanguageTrainingActive)->toBeTrue()
+        ->and($player->isEligibleForTrainingInvite(2))->toBeFalse()
+        ->and($player->isEligibleForTrainingInvite(3))->toBeFalse()
+        ->and($player->nextAvailableTrainingInvite())->toBeNull();
+
+    // Unlocked once Language School graduates
+    $player->update([
+        'language_training_completed' => true,
+        'current_game_month' => 5,
+    ]);
+    $player->refresh();
+
+    expect($player->isLanguageTrainingActive)->toBeFalse()
+        ->and($player->isEligibleForTrainingInvite(2))->toBeTrue()
+        ->and($player->nextAvailableTrainingInvite())->toBe(2);
 });

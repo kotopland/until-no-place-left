@@ -152,7 +152,7 @@ test('player committed to intensive japanese language school does not see top ba
         ->assertDontSee('New to Nagoya Oikos?')
         ->assertDontSee('Explore the biblical narrative, the 5 Fields of CPM multiplication')
         ->assertDontSee('Relational evangelization takes steady faithfulness')
-        ->assertSee('Intensive Japanese Language School & First-Level NPL Foundation');
+        ->assertSee('Intensive Japanese Language School Foundation');
 });
 
 test('chosen home ward is displayed under nagoya relational action hq header', function () {

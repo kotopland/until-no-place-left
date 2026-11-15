@@ -266,10 +266,10 @@ class NagoyaOikosSeeder extends Seeder
                 'current_game_week' => 1,
                 'weeks_processed_this_month' => 0,
                 'weeks_played_today' => 0,
-                'action_points' => 20,
-                'max_action_points' => 26,
-                'weekly_action_points' => 20,
-                'daily_action_points' => 20,
+                'action_points' => 21,
+                'max_action_points' => 24,
+                'weekly_action_points' => 21,
+                'daily_action_points' => 21,
                 'total_generational_score' => 60,
                 'badges' => ['First Step', 'Prayer Walker'],
                 'notify_email' => false,
@@ -281,11 +281,11 @@ class NagoyaOikosSeeder extends Seeder
         if (! $player->current_game_session_id) {
             $playerUpdates['current_game_session_id'] = $session->id;
         }
-        if ($player->weekly_action_points < 20) {
-            $playerUpdates['weekly_action_points'] = 20;
-            $playerUpdates['daily_action_points'] = 20;
-            $playerUpdates['max_action_points'] = 26;
-            $playerUpdates['action_points'] = max(20, $player->action_points);
+        if ($player->weekly_action_points < 21) {
+            $playerUpdates['weekly_action_points'] = 21;
+            $playerUpdates['daily_action_points'] = 21;
+            $playerUpdates['max_action_points'] = 24;
+            $playerUpdates['action_points'] = max(21, $player->action_points);
         }
         if (! empty($playerUpdates)) {
             $player->update($playerUpdates);

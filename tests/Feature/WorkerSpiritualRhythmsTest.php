@@ -85,10 +85,10 @@ test('worker can schedule weekly sabbath rest which costs 4 AP, clears exhaustio
     $queued = QueuedMonthlyAction::where('user_id', $this->user->id)->first();
     expect($queued)->not->toBeNull()
         ->and($queued->action_type)->toBe(MinistryActionType::SabbathRest)
-        ->and($queued->ap_cost)->toBe(4);
+        ->and($queued->ap_cost)->toBe(3);
 
     $this->user->refresh();
-    expect($this->user->action_points)->toBe(16);
+    expect($this->user->action_points)->toBe(17);
 
     $engine = app(FourFieldsEngine::class);
     $engine->resolveWeeklyTick($this->session, $this->user);
@@ -189,7 +189,7 @@ test('fasting retreat blocks field actions, but weekly sabbath rest allows field
         ->call('scheduleWorkerRhythm', MinistryActionType::SabbathRest->value);
 
     $this->user->refresh();
-    expect($this->user->action_points)->toBe(16);
+    expect($this->user->action_points)->toBe(17);
 
     // Now queue Prayer Walk (1 AP) in the same week
     Livewire::actingAs($this->user)
@@ -201,7 +201,7 @@ test('fasting retreat blocks field actions, but weekly sabbath rest allows field
     expect(QueuedMonthlyAction::where('user_id', $this->user->id)->where('action_type', MinistryActionType::PrayerWalk)->count())->toBe(1);
 
     $this->user->refresh();
-    expect($this->user->action_points)->toBe(15);
+    expect($this->user->action_points)->toBe(16);
 });
 
 test('cancelling a retreat cancels all pending days of the multi-day retreat', function () {

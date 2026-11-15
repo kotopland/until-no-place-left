@@ -118,9 +118,9 @@ test('choosing recommended language and training strategy dedicates 70 percent A
         'committed_to_language_training' => false,
         'language_training_completed' => false,
         'current_game_month' => 1,
-        'action_points' => 20,
-        'weekly_action_points' => 20,
-        'max_action_points' => 26,
+        'action_points' => 21,
+        'weekly_action_points' => 21,
+        'max_action_points' => 24,
     ]);
 
     $this->actingAs($user);
@@ -138,10 +138,10 @@ test('choosing recommended language and training strategy dedicates 70 percent A
         ->and($refreshed->isLanguageTrainingActive)->toBeTrue()
         ->and($refreshed->languageTrainingMonthsRemaining)->toBe(4)
         ->and($refreshed->languageTrainingCurrentMonthNumber)->toBe(1)
-        ->and($refreshed->languageSchoolWeeklyAp)->toBe(12) // 60% of 20 AP
-        ->and($refreshed->firstLevelTrainingWeeklyAp)->toBe(2) // 10% of 20 AP
-        ->and($refreshed->totalTrainingWeeklyAp)->toBe(14) // 70% of 20 AP
-        ->and($refreshed->availableFieldWeeklyAp)->toBe(6) // 30% of 20 AP
+        ->and($refreshed->languageSchoolWeeklyAp)->toBe(15) // 70% of 21 AP
+        ->and($refreshed->firstLevelTrainingWeeklyAp)->toBe(0)
+        ->and($refreshed->totalTrainingWeeklyAp)->toBe(15) // 70% of 21 AP
+        ->and($refreshed->availableFieldWeeklyAp)->toBe(6) // 30% of 21 AP
         ->and($refreshed->action_points)->toBe(6);
 });
 
@@ -260,16 +260,15 @@ test('action queue planner displays dedicated language school and NPL training b
         'current_game_month' => 1,
         'current_game_week' => 1,
         'action_points' => 6,
-        'weekly_action_points' => 20,
+        'weekly_action_points' => 21,
     ]);
 
     $this->actingAs($user);
 
     Livewire::test(ActionQueuePlanner::class)
-        ->assertSee('Intensive Japanese Language School & First-Level NPL Foundation')
+        ->assertSee('Intensive Japanese Language School Foundation')
         ->assertSee('Month 1 of 4')
-        ->assertSee('60% Japanese Language Studies (12 AP)')
-        ->assertSee('10% First-Level NPL Training (2 AP)')
+        ->assertSee('Japanese Language Studies (15 AP)')
         ->assertSee('30% AP (6 AP) available for field actions');
 });
 

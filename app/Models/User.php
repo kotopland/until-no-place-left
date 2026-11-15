@@ -265,21 +265,19 @@ class User extends Authenticatable
     }
 
     /**
-     * Dedicated Action Points for Japanese Language School (60% of base weekly AP)
+     * Dedicated Action Points for Japanese Language School (70% of base weekly AP, 15 AP on 21 AP week)
      */
     public int $languageSchoolWeeklyAp {
         get => $this->isLanguageTrainingActive
-            ? (int) round(($this->weekly_action_points ?: 20) * 0.60)
+            ? (int) round(($this->weekly_action_points ?: 21) * 0.70)
             : 0;
     }
 
     /**
-     * Dedicated Action Points for First-Level NPL Training (10% of base weekly AP)
+     * Dedicated Action Points for First-Level NPL Training (0 during Language School; unlocked via Training Invites)
      */
     public int $firstLevelTrainingWeeklyAp {
-        get => $this->isLanguageTrainingActive
-            ? (int) round(($this->weekly_action_points ?: 20) * 0.10)
-            : 0;
+        get => 0;
     }
 
     /**
@@ -396,20 +394,24 @@ class User extends Authenticatable
 
     /**
      * Available weekly AP for general field actions:
-     * - 30% (~6 AP) during active 2-month foundation training (70% invested into language school & L1)
-     * - 14 AP (20 - 6 AP effort friction handicap) if operating independently without foundational training
-     * - 20 AP (100% full unhindered AP) after completing / graduating from foundational training
+     * - 30% (~6 AP on a 21 AP week) during active 4-month Language School (15 AP invested into language school)
+     * - 15 AP (21 - 6 AP effort friction handicap) if operating independently without foundational language training
+     * - 24 AP (post-graduation bonus cap) after completing / graduating from Language School
      */
     public int $availableFieldWeeklyAp {
         get {
-            $base = $this->weekly_action_points ?: ($this->daily_action_points ?: 20);
+            $base = $this->weekly_action_points ?: ($this->daily_action_points ?: 21);
 
             if ($this->isLanguageTrainingActive) {
                 return (int) round($base * 0.30);
             }
 
             if ($this->hasLanguageBarrierHandicap) {
-                return max(4, $base - self::LANGUAGE_BARRIER_AP_PENALTY);
+                return max(3, $base - self::LANGUAGE_BARRIER_AP_PENALTY);
+            }
+
+            if ($this->language_training_completed) {
+                return $this->max_action_points ?: 24;
             }
 
             return $base;
@@ -459,7 +461,7 @@ class User extends Authenticatable
             'burned_out_until_game_month' => $currentMonth + 3,
             'burnout_count' => $this->burnout_count + 1,
             'action_points' => 0,
-            'fatigue_penalty_ap' => $this->weekly_action_points ?: $this->daily_action_points ?: 20,
+            'fatigue_penalty_ap' => $this->weekly_action_points ?: $this->daily_action_points ?: 21,
         ]);
     }
 
@@ -474,7 +476,7 @@ class User extends Authenticatable
             'consecutive_exhaustion_weeks' => 0,
             'consecutive_exhaustion_days' => 0,
             'fatigue_penalty_ap' => 0,
-            'action_points' => $this->max_action_points ?: 26,
+            'action_points' => $this->max_action_points ?: 24,
         ]);
     }
 
@@ -1107,6 +1109,10 @@ class User extends Authenticatable
      */
     public function isEligibleForTrainingInvite(int $level): bool
     {
+        if ($level >= 2 && $this->isLanguageTrainingActive) {
+            return false;
+        }
+
         $currentLevel = (int) ($this->training_level ?? 0);
 
         return match ($level) {

@@ -310,8 +310,8 @@ test('church generation map can queue church circles coaching with 8 ap deductio
         ->assertDispatched('action-queued');
 
     $this->user->refresh();
-    // 8 AP base cost deducted (leaving 2 AP - other work is hard to do)
-    expect($this->user->action_points)->toBe($initialAp - 8);
+    // 6 AP base cost deducted (leaving 4 AP)
+    expect($this->user->action_points)->toBe($initialAp - 6);
 
     expect(QueuedMonthlyAction::where('user_id', $this->user->id)
         ->where('action_type', MinistryActionType::ChurchCircles)
@@ -338,7 +338,7 @@ test('church generation map can queue church circles coaching with 8 ap deductio
         ->assertDispatched('action-queued');
 
     $this->user->refresh();
-    expect($this->user->action_points)->toBe(2)
+    expect($this->user->action_points)->toBe(4)
         ->and(QueuedMonthlyAction::where('user_id', $this->user->id)->where('action_type', MinistryActionType::ChurchCircles)->count())->toBe(2);
 });
 
@@ -357,7 +357,7 @@ test('action queue planner enforces 8 ap base cost and weekly limit on church ci
         ->assertDispatched('action-queued');
 
     $this->user->refresh();
-    expect($this->user->action_points)->toBe(2); // 10 - 8 = 2 AP remaining
+    expect($this->user->action_points)->toBe(4); // 10 - 6 = 4 AP remaining
 
     // Attempting to schedule again on Day 3 via planner is blocked by weekly limit
     $this->user->update(['current_game_day' => 3, 'action_points' => 10]);

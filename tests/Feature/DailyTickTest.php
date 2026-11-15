@@ -132,9 +132,9 @@ test('daily tick processes game day, advances day counters, and replenishes AP w
         ->and($session->last_daily_tick_at)->not->toBeNull()
         ->and($session->next_daily_tick_at)->not->toBeNull();
 
-    // Player incremented played today and received weekly AP replenishment (4 + 20 = 24 AP)
+    // Player incremented played today and received weekly AP replenishment (4 + 24 capped at 26)
     expect($user->weeks_played_today)->toBe(2)
-        ->and($user->action_points)->toBe(24);
+        ->and($user->action_points)->toBe(26);
 
     // Action marked processed
     expect($action->status)->toBe(QueuedActionStatus::Processed);

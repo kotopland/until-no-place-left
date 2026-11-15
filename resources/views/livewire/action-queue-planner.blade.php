@@ -361,14 +361,14 @@
                         <div>
                             <div class="flex items-center gap-2 flex-wrap">
                                 <span class="font-bold text-slate-900 dark:text-white">
-                                    Intensive Japanese Language School &amp; First-Level NPL Foundation
+                                    Intensive Japanese Language School Foundation
                                 </span>
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800">
                                     Month {{ $player->languageTrainingCurrentMonthNumber }} of 4 ({{ $player->languageTrainingMonthsRemaining }}m remaining)
                                 </span>
                             </div>
                             <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
-                                70% Bandwidth Dedicated: <strong class="text-indigo-600 dark:text-indigo-400">60% Japanese Language Studies ({{ $player->languageSchoolWeeklyAp }} AP)</strong> + <strong class="text-emerald-600 dark:text-emerald-400">10% First-Level NPL Training ({{ $player->firstLevelTrainingWeeklyAp }} AP)</strong>. 30% AP ({{ $player->action_points }} AP) available for field actions.
+                                70% Bandwidth Dedicated: <strong class="text-indigo-600 dark:text-indigo-400">Japanese Language Studies ({{ $player->languageSchoolWeeklyAp }} AP)</strong>. 30% AP ({{ $player->action_points }} AP) available for field actions.
                             </p>
                         </div>
                     </div>
@@ -390,7 +390,7 @@
                                 </span>
                             </div>
                             <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
-                                Operating without Japanese Language School &amp; First-Level NPL Foundation. Actions take extra effort and time, reducing weekly received AP to <strong class="text-amber-600 dark:text-amber-400">{{ $player->availableFieldWeeklyAp }} AP</strong> (instead of 20 AP).
+                                Operating without Japanese Language School Foundation. Actions take extra effort and time, reducing weekly received AP to <strong class="text-amber-600 dark:text-amber-400">{{ $player->availableFieldWeeklyAp }} AP</strong> (instead of {{ $player->weekly_action_points ?: 21 }} AP).
                             </p>
                         </div>
                     </div>

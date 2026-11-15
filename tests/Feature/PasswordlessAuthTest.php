@@ -143,8 +143,8 @@ test('verifying signed magic link creates new user with player name and national
         ->and($user->nationalityFlag)->toBe('🇺🇸')
         ->and($user->age)->toBe(27)
         ->and($user->current_game_session_id)->toBe($session->id)
-        ->and($user->action_points)->toBe(20)
-        ->and($user->max_action_points)->toBe(26);
+        ->and($user->action_points)->toBe(21)
+        ->and($user->max_action_points)->toBe(24);
 });
 
 test('existing user clicking magic link logs in without duplicating record', function (): void {

@@ -254,10 +254,10 @@ class RealLifeSimulationService
                     'is_ai_colaborer' => true,
                     'colaborer_archetype' => 'campus_sower',
                     'ai_strategy_notes' => 'Urban Oikos multiplier in Sakae & Osu. Connects young professionals and shopkeepers through Discovery Bible Studies.',
-                    'action_points' => 20,
-                    'max_action_points' => 26,
-                    'weekly_action_points' => 20,
-                    'daily_action_points' => 20,
+                    'action_points' => 21,
+                    'max_action_points' => 24,
+                    'weekly_action_points' => 21,
+                    'daily_action_points' => 21,
                     'total_generational_score' => 85,
                     'coop_synergy_score' => 30,
                     'badges' => ['Oikos Connector', 'Prayer Walker'],
@@ -482,10 +482,10 @@ class RealLifeSimulationService
                     'current_game_day' => 1,
                     'days_processed_this_month' => 0,
                     'home_ward_id' => $isLead ? $meito?->id : ($aiUser->home_ward_id ?? $meito?->id),
-                    'action_points' => 20,
-                    'max_action_points' => 26,
-                    'weekly_action_points' => 20,
-                    'daily_action_points' => 20,
+                    'action_points' => 21,
+                    'max_action_points' => 24,
+                    'weekly_action_points' => 21,
+                    'daily_action_points' => 21,
                     'total_generational_score' => $isLead ? 110 : 80,
                     'coop_synergy_score' => $isLead ? 30 : 20,
                     'consecutive_inactive_months' => 0,
@@ -760,8 +760,8 @@ class RealLifeSimulationService
             }
             $pioneer->update([
                 'language_training_completed' => true,
-                'action_points' => 26,
-                'max_action_points' => 26,
+                'action_points' => 24,
+                'max_action_points' => 24,
                 'badges' => $badges,
             ]);
             $scoreGain += 40;
@@ -823,7 +823,7 @@ class RealLifeSimulationService
                     }
                     $coLaborer->update([
                         'language_training_completed' => $gameMonth >= 4 ? true : $coLaborer->language_training_completed,
-                        'action_points' => $gameMonth >= 4 ? 26 : 20,
+                        'action_points' => $gameMonth >= 4 ? 24 : 21,
                         'total_generational_score' => $coLaborer->total_generational_score + (int) round($scoreGain * 0.8),
                         'coop_synergy_score' => ($coLaborer->coop_synergy_score ?? 0) + $coopGain + 12,
                         'badges' => array_values(array_unique($coBadges)),

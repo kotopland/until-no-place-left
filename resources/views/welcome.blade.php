@@ -707,7 +707,7 @@
                         </div>
                     </div>
                     <p class="text-xs text-slate-300 leading-relaxed">
-                        Missionary energy and time are finite. Each game week you receive <strong class="text-indigo-400">20 Action Points (AP)</strong> (cap of 26 AP, with 4 week ticks per month). Actions consume base AP, plus an additional <strong class="text-amber-400">+1 to +2 AP transit surcharge</strong> when commuting to distant wards from your Home Base:
+                        Missionary energy and time are finite. Each game week (7 days × 3 AP/day) you receive <strong class="text-indigo-400">21 Action Points (AP)</strong> (post-graduation bonus cap of 24 AP, with 4 week ticks per month). Actions consume base AP, plus an additional <strong class="text-amber-400">+1 to +2 AP transit surcharge</strong> when commuting to distant wards from your Home Base:
                     </p>
                     <ul class="text-xs space-y-1.5 text-slate-300 max-h-80 overflow-y-auto pr-1">
                         <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
@@ -766,7 +766,7 @@
                                 <span>⛪ Form / Coach Acts 2 Church Circles</span>
                                 <span class="text-[10px] text-slate-400 block font-normal">Intensive preparation & 3/3rds leadership • Max once per week</span>
                             </div>
-                            <span class="font-bold text-amber-400">8 AP</span>
+                            <span class="font-bold text-amber-400">6 AP</span>
                         </li>
                         <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
                             <span>🌱 Mentor Timothy Leader (L1 to L2)</span>
@@ -781,7 +781,7 @@
                         </li>
                         <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
                             <span>🍱 Host International Cultural Cafe</span>
-                            <span class="font-bold text-rose-400">4 AP</span>
+                            <span class="font-bold text-amber-400">3 AP</span>
                         </li>
                         <li class="flex items-center justify-between p-1.5 rounded-lg bg-slate-950 border border-slate-800">
                             <span>🐝 Swarm Training & Movement Catalyzing</span>
@@ -803,7 +803,7 @@
                             🚨 Draining all AP for 4 consecutive weeks triggers Severe Ministry Burnout: all field actions are blocked and you must take a mandatory 3-Month Sabbatical Leave before resuming!
                         </p>
                         <p class="text-emerald-300 leading-relaxed text-[10px]">
-                            💡 Schedule a <strong>Weekly Sabbath Rest</strong> or end the week with AP to spare (&ge; 3 AP) to completely clear fatigue and restore full 20 AP.
+                            💡 Schedule a <strong>Weekly Sabbath Rest (3 AP)</strong> or end the week with AP to spare (&ge; 3 AP) to completely clear fatigue and restore full 21 AP (24 AP post-graduation).
                         </p>
                     </div>
                 </div>
@@ -857,7 +857,7 @@
                     <div class="space-y-3 text-xs text-slate-300 leading-relaxed">
                         <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
                             <strong class="text-white block font-semibold">⚡ Personal Weekly Progression &amp; 15-Min Ticks</strong>
-                            <span>Clicking <em>Turn to Week</em> advances <strong>only your</strong> game week and replenishes your 20 AP. When online, an automated countdown tick advances by 1 game week every 15 minutes (capped at 4 game weeks per real-life day).</span>
+                            <span>Clicking <em>Turn to Week</em> advances <strong>only your</strong> game week and replenishes your 21 AP (24 AP post-graduation). When online, an automated countdown tick advances by 1 game week every 15 minutes (capped at 4 game weeks per real-life day).</span>
                         </div>
                         <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
                             <strong class="text-white block font-semibold">📅 Server-Controlled Midnight Month Tick</strong>
@@ -1041,7 +1041,7 @@
                         </div>
                     </div>
                     <p class="text-xs text-slate-300 leading-relaxed">
-                        A core diagnostic tool in disciple-making movements to track how groups, believers, and churches reproduce across sequential generational tiers (Gen 1 Mother Churches → Gen 2 Daughter Churches → Gen 3 Granddaughter Groups → <strong>Gen 4+ Movement Milestone</strong>):
+                        A core diagnostic tool in disciple-making movements to track how groups, believers, and churches reproduce across sequential generational tiers (Gen 0 Active Players → Gen 1 Mother Churches → Gen 2 Daughter Churches → Gen 3 Granddaughter Groups → <strong>Gen 4+ Movement Milestone</strong>):
                     </p>
                     <div class="space-y-2 text-xs text-slate-300">
                         <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
@@ -1063,9 +1063,9 @@
                             </span>
                         </div>
                         <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80">
-                            <span class="text-cyan-400 font-bold block mb-1">⚡ 3/3rds Coaching: 8 AP & Once-Per-Week Cadence</span>
+                            <span class="text-cyan-400 font-bold block mb-1">⚡ 3/3rds Coaching: 6 AP & Once-Per-Week Cadence</span>
                             <span class="text-slate-400 leading-relaxed block">
-                                Initiating Church Circles coaching costs <strong class="text-cyan-300">8 AP</strong> because extensive spiritual preparation, pastoral care, and leading the 3/3rds gathering leaves little bandwidth for other tasks that day. In accordance with biblical gathering rhythms, coaching for any church circle is strictly <strong class="text-cyan-300">limited to once per week (minimum 7 days between sessions)</strong>.
+                                Initiating Church Circles coaching costs <strong class="text-cyan-300">6 AP</strong> (2 full days) for spiritual preparation, pastoral care, and leading the 3/3rds gathering. In accordance with biblical gathering rhythms, coaching for any church circle is strictly <strong class="text-cyan-300">limited to once per week (minimum 7 days between sessions)</strong>.
                             </span>
                         </div>
                     </div>
@@ -1193,7 +1193,7 @@
                                 <span>70% AP Foundation (Months 1 to 4)</span>
                             </strong>
                             <p class="text-slate-300 text-[11px] leading-relaxed">
-                                The host’s recommended strategy allocates <strong>70% of weekly Action Points</strong> during Months 1 to 4: <strong>60% in Japanese Language School</strong> and <strong>10% in NPL First-Level Co-worker Training</strong>, leaving 30% for local ward presence. After Month 4, candidates graduate with full 100% AP and permanent trust bonuses!
+                                The host’s recommended strategy allocates <strong>70% of weekly Action Points (15 AP)</strong> during Months 1 to 4 to <strong>Japanese Language School</strong>, leaving 30% (6 AP) for local ward presence. NPL training invites unlock separately as you progress (with Levels 2 &amp; 3 unlocking after Language School graduation). After Month 4, candidates graduate with a <strong>24 AP</strong> post-graduation cap and permanent trust bonuses!
                             </p>
                         </div>
                     </div>
@@ -1209,7 +1209,7 @@
                             </span>
                         </div>
                         <p class="text-slate-300 text-[11px] leading-relaxed">
-                            If a player bypasses the recommended foundational strategy to operate independently, they incur the <strong>Language &amp; Cultural Barrier Handicap</strong>: their weekly received Action Points are reduced from 20 AP to <strong>14 AP / week</strong> (-6 AP penalty). Because everyday interactions, relational sifting, and evangelism require significantly more effort without linguistic proficiency and simple NPL tools, actions drain more bandwidth. Players can reopen <strong>Host Field Orientation</strong> from their user menu at any time to enroll in the 4-month foundation and remove this penalty upon graduation!
+                            If a player bypasses the recommended foundational strategy to operate independently, they incur the <strong>Language &amp; Cultural Barrier Handicap</strong>: their weekly received Action Points are reduced from 21 AP to <strong>15 AP / week</strong> (-6 AP penalty). Because everyday interactions, relational sifting, and evangelism require significantly more effort without linguistic proficiency, actions drain more bandwidth. Players can reopen <strong>Host Field Orientation</strong> from their user menu at any time to enroll in the 4-month foundation and remove this penalty upon graduation!
                         </p>
                     </div>
                 </div>
@@ -1258,12 +1258,12 @@
                             <div class="space-y-1.5">
                                 <div class="flex items-center justify-between">
                                     <span class="text-xl">🕯️</span>
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800">4 AP</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800">3 AP</span>
                                 </div>
                                 <h4 class="font-bold text-white text-xs">Weekly Sabbath Rest</h4>
                                 <span class="text-[10px] text-amber-400 block font-semibold">安息日・休息</span>
                                 <p class="text-[11px] text-slate-400 leading-relaxed">
-                                    A dedicated weekly day of rest, cessation from labor, and spiritual replenishment before God. Dedicates 4 AP of weekly bandwidth to rest (leaving 16 AP for field ministry), completely resets overwork fatigue to 0, prevents burnout, and earns +25 points.
+                                    A dedicated weekly day of rest, cessation from labor, and spiritual replenishment before God. Dedicates 3 AP (1 full day) of weekly bandwidth to rest (leaving 18 AP for field ministry), completely resets overwork fatigue to 0, prevents burnout, and earns +25 points.
                                 </p>
                             </div>
                             <div class="pt-2 border-t border-slate-900 flex items-center justify-between text-[11px]">
@@ -1312,7 +1312,7 @@
                     </div>
 
                     <div class="p-3 rounded-xl bg-indigo-950/40 border border-indigo-800/60 text-xs text-indigo-300 leading-relaxed">
-                        ⏰ <em>Rhythm &amp; Retreat Mechanics:</em> Full retreats (Fasting Retreat, NPL Mid-Level Conference) dedicate the entire week to prayer and strategy, blocking other field actions. In contrast, weekly personal rhythms (Weekly Sabbath Rest at 4 AP and Movement Mentoring at 3 AP) only consume Action Points from your 20 AP weekly bandwidth, allowing you to deploy your remaining AP toward field ministry during the week.
+                        ⏰ <em>Rhythm &amp; Retreat Mechanics:</em> Full retreats (Fasting Retreat, NPL Mid-Level Conference) dedicate the entire week to prayer and strategy, blocking other field actions. In contrast, weekly personal rhythms (Weekly Sabbath Rest at 3 AP and Movement Mentoring at 3 AP) only consume Action Points from your 21 AP weekly bandwidth (24 AP post-graduation), allowing you to deploy your remaining AP toward field ministry during the week.
                     </div>
                 </div>
 
@@ -1589,7 +1589,7 @@
                 <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 space-y-2">
                     <span class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[11px]">2</span>
                     <strong class="text-slate-900 dark:text-white block font-semibold">Choose Home Base &amp; Host Orientation</strong>
-                    <span class="text-slate-600 dark:text-slate-400 block leading-relaxed">Select your home base from the 16 wards (+25% trust &amp; 0 AP commute). On arrival, your <strong>Movement Host</strong> delivers your orientation on Japanese group culture (no individualism, relational trust precedes decisions), language reality, and the recommended <strong>70% AP Foundation Strategy (10% NPL First-Level + 60% Language School)</strong> for Months 1 to 4!</span>
+                    <span class="text-slate-600 dark:text-slate-400 block leading-relaxed">Select your home base from the 16 wards (+25% trust &amp; 0 AP commute). On arrival, your <strong>Movement Host</strong> delivers your orientation on Japanese group culture (no individualism, relational trust precedes decisions), language reality, and the recommended <strong>70% AP (15 AP) Japanese Language School</strong> foundation for Months 1 to 4!</span>
                 </div>
 
                 <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 space-y-2">

@@ -63,7 +63,7 @@ test('logged in player can manually advance day tick via action queue planner', 
     expect($session->current_game_day)->toBe(2)
         ->and($session->days_processed_this_month)->toBe(1)
         ->and($user->days_played_today)->toBe(1)
-        ->and($user->action_points)->toBe(22); // 2 + 20 replenished
+        ->and($user->action_points)->toBe(26); // 2 + 24 capped at 26
 });
 
 test('logged in player can manually advance day tick via nagoya movement dashboard', function () {
@@ -103,7 +103,7 @@ test('logged in player can manually advance day tick via nagoya movement dashboa
     expect($session->current_game_day)->toBe(2)
         ->and($session->days_processed_this_month)->toBe(1)
         ->and($user->days_played_today)->toBe(1)
-        ->and($user->action_points)->toBe(25); // 5 + 20 replenished
+        ->and($user->action_points)->toBe(26); // 5 + 24 capped at 26
 });
 
 test('auto day tick triggered after countdown passes successfully without manual notifications', function () {
@@ -430,7 +430,7 @@ test('manual day advance by one player does not change day or replenish AP for o
     expect($playerA->current_game_day)->toBe(2)
         ->and($playerA->days_processed_this_month)->toBe(1)
         ->and($playerA->days_played_today)->toBe(1)
-        ->and($playerA->action_points)->toBe(24); // 4 + 20
+        ->and($playerA->action_points)->toBe(26); // 4 + 24 capped at 26
 
     // Player B is completely unchanged!
     expect($playerB->current_game_day)->toBe(1)
