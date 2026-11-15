@@ -734,7 +734,7 @@ class ActionQueuePlanner extends Component
             }
         }
 
-        // Check bandwidth AP cost (e.g. 4 AP for Sabbath, 3 AP for Mentoring)
+        // Check bandwidth AP cost (e.g. 3 AP for Sabbath, 3 AP for Mentoring)
         $apCost = $rhythmEnum->apCost();
         if ($this->player->action_points < $apCost) {
             $this->dispatch('notify', [
@@ -1313,26 +1313,26 @@ class ActionQueuePlanner extends Component
             MinistryActionType::ReceiveMentoring->value => [
                 'actionType' => MinistryActionType::ReceiveMentoring,
                 'type' => MinistryActionType::ReceiveMentoring,
-                'ap_cost' => 3,
+                'ap_cost' => MinistryActionType::ReceiveMentoring->apCost(),
                 'days' => 1,
                 'duration' => 1,
                 'points' => 30,
                 'active' => $recentMentoring !== null,
-                'eligible' => ! $isDayBlocked && ! $hasCompletedMonth && ! $recentMentoring && ($playerAp >= 3),
-                'allowed' => ! $isDayBlocked && ! $hasCompletedMonth && ! $recentMentoring && ($playerAp >= 3),
-                'reason' => $isDayBlocked ? 'Worker is already on a dedicated retreat this week.' : ($hasCompletedMonth ? "Month {$currentMonth} has completed all 4 weeks." : ($recentMentoring ? 'Movement mentoring has already been scheduled for this week.' : ($playerAp < 3 ? "Requires 3 AP bandwidth (you have {$playerAp} AP)." : null))),
+                'eligible' => ! $isDayBlocked && ! $hasCompletedMonth && ! $recentMentoring && ($playerAp >= MinistryActionType::ReceiveMentoring->apCost()),
+                'allowed' => ! $isDayBlocked && ! $hasCompletedMonth && ! $recentMentoring && ($playerAp >= MinistryActionType::ReceiveMentoring->apCost()),
+                'reason' => $isDayBlocked ? 'Worker is already on a dedicated retreat this week.' : ($hasCompletedMonth ? "Month {$currentMonth} has completed all 4 weeks." : ($recentMentoring ? 'Movement mentoring has already been scheduled for this week.' : ($playerAp < MinistryActionType::ReceiveMentoring->apCost() ? 'Requires '.MinistryActionType::ReceiveMentoring->apCost()." AP bandwidth (you have {$playerAp} AP)." : null))),
             ],
             MinistryActionType::SabbathRest->value => [
                 'actionType' => MinistryActionType::SabbathRest,
                 'type' => MinistryActionType::SabbathRest,
-                'ap_cost' => 4,
+                'ap_cost' => MinistryActionType::SabbathRest->apCost(),
                 'days' => 1,
                 'duration' => 1,
                 'points' => 25,
                 'active' => $recentSabbath !== null,
-                'eligible' => ! $isDayBlocked && ! $hasCompletedMonth && ! $recentSabbath && ($playerAp >= 4),
-                'allowed' => ! $isDayBlocked && ! $hasCompletedMonth && ! $recentSabbath && ($playerAp >= 4),
-                'reason' => $isDayBlocked ? 'Worker is already on a dedicated retreat this week.' : ($hasCompletedMonth ? "Month {$currentMonth} has completed all 4 weeks." : ($recentSabbath ? 'Weekly Sabbath has already been scheduled for this week.' : ($playerAp < 4 ? "Requires 4 AP bandwidth (you have {$playerAp} AP)." : null))),
+                'eligible' => ! $isDayBlocked && ! $hasCompletedMonth && ! $recentSabbath && ($playerAp >= MinistryActionType::SabbathRest->apCost()),
+                'allowed' => ! $isDayBlocked && ! $hasCompletedMonth && ! $recentSabbath && ($playerAp >= MinistryActionType::SabbathRest->apCost()),
+                'reason' => $isDayBlocked ? 'Worker is already on a dedicated retreat this week.' : ($hasCompletedMonth ? "Month {$currentMonth} has completed all 4 weeks." : ($recentSabbath ? 'Weekly Sabbath has already been scheduled for this week.' : ($playerAp < MinistryActionType::SabbathRest->apCost() ? 'Requires '.MinistryActionType::SabbathRest->apCost()." AP bandwidth (you have {$playerAp} AP)." : null))),
             ],
             MinistryActionType::FastingRetreat->value => [
                 'actionType' => MinistryActionType::FastingRetreat,
@@ -1365,14 +1365,14 @@ class ActionQueuePlanner extends Component
             MinistryActionType::SupporterLetterAndAdmin->value => [
                 'actionType' => MinistryActionType::SupporterLetterAndAdmin,
                 'type' => MinistryActionType::SupporterLetterAndAdmin,
-                'ap_cost' => 2,
+                'ap_cost' => MinistryActionType::SupporterLetterAndAdmin->apCost(),
                 'days' => 1,
                 'duration' => 1,
                 'points' => 30,
                 'active' => $recentSupporterLetter !== null,
-                'eligible' => ! $isDayBlocked && ! $hasCompletedMonth && ! $recentSupporterLetter && ($playerAp >= 2),
-                'allowed' => ! $isDayBlocked && ! $hasCompletedMonth && ! $recentSupporterLetter && ($playerAp >= 2),
-                'reason' => $isDayBlocked ? 'Worker is already on a dedicated retreat this week.' : ($hasCompletedMonth ? "Month {$currentMonth} has completed all 4 weeks." : ($recentSupporterLetter ? 'Supporter prayer letter & admin has already been scheduled for this week.' : ($playerAp < 2 ? "Requires 2 AP bandwidth (you have {$playerAp} AP)." : null))),
+                'eligible' => ! $isDayBlocked && ! $hasCompletedMonth && ! $recentSupporterLetter && ($playerAp >= MinistryActionType::SupporterLetterAndAdmin->apCost()),
+                'allowed' => ! $isDayBlocked && ! $hasCompletedMonth && ! $recentSupporterLetter && ($playerAp >= MinistryActionType::SupporterLetterAndAdmin->apCost()),
+                'reason' => $isDayBlocked ? 'Worker is already on a dedicated retreat this week.' : ($hasCompletedMonth ? "Month {$currentMonth} has completed all 4 weeks." : ($recentSupporterLetter ? 'Supporter prayer letter & admin has already been scheduled for this week.' : ($playerAp < MinistryActionType::SupporterLetterAndAdmin->apCost() ? 'Requires '.MinistryActionType::SupporterLetterAndAdmin->apCost()." AP bandwidth (you have {$playerAp} AP)." : null))),
             ],
         ];
 

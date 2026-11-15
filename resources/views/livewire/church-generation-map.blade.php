@@ -480,7 +480,7 @@
                                             type="button" 
                                             wire:click.stop="queueCoachingForChurch({{ $church->id }})" 
                                             class="w-6 h-6 rounded-lg {{ $coachingCheck['allowed'] ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-slate-200 text-slate-500 border border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700' }} font-black text-xs flex items-center justify-center shadow-md transition cursor-pointer"
-                                            title="{{ $coachingCheck['allowed'] ? 'Queue 3/3rds Church Circles Coaching (8 AP • once/week)' : $coachingCheck['reason'] }}"
+                                            title="{{ $coachingCheck['allowed'] ? 'Queue 3/3rds Church Circles Coaching (' . \App\Enums\MinistryActionType::ChurchCircles->apCost() . ' AP • once/week)' : $coachingCheck['reason'] }}"
                                         >
                                             {{ $coachingCheck['allowed'] ? '+' : '⏳' }}
                                         </button>
@@ -680,7 +680,7 @@
                             @if(! $drawerCoaching['allowed']) title="{{ $drawerCoaching['reason'] }}" @endif
                         >
                             <span>{{ $drawerCoaching['allowed'] ? '⚡' : '⏳' }}</span>
-                            <span>{{ $drawerCoaching['allowed'] ? 'Queue 3/3rds Church Circles Coaching (8 AP)' : 'Coached This Week (Next in '.$drawerCoaching['days_remaining'].'d)' }}</span>
+                            <span>{{ $drawerCoaching['allowed'] ? 'Queue 3/3rds Church Circles Coaching (' . \App\Enums\MinistryActionType::ChurchCircles->apCost() . ' AP)' : 'Coached This Week (Next in '.$drawerCoaching['days_remaining'].'d)' }}</span>
                         </button>
                         @if(! $drawerCoaching['allowed'])
                             <p class="text-[10px] text-amber-700 dark:text-amber-400/90 text-center px-1 leading-tight">
