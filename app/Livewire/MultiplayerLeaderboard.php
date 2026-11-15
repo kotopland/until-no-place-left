@@ -52,7 +52,7 @@ class MultiplayerLeaderboard extends Component
             if ($hasHumanPlayers) {
                 $generationalQuery->where('is_ai_colaborer', false);
             } else {
-                $generationalQuery->where('email', 'kenji.yamada@nagoyaharvest.jp');
+                $generationalQuery->where('email', User::LEAD_PIONEER_EMAIL);
             }
         }
 
@@ -68,7 +68,7 @@ class MultiplayerLeaderboard extends Component
             if ($hasHumanPlayers) {
                 $coopQuery->where('is_ai_colaborer', false);
             } else {
-                $coopQuery->where('email', 'kenji.yamada@nagoyaharvest.jp');
+                $coopQuery->where('email', User::LEAD_PIONEER_EMAIL);
             }
         }
 

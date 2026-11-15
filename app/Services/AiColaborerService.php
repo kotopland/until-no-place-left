@@ -41,7 +41,7 @@ class AiColaborerService
 
         // 1. Sarah Jenkins: Campus Sower (Field 1 & 2 Focus)
         $sarah = User::firstOrCreate(
-            ['email' => 'sarah.jenkins@nagoyaharvest.jp'],
+            ['email' => User::SARAH_EMAIL],
             [
                 'name' => 'Sarah Jenkins',
                 'gender' => 'female',
@@ -73,11 +73,12 @@ class AiColaborerService
             'gender' => 'female',
             'age' => 27,
             'nationality' => 'American',
+            'notify_email' => false,
         ]);
 
         // 2. Marcus Silva: Mercy Catalyst (Field 1 Entry & Healing)
         $marcus = User::firstOrCreate(
-            ['email' => 'marcus.silva@nagoyaharvest.jp'],
+            ['email' => User::MARCUS_EMAIL],
             [
                 'name' => 'Marcus Silva',
                 'gender' => 'male',
@@ -112,11 +113,12 @@ class AiColaborerService
             'weekly_action_points' => 20,
             'daily_action_points' => 20,
             'max_action_points' => 26,
+            'notify_email' => false,
         ]);
 
         // 3. Kenji Yamada: Discipleship Trainer (Field 3 & 4 Focus)
         $kenji = User::firstOrCreate(
-            ['email' => 'kenji.yamada@nagoyaharvest.jp'],
+            ['email' => User::LEAD_PIONEER_EMAIL],
             [
                 'name' => 'Kenji Yamada',
                 'gender' => 'male',
@@ -151,9 +153,46 @@ class AiColaborerService
             'weekly_action_points' => 20,
             'daily_action_points' => 20,
             'max_action_points' => 26,
+            'notify_email' => false,
         ]);
 
-        return collect([$sarah, $marcus, $kenji]);
+        // 4. Missionary Coach: Movement Coach (G2+ Multiplication & Coaching Focus)
+        $coach = User::firstOrCreate(
+            ['email' => User::COACH_EMAIL],
+            [
+                'name' => 'Missionary Coach',
+                'gender' => 'male',
+                'age' => 35,
+                'nationality' => 'Japanese',
+                'password' => Hash::make('password123'),
+                'current_game_session_id' => $session->id,
+                'home_ward_id' => $meito?->id,
+                'is_ai_colaborer' => true,
+                'colaborer_archetype' => 'movement_coach',
+                'ai_strategy_notes' => 'Veteran movement coach multiplying 3/3rds house churches, mentoring apprentices, and catalyzing G2+ church planting across Nagoya.',
+                'action_points' => 20,
+                'max_action_points' => 26,
+                'weekly_action_points' => 20,
+                'daily_action_points' => 20,
+                'total_generational_score' => 60,
+                'coop_synergy_score' => 20,
+                'badges' => ['First Step', 'Prayer Walker'],
+                'notify_email' => false,
+                'notify_in_app' => true,
+            ]
+        );
+
+        $coach->update([
+            'is_ai_colaborer' => true,
+            'colaborer_archetype' => 'movement_coach',
+            'current_game_session_id' => $session->id,
+            'home_ward_id' => $coach->home_ward_id ?? $meito?->id,
+            'ai_strategy_notes' => 'Veteran movement coach multiplying 3/3rds house churches, mentoring apprentices, and catalyzing G2+ church planting across Nagoya.',
+            'consecutive_inactive_months' => 0,
+            'notify_email' => false,
+        ]);
+
+        return collect([$sarah, $marcus, $kenji, $coach]);
     }
 
     /**
@@ -236,6 +275,7 @@ class AiColaborerService
             'campus_sower' => $this->decideCampusSowerAction($aiUser, $homeWard),
             'mercy_catalyst' => $this->decideMercyCatalystAction($aiUser, $homeWard),
             'discipleship_trainer' => $this->decideDiscipleshipTrainerAction($aiUser, $homeWard),
+            'movement_coach' => $this->decideMovementCoachAction($aiUser, $homeWard),
             default => [MinistryActionType::PrayerWalk, null, $homeWard],
         };
     }
@@ -366,6 +406,48 @@ class AiColaborerService
             if ($potentialLeader) {
                 return [MinistryActionType::ChurchCircles, $potentialLeader, $homeWard];
             }
+        }
+
+        return [MinistryActionType::PrayerWalk, null, $homeWard];
+    }
+
+    /**
+     * Missionary Coach (Movement Coach): Apprentice Mentoring, 411 Multiplication & Gospel Sowing
+     *
+     * @return array{0: MinistryActionType|null, 1: Npc|null, 2: Ward}
+     */
+    protected function decideMovementCoachAction(User $aiUser, Ward $homeWard): array
+    {
+        $apprentice = Npc::where('ward_id', $homeWard->id)
+            ->where('status', ReceptivityStatus::Green)
+            ->where('trained_411', true)
+            ->where('leadership_tier', LeadershipTier::Apprentice)
+            ->first();
+
+        if ($apprentice) {
+            return [MinistryActionType::MentorTimothy, $apprentice, $homeWard];
+        }
+
+        $untrainedBeliever = Npc::where('ward_id', $homeWard->id)
+            ->where('status', ReceptivityStatus::Green)
+            ->where('trained_411', false)
+            ->first();
+
+        if ($untrainedBeliever) {
+            return [MinistryActionType::Train411, $untrainedBeliever, $homeWard];
+        }
+
+        $seeker = Npc::where('ward_id', $homeWard->id)
+            ->where('status', ReceptivityStatus::Yellow)
+            ->orderByDesc('trust_level')
+            ->first();
+
+        if ($seeker) {
+            if ($seeker->trust_level >= 40) {
+                return [MinistryActionType::Share3Circles, $seeker, $homeWard];
+            }
+
+            return [MinistryActionType::DeepTalk, $seeker, $homeWard];
         }
 
         return [MinistryActionType::PrayerWalk, null, $homeWard];
@@ -587,6 +669,7 @@ class AiColaborerService
             'campus_sower' => "Sarah: 'Always lead with your 15-second testimony! Students in Chikusa love authentic stories before formal 3 Circles discussions.'",
             'mercy_catalyst' => "Marcus: 'When meeting someone in crisis, listen before you preach. Physical relief and sincere healing prayer unlock the hardest hearts.'",
             'discipleship_trainer' => "Kenji: 'Don't wait for perfection. As soon as someone prays the prayer of salvation, train them immediately in 411 so they can share with their Oikos.'",
+            'movement_coach' => "Missionary Coach: 'Keep your eyes on the 4th generation! Every 3/3rds group should be coaching an apprentice to birth the next circle.'",
         ];
 
         $tip = $tips[$aiColaborer->colaborer_archetype] ?? "Co-laborer: 'Until no place is left in Nagoya, let us sharpen each other in prayer and bold sowing!'";

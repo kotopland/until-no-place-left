@@ -37,7 +37,7 @@ test('game:reset command resets game session to month 1 day 1 and re-seeds initi
 
     $user = User::factory()->create([
         'name' => 'Active Missionary',
-        'email' => 'active@nagoyaharvest.jp',
+        'email' => 'active@example.com',
         'current_game_session_id' => $session->id,
         'action_points' => 3,
         'max_action_points' => 12,
@@ -117,7 +117,7 @@ test('game:reset command resets game session to month 1 day 1 and re-seeds initi
     expect($user->action_points)->toBe(20)
         ->and($user->days_played_today)->toBe(0)
         ->and($user->total_generational_score)->toBe(0)
-        ->and($user->email)->toBe('active@nagoyaharvest.jp');
+        ->and($user->email)->toBe('active@example.com');
 
     // Verify pristine archetypal G1 church and NPCs are re-seeded
     expect(Church::where('name', 'Meito Living Seed (G1)')->exists())->toBeTrue()
@@ -157,14 +157,14 @@ test('game:reset with --wipe-players removes non-coach players and keeps coach',
     ]);
 
     $coach = User::factory()->create([
-        'email' => 'coach@nagoyaharvest.jp',
+        'email' => User::COACH_EMAIL,
         'current_game_session_id' => $session->id,
         'current_game_month' => 4,
         'action_points' => 2,
     ]);
 
     $player = User::factory()->create([
-        'email' => 'regular_player@nagoyaharvest.jp',
+        'email' => 'regular_player@example.com',
         'current_game_session_id' => $session->id,
         'current_game_month' => 4,
     ]);
@@ -173,14 +173,15 @@ test('game:reset with --wipe-players removes non-coach players and keeps coach',
         ->expectsOutputToContain('Player Accounts')
         ->assertSuccessful();
 
-    expect(User::where('email', 'regular_player@nagoyaharvest.jp')->exists())->toBeFalse();
-    expect(User::where('email', 'coach@nagoyaharvest.jp')->exists())->toBeTrue();
+    expect(User::where('email', 'regular_player@example.com')->exists())->toBeFalse();
+    expect(User::where('email', User::COACH_EMAIL)->exists())->toBeTrue();
 
     $coach->refresh();
     expect($coach->current_game_month)->toBe(1)
         ->and($coach->current_game_day)->toBe(1)
         ->and($coach->action_points)->toBe(20)
-        ->and($coach->home_ward_id)->toBeNull();
+        ->and($coach->is_ai_colaborer)->toBeTrue()
+        ->and($coach->home_ward_id)->not->toBeNull();
 });
 
 test('game:reset with --solo flag disables AI co-laborers for solo pioneer experience', function (): void {

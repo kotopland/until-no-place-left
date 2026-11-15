@@ -123,12 +123,12 @@ class ResetGameCommand extends Command
                 // 7. Reset player Action Points & scoring, and optionally wipe player accounts
                 if ($wipePlayers) {
                     User::where('current_game_session_id', $session->id)
-                        ->where('email', '!=', 'coach@nagoyaharvest.jp')
+                        ->where('email', '!=', User::COACH_EMAIL)
                         ->delete();
                 }
 
                 User::where('current_game_session_id', $session->id)->each(function (User $user) use ($wipePlayers): void {
-                    $isCoach = $user->email === 'coach@nagoyaharvest.jp';
+                    $isCoach = $user->email === User::COACH_EMAIL;
 
                     $updates = [
                         'current_game_month' => 1,

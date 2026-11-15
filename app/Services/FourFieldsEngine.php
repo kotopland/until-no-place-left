@@ -639,7 +639,7 @@ class FourFieldsEngine
                 $newGenScore = $user->total_generational_score + $scoreGain;
                 $newCoopScore = $user->coop_synergy_score ?? 0;
 
-                if (! $user->is_ai_colaborer && $user->email !== 'coach@nagoyaharvest.jp' && ! $playedThisMonth && $consecutiveInactiveMonths >= User::INACTIVITY_DECAY_MONTHS_THRESHOLD) {
+                if (! $user->isComputerGeneratedPlayer() && $user->email !== User::COACH_EMAIL && ! $playedThisMonth && $consecutiveInactiveMonths >= User::INACTIVITY_DECAY_MONTHS_THRESHOLD) {
                     $decay = $user->calculateInactivityScoreDecay($newGenScore, $newCoopScore);
                     $newGenScore = $decay['new_generational_score'];
                     $newCoopScore = $decay['new_coop_score'];
@@ -886,7 +886,7 @@ class FourFieldsEngine
             $newGenScore = $user->total_generational_score + $totalScoreGain;
             $newCoopScore = $user->coop_synergy_score ?? 0;
 
-            if (! $user->is_ai_colaborer && $user->email !== 'coach@nagoyaharvest.jp' && ! $playedThisMonth && $consecutiveInactiveMonths >= User::INACTIVITY_DECAY_MONTHS_THRESHOLD) {
+            if (! $user->isComputerGeneratedPlayer() && $user->email !== User::COACH_EMAIL && ! $playedThisMonth && $consecutiveInactiveMonths >= User::INACTIVITY_DECAY_MONTHS_THRESHOLD) {
                 $decay = $user->calculateInactivityScoreDecay($newGenScore, $newCoopScore);
                 $newGenScore = $decay['new_generational_score'];
                 $newCoopScore = $decay['new_coop_score'];

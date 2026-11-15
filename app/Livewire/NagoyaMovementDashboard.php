@@ -321,13 +321,13 @@ class NagoyaMovementDashboard extends Component
         }
 
         $simulator = app(RealLifeSimulationService::class);
-        $leadComputerPioneer = User::where('email', 'kenji.yamada@nagoyaharvest.jp')->first()
+        $leadComputerPioneer = User::where('email', User::LEAD_PIONEER_EMAIL)->first()
             ?? User::where('is_ai_colaborer', true)->first();
 
         if ($stage === 'reset') {
             $simulator->resetSessionToBaseline($session, $this->showcaseMode);
             $session = GameSession::where('code', 'nagoya-2026')->first() ?? $session->fresh();
-            $leadComputerPioneer = User::where('email', 'kenji.yamada@nagoyaharvest.jp')->first()
+            $leadComputerPioneer = User::where('email', User::LEAD_PIONEER_EMAIL)->first()
                 ?? User::where('is_ai_colaborer', true)->first();
             $this->activeShowcaseStage = 'reset';
             $this->showcaseSnapshot = $simulator->captureSnapshot($session, $leadComputerPioneer, 1, 'reset');
@@ -418,7 +418,7 @@ class NagoyaMovementDashboard extends Component
             return;
         }
 
-        $leadComputerPioneer = User::where('email', 'kenji.yamada@nagoyaharvest.jp')->first()
+        $leadComputerPioneer = User::where('email', User::LEAD_PIONEER_EMAIL)->first()
             ?? User::where('is_ai_colaborer', true)->first();
 
         $simulator = app(RealLifeSimulationService::class);

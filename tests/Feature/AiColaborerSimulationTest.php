@@ -20,7 +20,7 @@ use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
-test('ensureAiColaborers creates 3 distinct missionary archetypes in key wards', function () {
+test('ensureAiColaborers creates 4 distinct missionary archetypes in key wards', function () {
     $session = GameSession::create([
         'name' => 'Nagoya Test Session',
         'current_game_month' => 1,
@@ -63,28 +63,35 @@ test('ensureAiColaborers creates 3 distinct missionary archetypes in key wards',
     $service = app(AiColaborerService::class);
     $colaborers = $service->ensureAiColaborers($session);
 
-    expect($colaborers)->toHaveCount(3);
+    expect($colaborers)->toHaveCount(4);
 
-    $sarah = User::where('email', 'sarah.jenkins@nagoyaharvest.jp')->first();
+    $sarah = User::where('email', User::SARAH_EMAIL)->first();
     expect($sarah)->not->toBeNull()
         ->and($sarah->is_ai_colaborer)->toBeTrue()
         ->and($sarah->colaborer_archetype)->toBe('campus_sower')
         ->and($sarah->home_ward_id)->toBe($chikusa->id)
         ->and($sarah->archetypeBadgeLabel)->toBe('🎓 Campus Sower');
 
-    $marcus = User::where('email', 'marcus.silva@nagoyaharvest.jp')->first();
+    $marcus = User::where('email', User::MARCUS_EMAIL)->first();
     expect($marcus)->not->toBeNull()
         ->and($marcus->is_ai_colaborer)->toBeTrue()
         ->and($marcus->colaborer_archetype)->toBe('mercy_catalyst')
         ->and($marcus->home_ward_id)->toBe($minato->id)
         ->and($marcus->archetypeBadgeLabel)->toBe('❤️ Mercy Catalyst');
 
-    $kenji = User::where('email', 'kenji.yamada@nagoyaharvest.jp')->first();
+    $kenji = User::where('email', User::LEAD_PIONEER_EMAIL)->first();
     expect($kenji)->not->toBeNull()
         ->and($kenji->is_ai_colaborer)->toBeTrue()
         ->and($kenji->colaborer_archetype)->toBe('discipleship_trainer')
         ->and($kenji->home_ward_id)->toBe($meito->id)
         ->and($kenji->archetypeBadgeLabel)->toBe('📖 Discipleship Trainer');
+
+    $coach = User::where('email', User::COACH_EMAIL)->first();
+    expect($coach)->not->toBeNull()
+        ->and($coach->is_ai_colaborer)->toBeTrue()
+        ->and($coach->colaborer_archetype)->toBe('movement_coach')
+        ->and($coach->home_ward_id)->toBe($meito->id)
+        ->and($coach->archetypeBadgeLabel)->toBe('🧭 Movement Coach');
 });
 
 test('simulateDailyTurn executes autonomous actions for AI co-laborers', function () {
@@ -120,7 +127,7 @@ test('simulateDailyTurn executes autonomous actions for AI co-laborers', functio
     $service = app(AiColaborerService::class);
     $service->ensureAiColaborers($session);
 
-    $sarah = User::where('email', 'sarah.jenkins@nagoyaharvest.jp')->first();
+    $sarah = User::where('email', User::SARAH_EMAIL)->first();
     expect($sarah->action_points)->toBe(20);
 
     $outcomes = $service->simulateDailyTurn($session, 1);
@@ -290,7 +297,7 @@ test('action queue planner allows joint prayer walk and iron-on-iron with AI co-
 
     $sarah = User::create([
         'name' => 'Sarah Jenkins',
-        'email' => 'sarah.jenkins@nagoyaharvest.jp',
+        'email' => User::SARAH_EMAIL,
         'password' => bcrypt('password'),
         'current_game_session_id' => $session->id,
         'home_ward_id' => $ward->id,
@@ -698,7 +705,7 @@ test('monthly resolution simulates unplayed AI turns and exempts missionary coac
 
     $coach = User::create([
         'name' => 'Missionary Coach',
-        'email' => 'coach@nagoyaharvest.jp',
+        'email' => User::COACH_EMAIL,
         'password' => 'secret',
         'current_game_session_id' => $session->id,
         'is_ai_colaborer' => false,
@@ -709,17 +716,20 @@ test('monthly resolution simulates unplayed AI turns and exempts missionary coac
     $service = app(AiColaborerService::class);
     $service->ensureAiColaborers($session);
 
-    $sarah = User::where('email', 'sarah.jenkins@nagoyaharvest.jp')->first();
+    $sarah = User::where('email', User::SARAH_EMAIL)->first();
 
     $engine = app(FourFieldsEngine::class);
     $result = $engine->resolveGameMonth($session);
 
-    // Coach should NOT suffer inactivity decay
+    // Missionary Coach should be promoted to active AI co-laborer, not suffer inactivity decay, and play turns
     $coach->refresh();
-    expect($coach->total_generational_score)->toBe(60)
+    expect($coach->is_ai_colaborer)->toBeTrue()
+        ->and($coach->colaborer_archetype)->toBe('movement_coach')
+        ->and($coach->consecutive_inactive_months)->toBe(0)
+        ->and($coach->total_generational_score)->toBeGreaterThanOrEqual(60)
         ->and(collect($result->autonomousHighlights)->filter(fn ($h) => str_contains($h, 'Missionary Coach has not played')))->toBeEmpty();
 
     // AI co-laborers should have simulated their turns and had highlights logged
-    $aiHighlights = collect($result->autonomousHighlights)->filter(fn ($h) => str_contains($h, 'Sarah Jenkins') || str_contains($h, 'Marcus Silva') || str_contains($h, 'Kenji Yamada'));
+    $aiHighlights = collect($result->autonomousHighlights)->filter(fn ($h) => str_contains($h, 'Sarah Jenkins') || str_contains($h, 'Marcus Silva') || str_contains($h, 'Kenji Yamada') || str_contains($h, 'Missionary Coach'));
     expect($aiHighlights)->not->toBeEmpty();
 });

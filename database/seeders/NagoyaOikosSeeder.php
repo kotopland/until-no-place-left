@@ -248,9 +248,9 @@ class NagoyaOikosSeeder extends Seeder
             ]
         );
 
-        // 3. Create or Update Default Solo Player (Missionary Coach)
+        // 3. Create or Update Default Automated Co-Laborer (Missionary Coach)
         $player = User::firstOrCreate(
-            ['email' => 'coach@nagoyaharvest.jp'],
+            ['email' => User::COACH_EMAIL],
             [
                 'name' => 'Missionary Coach',
                 'gender' => 'male',
@@ -258,7 +258,10 @@ class NagoyaOikosSeeder extends Seeder
                 'nationality' => 'Japanese',
                 'password' => Hash::make('password123'),
                 'current_game_session_id' => $session->id,
-                'home_ward_id' => null, // 100% Solo Pioneer: start unassigned to choose in onboarding!
+                'home_ward_id' => $wards['meito-ku']->id ?? null,
+                'is_ai_colaborer' => true,
+                'colaborer_archetype' => 'movement_coach',
+                'ai_strategy_notes' => 'Veteran movement coach multiplying 3/3rds house churches, mentoring apprentices, and catalyzing G2+ church planting across Nagoya.',
                 'current_game_month' => 1,
                 'current_game_week' => 1,
                 'weeks_processed_this_month' => 0,
@@ -269,7 +272,7 @@ class NagoyaOikosSeeder extends Seeder
                 'daily_action_points' => 20,
                 'total_generational_score' => 60,
                 'badges' => ['First Step', 'Prayer Walker'],
-                'notify_email' => true,
+                'notify_email' => false,
                 'notify_in_app' => true,
             ]
         );

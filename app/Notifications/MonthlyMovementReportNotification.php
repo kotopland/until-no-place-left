@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\MonthlyReport;
+use App\Models\User;
 use App\Notifications\Concerns\AttachesUnsubscribeButton;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -31,7 +32,9 @@ class MonthlyMovementReportNotification extends Notification implements ShouldQu
     {
         $channels = ['database'];
 
-        if ($notifiable->notify_email ?? true) {
+        $isComputerPlayer = $notifiable instanceof User && $notifiable->isComputerGeneratedPlayer();
+
+        if (! $isComputerPlayer && ($notifiable->notify_email ?? true)) {
             $channels[] = 'mail';
         }
 

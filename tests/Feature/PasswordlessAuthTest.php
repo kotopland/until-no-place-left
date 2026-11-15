@@ -123,7 +123,7 @@ test('verifying signed magic link creates new user with player name and national
         'auth.magic-link',
         now()->addMinutes(30),
         [
-            'email' => 'pioneer@nagoya.jp',
+            'email' => 'pioneer@example.com',
             'name' => 'Missionary Paul',
             'nationality' => 'American',
             'age' => 27,
@@ -137,7 +137,7 @@ test('verifying signed magic link creates new user with player name and national
     $this->assertAuthenticated();
     $user = Auth::user();
     expect($user)->not->toBeNull()
-        ->and($user->email)->toBe('pioneer@nagoya.jp')
+        ->and($user->email)->toBe('pioneer@example.com')
         ->and($user->name)->toBe('Missionary Paul')
         ->and($user->nationality)->toBe('American')
         ->and($user->nationalityFlag)->toBe('🇺🇸')
@@ -159,7 +159,7 @@ test('existing user clicking magic link logs in without duplicating record', fun
 
     $existing = User::create([
         'name' => 'Original Leader',
-        'email' => 'leader@nagoya.jp',
+        'email' => 'leader@example.com',
         'password' => bcrypt('secret'),
         'current_game_session_id' => $session->id,
         'action_points' => 9,
@@ -170,7 +170,7 @@ test('existing user clicking magic link logs in without duplicating record', fun
         'auth.magic-link',
         now()->addMinutes(30),
         [
-            'email' => 'leader@nagoya.jp',
+            'email' => 'leader@example.com',
             'name' => 'Original Leader',
         ]
     );
@@ -179,7 +179,7 @@ test('existing user clicking magic link logs in without duplicating record', fun
 
     $response->assertRedirect('/dashboard');
     $this->assertAuthenticatedAs($existing);
-    expect(User::where('email', 'leader@nagoya.jp')->count())->toBe(1);
+    expect(User::where('email', 'leader@example.com')->count())->toBe(1);
 });
 
 test('invalid or expired signature redirects to login with error message', function (): void {

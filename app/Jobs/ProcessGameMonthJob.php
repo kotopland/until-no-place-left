@@ -75,8 +75,10 @@ class ProcessGameMonthJob implements ShouldQueue
                 'read_at' => null,
             ]);
 
-            // Dispatch multi-channel notification (mail, database, broadcast)
-            $player->notify(new MonthlyMovementReportNotification($report));
+            // Dispatch multi-channel notification (mail, database, broadcast) to human players only
+            if (! $player->isComputerGeneratedPlayer()) {
+                $player->notify(new MonthlyMovementReportNotification($report));
+            }
         }
 
         Log::info("Completed Game Month for Session [{$this->session->code}]: {$result->headline}");

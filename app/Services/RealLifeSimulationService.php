@@ -242,7 +242,7 @@ class RealLifeSimulationService
 
             // Ensure 4th computer co-laborer (Yuki Takahashi) exists alongside Kenji, Sarah, and Marcus
             User::updateOrCreate(
-                ['email' => 'yuki.takahashi@nagoyaharvest.jp'],
+                ['email' => User::YUKI_EMAIL],
                 [
                     'name' => 'Yuki Takahashi',
                     'gender' => 'female',
@@ -267,12 +267,12 @@ class RealLifeSimulationService
             );
 
             // Lead computer pioneer is Kenji Yamada (Meito-ku)
-            $leadComputerPioneer = User::where('email', 'kenji.yamada@nagoyaharvest.jp')->first()
+            $leadComputerPioneer = User::where('email', User::LEAD_PIONEER_EMAIL)->first()
                 ?? User::where('is_ai_colaborer', true)->first();
 
-            $sarah = User::where('email', 'sarah.jenkins@nagoyaharvest.jp')->first();
-            $marcus = User::where('email', 'marcus.silva@nagoyaharvest.jp')->first();
-            $yuki = User::where('email', 'yuki.takahashi@nagoyaharvest.jp')->first();
+            $sarah = User::where('email', User::SARAH_EMAIL)->first();
+            $marcus = User::where('email', User::MARCUS_EMAIL)->first();
+            $yuki = User::where('email', User::YUKI_EMAIL)->first();
 
             // In Co-op mode, establish G1 pioneer churches for all 4 missionary co-laborers in their home wards
             if ($mode !== 'solo') {
@@ -462,7 +462,7 @@ class RealLifeSimulationService
 
             // Reset all computer players in the isolated simulation to clean Month 1 baseline
             User::where('is_ai_colaborer', true)->each(function (User $aiUser) use ($session, $meito): void {
-                $isLead = $aiUser->email === 'kenji.yamada@nagoyaharvest.jp';
+                $isLead = $aiUser->email === User::LEAD_PIONEER_EMAIL;
 
                 $aiUser->update([
                     'current_game_session_id' => $session->id,
@@ -564,7 +564,7 @@ class RealLifeSimulationService
         $session->refresh();
 
         $pioneer = User::where('current_game_session_id', $session->id)
-            ->where('email', 'kenji.yamada@nagoyaharvest.jp')
+            ->where('email', User::LEAD_PIONEER_EMAIL)
             ->first()
             ?? User::where('current_game_session_id', $session->id)
                 ->where('is_ai_colaborer', true)

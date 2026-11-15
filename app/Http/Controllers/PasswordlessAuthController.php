@@ -39,6 +39,12 @@ class PasswordlessAuthController extends Controller
 
         $user = User::where('email', $email)->first();
 
+        if ($user && $user->isComputerGeneratedPlayer()) {
+            return redirect()
+                ->route('login')
+                ->with('error', 'Computer-generated players cannot sign in.');
+        }
+
         if ($user) {
             // Existing user login: update name/nationality/age if explicitly specified
             $updates = [];

@@ -609,10 +609,10 @@ test('simulation initializes distinct g1 churches for all co-laborers in coop mo
 
     expect($g1Churches->count())->toBeGreaterThanOrEqual(4);
 
-    $kenji = User::where('email', 'kenji.yamada@nagoyaharvest.jp')->first();
-    $sarah = User::where('email', 'sarah.jenkins@nagoyaharvest.jp')->first();
-    $marcus = User::where('email', 'marcus.silva@nagoyaharvest.jp')->first();
-    $yuki = User::where('email', 'yuki.takahashi@nagoyaharvest.jp')->first();
+    $kenji = User::where('email', User::LEAD_PIONEER_EMAIL)->first();
+    $sarah = User::where('email', User::SARAH_EMAIL)->first();
+    $marcus = User::where('email', User::MARCUS_EMAIL)->first();
+    $yuki = User::where('email', User::YUKI_EMAIL)->first();
 
     expect($g1Churches->contains('leader_user_id', $kenji->id))->toBeTrue()
         ->and($g1Churches->contains('leader_user_id', $sarah->id))->toBeTrue()

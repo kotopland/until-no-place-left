@@ -216,7 +216,7 @@ class ShowcaseSandboxService
             $simulator->resetSessionToBaseline($session, 'coop');
             $session = GameSession::where('code', 'nagoya-2026')->first() ?? $session->fresh();
 
-            $leadPioneer = User::where('email', 'kenji.yamada@nagoyaharvest.jp')->first()
+            $leadPioneer = User::where('email', User::LEAD_PIONEER_EMAIL)->first()
                 ?? User::where('is_ai_colaborer', true)->first();
             $resetSnapshot = $simulator->captureSnapshot($session, $leadPioneer, 1, 'reset');
 

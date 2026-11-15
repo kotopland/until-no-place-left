@@ -33,7 +33,7 @@ class PlayerInactivityReminderNotification extends Notification implements Shoul
     {
         $channels = ['database'];
 
-        if ($notifiable instanceof User && $notifiable->notify_email) {
+        if ($notifiable instanceof User && $notifiable->notify_email && ! $notifiable->isComputerGeneratedPlayer()) {
             $channels[] = 'mail';
         }
 

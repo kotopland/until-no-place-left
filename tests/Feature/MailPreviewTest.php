@@ -47,7 +47,7 @@ test('visiting mail preview renders latest captured email', function (): void {
     $storagePath = storage_path('email-previews');
     File::ensureDirectoryExists($storagePath);
 
-    Notification::route('mail', 'seeker@nagoyaharvest.jp')->notify(
+    Notification::route('mail', 'seeker@example.com')->notify(
         new MagicLoginLinkNotification(
             url: 'http://epic-ledger.test/auth/magic-link?test=1',
             name: 'Seeker Nagoya',

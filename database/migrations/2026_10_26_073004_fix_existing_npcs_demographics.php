@@ -152,19 +152,19 @@ return new class extends Migration
         }
 
         // Also fix AI co-laborer users
-        DB::table('users')->where('email', 'sarah.jenkins@nagoyaharvest.jp')->update([
+        DB::table('users')->where('email', 'sarah.jenkins@nagoyaharvest.invalid')->update([
             'gender' => 'female',
             'age' => 27,
             'nationality' => 'American',
         ]);
 
-        DB::table('users')->where('email', 'marcus.silva@nagoyaharvest.jp')->update([
+        DB::table('users')->where('email', 'marcus.silva@nagoyaharvest.invalid')->update([
             'gender' => 'male',
             'age' => 35,
             'nationality' => 'Brazilian',
         ]);
 
-        DB::table('users')->where('email', 'kenji.yamada@nagoyaharvest.jp')->update([
+        DB::table('users')->where('email', 'kenji.yamada@nagoyaharvest.invalid')->update([
             'gender' => 'male',
             'age' => 42,
             'nationality' => 'Japanese',

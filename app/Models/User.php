@@ -128,6 +128,16 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    public const string COACH_EMAIL = 'coach@nagoyaharvest.invalid';
+
+    public const string LEAD_PIONEER_EMAIL = 'kenji.yamada@nagoyaharvest.invalid';
+
+    public const string SARAH_EMAIL = 'sarah.jenkins@nagoyaharvest.invalid';
+
+    public const string MARCUS_EMAIL = 'marcus.silva@nagoyaharvest.invalid';
+
+    public const string YUKI_EMAIL = 'yuki.takahashi@nagoyaharvest.invalid';
+
     public function setGameSessionIdAttribute(mixed $value): void
     {
         $this->attributes['current_game_session_id'] = $value;
@@ -684,11 +694,33 @@ class User extends Authenticatable
     }
 
     /**
+     * Determine whether this user is a computer-generated player (AI co-laborer or non-routable NPC).
+     */
+    public function isComputerGeneratedPlayer(): bool
+    {
+        return (bool) $this->is_ai_colaborer
+            || str_ends_with(strtolower((string) $this->email), '.invalid');
+    }
+
+    /**
+     * Route notifications for the mail channel.
+     * Never send emails to computer-generated players or non-existent (.invalid) addresses.
+     */
+    public function routeNotificationForMail(mixed $notification = null): ?string
+    {
+        if ($this->isComputerGeneratedPlayer() || empty($this->email)) {
+            return null;
+        }
+
+        return $this->email;
+    }
+
+    /**
      * Determine if this user is eligible to receive an inactivity reminder notification email.
      */
     public function shouldReceiveInactivityReminder(int $days = 2): bool
     {
-        if (! $this->notify_email || $this->is_ai_colaborer || empty($this->email)) {
+        if (! $this->notify_email || $this->isComputerGeneratedPlayer() || empty($this->email)) {
             return false;
         }
 
@@ -811,6 +843,7 @@ class User extends Authenticatable
             'campus_sower' => '🎓 Campus Sower',
             'mercy_catalyst' => '❤️ Mercy Catalyst',
             'discipleship_trainer' => '📖 Discipleship Trainer',
+            'movement_coach' => '🧭 Movement Coach',
             default => 'Missionary Disciple',
         };
     }

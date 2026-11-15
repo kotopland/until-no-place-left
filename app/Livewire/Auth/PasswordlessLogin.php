@@ -103,6 +103,12 @@ class PasswordlessLogin extends Component
         $existingUser = User::where('email', $this->email)->first();
         $this->isExistingUser = $existingUser !== null;
 
+        if (($existingUser && $existingUser->isComputerGeneratedPlayer()) || str_ends_with(strtolower($this->email), '.invalid')) {
+            $this->addError('email', 'Sign-in links cannot be sent to computer-generated or invalid email addresses.');
+
+            return;
+        }
+
         if ($existingUser) {
             $this->validate([
                 'email' => ['required', 'email:rfc'],

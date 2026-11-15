@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Models\User;
 use App\Notifications\Concerns\AttachesUnsubscribeButton;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -30,6 +31,17 @@ class MagicLoginLinkNotification extends Notification
      */
     public function via(object $notifiable): array
     {
+        if ($notifiable instanceof User && $notifiable->isComputerGeneratedPlayer()) {
+            return [];
+        }
+
+        if (method_exists($notifiable, 'routeNotificationFor')) {
+            $mailRoute = $notifiable->routeNotificationFor('mail', $this);
+            if (is_string($mailRoute) && str_ends_with(strtolower($mailRoute), '.invalid')) {
+                return [];
+            }
+        }
+
         return ['mail'];
     }
 
