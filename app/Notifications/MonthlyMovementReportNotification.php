@@ -3,8 +3,10 @@
 namespace App\Notifications;
 
 use App\Models\MonthlyReport;
+use App\Models\MovementCelebration;
 use App\Models\User;
 use App\Notifications\Concerns\AttachesUnsubscribeButton;
+use App\Services\EmailVisualService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -58,11 +60,86 @@ class MonthlyMovementReportNotification extends Notification implements ShouldQu
         $churches = $this->report->churches_planted_count;
 
         $name = property_exists($notifiable, 'name') ? (string) $notifiable->name : 'Missionary';
+        $visuals = app(EmailVisualService::class);
+        $player = $notifiable instanceof User ? $notifiable : $this->report->user;
+
+        $people = [];
+        if ($player instanceof User) {
+            $people[] = [
+                'name' => $player->name,
+                'subtitle' => $player->homeWard->name ?? 'Nagoya',
+                'badge' => 'Missionary',
+                'avatarUrl' => $visuals->avatarUrlForPerson($player, 128),
+            ];
+        } else {
+            $people[] = [
+                'name' => $name,
+                'subtitle' => 'Nagoya Mission',
+                'badge' => 'Missionary',
+                'avatarUrl' => $visuals->avatarUrl(seed: $name, role: 'missionary', size: 128),
+            ];
+        }
+
+        $celebrations = MovementCelebration::where('game_session_id', $this->report->game_session_id)
+            ->where('game_month', $month)
+            ->with(['npc', 'ward', 'church'])
+            ->latest()
+            ->take(3)
+            ->get();
+
+        $highlightWardIds = $player?->home_ward_id ? [(int) $player->home_ward_id] : [];
+        $markers = [];
+
+        foreach ($celebrations as $cel) {
+            $people[] = [
+                'name' => $cel->person_name,
+                'subtitle' => $cel->ward_name,
+                'badge' => ucfirst(str_replace('_', ' ', $cel->type)),
+                'avatarUrl' => $cel->npc
+                    ? $visuals->avatarUrlForPerson($cel->npc, 128)
+                    : $visuals->avatarUrl(seed: $cel->person_name, size: 128),
+            ];
+
+            if ($cel->ward_id) {
+                $highlightWardIds[] = (int) $cel->ward_id;
+            }
+
+            if ($cel->church && $cel->church->lat && $cel->church->lng) {
+                $markers[] = [
+                    'lat' => (float) $cel->church->lat,
+                    'lng' => (float) $cel->church->lng,
+                    'label' => $cel->church->name,
+                    'type' => 'church',
+                ];
+            } elseif ($cel->npc && $cel->npc->lat && $cel->npc->lng) {
+                $markers[] = [
+                    'lat' => (float) $cel->npc->lat,
+                    'lng' => (float) $cel->npc->lng,
+                    'label' => $cel->npc->name,
+                    'type' => 'person',
+                ];
+            }
+        }
+
+        $focusWard = $player instanceof User && $player->homeWard
+            ? $player->homeWard
+            : $celebrations->first()?->ward;
 
         $mail = (new MailMessage)
             ->subject("🌱 Nagoya Movement Report — Month {$month} Summary")
             ->greeting("Konnichiwa, {$name}!")
             ->line("Game Month {$month} in Nagoya has concluded and the server tick has resolved your relational actions.")
+            ->line($visuals->renderPeopleAvatarsHtml($people, "Month {$month} Laborers & Breakthroughs"))
+            ->line($visuals->renderWardMapHtml(
+                focusWard: $focusWard,
+                markers: $markers,
+                highlightWardIds: $highlightWardIds,
+                accentHex: '#10b981',
+                title: "Nagoya Month {$month} Frontier",
+                caption: $focusWard
+                    ? "Movement activity centered in {$focusWard->name} ({$focusWard->name_ja}) and connected wards."
+                    : 'Nagoya 16-Ward Movement Frontier'
+            ))
             ->line('**Monthly Kingdom Impact Summary:**')
             ->line("• **Generational Score Gained:** {$scorePrefix}{$scoreGain} pts (Total: {$totalScore} pts)")
             ->line("• **Autonomous Disciples Multiplied:** {$multiplied}")

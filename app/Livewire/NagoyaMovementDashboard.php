@@ -930,6 +930,7 @@ class NagoyaMovementDashboard extends Component
 
         $activeCelebrations = MovementCelebration::where('game_session_id', $session?->id)
             ->where('is_dismissed', false)
+            ->with(['npc.church', 'npc.disciplerNpc', 'user', 'ward', 'church.leaderNpc', 'church.leaderUser', 'church.ward'])
             ->latest()
             ->get();
 

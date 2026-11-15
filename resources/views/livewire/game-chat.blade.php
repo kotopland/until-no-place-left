@@ -284,6 +284,80 @@
                         {{ $msg->message }}
                     </div>
 
+                    @php
+                        $celebrationId = $msg->metadata['celebration_id'] ?? null;
+                        $celebrationForMsg = ($celebrationId && isset($celebrationsById)) ? $celebrationsById->get((int) $celebrationId) : null;
+                    @endphp
+
+                    @if($celebrationForMsg)
+                        @php
+                            $msgNpc = $celebrationForMsg->npc;
+                            $msgDiscipler = ($celebrationForMsg->generation > 1 && $msgNpc?->disciplerNpc)
+                                ? $msgNpc->disciplerNpc
+                                : $celebrationForMsg->user;
+                            $msgChurch = $celebrationForMsg->church ?? $msgNpc?->church;
+                            $msgWard = $celebrationForMsg->ward ?? $msg->ward;
+                            $msgMarkers = [];
+                            if ($msgNpc && $msgNpc->lat && $msgNpc->lng) {
+                                $msgMarkers[] = ['lat' => (float) $msgNpc->lat, 'lng' => (float) $msgNpc->lng, 'label' => $msgNpc->name, 'type' => 'person'];
+                            }
+                            if ($msgChurch && $msgChurch->lat && $msgChurch->lng) {
+                                $msgMarkers[] = ['lat' => (float) $msgChurch->lat, 'lng' => (float) $msgChurch->lng, 'label' => $msgChurch->name, 'type' => 'church'];
+                            }
+                        @endphp
+                        <div class="mt-3 p-3 rounded-2xl bg-white/80 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                            <div class="md:col-span-7 flex flex-col gap-2.5">
+                                <div class="flex items-center gap-3 flex-wrap">
+                                    <div class="flex items-center gap-2.5">
+                                        @if($msgNpc)
+                                            <x-person-avatar :person="$msgNpc" size="xl" :showAgePill="true" />
+                                        @else
+                                            <x-person-avatar :seed="$celebrationForMsg->person_name" size="xl" />
+                                        @endif
+                                        <div>
+                                            <div class="text-xs font-black text-slate-900 dark:text-white">{{ $celebrationForMsg->person_name }}</div>
+                                            @if($celebrationForMsg->person_role)
+                                                <div class="text-[10px] text-slate-500 dark:text-slate-400">{{ $celebrationForMsg->person_role }}</div>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    @if($celebrationForMsg->discipler_name)
+                                        <span class="text-slate-400 text-xs">🤝</span>
+                                        <div class="flex items-center gap-2">
+                                            @if($msgDiscipler)
+                                                <x-person-avatar :person="$msgDiscipler" size="lg" />
+                                            @else
+                                                <x-person-avatar :seed="$celebrationForMsg->discipler_name" role="missionary" size="lg" />
+                                            @endif
+                                            <div class="text-[11px] font-bold text-indigo-700 dark:text-indigo-300">
+                                                {{ $celebrationForMsg->discipler_name }}
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                @if($msgChurch)
+                                    <div class="px-2.5 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200/80 dark:border-indigo-800/60 text-[11px] flex items-center gap-2">
+                                        <span>⛪</span>
+                                        <span class="font-bold text-indigo-900 dark:text-indigo-200">{{ $msgChurch->name }}</span>
+                                        <span class="text-[10px] text-indigo-600 dark:text-indigo-400">({{ $msgChurch->generationBadge }} • {{ $msgChurch->attenders_count }} attenders)</span>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="md:col-span-5">
+                                <x-nagoya-ward-minimap
+                                    :ward="$msgWard"
+                                    :markers="$msgMarkers"
+                                    :width="260"
+                                    :height="140"
+                                    class="w-full h-32"
+                                />
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Reactions Bar & Actions -->
                     <div class="flex flex-wrap items-center justify-between gap-2 mt-2.5 pt-2 border-t border-slate-200/50 dark:border-slate-800/40">
                         <div class="flex flex-wrap items-center gap-1.5">

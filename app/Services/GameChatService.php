@@ -147,8 +147,13 @@ class GameChatService
             'system_event_type' => $celebration->type,
             'metadata' => [
                 'celebration_id' => $celebration->id,
+                'ward_id' => $celebration->ward_id,
                 'ward_name' => $celebration->ward_name,
                 'person_name' => $celebration->person_name,
+                'discipler_name' => $celebration->discipler_name,
+                'npc_id' => $celebration->npc_id,
+                'church_id' => $celebration->church_id,
+                'user_id' => $celebration->user_id,
                 'generation' => $celebration->generation,
             ],
         ]);

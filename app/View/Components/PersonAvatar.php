@@ -37,6 +37,7 @@ class PersonAvatar extends Component
         public bool $showBadges = true,
         public bool $showStatusGlow = true,
         public bool $showAgePill = false,
+        public ?string $seed = null,
     ) {
         if ($this->person instanceof Npc) {
             $this->gender = $this->person->gender ?: 'male';
@@ -64,10 +65,11 @@ class PersonAvatar extends Component
             'lg' => 64,
             'xl' => 80,
             '2xl' => 96,
+            '3xl' => 112,
             default => 48,
         };
 
-        $seed = $this->person->name ?? ($this->nationality.$this->gender.$this->age);
+        $effectiveSeed = $this->seed ?? $this->person->name ?? ($this->nationality.$this->gender.$this->age);
         $this->svg = $avatarService->generateSvg(
             $this->gender,
             $this->age,
@@ -76,7 +78,7 @@ class PersonAvatar extends Component
             $this->status,
             $this->pixelSize,
             false,
-            $seed
+            $effectiveSeed
         );
     }
 

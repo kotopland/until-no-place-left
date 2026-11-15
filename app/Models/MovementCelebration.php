@@ -111,6 +111,8 @@ class MovementCelebration extends Model
 
     /**
      * Relationship to GameSession
+     *
+     * @return BelongsTo<GameSession, $this>
      */
     public function gameSession(): BelongsTo
     {
@@ -119,6 +121,8 @@ class MovementCelebration extends Model
 
     /**
      * Relationship to User (Catalyst / Discipler)
+     *
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -127,6 +131,8 @@ class MovementCelebration extends Model
 
     /**
      * Relationship to Ward
+     *
+     * @return BelongsTo<Ward, $this>
      */
     public function ward(): BelongsTo
     {
@@ -135,6 +141,8 @@ class MovementCelebration extends Model
 
     /**
      * Relationship to NPC
+     *
+     * @return BelongsTo<Npc, $this>
      */
     public function npc(): BelongsTo
     {
@@ -143,6 +151,8 @@ class MovementCelebration extends Model
 
     /**
      * Relationship to Church
+     *
+     * @return BelongsTo<Church, $this>
      */
     public function church(): BelongsTo
     {
@@ -284,12 +294,14 @@ class MovementCelebration extends Model
         int $gameWeek = 1,
         ?int $userId = null,
         ?int $npcId = null,
+        ?int $churchId = null,
     ): self {
         return self::create([
             'game_session_id' => $gameSessionId,
             'user_id' => $userId,
             'ward_id' => $wardId,
             'npc_id' => $npcId,
+            'church_id' => $churchId,
             'type' => 'group_formed',
             'title' => '📖 Discovery Bible Study Group Formed!',
             'title_ja' => 'ディスカバリー聖書グループ • Direct Word Encounter',

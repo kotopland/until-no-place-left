@@ -6,6 +6,7 @@ namespace App\Livewire;
 
 use App\Models\ChatMessage;
 use App\Models\GameSession;
+use App\Models\MovementCelebration;
 use App\Models\Ward;
 use App\Services\GameChatService;
 use App\Services\PersonAvatarService;
@@ -167,12 +168,26 @@ class GameChat extends Component
             'announcements' => $session ? ChatMessage::where('game_session_id', $session->id)->where('channel', 'announcements')->where('user_id', '!=', $user?->id)->when($lastRead, fn ($q) => $q->where('created_at', '>', $lastRead))->count() : 0,
         ];
 
+        $celebrationIds = $messages
+            ->map(fn (ChatMessage $m): ?int => isset($m->metadata['celebration_id']) ? (int) $m->metadata['celebration_id'] : null)
+            ->filter()
+            ->unique()
+            ->values();
+
+        $celebrationsById = $celebrationIds->isNotEmpty()
+            ? MovementCelebration::whereIn('id', $celebrationIds)
+                ->with(['npc.church', 'npc.disciplerNpc', 'user', 'ward', 'church.ward'])
+                ->get()
+                ->keyBy('id')
+            : collect();
+
         $parsedLastRead = $this->initialLastReadAt ? Carbon::parse($this->initialLastReadAt) : null;
 
         return view('livewire.game-chat', [
             'session' => $session,
             'wards' => $wards,
             'messages' => $messages,
+            'celebrationsById' => $celebrationsById,
             'pinnedMessages' => $pinnedMessages,
             'unreadCounts' => $unreadCounts,
             'currentUser' => $user,

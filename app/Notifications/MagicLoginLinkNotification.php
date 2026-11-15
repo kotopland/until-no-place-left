@@ -6,6 +6,7 @@ namespace App\Notifications;
 
 use App\Models\User;
 use App\Notifications\Concerns\AttachesUnsubscribeButton;
+use App\Services\EmailVisualService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -51,10 +52,22 @@ class MagicLoginLinkNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $displayName = $this->name ?: (property_exists($notifiable, 'name') && $notifiable->name ? $notifiable->name : 'Missionary Disciple');
+        $visuals = app(EmailVisualService::class);
+        $focusWard = $notifiable instanceof User ? $notifiable->homeWard : null;
+
+        $people = [[
+            'name' => $displayName,
+            'subtitle' => $focusWard->name ?? 'Nagoya Mission Frontier',
+            'badge' => $this->isNewUser ? 'New Missionary' : 'Missionary',
+            'avatarUrl' => $notifiable instanceof User
+                ? $visuals->avatarUrlForPerson($notifiable, 128)
+                : $visuals->avatarUrl(seed: $displayName, role: 'missionary', size: 128),
+        ]];
 
         $mail = (new MailMessage)
             ->subject($this->isNewUser ? '✨ Your Nagoya Oikos Activation Link — Enter the Mission' : '⚡ Your Nagoya Oikos Magic Sign-In Link')
-            ->greeting("Shalom, {$displayName}!");
+            ->greeting("Shalom, {$displayName}!")
+            ->line($visuals->renderPeopleAvatarsHtml($people, 'Your Missionary Profile'));
 
         if ($this->isNewUser) {
             $mail->line('Welcome to Nagoya Oikos: The Four Fields. You are taking your first steps toward reaching the 2.3 million souls of Nagoya.')
@@ -63,7 +76,15 @@ class MagicLoginLinkNotification extends Notification
             $mail->line('We received a request to access your Nagoya Oikos mission dashboard.');
         }
 
-        $mail->line('Click the secure button below to instantly sign in to your mission headquarters without passwords:')
+        $mail->line($visuals->renderWardMapHtml(
+            focusWard: $focusWard,
+            accentHex: '#6366f1',
+            title: $focusWard ? "Nagoya: {$focusWard->name}" : 'Nagoya • 16 Wards',
+            caption: $focusWard
+                ? "Your mission base in {$focusWard->name} ({$focusWard->name_ja}) is ready."
+                : '2.3 million people across 16 wards in Nagoya, Japan.'
+        ))
+            ->line('Click the secure button below to instantly sign in to your mission headquarters without passwords:')
             ->action('⚡ Enter Nagoya Mission', $this->url)
             ->line('**Security Notice:** This link is cryptographically signed, valid for 30 minutes, and can only be used by you.')
             ->line('If you did not request this link, you can safely disregard this email.');

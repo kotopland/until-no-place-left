@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\MediaVisualController;
 use App\Http\Controllers\NotificationPreferenceController;
 use App\Http\Controllers\PasswordlessAuthController;
 use App\Livewire\Auth\PasswordlessLogin;
@@ -16,6 +17,10 @@ Route::view('/', 'invitation')->name('invitation');
 
 // Public Lore, Story & Comprehensive Game Rules Overview
 Route::view('/welcome', 'welcome')->name('welcome');
+
+// Public Email-Safe PNG Visuals (Avatars & Nagoya Ward Maps)
+Route::get('/media/avatar.png', [MediaVisualController::class, 'avatar'])->name('media.avatar');
+Route::get('/media/ward-map.png', [MediaVisualController::class, 'wardMap'])->name('media.ward-map');
 
 // Public Longitudinal Movement Simulation (Shared Daily SQLite DB for Non-Registered Players)
 Route::get('/simulate', NagoyaMovementDashboard::class)->name('simulate');

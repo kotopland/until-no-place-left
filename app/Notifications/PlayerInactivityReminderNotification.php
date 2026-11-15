@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Models\Npc;
 use App\Models\User;
 use App\Notifications\Concerns\AttachesUnsubscribeButton;
+use App\Services\EmailVisualService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -50,8 +52,42 @@ class PlayerInactivityReminderNotification extends Notification implements Shoul
             : 'Missionary Disciple';
 
         $wardName = null;
+        $focusWard = null;
         if ($notifiable instanceof User && $notifiable->homeWard) {
-            $wardName = "{$notifiable->homeWard->name} ({$notifiable->homeWard->name_ja})";
+            $focusWard = $notifiable->homeWard;
+            $wardName = "{$focusWard->name} ({$focusWard->name_ja})";
+        }
+
+        $visuals = app(EmailVisualService::class);
+        $people = [];
+        if ($notifiable instanceof User) {
+            $people[] = [
+                'name' => $name,
+                'subtitle' => $focusWard->name ?? 'Nagoya',
+                'badge' => 'Your Missionary',
+                'avatarUrl' => $visuals->avatarUrlForPerson($notifiable, 128),
+            ];
+
+            $waitingNpcs = Npc::where('game_session_id', $notifiable->current_game_session_id)
+                ->when($notifiable->home_ward_id, fn ($q) => $q->where('ward_id', $notifiable->home_ward_id))
+                ->take(2)
+                ->get();
+
+            foreach ($waitingNpcs as $npc) {
+                $people[] = [
+                    'name' => $npc->name,
+                    'subtitle' => $npc->role_archetype->label(),
+                    'badge' => 'Waiting in Ward',
+                    'avatarUrl' => $visuals->avatarUrlForPerson($npc, 128),
+                ];
+            }
+        } else {
+            $people[] = [
+                'name' => $name,
+                'subtitle' => 'Nagoya Mission',
+                'badge' => 'Missionary',
+                'avatarUrl' => $visuals->avatarUrl(seed: $name, role: 'missionary', size: 128),
+            ];
         }
 
         $optOutUrl = $notifiable instanceof User
@@ -62,6 +98,15 @@ class PlayerInactivityReminderNotification extends Notification implements Shoul
             ->subject("🌸 Nagoya misses you, {$name}! The harvest is waiting")
             ->greeting("Konnichiwa, {$name}!")
             ->line("It has been {$this->daysInactive} real-life days since your last missionary presence in Nagoya.")
+            ->line($visuals->renderPeopleAvatarsHtml($people, 'Waiting for Your Presence in Nagoya'))
+            ->line($visuals->renderWardMapHtml(
+                focusWard: $focusWard,
+                accentHex: '#f59e0b',
+                title: $focusWard ? "Your Field: {$focusWard->name}" : 'Nagoya Harvest Field',
+                caption: $wardName
+                    ? "Your home base in {$wardName} and your neighborhood prayer routes are waiting."
+                    : "Nagoya's 16 wards are waiting for your faithful presence."
+            ))
             ->line('In Japanese culture, relational trust (*Oikos*) is built through steady, faithful presence. When workers step back, seeking friends and young disciples notice the silence.');
 
         if ($wardName) {
