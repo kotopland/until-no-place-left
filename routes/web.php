@@ -18,7 +18,8 @@ Route::view('/', 'invitation')->name('invitation');
 // Public Lore, Story & Comprehensive Game Rules Overview
 Route::view('/welcome', 'welcome')->name('welcome');
 
-// Public Email-Safe PNG Visuals (Avatars & Nagoya Ward Maps)
+// Public Email-Safe PNG Visuals (Logo, Avatars & Nagoya Ward Maps)
+Route::get('/media/logo.png', [MediaVisualController::class, 'logo'])->name('media.logo');
 Route::get('/media/avatar.png', [MediaVisualController::class, 'avatar'])->name('media.avatar');
 Route::get('/media/ward-map.png', [MediaVisualController::class, 'wardMap'])->name('media.ward-map');
 

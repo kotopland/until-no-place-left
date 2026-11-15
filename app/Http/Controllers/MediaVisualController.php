@@ -13,6 +13,43 @@ use Illuminate\Http\Response;
 class MediaVisualController extends Controller
 {
     /**
+     * Serve a lightweight, email-optimized PNG of the webapp logo.
+     */
+    public function logo(): Response
+    {
+        $sourcePath = public_path('images/until-no-place-left-logo-small.png');
+
+        if (is_file($sourcePath) && function_exists('imagecreatefrompng')) {
+            $src = @imagecreatefrompng($sourcePath);
+            if ($src !== false) {
+                $targetSize = 128;
+                $dst = imagecreatetruecolor($targetSize, $targetSize);
+                imagealphablending($dst, false);
+                imagesavealpha($dst, true);
+                $transparent = imagecolorallocatealpha($dst, 0, 0, 0, 127);
+                if ($transparent !== false) {
+                    imagefilledrectangle($dst, 0, 0, $targetSize, $targetSize, $transparent);
+                }
+                imagecopyresampled($dst, $src, 0, 0, 0, 0, $targetSize, $targetSize, imagesx($src), imagesy($src));
+
+                ob_start();
+                imagepng($dst, null, 6);
+                $png = (string) ob_get_clean();
+
+                imagedestroy($src);
+                imagedestroy($dst);
+
+                return response($png, 200, [
+                    'Content-Type' => 'image/png',
+                    'Cache-Control' => 'public, max-age=604800',
+                ]);
+            }
+        }
+
+        abort(404);
+    }
+
+    /**
      * Serve a deterministic PNG portrait avatar for emails.
      */
     public function avatar(Request $request, EmailVisualService $visuals): Response

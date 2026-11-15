@@ -241,6 +241,8 @@ test('emails include avatar and nagoya ward map images', function (): void {
 
     $monthlyHtml = (string) (new MonthlyMovementReportNotification($report))->toMail($player)->render();
     expect($monthlyHtml)
+        ->toContain('/media/logo.png')
+        ->not->toContain('laravel.com/img/notification-logo')
         ->toContain('/media/avatar.png')
         ->toContain('/media/ward-map.png')
         ->toContain('Sarah Missionary')
@@ -248,6 +250,8 @@ test('emails include avatar and nagoya ward map images', function (): void {
 
     $inactivityHtml = (string) (new PlayerInactivityReminderNotification(3))->toMail($player)->render();
     expect($inactivityHtml)
+        ->toContain('/media/logo.png')
+        ->not->toContain('laravel.com/img/notification-logo')
         ->toContain('/media/avatar.png')
         ->toContain('/media/ward-map.png')
         ->toContain('Sarah Missionary')
@@ -259,12 +263,19 @@ test('emails include avatar and nagoya ward map images', function (): void {
         isNewUser: false,
     ))->toMail($player)->render();
     expect($magicHtml)
+        ->toContain('/media/logo.png')
+        ->not->toContain('laravel.com/img/notification-logo')
         ->toContain('/media/avatar.png')
         ->toContain('/media/ward-map.png')
         ->toContain('Sarah Missionary');
 });
 
-test('public media endpoints return valid png images for avatars and nagoya ward maps', function (): void {
+test('public media endpoints return valid png images for logo, avatars, and nagoya ward maps', function (): void {
+    $logoResponse = $this->get(route('media.logo'));
+    $logoResponse->assertStatus(200)
+        ->assertHeader('Content-Type', 'image/png');
+    expect(substr($logoResponse->getContent(), 0, 8))->toBe("\x89PNG\r\n\x1a\n");
+
     $ward = Ward::create([
         'name' => 'Meito-ku',
         'name_ja' => '名東区',
