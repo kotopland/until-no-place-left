@@ -266,6 +266,15 @@ class RealLifeSimulationService
                 ]
             );
 
+            // Reset NPL training progression & calendar month for all session players
+            User::where('current_game_session_id', $session->id)->update([
+                'current_game_month' => 1,
+                'training_level' => 0,
+                'level_1_completed_month' => null,
+                'level_2_completed_month' => null,
+                'level_3_completed_month' => null,
+            ]);
+
             // Lead computer pioneer is Kenji Yamada (Meito-ku)
             $leadComputerPioneer = User::where('email', User::LEAD_PIONEER_EMAIL)->first()
                 ?? User::where('is_ai_colaborer', true)->first();
@@ -660,6 +669,16 @@ class RealLifeSimulationService
         // 7. Field 4 & 5: Indigenous Leadership Progression (L1 -> L5) & Simple Church Planting
         $this->simulateField4And5ChurchesAndLeadership($session, $pioneer, $unlockedWards, $gameMonth, $coopFactor);
 
+        // Re-check NPL Level 3 eligibility in case a player started their first 3/3rds group this month
+        if ($pioneer) {
+            $this->advancePlayerNplTrainingProgression($pioneer, $gameMonth);
+        }
+        if ($isCoop) {
+            User::where('current_game_session_id', $session->id)
+                ->when($pioneer, fn ($q) => $q->where('id', '!=', $pioneer->id))
+                ->each(fn (User $coLaborer) => $this->advancePlayerNplTrainingProgression($coLaborer, $gameMonth));
+        }
+
         // 8. Real-Life Trials: Seasonal Job Relocations (Tenkin), Illness, Conflict & Revitalization
         $this->simulateRealisticAttritionAndCare($session, $pioneer, $gameMonth);
 
@@ -791,6 +810,8 @@ class RealLifeSimulationService
             'fatigue_penalty_ap' => 0,
         ]);
 
+        $this->advancePlayerNplTrainingProgression($pioneer, $gameMonth);
+
         // Also advance fellow computer co-laborers' rhythms & scores in Co-op mode
         if ($session->isCoopMode) {
             User::where('current_game_session_id', $session->id)
@@ -807,7 +828,34 @@ class RealLifeSimulationService
                         'coop_synergy_score' => ($coLaborer->coop_synergy_score ?? 0) + $coopGain + 12,
                         'badges' => array_values(array_unique($coBadges)),
                     ]);
+
+                    $this->advancePlayerNplTrainingProgression($coLaborer, $gameMonth);
                 });
+        }
+    }
+
+    /**
+     * Advance a simulated player through NPL Training Invites (Level 1: 411, Level 2: Four Fields, Level 3: Mid-Level)
+     * as they become eligible during the longitudinal simulation.
+     */
+    protected function advancePlayerNplTrainingProgression(User $player, int $gameMonth): void
+    {
+        $player->current_game_month = $gameMonth;
+
+        foreach ([1, 2, 3] as $level) {
+            if (! $player->isEligibleForTrainingInvite($level)) {
+                continue;
+            }
+
+            $player->training_level = $level;
+
+            match ($level) {
+                1 => $player->level_1_completed_month = $gameMonth,
+                2 => $player->level_2_completed_month = $gameMonth,
+                3 => $player->level_3_completed_month = $gameMonth,
+            };
+
+            $player->save();
         }
     }
 
@@ -883,6 +931,25 @@ class RealLifeSimulationService
                         'notes' => "Oikos {$relType->label()} connection in {$targetWard->name}.",
                     ]
                 );
+            }
+
+            if ($pioneer && $pioneer->hasUnlockedAction(MinistryActionType::OikosMapping)) {
+                $mapper = User::where('current_game_session_id', $session->id)
+                    ->where('home_ward_id', $targetWard->id)
+                    ->first() ?? $pioneer;
+
+                NpcContribution::create([
+                    'game_session_id' => $session->id,
+                    'npc_id' => $newNpc->id,
+                    'user_id' => $mapper->id,
+                    'action_type' => MinistryActionType::OikosMapping,
+                    'contribution_role' => ContributionRole::PioneerSower,
+                    'game_month' => $gameMonth,
+                    'trust_gained' => 10,
+                    'points_awarded' => 15,
+                    'triggered_breakthrough' => false,
+                    'notes' => "Mapped Oikos relational sphere in {$targetWard->name}, discovering {$newNpc->name}.",
+                ]);
             }
         }
 

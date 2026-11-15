@@ -7,10 +7,13 @@ use App\Livewire\ActionQueuePlanner;
 use App\Models\Church;
 use App\Models\GameSession;
 use App\Models\Npc;
+use App\Models\NpcContribution;
 use App\Models\QueuedMonthlyAction;
 use App\Models\User;
 use App\Models\Ward;
 use App\Services\FourFieldsEngine;
+use App\Services\RealLifeSimulationService;
+use App\Services\ShowcaseSandboxService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -233,4 +236,42 @@ it('requires starting a three third group before unlocking level 3 invite for 12
         ->and(MinistryActionType::IronOnIron->isUnlockedFor($player))->toBeTrue()
         ->and(MinistryActionType::SwarmTraining->isUnlockedFor($player))->toBeTrue()
         ->and(MinistryActionType::MidLevelConference->isUnlockedFor($player))->toBeTrue();
+});
+
+it('advances simulated ai co-laborers through npl training levels and records oikos mapping in showcase simulation', function () {
+    $sandbox = app(ShowcaseSandboxService::class);
+    $session = $sandbox->activate(recreate: true);
+
+    try {
+        $simulator = app(RealLifeSimulationService::class);
+        $simulator->simulate(
+            session: $session,
+            targetMonths: 3,
+            mode: 'coop',
+            resetFirst: true,
+            rngSeed: 20260401,
+        );
+
+        $aiPlayers = User::where('current_game_session_id', $session->id)->get();
+        expect($aiPlayers->count())->toBeGreaterThanOrEqual(4);
+
+        foreach ($aiPlayers as $aiPlayer) {
+            $expectedLevel = $aiPlayer->hasStartedThreeThirdGroup() ? 3 : 2;
+            expect($aiPlayer->training_level)->toBe($expectedLevel)
+                ->and($aiPlayer->level_1_completed_month)->toBe(1)
+                ->and($aiPlayer->level_2_completed_month)->toBe(3);
+
+            if ($expectedLevel === 3) {
+                expect($aiPlayer->level_3_completed_month)->toBe(3);
+            }
+        }
+
+        $oikosMappingCount = NpcContribution::where('game_session_id', $session->id)
+            ->where('action_type', MinistryActionType::OikosMapping)
+            ->count();
+
+        expect($oikosMappingCount)->toBeGreaterThan(0);
+    } finally {
+        $sandbox->deactivate();
+    }
 });
