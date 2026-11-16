@@ -312,3 +312,45 @@ test('public media endpoints return valid png images for logo, avatars, and nago
         ->assertHeader('Content-Type', 'image/png');
     expect(substr($mapResponse->getContent(), 0, 8))->toBe("\x89PNG\r\n\x1a\n");
 });
+
+test('invitation page renders live nagoya wards status map under the facts strip', function (): void {
+    $session = GameSession::factory()->create([
+        'is_active' => true,
+        'current_game_month' => 4,
+        'current_game_week' => 2,
+    ]);
+    $ward = Ward::create([
+        'name' => 'Naka-ku',
+        'name_ja' => '中区',
+        'slug' => 'naka-ku',
+        'spiritual_openness' => 45,
+        'center_lat' => 35.1681,
+        'center_lng' => 136.9066,
+    ]);
+    Church::create([
+        'game_session_id' => $session->id,
+        'ward_id' => $ward->id,
+        'name' => 'Sakae Light Church',
+        'generation' => 1,
+        'elements_json' => ['worship', 'word'],
+        'is_healthy_church' => true,
+        'health_score' => 90,
+        'attenders_count' => 12,
+        'believers_count' => 9,
+        'baptized_count' => 6,
+        'lat' => 35.1681,
+        'lng' => 136.9066,
+        'founded_game_month' => 1,
+    ]);
+
+    $response = $this->get(route('invitation'));
+
+    $response->assertStatus(200)
+        ->assertSee('Empty fields to reach')
+        ->assertSee('Awaiting the Good News')
+        ->assertSee('Nagoya Wards — Current Status')
+        ->assertSee('Month 4, Week 2')
+        ->assertSee('1 Active Churches')
+        ->assertSee('aria-label="Nagoya Wards Current Status Map"', false)
+        ->assertSee('Sakae Light Church');
+});

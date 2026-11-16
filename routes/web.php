@@ -7,13 +7,68 @@ use App\Http\Controllers\NotificationPreferenceController;
 use App\Http\Controllers\PasswordlessAuthController;
 use App\Livewire\Auth\PasswordlessLogin;
 use App\Livewire\NagoyaMovementDashboard;
+use App\Models\Church;
+use App\Models\GameSession;
+use App\Models\Ward;
+use App\Services\NagoyaMiniMapService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Spatie\MailPreview\Http\Controllers\ShowMailController;
 use Spatie\MailPreview\MailPreviewServiceProvider;
 
 // Public Invitation to Reach Nagoya with Jesus Until No Place Left (Root View)
-Route::view('/', 'invitation')->name('invitation');
+Route::get('/', function (NagoyaMiniMapService $miniMap) {
+    $activeSession = GameSession::where('is_active', true)->first();
+
+    $wards = Ward::orderBy('name')
+        ->withCount([
+            'churches' => fn ($q) => $q->when($activeSession, fn ($sq) => $sq->where('game_session_id', $activeSession->id))
+                ->where('is_dissolved', false),
+            'npcs' => fn ($q) => $q->when($activeSession, fn ($sq) => $sq->where('game_session_id', $activeSession->id)),
+        ])
+        ->get();
+
+    $churches = $activeSession
+        ? Church::where('game_session_id', $activeSession->id)
+            ->where('is_dissolved', false)
+            ->get(['id', 'ward_id', 'name', 'generation', 'is_healthy_church', 'lat', 'lng', 'attenders_count'])
+        : collect();
+
+    $wardMapData = $miniMap->getInteractiveWardMapData($wards, 420, 300);
+
+    $wardStatusById = $wards->mapWithKeys(fn (Ward $w): array => [
+        $w->id => [
+            'churches_count' => (int) ($w->churches_count ?? 0),
+            'npcs_count' => (int) ($w->npcs_count ?? 0),
+            'openness' => (int) $w->spiritual_openness,
+            'poverty' => (int) $w->poverty_need_index,
+        ],
+    ])->all();
+
+    $churchPins = $miniMap->projectMarkers(
+        $churches->filter(fn (Church $c): bool => (bool) ($c->lat && $c->lng))
+            ->map(fn (Church $c): array => [
+                'lat' => (float) $c->lat,
+                'lng' => (float) $c->lng,
+                'label' => $c->name,
+                'generation' => (int) $c->generation,
+                'healthy' => (bool) $c->is_healthy_church,
+            ])->values()->all(),
+        420,
+        300
+    );
+
+    return view('invitation', [
+        'wardMapData' => $wardMapData,
+        'wardStatusById' => $wardStatusById,
+        'churchPins' => $churchPins,
+        'totalChurches' => $churches->count(),
+        'reachedWardsCount' => $wards->filter(fn (Ward $w): bool => (int) ($w->churches_count ?? 0) > 0)->count(),
+        'totalWardsCount' => $wards->count(),
+        'currentMonth' => (int) ($activeSession->current_game_month ?? 1),
+        'currentWeek' => (int) ($activeSession->current_game_week ?? 1),
+    ]);
+})->name('invitation');
 
 // Public Lore, Story & Comprehensive Game Rules Overview
 Route::view('/welcome', 'welcome')->name('welcome');

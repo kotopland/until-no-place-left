@@ -103,6 +103,32 @@ class NagoyaMiniMapService
     }
 
     /**
+     * Project lat/lng markers into the same SVG coordinate space as getInteractiveWardMapData.
+     *
+     * @param  array<int, array{lat: float, lng: float, label?: string, generation?: int, healthy?: bool}>  $markers
+     * @return array<int, array{x: float, y: float, label: string, generation: int, healthy: bool}>
+     */
+    public function projectMarkers(array $markers, int $width = 360, int $height = 380, int $padding = 14): array
+    {
+        $geometry = $this->getSimplifiedGeometry();
+        $bounds = $geometry['bounds'];
+        $projected = [];
+
+        foreach ($markers as $marker) {
+            [$x, $y] = $this->projectPoint((float) $marker['lat'], (float) $marker['lng'], $bounds, $width, $height, $padding);
+            $projected[] = [
+                'x' => round($x, 1),
+                'y' => round($y, 1),
+                'label' => (string) ($marker['label'] ?? ''),
+                'generation' => (int) ($marker['generation'] ?? 1),
+                'healthy' => (bool) ($marker['healthy'] ?? false),
+            ];
+        }
+
+        return $projected;
+    }
+
+    /**
      * Render a crisp, self-contained SVG mini-map of Nagoya's 16 wards with highlighted ward(s) and markers.
      *
      * @param  array<int, array{lat: float, lng: float, label?: string, type?: string, color?: string}>  $markers

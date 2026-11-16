@@ -301,6 +301,122 @@
                         <span class="block text-[10px] text-purple-600/90 dark:text-purple-300/80 mt-0.5">Awaiting the Good News</span>
                     </div>
                 </div>
+
+                <!-- Live Nagoya 16-Ward Status Map -->
+                <div
+                    x-data="{ hoveredWard: null }"
+                    class="mt-4 p-4 rounded-2xl bg-white dark:bg-slate-900/75 border border-slate-200/90 dark:border-slate-800 shadow-sm dark:shadow-xl max-w-xl mx-auto lg:mx-0 text-left space-y-3"
+                >
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base">🗾</span>
+                            <div>
+                                <div class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                                    Nagoya Wards — Current Status
+                                </div>
+                                <div class="text-[10px] text-slate-500 dark:text-slate-400">
+                                    Month {{ $currentMonth ?? 1 }}, Week {{ $currentWeek ?? 1 }} &bull; {{ $reachedWardsCount ?? 0 }}/{{ max(16, $totalWardsCount ?? 16) }} Wards with Churches &bull; {{ $totalChurches ?? 0 }} Active Churches
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 text-[10px] font-semibold">
+                            <span class="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-300">
+                                <span class="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block"></span>
+                                <span>Church</span>
+                            </span>
+                            <span class="inline-flex items-center gap-1 text-amber-700 dark:text-amber-300">
+                                <span class="w-2.5 h-2.5 rounded-sm bg-amber-500 inline-block"></span>
+                                <span>Open (40%+)</span>
+                            </span>
+                            <span class="inline-flex items-center gap-1 text-slate-500 dark:text-slate-400">
+                                <span class="w-2.5 h-2.5 rounded-sm bg-slate-700 inline-block"></span>
+                                <span>Unreached</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="relative rounded-xl overflow-hidden bg-slate-950 border border-slate-800 p-1.5">
+                        <svg
+                            viewBox="0 0 {{ $wardMapData['width'] ?? 420 }} {{ $wardMapData['height'] ?? 300 }}"
+                            class="w-full h-56 sm:h-64 select-none"
+                            role="img"
+                            aria-label="Nagoya Wards Current Status Map"
+                        >
+                            @for($gx = 40; $gx < ($wardMapData['width'] ?? 420); $gx += 56)
+                                <line x1="{{ $gx }}" y1="0" x2="{{ $gx }}" y2="{{ $wardMapData['height'] ?? 300 }}" stroke="#1e293b" stroke-width="0.6" stroke-dasharray="3,4" />
+                            @endfor
+                            @for($gy = 36; $gy < ($wardMapData['height'] ?? 300); $gy += 48)
+                                <line x1="0" y1="{{ $gy }}" x2="{{ $wardMapData['width'] ?? 420 }}" y2="{{ $gy }}" stroke="#1e293b" stroke-width="0.6" stroke-dasharray="3,4" />
+                            @endfor
+
+                            @foreach($wardMapData['wards'] ?? [] as $w)
+                                @php
+                                    $st = $wardStatusById[$w['id']] ?? ['churches_count' => 0, 'npcs_count' => 0, 'openness' => $w['openness'], 'poverty' => $w['poverty']];
+                                    $hasChurch = $st['churches_count'] > 0;
+                                    $isOpen = $st['openness'] >= 40;
+                                    $fill = $hasChurch ? '#059669' : ($isOpen ? '#d97706' : '#1e293b');
+                                    $stroke = $hasChurch ? '#34d399' : ($isOpen ? '#fbbf24' : '#475569');
+                                    $shortName = str_replace('-ku', '', $w['name']);
+                                @endphp
+                                <g
+                                    @mouseenter="hoveredWard = {{ \Illuminate\Support\Js::from([
+                                        'name' => $w['name'],
+                                        'name_ja' => $w['name_ja'],
+                                        'openness' => $st['openness'],
+                                        'churches' => $st['churches_count'],
+                                        'npcs' => $st['npcs_count'],
+                                    ]) }}"
+                                    @mouseleave="hoveredWard = null"
+                                    class="cursor-pointer transition-opacity duration-150 hover:opacity-95"
+                                >
+                                    @foreach($w['polygons'] as $polyPoints)
+                                        <polygon
+                                            points="{{ $polyPoints }}"
+                                            fill="{{ $fill }}"
+                                            fill-opacity="{{ $hasChurch ? '0.62' : ($isOpen ? '0.45' : '0.72') }}"
+                                            stroke="{{ $stroke }}"
+                                            stroke-width="{{ $hasChurch ? '1.8' : '1.0' }}"
+                                            stroke-linejoin="round"
+                                        />
+                                    @endforeach
+                                    <text
+                                        x="{{ $w['cx'] }}"
+                                        y="{{ $w['cy'] }}"
+                                        text-anchor="middle"
+                                        dominant-baseline="middle"
+                                        font-family="ui-sans-serif, system-ui, sans-serif"
+                                        font-size="8"
+                                        font-weight="700"
+                                        fill="#f8fafc"
+                                        class="pointer-events-none"
+                                    >{{ $shortName }}</text>
+                                </g>
+                            @endforeach
+
+                            @foreach($churchPins ?? [] as $pin)
+                                <circle cx="{{ $pin['x'] }}" cy="{{ $pin['y'] }}" r="7" fill="#6366f1" fill-opacity="0.3" />
+                                <circle cx="{{ $pin['x'] }}" cy="{{ $pin['y'] }}" r="3.5" fill="{{ $pin['healthy'] ? '#34d399' : '#818cf8' }}" stroke="#ffffff" stroke-width="1.2">
+                                    <title>{{ $pin['label'] }} (G{{ $pin['generation'] }})</title>
+                                </circle>
+                            @endforeach
+                        </svg>
+                    </div>
+
+                    <div class="text-[11px] text-slate-600 dark:text-slate-300 flex items-center justify-between gap-2 min-h-[1.25rem]">
+                        <template x-if="hoveredWard">
+                            <div class="flex items-center justify-between w-full gap-2">
+                                <span class="font-bold text-slate-900 dark:text-white" x-text="hoveredWard.name + ' (' + hoveredWard.name_ja + ')'"></span>
+                                <span class="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300" x-text="hoveredWard.churches + ' churches • ' + hoveredWard.npcs + ' people • ' + hoveredWard.openness + '% open'"></span>
+                            </div>
+                        </template>
+                        <template x-if="!hoveredWard">
+                            <div class="flex items-center justify-between w-full gap-2 text-slate-500 dark:text-slate-400">
+                                <span>Hover any Nagoya ward to inspect churches &amp; spiritual openness</span>
+                                <a href="{{ route('simulate') }}" class="text-indigo-600 dark:text-indigo-400 font-bold hover:underline shrink-0">Open Live Map ➔</a>
+                            </div>
+                        </template>
+                    </div>
+                </div>
             </div>
 
             <!-- Artwork Feature Card -->
